@@ -14,7 +14,7 @@ const TABLE_NAME = "DEV-CA-DOCUMENT";
 
 module.exports.regist = (event, context, callback) => {
   const accountId = "anonymous@infrawareglobal.com";
-  const documentId = uuidv4();
+  const documentId = uuidv4().replace(/-/gi, "");
 
 
   var postParams = JSON.parse(event.body);
@@ -69,6 +69,10 @@ module.exports.regist = (event, context, callback) => {
 
                 callback(null, {
                   statusCode: statusCode,
+                  headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': true,
+                  },
                   body: JSON.stringify(message)
                 });
 
@@ -99,8 +103,12 @@ module.exports.list = (event, context, callback) => {
 
     callback(null, {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       body: JSON.stringify({
-        message: 'Go Serverless v1.0! Your function executed successfully!',
+        message: 'SUCCESS',
         resultList: data.Items?data.Items:[],
       }),
     });

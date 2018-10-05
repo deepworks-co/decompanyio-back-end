@@ -29,7 +29,7 @@ module.exports = {
 
         var params = {
             TableName : TABLE_NAME,
-            KeyConditionExpression: "#accountId = :accountId and #documentId = :documentId",
+            KeyConditionExpression: " ",
             ExpressionAttributeNames:{
                 "#accountId": "accountId",
                 "#documentId": "documentId"
