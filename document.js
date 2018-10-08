@@ -26,7 +26,7 @@ module.exports.regist = (event, context, callback) => {
     const documentId = uuidv4().replace(/-/gi, "");
     const documentName = parameter.filename;
     const documentSize = parameter.size;
-    const tags = parameter.tags?parameter.tags:null;//document tags
+    const tags = parameter.tags?parameter.tags:[];//document tags
     const account = parameter.account?parameter.account:null;//ethereum user account
 
 
