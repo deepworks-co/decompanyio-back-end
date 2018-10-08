@@ -58,23 +58,22 @@ module.exports = {
 
         console.log("Put Document Item", item);
         console.log("timestamp", timestamp);
+        const mergedItem = {
+          "created": Number(timestamp),
+          "state": "NOT_CONVERT"
+        };
 
         var params = {
             TableName: TABLE_NAME,
-            Item:{
-                "accountId": item.accountId,
-                "documentId": item.documentId,
-                "documentName": item.documentName,
-                "documentSize": item.documentSize,
-                "created": Number(timestamp),
-                "state": "NOT_CONVERT"
-            },
+            Item: Object.assign(mergedItem, item),
             ReturnConsumedCapacity: "TOTAL"
         };
 
         console.log("Put Item", params);
 
         docClient.put(params, (err, data) => {
+          if(err) console.error("[SERVER ERROR]", err);
+
           callback(err, data);
         });
     },
