@@ -22,8 +22,19 @@ provider:
   runtime: nodejs8.10
 
 # you can overwrite defaults here
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: us-west-1
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:Query
+       - dynamodb:Scan
+       - dynamodb:GetItem
+       - dynamodb:PutItem
+       - dynamodb:UpdateItem
+       - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-west-1:197966029048:table/DEV-CA-DOCUMENT"
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -42,8 +53,8 @@ provider:
 #            - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  #environment:
+  #  CROS: true
 
 # you can add packaging information here
 #package:
@@ -63,6 +74,7 @@ functions:
       - http:
           path: users/create
           method: get
+          cors: true
 
   documentRegist:
     handler: document.regist
@@ -70,7 +82,7 @@ functions:
       - http:
           path: document/regist
           method: post
-
+          cors: true
 
   documentList:
     handler: document.list
@@ -78,6 +90,7 @@ functions:
       - http:
           path: document/list
           method: get
+          cors: true
 
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
@@ -119,6 +132,6 @@ functions:
 custom:
   serverless-offline:
     port: 4000
-    
+
 plugins:
   - serverless-offline
