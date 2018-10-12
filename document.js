@@ -27,7 +27,9 @@ module.exports.regist = (event, context, callback) => {
     const documentName = parameter.filename;
     const documentSize = parameter.size;
     const tags = parameter.tags?parameter.tags:[];//document tags
-    const account = parameter.account?parameter.account:null;//ethereum user account
+    const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
+    const title = parameter.title;
+    const desc = parameter.desc;
 
 
     var item = {
@@ -62,9 +64,10 @@ module.exports.regist = (event, context, callback) => {
               documentId: item.Key.documentId,
               documentName: documentName,
               documentSize: documentSize,
-              ethAccount:account,
+              ethAccount:ethAccount,
+              title: title,
+              desc: desc,
               tags:tags
-
             }
 
             dynamo.putDocument(putItem, (err, data) => {
@@ -143,4 +146,41 @@ module.exports.list = (event, context, callback) => {
 
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+};
+
+
+module.exports.info = (event, context, callback) => {
+
+  //console.log(event);
+  const documentId = event.pathParameters.documentId;
+
+  if(!documentId) return;
+
+  dynamo.getDocumentById(documentId).then((data) => {
+    console.log("getDocumentById Method succeeded.", data);
+
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'SUCCESS',
+        document: data.Items[0],
+      }),
+    });
+  }).catch((err) => {
+    console.error("error : ", err);
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: err
+      }),
+    });
+  })
 };

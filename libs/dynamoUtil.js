@@ -8,48 +8,20 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 
 module.exports = {
-    getDocument : getDocument = (args, callback) => {
+    getDocumentById : getDocumentById = (documentId) => {
         var params = {
             TableName: TABLE_NAME,
-            Key:{
-                "accountId": args.accountId,
-                "documentId": args.documentId
-            }
-        };
-
-        docClient.get(params, (err, data) => {
-          callback(err, data);
-        });
-
-    },
-
-    getDocuments : getDocuments = (args, callback) => {
-
-        console.log("getDocument", args);
-
-        var params = {
-            TableName : TABLE_NAME,
-            KeyConditionExpression: " ",
+            IndexName: "documentId-index",
+            KeyConditionExpression: "#documentId = :documentId",
             ExpressionAttributeNames:{
-                "#accountId": "accountId",
                 "#documentId": "documentId"
             },
             ExpressionAttributeValues: {
-                ":accountId": args.accountId,
-                ":documentId": args.documentId
+                ":documentId": documentId
             }
         };
 
-        docClient.query(params, function(err, data) {
-            if (err) {
-                console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-            } else {
-                console.log("Query succeeded.", data);
-                data.Items.forEach(function(item) {
-                    console.log(" -", item.year + ": " + item.title);
-                });
-            }
-        });
+        return docClient.query(params).promise();
 
     },
 

@@ -92,6 +92,18 @@ functions:
           method: get
           cors: true
 
+  documentInfo:
+    handler: document.info
+    events:
+      - http:
+          path: document/info/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
