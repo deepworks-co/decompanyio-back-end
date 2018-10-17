@@ -25,6 +25,9 @@ module.exports = {
 
     },
 
+
+
+
     putDocument : putDocument = (item, callback) => {
         const timestamp = Date.now();
 
@@ -50,23 +53,64 @@ module.exports = {
         });
     },
 
-    queryDocumentByLatest : queryDocumentByLatest = (args, callback) => {
+    makeQueryCondition : makeQueryCondition = (args) => {
+      let condition = {};
+      let indexName = "state-created-index";
+      let expresstion = null;
+      let attributeNames = null;
+      let attributeValues = null;
+      if(args.email){
 
-        var params = {
-            TableName: TABLE_NAME,
-            IndexName: "state-created-index",
-            ScanIndexForward:false,
-            KeyConditionExpression: "#state = :state",
-            ExpressionAttributeNames:{
-                "#state": "state"
-            },
-            ExpressionAttributeValues: {
-                ":state": "CONVERT_COMPLETE"
-            }
-        };
-        docClient.query(params, function(err, data) {
-            callback(err, data);
+        condition.indexName = "gi-accountId-created-index-copy";
+        condition.expression = "#accountId = :accountId"
+        condition.filterExpression = "#state = :state"
+        condition.attributeNames = ({
+            "#accountId": "accountId",
+            "#state": "state"
+
         });
+        condition.attributeValues = ({
+          ":accountId": args.email,
+          ":state": "CONVERT_COMPLETE"
+        });
+
+      } else {
+
+        condition.indexName = "state-created-index";
+        condition.expression = "#state = :state"
+        condition.attributeNames = ({
+            "#state": "state"
+        });
+        condition.attributeValues = ({
+          ":state": "CONVERT_COMPLETE"
+        });
+
+      }
+
+      return condition;
+    },
+
+    queryDocumentByLatest : queryDocumentByLatest = (args) => {
+      let key = null;
+      if(args.nextPageKey){
+          key = args.nextPageKey;
+      }
+
+      const queryCondition = makeQueryCondition(args);
+      console.log("queryCondition", queryCondition);
+      var params = {
+          TableName: TABLE_NAME,
+          IndexName: queryCondition.indexName,
+          ScanIndexForward:false,
+          KeyConditionExpression: queryCondition.expression,
+          FilterExpression: queryCondition.filterExpression,
+          ExpressionAttributeNames: queryCondition.attributeNames,
+          ExpressionAttributeValues: queryCondition.attributeValues,
+          Limit:20,
+          ExclusiveStartKey: key
+      };
+      console.log("dynamo query params", params);
+      return docClient.query(params).promise();
 
     },
 }

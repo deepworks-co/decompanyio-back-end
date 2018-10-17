@@ -80,7 +80,7 @@ functions:
     handler: document.regist
     events:
       - http:
-          path: document/regist
+          path: api/document/regist
           method: post
           cors: true
 
@@ -88,7 +88,7 @@ functions:
     handler: document.list
     events:
       - http:
-          path: document/list
+          path: api/document/list
           method: get
           cors: true
 
@@ -96,7 +96,7 @@ functions:
     handler: document.info
     events:
       - http:
-          path: document/info/{documentId}
+          path: api/document/info/{documentId}
           method: get
           cors: true
           request:

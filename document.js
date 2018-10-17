@@ -123,12 +123,32 @@ module.exports.regist = (event, context, callback) => {
 
 module.exports.list = (event, context, callback) => {
 
-  dynamo.queryDocumentByLatest(null, (err, data) => {
-    if (err) {
-        console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
+  let key = null;
+  let email = null;
+  console.log(event.queryStringParameters);
+  if(event.queryStringParameters && event.queryStringParameters.nextPageKey) {
+    const strKey = Buffer.from(decodeURIComponent(event.queryStringParameters.nextPageKey), 'base64').toString();
+    const jsonKey= JSON.parse(strKey);
+    console.log("request nextPageKey", jsonKey);
+    if(jsonKey.nextPageKey){
+      key = jsonKey.nextPageKey;
     } else {
-        console.log("queryDocumentByLatest succeeded.", data);
+      key = jsonKey;
     }
+
+  }
+
+  if(event.queryStringParameters && event.queryStringParameters.email) {
+    email = decodeURIComponent(event.queryStringParameters.email);
+
+  }
+
+  dynamo.queryDocumentByLatest({
+    nextPageKey: key,
+    email:email
+  }).then((data) => {
+
+    //console.log("queryDocumentByLatest succeeded.", data);
 
     callback(null, {
       statusCode: 200,
@@ -139,13 +159,22 @@ module.exports.list = (event, context, callback) => {
       body: JSON.stringify({
         message: 'SUCCESS',
         resultList: data.Items?data.Items:[],
+        nextPageKey: data.LastEvaluatedKey,
+        Count: data.Count
       }),
     });
 
-  });
+  }).catch((err) => {
 
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+    console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
+    callback(null, {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'FAIL',
+      })
+    })
+
+  });
 };
 
 
