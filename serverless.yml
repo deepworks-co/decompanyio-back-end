@@ -20,21 +20,21 @@ service: blue-bottle-backend # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
-
-# you can overwrite defaults here
-  stage: ${opt:stage, 'dev'}
+  # you can overwrite defaults here
+  stage: dev
   region: us-west-1
-
+  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
+  #apiName: ${self:service.name}-api      # Api Gateway Name
+  environment:
+    message: "Deploy stage ${self:provider.stage}"
+    stage: ${self:provider.stage}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
-       - dynamodb:Query
-       - dynamodb:Scan
-       - dynamodb:GetItem
-       - dynamodb:PutItem
-       - dynamodb:UpdateItem
-       - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-west-1:197966029048:table/DEV-CA-DOCUMENT"
+       - dynamodb:*
+       - s3:*
+       - logs:*
+      Resource: "*"
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -66,16 +66,14 @@ provider:
 #    - exclude-me-dir/**
 deploymentBucket:
     name: dev-ca-deploys-blue-bottle-backend # Overwrite the default deployment bucket
+package:
+   individually: true
+
+exclude:
+  - .gitignore
+  - .env
 
 functions:
-  hello:
-    handler: handler.hello
-    events:
-      - http:
-          path: users/create
-          method: get
-          cors: true
-
   documentRegist:
     handler: document.regist
     events:
@@ -104,6 +102,23 @@ functions:
                 paths:
                   id: true
 
+  documentText:
+    handler: document.text
+    events:
+      - http:
+          path: api/document/text/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+
+#  cronViewCount:
+#    handler: batch/cronViewCount.handler
+#    events:
+#      - schedule: rate(10 minutes)
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
@@ -141,6 +156,8 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+
 custom:
   serverless-offline:
     port: 4000

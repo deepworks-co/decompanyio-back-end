@@ -19,14 +19,10 @@ module.exports = {
             ExpressionAttributeValues: {
                 ":documentId": documentId
             }
-        };
+        }
 
         return docClient.query(params).promise();
-
     },
-
-
-
 
     putDocument : putDocument = (item, callback) => {
         const timestamp = Date.now();
@@ -35,7 +31,8 @@ module.exports = {
         console.log("timestamp", timestamp);
         const mergedItem = {
           "created": Number(timestamp),
-          "state": "NOT_CONVERT"
+          "state": "NOT_CONVERT",
+          "viewCount": 0
         };
 
         var params = {

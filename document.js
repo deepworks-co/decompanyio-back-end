@@ -2,6 +2,7 @@
 const uuidv4 = require('uuid/v4');
 
 const dynamo = require('./libs/dynamoUtil');
+const s3 = require('./libs/s3Util');
 
 var AWS = require("aws-sdk");
 
@@ -12,9 +13,12 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 
+const defaultHeader = {
+  stage: process.env.stage
+}
+
 module.exports.regist = (event, context, callback) => {
   try{
-    console.log(event.body);
     const parameter = JSON.parse(event.body).data;
     console.log(parameter, parameter);
     if(!parameter || !parameter.username) return callback(null, {
@@ -172,8 +176,7 @@ module.exports.list = (event, context, callback) => {
       body: JSON.stringify({
         message: 'FAIL',
       })
-    })
-
+    });
   });
 };
 
@@ -186,7 +189,8 @@ module.exports.info = (event, context, callback) => {
   if(!documentId) return;
 
   dynamo.getDocumentById(documentId).then((data) => {
-    console.log("getDocumentById Method succeeded.", data);
+    //for view count log
+    console.log("VIEWLOG", data.Items[0].documentId);
 
     callback(null, {
       statusCode: 200,
@@ -201,15 +205,46 @@ module.exports.info = (event, context, callback) => {
     });
   }).catch((err) => {
     console.error("error : ", err);
+
     callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: err
-      }),
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          message: err
+        }),
+      });
+
     });
-  })
-};
+  }
+
+  module.exports.text = (event, context, callback) => {
+
+    //console.log(event);
+    const documentId = event.pathParameters.documentId;
+
+    if(!documentId) return;
+
+    s3.getDocumentTextById(documentId).then((data) => {
+      console.info(data);
+
+      callback(null, {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          text: data.Body.toString("utf-8").substring(0, 3000)
+        }),
+      });
+
+    }).catch((err) => {
+      console.err("Get Text Error", err);
+    });
+
+
+
+  };
