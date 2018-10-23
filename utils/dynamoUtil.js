@@ -6,6 +6,7 @@ AWS.config.update({
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = "DEV-CA-DOCUMENT";
+const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
 
 module.exports = {
     getDocumentById : getDocumentById = (documentId) => {
@@ -109,5 +110,39 @@ module.exports = {
       console.log("dynamo query params", params);
       return docClient.query(params).promise();
 
+    },
+
+    putVote : putVote = (item) => {
+        const timestamp = Date.now();
+
+        console.log("Put Vote Item", item, "timestamp", timestamp);
+
+        const curatorId = item.curatorId;
+        const voteAmount = item.voteAmount;
+        const documentInfo = item.documentInfo;
+        const documentId = documentInfo.documentId;
+        const transactionInfo = item.transactionInfo
+
+        if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount)){
+          return Promise.reject({msg:"Parameter is invaild", detail:item});
+        }
+
+        const id = curatorId + "#" + timestamp;
+
+        var params = {
+            TableName: TABLE_NAME_VOTE,
+            Item: {
+              id: id,
+              created: timestamp,
+              documentId: documentId,
+              voteAmount: Number(voteAmount),
+              documentInfo: documentInfo,
+              transactionInfo: transactionInfo
+            },
+            ReturnConsumedCapacity: "TOTAL"
+        };
+
+
+        return docClient.put(params).promise();
     },
 }

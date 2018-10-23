@@ -74,24 +74,24 @@ exclude:
   - .env
 
 functions:
-  documentRegist:
-    handler: document.regist
+  documentController.documentRegist:
+    handler: controllers/documentController.regist
     events:
       - http:
           path: api/document/regist
           method: post
           cors: true
 
-  documentList:
-    handler: document.list
+  documentController.documentList:
+    handler: controllers/documentController.list
     events:
       - http:
           path: api/document/list
           method: get
           cors: true
 
-  documentInfo:
-    handler: document.info
+  documentController.documentInfo:
+    handler: controllers/documentController.info
     events:
       - http:
           path: api/document/info/{documentId}
@@ -102,8 +102,8 @@ functions:
                 paths:
                   id: true
 
-  documentText:
-    handler: document.text
+  documentController.documentText:
+    handler: controllers/documentController.text
     events:
       - http:
           path: api/document/text/{documentId}
@@ -113,6 +113,34 @@ functions:
             parameters:
                 paths:
                   id: true
+
+  documentController.documentVote:
+    handler: controllers/documentController.vote
+    events:
+      - http:
+          path: api/document/vote/{documentId}
+          method: post
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  contractController.getDocuments:
+    handler: controllers/contractController.getDocuments
+    events:
+      - http:
+          path: api/contract/getDocuments
+          method: get
+          cors: true
+
+  contractController.registYesterdayViewCount:
+    handler: controllers/contractController.registYesterdayViewCount
+    events:
+      - http:
+          path: api/contract/registYesterdayViewCount
+          method: post
+          cors: true
 
 
 #  cronViewCount:
