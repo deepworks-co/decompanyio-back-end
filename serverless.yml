@@ -74,7 +74,7 @@ exclude:
   - .env
 
 functions:
-  documentController.documentRegist:
+  documentRegist:
     handler: controllers/documentController.regist
     events:
       - http:
@@ -82,7 +82,7 @@ functions:
           method: post
           cors: true
 
-  documentController.documentList:
+  documentList:
     handler: controllers/documentController.list
     events:
       - http:
@@ -90,7 +90,7 @@ functions:
           method: get
           cors: true
 
-  documentController.documentInfo:
+  documentInfo:
     handler: controllers/documentController.info
     events:
       - http:
@@ -102,7 +102,7 @@ functions:
                 paths:
                   id: true
 
-  documentController.documentText:
+  documentText:
     handler: controllers/documentController.text
     events:
       - http:
@@ -114,7 +114,7 @@ functions:
                 paths:
                   id: true
 
-  documentController.documentVote:
+  documentVote:
     handler: controllers/documentController.vote
     events:
       - http:
@@ -126,7 +126,7 @@ functions:
                 paths:
                   id: true
 
-  contractController.getDocuments:
+  contractGetDocuments:
     handler: controllers/contractController.getDocuments
     events:
       - http:
@@ -134,7 +134,7 @@ functions:
           method: get
           cors: true
 
-  contractController.registYesterdayViewCount:
+  contractRegistYesterdayViewCount:
     handler: controllers/contractController.registYesterdayViewCount
     events:
       - http:
