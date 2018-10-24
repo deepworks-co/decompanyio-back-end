@@ -148,6 +148,7 @@ functions:
 
   contractGetDocuments:
     handler: controllers/contractController.getDocuments
+    timeout: 300 # optional, in seconds, default is 6, 5min
     events:
       - http:
           path: api/contract/getDocuments
@@ -160,6 +161,7 @@ functions:
 
   contractRegistYesterdayViewCount:
     handler: controllers/contractController.registYesterdayViewCount
+    timeout: 300 # optional, in seconds, default is 6, 5min
     events:
       - http:
           path: api/contract/registYesterdayViewCount
