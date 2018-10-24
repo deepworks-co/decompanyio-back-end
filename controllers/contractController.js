@@ -91,7 +91,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
         web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
           //console.log("nonce", nonce);
 
-          sendTransaction(privateKey, myAddress, gasAmount, nonce, contractAddress,
+          sendTransaction(privateKey, myAddress, gasAmount * 2, nonce, contractAddress,
              DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
             const transcationResult = {
                 message: "Transaction Result",
