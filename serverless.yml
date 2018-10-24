@@ -81,6 +81,10 @@ functions:
           path: api/document/regist
           method: post
           cors: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   documentList:
     handler: controllers/documentController.list
@@ -89,6 +93,10 @@ functions:
           path: api/document/list
           method: get
           cors: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   documentInfo:
     handler: controllers/documentController.info
@@ -101,6 +109,10 @@ functions:
             parameters:
                 paths:
                   id: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   documentText:
     handler: controllers/documentController.text
@@ -113,6 +125,10 @@ functions:
             parameters:
                 paths:
                   id: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   documentVote:
     handler: controllers/documentController.vote
@@ -125,6 +141,10 @@ functions:
             parameters:
                 paths:
                   id: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   contractGetDocuments:
     handler: controllers/contractController.getDocuments
@@ -133,6 +153,10 @@ functions:
           path: api/contract/getDocuments
           method: get
           cors: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
   contractRegistYesterdayViewCount:
     handler: controllers/contractController.registYesterdayViewCount
@@ -141,6 +165,22 @@ functions:
           path: api/contract/registYesterdayViewCount
           method: post
           cors: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
+
+  contractRegistYesterdayTotalViewCount:
+    handler: controllers/contractController.registYesterdayTotalViewCount
+    events:
+      - http:
+          path: api/contract/registYesterdayTotalViewCount
+          method: post
+          cors: true
+          response:
+            headers:
+              Access-Control-Allow-Origin: '*'
+              Access-Control-Allow-Credentials: true
 
 
 #  cronViewCount:
@@ -184,7 +224,6 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
-
 
 custom:
   serverless-offline:

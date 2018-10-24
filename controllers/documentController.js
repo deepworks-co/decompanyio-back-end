@@ -273,7 +273,7 @@ module.exports.vote = (event, context, callback) => {
       }),
     });
   }).catch((err) => {
-    console.error("Put Vote Error : ", err);
+    console.error("Vote error : ", err);
 
     callback(null, {
         statusCode: 200,
