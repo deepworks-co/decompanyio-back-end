@@ -24,15 +24,16 @@ module.exports.getDocuments = (event, context, callback) => {
 
   DocumentReg.methods.getDocuments().call({from: myAddress}).then((data)=>{
     console.log(data);
-  });
-
-  return callback(null, {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify("done")
+    return callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: "done",
+        result:data})
+    });
   });
 
 };
@@ -47,11 +48,16 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
   //docId = 6ae233c924624384a5c2c819a3139280
   //const docId = web3.utils.hexToUtf8("0x3661653233336339323436323433383461356332633831396133313339323830");
   const docId = web3.utils.asciiToHex(params.documentId);
-  console.log("docId", params.documentId, docId);
   const registYesterdayViewCount = params.confirmViewCount;
   const date = params.date;
 
-  console.log("Transcation Start", docId, date, registYesterdayViewCount);
+  console.log({
+    message:"Transcation Start",
+    documentId: params.documentId,
+    documentIdByte32: docId,
+    date: date,
+    viewCount: registYesterdayViewCount
+  });
   //creating contract object
   const DocumentReg = new web3.eth.Contract(abis, contractAddress, {
     from: myAddress
@@ -81,9 +87,19 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
       transaction.sign(privateKey);
       //sending transacton via web3js module
       web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).then((transaction)=>{
-        console.log("Transaction Result", transaction);
+        console.log({
+            message: "Transaction Result",
+            documentId: params.documentId,
+            documentIdByte32: docId,
+            transaction: transaction
+        });
       }).catch((err) => {
-        console.error("Transaction Error", err);
+        console.error({
+          message: "Transaction Exception",
+          error: err,
+          documentId: params.documentId,
+          documentIdByte32: docId,
+        });
       });
 
     });
