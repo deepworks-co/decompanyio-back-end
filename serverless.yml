@@ -19,7 +19,7 @@ service: blue-bottle-backend # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs4.3
   # you can overwrite defaults here
   stage: dev
   region: us-west-1
