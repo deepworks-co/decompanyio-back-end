@@ -73,53 +73,48 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
     documentIdByte32: docId,
     params: params
   });
+
   //creating contract object
   const DocumentReg = new web3.eth.Contract(abis, contractAddress, {
     from: myAddress
   });
 
-  web3.eth.getBlockNumber().then((blockNumber)=>{
-    //console.log("blockNumber", blockNumber);
+  // using the promise
+  DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).estimateGas({
+    from: myAddress
+  }).then(function(gasAmount){
+      console.log({estimateGas: gasAmount});
 
-    web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
-      //console.log("nonce", nonce);
+      web3.eth.getBlockNumber().then((blockNumber)=>{
+        //console.log("blockNumber", blockNumber);
 
-      var amount = web3.utils.toHex(1e16);
-      //creating raw tranaction
-      var rawTransaction = {
-          "from":myAddress,
-          "gasPrice":web3.utils.toHex(20* 1e9),
-          "gasLimit":web3.utils.toHex(210000),
-          "to":contractAddress,
-          "value":"0x0",
-          "data":DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI(),
-          "nonce": web3.utils.toHex(nonce)
-      }
-      console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
-      //creating tranaction via ethereumjs-tx
-      var transaction = new Tx(rawTransaction);
-      //signing transaction with private key
-      transaction.sign(privateKey);
-      //sending transacton via web3js module
-      web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).then((transaction)=>{
-        console.log({
-            message: "Transaction Result",
-            documentId: params.documentId,
-            documentIdByte32: docId,
-            transaction: transaction
-        });
-      }).catch((err) => {
-        console.error({
-          message: "Transaction Exception",
-          error: err,
-          documentId: params.documentId,
-          documentIdByte32: docId,
+        web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
+          //console.log("nonce", nonce);
+
+          sendTransaction(privateKey, myAddress, gasAmount, nonce, contractAddress,
+             DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
+            const transcationResult = {
+                message: "Transaction Result",
+                documentId: params.documentId,
+                documentIdByte32: docId,
+                transaction: transaction
+            }
+            console.log(transcationResult);
+          }).catch((err) => {
+            const transactionException = {
+              message: "Transaction Exception",
+              error: err,
+              documentId: params.documentId,
+              documentIdByte32: docId,
+            }
+            console.error(transactionException);
+          });
         });
       });
 
-    });
+  }).catch(function(error){
+      console.error(error);
   });
-
 
   return callback(null, {
     statusCode: 200,
@@ -127,7 +122,10 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify("done")
+    body: JSON.stringify({
+      message: "done",
+      request: context.requestId
+    })
   });
 
 };
@@ -170,46 +168,39 @@ module.exports.registYesterdayTotalViewCount = (event, context, callback) => {
     from: myAddress
   });
 
-  web3.eth.getBlockNumber().then((blockNumber)=>{
-    //console.log("blockNumber", blockNumber);
+  // using the promise
+  DocumentReg.methods.confirmTotalPageView(date, totalViewCount, totalViewCountSquare).estimateGas({
+    from: myAddress
+  }).then(function(gasAmount){
+    console.log({estimateGas: gasAmount});
 
-    web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
-      //console.log("nonce", nonce);
+    web3.eth.getBlockNumber().then((blockNumber)=>{
+      //console.log("blockNumber", blockNumber);
 
-      var amount = web3.utils.toHex(1e16);
-      //creating raw tranaction
-      var rawTransaction = {
-          "from":myAddress,
-          "gasPrice":web3.utils.toHex(20* 1e9),
-          "gasLimit":web3.utils.toHex(210000),
-          "to":contractAddress,
-          "value":"0x0",
-          "data":DocumentReg.methods.confirmTotalPageView(date, totalViewCount, totalViewCountSquare).encodeABI(),
-          "nonce": web3.utils.toHex(nonce)
-      }
-      console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
-      //creating tranaction via ethereumjs-tx
-      var transaction = new Tx(rawTransaction);
-      //signing transaction with private key
-      transaction.sign(privateKey);
-      //sending transacton via web3js module
-      web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).then((transaction)=>{
-        console.log({
-            message: "Transaction Result",
-            transaction: transaction,
-            requestId: requestId,
-        });
-      }).catch((err) => {
-        console.error({
-          message: "Transaction Exception",
-          error: err,
-          requestId: requestId,
-        });
+      web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
+        //console.log("nonce", nonce);
+
+        sendTransaction (privateKey, myAddress, gasAmount, nonce, contractAddress,
+           DocumentReg.methods.confirmTotalPageView(date, totalViewCount, totalViewCountSquare).encodeABI()).then((transaction)=>{
+             console.log({
+                 message: "Transaction Result",
+                 transaction: transaction,
+                 requestId: requestId,
+             });
+           }).catch((err) => {
+             console.error({
+               message: "Transaction Exception",
+               error: err,
+               requestId: requestId,
+             });
+           });
+
       });
-
     });
-  });
 
+  }).catch((err) => {
+    console.error(err);
+  });
 
   return callback(null, {
     statusCode: 200,
@@ -217,7 +208,35 @@ module.exports.registYesterdayTotalViewCount = (event, context, callback) => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify("done")
+    body: JSON.stringify({
+      message: "done",
+      requestId: context.requestId})
   });
 
+};
+
+function sendTransaction (privateKey, myAddress, gasAmount, nonce, contractAddress, contractABI) {
+  return new Promise((resolve, reject) => {
+    //creating raw tranaction
+    const rawTransaction = {
+        "from":myAddress,
+        "gasPrice":web3.utils.toHex(20* 1e9),
+        "gasLimit":web3.utils.toHex(gasAmount),
+        "to":contractAddress,
+        "value":"0x0",
+        "data":contractABI ,
+        "nonce": web3.utils.toHex(nonce)
+    }
+    console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
+    //creating tranaction via ethereumjs-tx
+    var transaction = new Tx(rawTransaction);
+    //signing transaction with private key
+    transaction.sign(privateKey);
+    //sending transacton via web3js module
+    web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).then((transaction)=>{
+      resolve(transaction);
+    }).catch((err) => {
+      reject(err);
+    });
+  })
 };
