@@ -43,7 +43,22 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
   const params = JSON.parse(event.body);
-  console.log(params);
+
+
+  if(!params.documentId || isNaN(params.confirmViewCount) || isNaN(params.date)){
+    console.log({message: "Invaild Parameter", params: params});
+    return callback(null, {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: "Invaild Parameter",
+        params: params
+      })
+    });
+  }
 
   //docId = 6ae233c924624384a5c2c819a3139280
   //const docId = web3.utils.hexToUtf8("0x3661653233336339323436323433383461356332633831396133313339323830");
@@ -52,11 +67,9 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
   const date = params.date;
 
   console.log({
-    message:"Transcation Start",
-    documentId: params.documentId,
+    message: "Transcation Start",
     documentIdByte32: docId,
-    date: date,
-    viewCount: registYesterdayViewCount
+    params: params
   });
   //creating contract object
   const DocumentReg = new web3.eth.Contract(abis, contractAddress, {
@@ -80,7 +93,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
           "data":DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI(),
           "nonce": web3.utils.toHex(nonce)
       }
-      console.log("Raw Transcation", rawTransaction);
+      console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
       //creating tranaction via ethereumjs-tx
       var transaction = new Tx(rawTransaction);
       //signing transaction with private key
