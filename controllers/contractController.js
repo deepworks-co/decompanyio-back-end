@@ -79,11 +79,17 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
     from: myAddress
   });
 
-  // using the promise
-  DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).estimateGas({
+  const promiseGasPrice = web3.eth.getGasPrice();
+
+  const promiseEstimateGas = DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).estimateGas({
     from: myAddress
-  }).then(function(gasAmount){
-      console.log({estimateGas: gasAmount});
+  });
+
+  Promise.all([promiseGasPrice, promiseEstimateGas]).then(function(values){
+      console.log(values);
+      const gasPrice = values[0] * 1.4;
+      const gasLimit = values[1];
+
 
       web3.eth.getBlockNumber().then((blockNumber)=>{
         //console.log("blockNumber", blockNumber);
@@ -91,13 +97,15 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
         web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
           //console.log("nonce", nonce);
 
-          sendTransaction(privateKey, myAddress, gasAmount * 2, nonce, contractAddress,
+          sendTransaction(privateKey, myAddress, gasPrice, gasLimit, nonce, contractAddress,
              DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
             const transcationResult = {
                 message: "Transaction Result",
                 documentId: params.documentId,
                 documentIdByte32: docId,
-                transaction: transaction
+                transaction: transaction,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice
             }
             console.log(transcationResult);
           }).catch((err) => {
@@ -106,14 +114,16 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
               error: err,
               documentId: params.documentId,
               documentIdByte32: docId,
+              gasLimit: gasLimit,
+              gasPrice: gasPrice
             }
             console.error(transactionException);
           });
         });
       });
 
-  }).catch(function(error){
-      console.error(error);
+  }).catch(function(errs){
+      console.error(errs);
   });
 
   return callback(null, {
@@ -179,8 +189,10 @@ module.exports.registYesterdayTotalViewCount = (event, context, callback) => {
 
       web3.eth.getTransactionCount(myAddress, blockNumber).then((nonce) => {
         //console.log("nonce", nonce);
+        const gasLimit = 32336;
+        const gasPrice = 1000000000;
 
-        sendTransaction (privateKey, myAddress, gasAmount, nonce, contractAddress,
+        sendTransaction (privateKey, myAddress, gasPrice, gasAmount, nonce, contractAddress,
            DocumentReg.methods.confirmTotalPageView(date, totalViewCount, totalViewCountSquare).encodeABI()).then((transaction)=>{
              console.log({
                  message: "Transaction Result",
@@ -215,12 +227,12 @@ module.exports.registYesterdayTotalViewCount = (event, context, callback) => {
 
 };
 
-function sendTransaction (privateKey, myAddress, gasAmount, nonce, contractAddress, contractABI) {
+function sendTransaction (privateKey, myAddress, gasPrice, gasAmount, nonce, contractAddress, contractABI) {
   return new Promise((resolve, reject) => {
     //creating raw tranaction
     const rawTransaction = {
         "from":myAddress,
-        "gasPrice":web3.utils.toHex(20* 1e9),
+        "gasPrice":web3.utils.toHex(gasPrice),
         "gasLimit":web3.utils.toHex(gasAmount),
         "to":contractAddress,
         "value":"0x0",
