@@ -118,6 +118,40 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
               gasPrice: gasPrice
             }
             console.error(transactionException);
+
+            const gasPrice = values[0] * 1.5;
+            const gasLimit = values[1];
+            console.error({
+              message: "Retry Transcation",
+              gasPrice: gasPrice,
+              gasLimit: gasLimit,
+              documentId: params.documentId,
+              documentIdByte32: docId,
+            });
+            sendTransaction(privateKey, myAddress, gasPrice, gasLimit, nonce, contractAddress,
+               DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
+              const transcationResult = {
+                  message: "Retry Transaction Result",
+                  documentId: params.documentId,
+                  documentIdByte32: docId,
+                  transaction: transaction,
+                  gasLimit: gasLimit,
+                  gasPrice: gasPrice
+              }
+              console.log(transcationResult);
+            }).catch((err) => {
+              const transactionException = {
+                message: "Retry Transaction Exception",
+                error: err,
+                documentId: params.documentId,
+                documentIdByte32: docId,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice
+              }
+              console.error(transactionException);
+
+            });
+
           });
         });
       });
