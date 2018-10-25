@@ -69,7 +69,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
   const requestId = params.requestId;
 
   console.log({
-    message: "Transcation Start",
+    message: "Transaction Start",
     documentIdByte32: docId,
     params: params
   });
@@ -105,7 +105,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
                 documentIdByte32: docId,
                 transaction: transaction,
                 gasLimit: gasLimit,
-                gasPrice: gasPrice
+                gasPrice: gasPrice,
+                nonce: nonce
             }
             console.log(transcationResult);
           }).catch((err) => {
@@ -115,12 +116,14 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
               documentId: params.documentId,
               documentIdByte32: docId,
               gasLimit: gasLimit,
-              gasPrice: gasPrice
+              gasPrice: gasPrice,
+              nonce: nonce
             }
             console.error(transactionException);
 
             const retryGasPrice = values[0] * 1.5;
             const retryGasLimit = values[1] * 1.5;
+            const retryNonce = nonce + 1;
             console.error({
               message: "Retry Transcation",
               retryGasPrice: retryGasPrice,
@@ -128,7 +131,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
               documentId: params.documentId,
               documentIdByte32: docId,
             });
-            sendTransaction(privateKey, myAddress, retryGasPrice, retryGasLimit, nonce, contractAddress,
+            sendTransaction(privateKey, myAddress, retryGasPrice, retryGasLimit, retryNonce, contractAddress,
                DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
               const transcationResult = {
                   message: "Retry Transaction Result",
@@ -136,7 +139,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
                   documentIdByte32: docId,
                   transaction: transaction,
                   gasLimit: retryGasLimit,
-                  gasPrice: retryGasPrice
+                  gasPrice: retryGasPrice,
+                  nonce: retryNonce
               }
               console.log(transcationResult);
             }).catch((err) => {
@@ -146,7 +150,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
                 documentId: params.documentId,
                 documentIdByte32: docId,
                 gasLimit: retryGasLimit,
-                gasPrice: retryGasPrice
+                gasPrice: retryGasPrice,
+                nonce: retryNonce
               }
               console.error(transactionException);
 
