@@ -124,12 +124,13 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
             const retryGasPrice = values[0] * 1.5;
             const retryGasLimit = values[1] * 1.5;
             const retryNonce = nonce + 1;
-            console.error({
-              message: "Retry Transcation",
+            console.log({
+              message: "Retry Transcation Start",
               retryGasPrice: retryGasPrice,
               retryGasLimit: retryGasLimit,
               documentId: params.documentId,
               documentIdByte32: docId,
+              nonce: retryNonce
             });
             sendTransaction(privateKey, myAddress, retryGasPrice, retryGasLimit, retryNonce, contractAddress,
                DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
@@ -278,7 +279,7 @@ function sendTransaction (privateKey, myAddress, gasPrice, gasAmount, nonce, con
         "data":contractABI ,
         "nonce": web3.utils.toHex(nonce)
     }
-    console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
+    //console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
     //creating tranaction via ethereumjs-tx
     var transaction = new Tx(rawTransaction);
     //signing transaction with private key
