@@ -119,8 +119,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
             }
             console.error(transactionException);
 
-            const gasPrice = values[0] * 1.5;
-            const gasLimit = values[1];
+            const retryGasPrice = values[0] * 1.5;
+            const retryGasLimit = values[1];
             console.error({
               message: "Retry Transcation",
               gasPrice: gasPrice,
@@ -128,7 +128,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
               documentId: params.documentId,
               documentIdByte32: docId,
             });
-            sendTransaction(privateKey, myAddress, gasPrice, gasLimit, nonce, contractAddress,
+            sendTransaction(privateKey, myAddress, retryGasPrice, retryGasLimit, nonce, contractAddress,
                DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).encodeABI()).then((transaction)=>{
               const transcationResult = {
                   message: "Retry Transaction Result",
