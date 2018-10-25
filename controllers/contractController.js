@@ -43,8 +43,7 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
   // smartcontract DocumentReg function confirmPageView(bytes32 _docId, uint _date, uint _pageView)
-  const params = JSON.parse(event.body);
-
+  const params = JSON.parse(event.Records[0].body);
 
   if(!params.documentId || isNaN(params.confirmViewCount) || isNaN(params.date)){
     console.log({message: "Invaild Parameter", params: params});
