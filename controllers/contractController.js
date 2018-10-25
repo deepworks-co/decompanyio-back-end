@@ -120,11 +120,11 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
             console.error(transactionException);
 
             const retryGasPrice = values[0] * 1.5;
-            const retryGasLimit = values[1];
+            const retryGasLimit = values[1] * 1.5;
             console.error({
               message: "Retry Transcation",
-              gasPrice: gasPrice,
-              gasLimit: gasLimit,
+              retryGasPrice: retryGasPrice,
+              retryGasLimit: retryGasLimit,
               documentId: params.documentId,
               documentIdByte32: docId,
             });
@@ -135,8 +135,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
                   documentId: params.documentId,
                   documentIdByte32: docId,
                   transaction: transaction,
-                  gasLimit: gasLimit,
-                  gasPrice: gasPrice
+                  gasLimit: retryGasLimit,
+                  gasPrice: retryGasPrice
               }
               console.log(transcationResult);
             }).catch((err) => {
@@ -145,8 +145,8 @@ module.exports.registYesterdayViewCount = (event, context, callback) => {
                 error: err,
                 documentId: params.documentId,
                 documentIdByte32: docId,
-                gasLimit: gasLimit,
-                gasPrice: gasPrice
+                gasLimit: retryGasLimit,
+                gasPrice: retryGasPrice
               }
               console.error(transactionException);
 
