@@ -66,6 +66,7 @@ provider:
 #    - exclude-me-dir/**
 deploymentBucket:
     name: dev-ca-deploys-blue-bottle-backend # Overwrite the default deployment bucket
+
 package:
    individually: true
 
@@ -74,6 +75,7 @@ exclude:
   - .env
 
 functions:
+
   documentRegist:
     handler: controllers/documentController.regist
     events:
@@ -172,8 +174,8 @@ functions:
               Access-Control-Allow-Origin: '*'
               Access-Control-Allow-Credentials: true
 
-  sqsRegistYesterdayViewCount:
-    handler: controllers/contractController.registYesterdayViewCount
+  registYesterdayViewCount:
+    handler: functions/sqs/registYesterdayViewCount/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     reservedConcurrency: 1
     events:
@@ -229,5 +231,7 @@ custom:
   serverless-offline:
     port: 4000
 
+
 plugins:
   - serverless-offline
+  - serverless-mocha-plugin
