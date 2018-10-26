@@ -11,7 +11,7 @@ Usage:
 */
 const childProcess = require('child_process')
 
-const nodejsImage = 'node:8.11.4'
+const nodejsImage = 'node:8.10'
 const innerWorkingDir = '/src'
 const dockerArgs = [
   'run', '-i',
