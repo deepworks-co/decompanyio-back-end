@@ -1,7 +1,7 @@
 'use strict';
 
 
-const contractUtil = require('../../commons/contract/util.js');
+const contractUtil = require('../../commons/contract/contractWapper.js');
 const viewCountDynamo = require('./viewCountDynamo.js');
 /*
 * registYesterdayViewCount

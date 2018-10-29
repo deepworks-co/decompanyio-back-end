@@ -11,13 +11,19 @@ const myAddress = "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15";//priv.address;
 const privateKey = Buffer.from("E8760C95C5B615D791DFC1FAB3C4B736217845D5E818CA2472BD2D8E34C8CAB6", 'hex');
 //contract abi is the array that you can get from the ethereum wallet or etherscan
 const contractABI = abis;
-const contractAddress ="0x78817aae0586d1d4ba61475deeecee63d3236b00";
+const contractAddress = parsed.networks["4"].address;//"0xf84cffd9aab0c98ea4df989193a0419dfa00b07e";
 //creating contract object
 const DocumentReg = new web3.eth.Contract(abis, contractAddress, {
   from: myAddress
 });
 
 exports.confirmPageViewContract = DocumentReg.methods.confirmPageView;
+
+exports.printContractInfo = () => {
+  console.log("contractAddress", contractAddress);
+  console.log(parsed.networks);
+  //console.log(parsed.abi);
+};
 
 exports.getPrepareTransaction = () => {
 
