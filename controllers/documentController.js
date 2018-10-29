@@ -27,6 +27,7 @@ try{
   });
 
   const accountId = parameter.username;
+  const nickname = parameter.nickname;
   const documentId = uuidv4().replace(/-/gi, "");
   const documentName = parameter.filename;
   const documentSize = parameter.size;
@@ -66,6 +67,7 @@ try{
           const putItem = {
             accountId:item.Key.accountId,
             documentId: item.Key.documentId,
+            nickname: nickname,
             documentName: documentName,
             documentSize: documentSize,
             ethAccount:ethAccount,

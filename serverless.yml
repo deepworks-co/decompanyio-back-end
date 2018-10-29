@@ -185,6 +185,11 @@ functions:
           enabled: true
 
 
+  contractInfo:
+    handler: functions/contract/contractInfo/index.handler
+
+
+
 #  cronViewCount:
 #    handler: batch/cronViewCount.handler
 #    events:
