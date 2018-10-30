@@ -13,13 +13,20 @@ describe('registYesterdayViewCount', () => {
   });
 
   it('implement tests here', () => {
-
+    //ae5bb91da55142f1b6aa038c04266c8c, 40cca9f5e8f34449bdaebe7516d9bdd7
     const queueData = JSON.stringify({
       "accountId": "ymggt@naver.com",
-      "documentId": "2ea2bfdc1829436da352a34d829ed172",
+      "documentId": "ae5bb91da55142f1b6aa038c04266c8c",
       "confirmViewCount": 5,
-      "date": 1540425600000
-    })
+      "date": 1540857600000,
+      });
+
+
+    const queueData2 = {
+      "accountId": "ymggt@naver.com",
+    "documentId": "40cca9f5e8f34449bdaebe7516d9bdd7",
+    "confirmViewCount": 104,
+    "date": 1540857600000 }
 
     const event = {
       Records: [ {

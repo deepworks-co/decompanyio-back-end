@@ -77,7 +77,7 @@ exports.errorCronViewCount = (documentId, blockchainTimestamp, exception) => {
 
     //confirmViewCountHist Key isNotExist create
     docClient.update({
-        TableName:table,
+        TableName: TABLE_NAME,
         Key:queryKey,
         UpdateExpression: "set #state = :state, exception = :exception, retry = :retry",
         ExpressionAttributeNames:{

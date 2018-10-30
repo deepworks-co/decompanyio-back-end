@@ -53,8 +53,9 @@ module.exports.handler = (event, context, callback) => {
     const nonce = values.nonce;
     const gasPrice = values.gasPrice;
 
-    contractUtil.getConfirmPageViewEstimateGas(documentIdByte32, date, registYesterdayViewCount).then((gasLimit) => {
-
+    contractUtil.getConfirmPageViewEstimateGas(documentIdByte32, date, registYesterdayViewCount).then((estimateGas) => {
+      const gasLimit = Math.round(estimateGas);
+      
       contractUtil.sendTransaction(gasPrice, gasLimit, nonce,
         contractUtil.confirmPageViewContract(documentIdByte32, date, registYesterdayViewCount).encodeABI()).then((transaction) => {
 
@@ -85,8 +86,8 @@ module.exports.handler = (event, context, callback) => {
         }
         console.error(transactionException);
 
-        const retryGasPrice = gasPrice * 1.5;
-        const retryGasLimit = gasLimit * 1.5;
+        const retryGasPrice = Math.round(gasPrice * 1.5);
+        const retryGasLimit = Math.round(gasLimit * 1.5);
         const retryNonce = nonce + 1;
         console.log({
           message: "Retry Transcation Start",
