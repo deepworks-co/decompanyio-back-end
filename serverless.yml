@@ -83,10 +83,6 @@ functions:
           path: api/document/regist
           method: post
           cors: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
   documentList:
     handler: controllers/documentController.list
@@ -95,10 +91,6 @@ functions:
           path: api/document/list
           method: post
           cors: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
   documentInfo:
     handler: controllers/documentController.info

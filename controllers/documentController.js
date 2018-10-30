@@ -164,6 +164,10 @@ module.exports.list = (event, context, callback) => {
     console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
     callback(null, {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       body: JSON.stringify({
         message: 'FAIL',
       })
