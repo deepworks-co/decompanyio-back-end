@@ -129,57 +129,46 @@ try{
 
 module.exports.list = (event, context, callback) => {
 
-let key = null;
-let email = null;
-console.log(event.queryStringParameters);
-if(event.queryStringParameters && event.queryStringParameters.nextPageKey) {
-  const strKey = Buffer.from(decodeURIComponent(event.queryStringParameters.nextPageKey), 'base64').toString();
-  const jsonKey= JSON.parse(strKey);
-  console.log("request nextPageKey", jsonKey);
-  if(jsonKey.nextPageKey){
-    key = jsonKey.nextPageKey;
-  } else {
-    key = jsonKey;
-  }
+  const body = JSON.parse(event.body);
 
-}
+  const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
+  const email = body.params.email;
+  const tag = body.params.tag;
 
-if(event.queryStringParameters && event.queryStringParameters.email) {
-  email = decodeURIComponent(event.queryStringParameters.email);
+  console.log(body.params);
 
-}
+  dynamo.queryDocumentByLatest({
+    nextPageKey: key,
+    email: email,
+    tag: tag
+  }).then((data) => {
 
-dynamo.queryDocumentByLatest({
-  nextPageKey: key,
-  email:email
-}).then((data) => {
+    //console.log("queryDocumentByLatest succeeded.", data);
 
-  //console.log("queryDocumentByLatest succeeded.", data);
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'SUCCESS',
+        resultList: data.Items?data.Items:[],
+        nextPageKey: data.LastEvaluatedKey,
+        Count: data.Count
+      }),
+    });
 
-  callback(null, {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      message: 'SUCCESS',
-      resultList: data.Items?data.Items:[],
-      nextPageKey: data.LastEvaluatedKey,
-      Count: data.Count
-    }),
+  }).catch((err) => {
+
+    console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
+    callback(null, {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'FAIL',
+      })
+    });
   });
-
-}).catch((err) => {
-
-  console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
-  callback(null, {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'FAIL',
-    })
-  });
-});
 };
 
 

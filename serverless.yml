@@ -93,7 +93,7 @@ functions:
     events:
       - http:
           path: api/document/list
-          method: get
+          method: post
           cors: true
           response:
             headers:

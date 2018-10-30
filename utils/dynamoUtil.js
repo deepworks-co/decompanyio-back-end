@@ -52,6 +52,7 @@ module.exports = {
     },
 
     makeQueryCondition : makeQueryCondition = (args) => {
+      console.log(args);
       let condition = {};
       let indexName = "state-created-index";
       let expresstion = null;
@@ -65,7 +66,6 @@ module.exports = {
         condition.attributeNames = ({
             "#accountId": "accountId",
             "#state": "state"
-
         });
         condition.attributeValues = ({
           ":accountId": args.email,
@@ -76,13 +76,26 @@ module.exports = {
 
         condition.indexName = "state-created-index";
         condition.expression = "#state = :state"
-        condition.attributeNames = ({
-            "#state": "state"
-        });
-        condition.attributeValues = ({
-          ":state": "CONVERT_COMPLETE"
-        });
+        if(args.tag){
+          condition.filterExpression = "contains(#tags, :tag)"
+          condition.attributeNames = ({
+              "#state": "state",
+              "#tags": "tags"
+          });
+          condition.attributeValues = ({
+            ":state": "CONVERT_COMPLETE",
+            ":tag": args.tag
+          });
 
+
+        } else {
+          condition.attributeNames = ({
+              "#state": "state"
+          });
+          condition.attributeValues = ({
+            ":state": "CONVERT_COMPLETE"
+          });
+        }
       }
 
       return condition;
@@ -104,7 +117,7 @@ module.exports = {
           FilterExpression: queryCondition.filterExpression,
           ExpressionAttributeNames: queryCondition.attributeNames,
           ExpressionAttributeValues: queryCondition.attributeValues,
-          Limit:20,
+          Limit:50,
           ExclusiveStartKey: key
       };
       console.log("dynamo query params", params);
