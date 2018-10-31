@@ -11,7 +11,7 @@ module.exports.handler = (event, context, callback) => {
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 
   // smartcontract DocumentReg function confirmPageView(bytes32 _docId, uint _date, uint _pageView)
-
+  console.log("event", event.Records[0].body);
   const params = JSON.parse(event.Records[0].body);
 
   if(!params.documentId || isNaN(params.confirmViewCount) || isNaN(params.date)) {
@@ -55,7 +55,7 @@ module.exports.handler = (event, context, callback) => {
 
     contractUtil.getConfirmPageViewEstimateGas(documentIdByte32, date, registYesterdayViewCount).then((estimateGas) => {
       const gasLimit = Math.round(estimateGas);
-      
+
       contractUtil.sendTransaction(gasPrice, gasLimit, nonce,
         contractUtil.confirmPageViewContract(documentIdByte32, date, registYesterdayViewCount).encodeABI()).then((transaction) => {
 
@@ -128,11 +128,13 @@ module.exports.handler = (event, context, callback) => {
       });
 
     }).catch((err) => {
-      console.error(err);
+      console.error("Exception getConfirmPageViewEstimateGas", err);
+      viewCountDynamo.errorCronViewCount(documentId, date, {message: "Exception getConfirmPageViewEstimateGas", error: err}, false);
     });
 
   }).catch((err) => { //error contractUtil.getPrepareTransaction
     console.error("getPrepareTransaction Error", err);
+    viewCountDynamo.errorCronViewCount(documentId, date, {message: "Exception getPrepareTransaction", error: err}, false);
   });
 
   return callback(null, {

@@ -65,15 +65,16 @@ try{
           console.log("신규 문서아이디 입니다.", documentId);
 
           const putItem = {
-            accountId:item.Key.accountId,
+            accountId: item.Key.accountId,
             documentId: item.Key.documentId,
             nickname: nickname,
             documentName: documentName,
             documentSize: documentSize,
-            ethAccount:ethAccount,
+            ethAccount: ethAccount,
             title: title,
             desc: desc,
-            tags:tags
+            tags: tags,
+            confirmViewCountHist: {}
           }
 
           dynamo.putDocument(putItem, (err, data) => {
