@@ -86,7 +86,7 @@ exports.errorCronViewCount = (documentId, blockchainTimestamp, exception, retry)
         },
         ExpressionAttributeValues:{
             ":state": "ERROR",
-            ":exception": exception,
+            ":exception": JSON.stringify(exception),
             ":retry": retry?true:false
         },
         ReturnValues:"UPDATED_NEW"

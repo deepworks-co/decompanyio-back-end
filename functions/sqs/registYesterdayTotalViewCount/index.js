@@ -43,13 +43,13 @@ module.exports.handler = (event, context, callback) => {
     created:created
   };
 
-  var params = {
+  const putItem = {
       TableName: TABLE_NAME,
       Item: putItem,
       ReturnConsumedCapacity: "TOTAL"
   };
 
-  docClient.put(params, (err, data) => {
+  docClient.put(putItem, (err, data) => {
     if(err){
       console.error("[ERROR Regist Yesterday Total View Count]", err);
     } else {
