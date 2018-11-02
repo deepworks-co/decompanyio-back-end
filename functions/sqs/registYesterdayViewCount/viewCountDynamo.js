@@ -67,7 +67,7 @@ exports.completeCronViewCount = (documentId, blockchainTimestamp, transactionRes
 
 }
 
-exports.errorCronViewCount = (documentId, blockchainTimestamp, exception) => {
+exports.errorCronViewCount = (documentId, blockchainTimestamp, exception, retry) => {
     // Increment an atomic counter
     const created = Date.now();//timestamp
     const queryKey = {

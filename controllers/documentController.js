@@ -239,6 +239,17 @@ module.exports.text = (event, context, callback) => {
 
   }).catch((err) => {
     console.err("Get Text Error", err);
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        text: "NO Text",
+        error:err
+      }),
+    });
   });
 
 
