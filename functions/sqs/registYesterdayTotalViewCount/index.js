@@ -35,17 +35,16 @@ module.exports.handler = (event, context, callback) => {
 
   // Increment an atomic counter
   const created = Date.now();//timestamp
-  const putItem = {
-    date: params.date,
-    totalViewCount: params.totalViewCount,
-    totalViewCountSquare: params.totalViewCountSquare,
-    count: params.count,
-    created:created
-  };
 
   const putItem = {
       TableName: TABLE_NAME,
-      Item: putItem,
+      Item: {
+        date: params.date,
+        totalViewCount: params.totalViewCount,
+        totalViewCountSquare: params.totalViewCountSquare,
+        count: params.count,
+        created:created
+      },
       ReturnConsumedCapacity: "TOTAL"
   };
 
