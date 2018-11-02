@@ -79,9 +79,10 @@ exports.errorCronViewCount = (documentId, blockchainTimestamp, exception, retry)
     docClient.update({
         TableName: TABLE_NAME,
         Key:queryKey,
-        UpdateExpression: "set #state = :state, exception = :exception, retry = :retry",
+        UpdateExpression: "set #state = :state, #exception = :exception, retry = :retry",
         ExpressionAttributeNames:{
           "#state": "state",
+          "#exception": "exception"
         },
         ExpressionAttributeValues:{
             ":state": "ERROR",
