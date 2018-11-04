@@ -186,7 +186,7 @@ functions:
           batch: 1
           enabled: true
 
-  SmartContractToDynamoVotesPerDocumentCurrent:
+  cronVotesPerDocumentCurrent:
     handler: functions/sqs/SmartContractToDynamoVotesPerDocumentCurrent/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     reservedConcurrency: 1
@@ -196,7 +196,7 @@ functions:
           batch: 1
           enabled: true
 
-  SmartContractToDynamoVotesPerDocumentYesterday:
+  cronVotesPerDocumentYesterday:
     handler: functions/sqs/SmartContractToDynamoVotesPerDocumentYesterday/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     reservedConcurrency: 1
