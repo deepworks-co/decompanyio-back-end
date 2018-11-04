@@ -89,6 +89,12 @@ exports.asciiToHex = function (str) {
 };
 
 
-module.exports.isExistsDocument = (documentId) => {
-  return DocumentReg.methods.contains().call(asciiToHex(documentId), {from: myAddress})
+exports.isExistsDocument = function (documentId) {
+  return DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: myAddress})
+};
+
+exports.getCuratorDepositOnDocument = function (documentId, blockchainTimestamp) {
+  //function getCuratorDepositOnDocument(bytes32 _docId, uint _dateMillis) public view returns (uint)
+  console.log(documentId, blockchainTimestamp);
+  return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
 };

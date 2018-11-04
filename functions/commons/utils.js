@@ -9,3 +9,7 @@ exports.getBlockchainTimestamp = (date) => {
   //console.log("getBlockchainTimestamp", d, new Date(d));
   return d;
 }
+
+exports.getNumber = (number, defaultNumber) => {
+    return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
+}
