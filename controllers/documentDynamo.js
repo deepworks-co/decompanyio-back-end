@@ -7,6 +7,7 @@ AWS.config.update({
 var docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
+const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
 
 module.exports = {
     getDocumentById : getDocumentById = (documentId) => {
@@ -121,6 +122,25 @@ module.exports = {
           ExclusiveStartKey: key
       };
       console.log("dynamo query params", params);
+      return docClient.query(params).promise();
+
+    },
+
+    queryTotalViewCountByToday : queryTotalViewCountByToday = (date) => {
+
+      var params = {
+          TableName: TABLE_NAME_TOTALVIEWCOUNT,
+          KeyConditionExpression: "#date = :date",
+          ExpressionAttributeNames: {
+            "#date": "date"
+          },
+          ExpressionAttributeValues: {
+            ":date": date
+          },
+          ScanIndexForward:false,
+          Limit:1
+      };
+      console.log("dynamo queryTotalViewCountByToday params", params);
       return docClient.query(params).promise();
 
     },

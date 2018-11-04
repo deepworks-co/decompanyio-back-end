@@ -1,8 +1,9 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
 
-const dynamo = require('../utils/dynamoUtil');
-const s3 = require('../utils/s3Util');
+const dynamo = require('./documentDynamo');
+const s3 = require('./documentS3');
+const utils = require('../functions/commons/utils');
 
 var AWS = require("aws-sdk");
 
@@ -35,6 +36,7 @@ try{
   const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
   const title = parameter.title;
   const desc = parameter.desc;
+  const category = parameter.category;
 
 
   var item = {
@@ -74,7 +76,8 @@ try{
             title: title,
             desc: desc,
             tags: tags,
-            confirmViewCountHist: {}
+            confirmViewCountHist: {},
+            category: category
           }
 
           dynamo.putDocument(putItem, (err, data) => {
@@ -138,13 +141,22 @@ module.exports.list = (event, context, callback) => {
 
   console.log(body.params);
 
-  dynamo.queryDocumentByLatest({
+
+
+  const promise1 = dynamo.queryDocumentByLatest({
     nextPageKey: key,
     email: email,
     tag: tag
-  }).then((data) => {
+  });
 
-    //console.log("queryDocumentByLatest succeeded.", data);
+  const date = utils.getBlockchainTimestamp(new Date());//today
+  const promise2 = dynamo.queryTotalViewCountByToday(date);
+
+
+  Promise.all([promise1, promise2]).then((datas) => {
+    const data = datas[0];
+    const data2 = datas[1];
+    console.log("queryDocumentByLatest succeeded.", data2);
 
     callback(null, {
       statusCode: 200,
@@ -156,7 +168,8 @@ module.exports.list = (event, context, callback) => {
         message: 'SUCCESS',
         resultList: data.Items?data.Items:[],
         nextPageKey: data.LastEvaluatedKey,
-        Count: data.Count
+        count: data.Count,
+        totalViewCountInfo: data2.Items?data2.Items[0]:null
       }),
     });
 
