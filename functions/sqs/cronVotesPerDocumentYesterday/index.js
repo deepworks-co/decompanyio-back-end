@@ -120,8 +120,7 @@ function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp
                 "#date": blockchainTimestamp
             },
             ExpressionAttributeValues:{
-                ":confirmVoteAmount": utils.getNumber(voteAmount),
-                ":zero": 0
+                ":confirmVoteAmount": utils.getNumber(voteAmount)
             },
             //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
             ReturnValues:"UPDATED_NEW"
