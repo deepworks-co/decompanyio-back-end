@@ -19,6 +19,21 @@ module.exports = {
 
   },
 
+  generateSignedUrl : generateSignedUrl = (accountId, documentId, ext) => {
+
+    const myKey = "FILE/" + accountId + "/" + documentId + "." + ext;
+    const signedUrlExpireSeconds = 60 * 5
+
+    const url = s3.getSignedUrl('getObject', {
+        Bucket: bucketName,
+        Key: myKey,
+        Expires: signedUrlExpireSeconds
+    })
+
+    console.log("Generate Signed Url", url)
+    return url;
+  }
+
 
 
 }

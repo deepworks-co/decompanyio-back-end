@@ -37,6 +37,7 @@ try{
   const title = parameter.title;
   const desc = parameter.desc;
   const category = parameter.category;
+  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
 
 
   var item = {
@@ -77,6 +78,7 @@ try{
             desc: desc,
             tags: tags,
             confirmViewCountHist: {},
+            confirmVoteAmountHist: {},
             category: category
           }
 
@@ -90,11 +92,13 @@ try{
                 message = err;
             } else {
                 console.log("PutItem succeeded:");
+                const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
                 statusCode = 200;
                 message = {
                   documentId: documentId,
                   accountId: accountId,
-                  message: message
+                  message: message,
+                  signedUrl: signedUrl
                 };
             }
 
@@ -197,7 +201,14 @@ const documentId = event.pathParameters.documentId;
 
 if(!documentId) return;
 
-dynamo.getDocumentById(documentId).then((data) => {
+const promise1 = dynamo.getDocumentById(documentId)
+
+const promise2 = dynamo.getDocumentsOrderByViewCount();
+
+Promise.all([promise1, promise2]).then((results) => {
+
+  const data = results[0];
+  const data2 = results[1];
   //for view count log
   console.log("VIEWLOG", data.Items[0].documentId);
 
@@ -210,6 +221,7 @@ dynamo.getDocumentById(documentId).then((data) => {
     body: JSON.stringify({
       message: 'SUCCESS',
       document: data.Items[0],
+      list: data2.Items
     }),
   });
 }).catch((err) => {

@@ -61,7 +61,7 @@ module.exports = {
       let attributeValues = null;
       if(args.email){
 
-        condition.indexName = "gi-accountId-created-index-copy";
+        condition.indexName = "accountId-created-index";
         condition.expression = "#accountId = :accountId"
         condition.filterExpression = "#state = :state"
         condition.attributeNames = ({
@@ -177,5 +177,29 @@ module.exports = {
 
 
         return docClient.put(params).promise();
+    },
+
+    getDocumentsOrderByViewCount : getDocumentsOrderByViewCount = (args) => {
+      let key = null;
+      if(args && args.nextPageKey){
+          key = args.nextPageKey;
+      }
+
+      var params = {
+          TableName: TABLE_NAME,
+          IndexName: "state-totalViewCount-index",
+          ScanIndexForward: false,
+          KeyConditionExpression: "#state = :state",
+          ExpressionAttributeNames: {
+            "#state": "state"
+          },
+          ExpressionAttributeValues: {
+            ":state": "CONVERT_COMPLETE"
+          },
+          Limit:5,
+          ExclusiveStartKey: key
+      };
+      console.log("getDocumentsOrderByViewCount params", params);
+      return docClient.query(params).promise();
     },
 }
