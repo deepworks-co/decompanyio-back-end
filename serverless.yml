@@ -189,7 +189,7 @@ functions:
   cronVotesPerDocumentCurrent:
     handler: functions/sqs/cronVotesPerDocumentCurrent/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
-    #reservedConcurrency: 1
+    reservedConcurrency: 1000
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
@@ -199,7 +199,7 @@ functions:
   cronVotesPerDocumentYesterday:
     handler: functions/sqs/cronVotesPerDocumentYesterday/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
-    #reservedConcurrency: 1
+    reservedConcurrency: 1000
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-YESTERDAYVOTES
