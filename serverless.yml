@@ -92,6 +92,14 @@ functions:
           method: post
           cors: true
 
+  curatorDocumentCuratingList:
+    handler: controllers/documentController.listCuratorDocument
+    events:
+      - http:
+          path: api/curator/document/list
+          method: post
+          cors: true
+
   documentInfo:
     handler: controllers/documentController.info
     events:

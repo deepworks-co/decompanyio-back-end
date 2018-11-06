@@ -126,6 +126,31 @@ module.exports = {
 
     },
 
+    queryDocumentByCurator : queryDocumentByCurator = (args) => {
+      let key = null;
+      if(args.nextPageKey){
+          key = args.nextPageKey;
+      }
+      const accountId = args.accountId;
+
+      var params = {
+          TableName: "DEV-CA-DOCUMENT-VOTE",
+          ScanIndexForward:false,
+          KeyConditionExpression: "#id = :id",
+          ExpressionAttributeNames: {
+            "#id": "id"
+          },
+          ExpressionAttributeValues: {
+            ":id": accountId
+          },
+          Limit:50,
+          ExclusiveStartKey: key
+      };
+      console.log("dynamo query params", params);
+      return docClient.query(params).promise();
+
+    },
+
     queryTotalViewCountByToday : queryTotalViewCountByToday = (date) => {
 
       var params = {
@@ -154,22 +179,21 @@ module.exports = {
         const voteAmount = item.voteAmount;
         const documentInfo = item.documentInfo;
         const documentId = documentInfo.documentId;
-        const transactionInfo = item.transactionInfo
-
-        if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount)){
+        const transactionInfo = item.transactionInfo;
+        const ethAccount = item.ethAccount;
+        if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
           return Promise.reject({msg:"Parameter is invaild", detail:item});
         }
-
-        const id = curatorId + "#" + timestamp;
 
         var params = {
             TableName: TABLE_NAME_VOTE,
             Item: {
-              id: id,
+              id: curatorId,
               created: timestamp,
               documentId: documentId,
               voteAmount: Number(voteAmount),
               documentInfo: documentInfo,
+              ethAccount: ethAccount,
               transactionInfo: transactionInfo
             },
             ReturnConsumedCapacity: "TOTAL"

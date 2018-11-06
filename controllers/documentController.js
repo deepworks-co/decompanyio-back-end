@@ -193,6 +193,54 @@ module.exports.list = (event, context, callback) => {
   });
 };
 
+module.exports.listCuratorDocument = (event, context, callback) => {
+
+  const body = JSON.parse(event.body);
+
+  const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
+  const accountId = body.params.accountId;
+  const tag = body.params.tag;
+
+  console.log(body.params);
+
+  const promise1 = dynamo.queryDocumentByCurator({
+    nextPageKey: key,
+    accountId: accountId,
+    tag: tag
+  }).then((data) => {
+
+    console.log("listCuratorDocument succeeded.", data);
+
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'SUCCESS',
+        resultList: data.Items?data.Items:[],
+        nextPageKey: data.LastEvaluatedKey,
+        count: data.Count
+      }),
+    });
+
+  }).catch((err) => {
+
+    console.error("Unable to listCuratorDocument. Error:", JSON.stringify(err, null, 2));
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'FAIL',
+      })
+    });
+  });
+};
+
 
 module.exports.info = (event, context, callback) => {
 
