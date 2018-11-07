@@ -21,7 +21,7 @@ module.exports.handler = (event, context, callback) => {
   const accountId = params.accountId;
   const blockchainTimestamp = utils.getBlockchainTimestamp(new Date()); //today
 
-  contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
+  contractUtil.calculateCuratorReward(documentId, blockchainTimestamp).then((voteAmount) => {
     console.log("SUCCESS current", blockchainTimestamp, documentId, voteAmount);
     updateVoteAmount(accountId, documentId, voteAmount)
   }).catch((err) => {
