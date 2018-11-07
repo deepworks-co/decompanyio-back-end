@@ -98,3 +98,9 @@ exports.getCuratorDepositOnDocument = function (documentId, blockchainTimestamp)
   console.log(documentId, blockchainTimestamp);
   return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
 };
+
+exports.calculateCuratorReward = function (curatorId, documentId, viewCount, totalViewCount) {
+  //function calculateCuratorReward(address _addr, bytes32 _docId, uint _pv, uint _tpvs) public view returns (uint)
+  console.log(curatorId, documentId, viewCount, totalViewCount);
+  return DocumentReg.methods.calculateCuratorReward(curatorId, this.asciiToHex(documentId), viewCount, totalViewCount).call({from: myAddress});
+};

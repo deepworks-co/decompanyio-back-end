@@ -201,7 +201,7 @@ functions:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
           batch: 1
-          enabled: true
+          enabled: false
 
   cronVotesPerDocumentYesterday:
     handler: functions/sqs/cronVotesPerDocumentYesterday/index.handler

@@ -19,75 +19,26 @@ module.exports.handler = (event, context, callback) => {
 
   const documentId = params.documentId;
   const accountId = params.accountId;
-  let yesterday = new Date(); /* 현재 */
-  yesterday.setDate(yesterday.getDate() - 1);
-  const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);//yesterday
+  const today = new Date(); /* 현재 */
+  //const yesterday = today.setDate(yesterday.getDate() - 1);
+  const blockchainTimestamp = utils.getBlockchainTimestamp(today);//today
 
   contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
-    console.log("SUCCESS yesterday", blockchainTimestamp, documentId, voteAmount);
+    console.log("SUCCESS today - 1 ~ today - 3", blockchainTimestamp, documentId, voteAmount);
+    updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp);
 
-    getSumConfirmVoteAmount(documentId, blockchainTimestamp).then((data) => {
-      updateVoteAmount(accountId, documentId, voteAmount + data, blockchainTimestamp);
-    }).catch((err) => {
-      console.error(err);
-    })
+    return callback(null, {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "done"
+      })
+    });
 
   }).catch((err) => {
     console.error(err);
   });
 
-
-
-  return callback(null, {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "done"
-    })
-  });
-
 };
-
-function getSumConfirmVoteAmount(documentId, blockchainTimestamp) {
-
-
-  return new Promise((resolve, reject) => {
-    const params = {
-        TableName: TABLE_NAME,
-        IndexName: "documentId-index",
-        KeyConditionExpression: "#documentId = :documentId",
-        ExpressionAttributeNames:{
-            "#documentId": "documentId"
-        },
-        ExpressionAttributeValues: {
-            ":documentId": documentId
-        }
-    }
-
-    docClient.query(params, (err, data) => {
-
-      if(err){
-        reject(err);
-      } else {
-        const result = data.Items[0];
-        console.log("result", result, result.confirmVoteAmountHist);
-        let now = 0;
-        if(result.confirmVoteAmountHist ) {
-
-          for(const k in result.confirmVoteAmountHist) {
-            const v = result.confirmVoteAmountHist[k];
-            console.log("loop", k, v);
-            if(k!=blockchainTimestamp){
-              now += v;
-            }
-          }
-
-        }
-        resolve(now);
-      }
-
-    });
-  });
-}
 
 function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp) {
     // Increment an atomic counter
