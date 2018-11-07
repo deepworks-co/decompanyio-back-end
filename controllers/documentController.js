@@ -79,7 +79,11 @@ try{
             tags: tags,
             confirmViewCountHist: {},
             confirmVoteAmountHist: {},
-            category: category
+            category: category,
+            confirmViewCount: 0,
+            confirmVoteAmount: 0,
+            totalViewCount: 0,
+            viewCount: 0
           }
 
           dynamo.putDocument(putItem, (err, data) => {
@@ -142,7 +146,7 @@ module.exports.list = (event, context, callback) => {
   const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
   const email = body.params.email;
   const tag = body.params.tag;
-
+  const path = body.params.path;
   console.log(body.params);
 
 
@@ -150,7 +154,9 @@ module.exports.list = (event, context, callback) => {
   const promise1 = dynamo.queryDocumentByLatest({
     nextPageKey: key,
     email: email,
-    tag: tag
+    tag: tag,
+    path: path
+
   });
 
   const date = utils.getBlockchainTimestamp(new Date());//today
@@ -181,7 +187,7 @@ module.exports.list = (event, context, callback) => {
 
     console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
     callback(null, {
-      statusCode: 200,
+      statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
@@ -200,6 +206,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
   const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
   const accountId = body.params.accountId;
   const tag = body.params.tag;
+  const path = body.params.path;
 
   console.log(body.params);
 

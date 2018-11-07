@@ -53,7 +53,7 @@ module.exports = {
     },
 
     makeQueryCondition : makeQueryCondition = (args) => {
-      console.log(args);
+      console.log("makeQueryCondition", args);
       let condition = {};
       let indexName = "state-created-index";
       let expresstion = null;
@@ -74,8 +74,17 @@ module.exports = {
         });
 
       } else {
+        console.log(args.path, args.path.lastIndexOf("populars"), args.path.lastIndexOf("featured"))
+        if(args.path && args.path.lastIndexOf("populars")>0){
+          console.log("populars", args.path);
+          condition.indexName = "state-totalViewCount-index";
+        } else if(args.path && args.path.lastIndexOf("featured")>0){
+          console.log("featured", args.path);
+          condition.indexName = "state-confirmVoteAmount-index";
+        } else {
+          condition.indexName = "state-created-index";
+        }
 
-        condition.indexName = "state-created-index";
         condition.expression = "#state = :state"
         if(args.tag){
           condition.filterExpression = "contains(#tags, :tag)"
