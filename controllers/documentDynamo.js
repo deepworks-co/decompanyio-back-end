@@ -74,7 +74,7 @@ module.exports = {
         });
 
       } else {
-        console.log(args.path, args.path.lastIndexOf("populars"), args.path.lastIndexOf("featured"))
+
         if(args.path && args.path.lastIndexOf("populars")>0){
           console.log("populars", args.path);
           condition.indexName = "state-totalViewCount-index";
