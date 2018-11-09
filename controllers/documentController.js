@@ -63,9 +63,9 @@ try{
         console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
 
         if(data == null || data.length > 0){
-          console.log("이미 해당 문서아이디가 존재 합니다.", documentId);
+          console.log("The Content ID already exists.", documentId);
         } else {
-          console.log("신규 문서아이디 입니다.", documentId);
+          console.log("The new Content ID", documentId);
 
           const putItem = {
             accountId: item.Key.accountId,
@@ -210,7 +210,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   console.log(body.params);
 
-  const promise1 = dynamo.queryDocumentByCurator({
+  dynamo.queryVotedDocumentByCurator({
     nextPageKey: key,
     accountId: accountId,
     tag: tag
@@ -236,13 +236,68 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
     console.error("Unable to listCuratorDocument. Error:", JSON.stringify(err, null, 2));
     callback(null, {
-      statusCode: 200,
+      statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
         message: 'FAIL',
+        err: err
+      })
+    });
+  });
+};
+
+module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
+
+  const body = JSON.parse(event.body);
+  const accountId = body.params.accountId;
+  const tag = body.params.tag;
+  const path = body.params.path;
+
+  console.log(body.params);
+
+  const promise1 = dynamo.queryTodayVotedDocumentByCurator({
+    accountId: accountId,
+  });
+
+  const today = new Date();
+  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
+
+  const promise2 = dynamo.queryTotalViewCountByToday(blockchainTimestamp);
+
+  Promise.all([promise1, promise2]).then((results) => {
+
+    console.log("listTodayVotedDocumentByCurator succeeded.", results);
+    const data = results[0];
+    const data2 = results[1];
+
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'SUCCESS',
+        todayVotedDocuments: data.Items?data.Items:[],
+        totalViewCount: data2.Items?data2.Items:[]
+      }),
+    });
+
+  }).catch((err) => {
+
+    console.error("Unable to listCuratorDocument. Error:", JSON.stringify(err, null, 2));
+    callback(null, {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'FAIL',
+        err: err
       })
     });
   });
@@ -345,9 +400,16 @@ module.exports.vote = (event, context, callback) => {
   console.log("params", params);
   if(!documentId) return;
 
-  dynamo.putVote(params).then((data) => {
+  const promise1 = dynamo.putVote(params);
+  const promise2 = dynamo.updateVoteHist(params);
+
+  Promise.all([promise1, promise2]).then((results) => {
     //for view count log
+    const data = results[0]; //putVote
+    const result2 = results[1]; //putVoteHist
+
     console.log("Put Vote", data);
+    console.log("Put VoteHist", result2)
 
     callback(null, {
       statusCode: 200,
@@ -359,8 +421,8 @@ module.exports.vote = (event, context, callback) => {
         message: 'SUCCESS',
       }),
     });
-  }).catch((err) => {
-    console.error("Vote error : ", err);
+  }).catch((errs) => {
+    console.error("Vote error : ", errs);
 
     callback(null, {
         statusCode: 200,
@@ -369,7 +431,7 @@ module.exports.vote = (event, context, callback) => {
           'Access-Control-Allow-Credentials': true,
         },
         body: JSON.stringify({
-          message: err
+          message: errs
         }),
     });
   });

@@ -21,7 +21,7 @@ module.exports.handler = (event, context, callback) => {
   const accountId = params.accountId;
   const today = new Date(); /* 현재 */
   //const yesterday = today.setDate(yesterday.getDate() - 1);
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);//today
+  const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(today);//today
 
   contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
     console.log("SUCCESS today - 1 ~ today - 3", blockchainTimestamp, documentId, voteAmount);

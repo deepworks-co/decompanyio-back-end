@@ -9,6 +9,8 @@ const TABLE_NAME = "DEV-CA-DOCUMENT";
 const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
 const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
 
+const utils = require('../functions/commons/utils.js');
+
 module.exports = {
     getDocumentById : getDocumentById = (documentId) => {
         var params = {
@@ -133,7 +135,7 @@ module.exports = {
 
     },
 
-    queryDocumentByCurator : queryDocumentByCurator = (args) => {
+    queryVotedDocumentByCurator : queryVotedDocumentByCurator = (args) => {
       let key = null;
       if(args.nextPageKey){
           key = args.nextPageKey;
@@ -141,19 +143,49 @@ module.exports = {
       const accountId = args.accountId;
 
       var params = {
-          TableName: "DEV-CA-DOCUMENT-VOTE",
+          TableName: "DEV-CA-VOTE-HIST",
+          IndexName: "curatorId-created-index",
           ScanIndexForward:false,
-          KeyConditionExpression: "#id = :id",
+          KeyConditionExpression: "#curatorId = :curatorId",
           ExpressionAttributeNames: {
-            "#id": "id"
+            "#curatorId": "curatorId"
           },
           ExpressionAttributeValues: {
-            ":id": accountId
+            ":curatorId": accountId
           },
           Limit:50,
           ExclusiveStartKey: key
       };
-      console.log("dynamo query params", params);
+      console.log("dynamo queryDocumentByCurator params", params);
+      return docClient.query(params).promise();
+
+    },
+
+    queryTodayVotedDocumentByCurator : queryTodayVotedDocumentByCurator = (args) => {
+      let key = null;
+      if(args.nextPageKey){
+          key = args.nextPageKey;
+      }
+      const accountId = args.accountId;
+      const today = new Date();
+      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
+      var params = {
+          TableName: "DEV-CA-VOTE-HIST",
+          IndexName: "curatorId-created-index",
+          ScanIndexForward:false,
+          KeyConditionExpression: "#curatorId = :curatorId and #created > :created",
+          ExpressionAttributeNames: {
+            "#curatorId": "curatorId",
+            "#created": "created"
+          },
+          ExpressionAttributeValues: {
+            ":curatorId": accountId,
+            ":created": blockchainTimestamp
+          },
+          Limit:50,
+          ExclusiveStartKey: key
+      };
+      console.log("dynamo queryTodayVotedDocumentByCurator params", params);
       return docClient.query(params).promise();
 
     },
@@ -178,7 +210,10 @@ module.exports = {
     },
 
     putVote : putVote = (item) => {
-        const timestamp = Date.now();
+      const timestamp = Date.now();
+      const today = new Date(timestamp);
+
+      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
         console.log("Put Vote Item", item, "timestamp", timestamp);
 
@@ -197,6 +232,7 @@ module.exports = {
             Item: {
               id: curatorId,
               created: timestamp,
+              blockchainTimestamp: blockchainTimestamp,
               documentId: documentId,
               voteAmount: Number(voteAmount),
               documentInfo: documentInfo,
@@ -208,6 +244,62 @@ module.exports = {
 
 
         return docClient.put(params).promise();
+    },
+
+    updateVoteHist : updateVoteHist = (item) => {
+      const timestamp = Date.now();
+      const today = new Date(timestamp);
+
+      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
+
+      console.log("Put Vote Item", item, "timestamp", timestamp, "blockchainTimestamp", blockchainTimestamp);
+
+      const curatorId = item.curatorId;
+      const voteAmount = Number(item.voteAmount);
+      const documentInfo = item.documentInfo;
+      const documentId = documentInfo.documentId;
+      const transactionInfo = item.transactionInfo;
+      const ethAccount = item.ethAccount;   //curator's ether account
+      const state = item.state;
+      if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
+        return Promise.reject({msg:"Parameter is invaild", detail:item});
+      }
+
+      const queryKey = {
+        id: blockchainTimestamp + "#" + documentId,
+        curatorId: curatorId
+      }
+
+      const updateItem = {
+          TableName: "DEV-CA-VOTE-HIST",
+          Key: queryKey,
+          UpdateExpression: "set #created=:created, #documentId=:documentId, \
+          #ethAccount = list_append(if_not_exists(#ethAccount, :empty_list), :ethAccount), \
+          #voteAmount = list_append(if_not_exists(#voteAmount, :empty_list), :voteAmount), \
+          #documentInfo = :documentInfo, #state = :state, #transactionInfo = :transactionInfo",
+          ExpressionAttributeNames: {
+              "#voteAmount": "voteAmount",
+              "#created": "created",
+              "#ethAccount": "ethAccount",
+              "#documentId": "documentId",
+              "#documentInfo": "documentInfo",
+              "#state": "state",
+              "#transactionInfo": "transactionInfo"
+          },
+          ExpressionAttributeValues: {
+              ":voteAmount": [Number(voteAmount)],
+              ":created": timestamp,
+              ":ethAccount": [ethAccount],
+              ":documentId": documentId,
+              ":empty_list": [],
+              ":documentInfo": documentInfo,
+              ":state": state?state:"INIT",
+              ":transactionInfo": transactionInfo?transactionInfo:{}
+          },
+          ReturnValues: "UPDATED_NEW"
+      }
+
+      return docClient.update(updateItem).promise();
     },
 
     getDocumentsOrderByViewCount : getDocumentsOrderByViewCount = (args) => {

@@ -19,7 +19,7 @@ module.exports.handler = (event, context, callback) => {
 
   const documentId = params.documentId;
   const accountId = params.accountId;
-  const blockchainTimestamp = utils.getBlockchainTimestamp(new Date()); //today
+  const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(new Date()); //today
 
   contractUtil.calculateCuratorReward(documentId, blockchainTimestamp).then((voteAmount) => {
     console.log("SUCCESS current", blockchainTimestamp, documentId, voteAmount);
