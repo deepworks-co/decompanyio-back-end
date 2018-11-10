@@ -51,7 +51,7 @@ function updateVoteAmount(accountId, documentId, voteAmount) {
         Key:queryKey,
         UpdateExpression: "set voteAmount = :voteAmount",
         ExpressionAttributeValues:{
-            ":voteAmount": utils.getNumber(voteAmount)
+            ":voteAmount": utils.getNumber(voteAmount, 0)
         },
         //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
         ReturnValues:"UPDATED_NEW"

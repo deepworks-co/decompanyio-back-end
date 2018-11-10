@@ -54,7 +54,7 @@ function updateAuthorReward(accountId, documentId, authorReward) {
         Key:queryKey,
         UpdateExpression: "set confirmAuthorReward = :authorReward",
         ExpressionAttributeValues:{
-            ":authorReward": utils.getNumber(authorReward)
+            ":authorReward": utils.getNumber(authorReward, 0)
         },
         //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
         ReturnValues:"UPDATED_NEW"
