@@ -19,11 +19,14 @@ module.exports.handler = (event, context, callback) => {
 
   const documentId = params.documentId;
   const accountId = params.accountId;
-  const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(new Date()); //today
+  //console.log(accountId, documentId);
+  const today = new Date();
+  //const yesterday = today.setDate(today.getDate() - 1);
 
-  contractUtil.calculateCuratorReward(documentId, blockchainTimestamp).then((voteAmount) => {
-    console.log("SUCCESS current", blockchainTimestamp, documentId, voteAmount);
-    updateVoteAmount(accountId, documentId, voteAmount)
+  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
+  contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((voteAmount) => {
+    console.log("SUCCESS Author Confirm Reward", blockchainTimestamp, documentId, voteAmount);
+    updateAuthorReward(accountId, documentId, voteAmount)
   }).catch((err) => {
     console.error(err);
   });
@@ -38,7 +41,7 @@ module.exports.handler = (event, context, callback) => {
 
 };
 
-function updateVoteAmount(accountId, documentId, voteAmount) {
+function updateAuthorReward(accountId, documentId, authorReward) {
     // Increment an atomic counter
     const queryKey = {
         "accountId": accountId,
@@ -49,9 +52,9 @@ function updateVoteAmount(accountId, documentId, voteAmount) {
     const params = {
         TableName:TABLE_NAME,
         Key:queryKey,
-        UpdateExpression: "set voteAmount = :voteAmount",
+        UpdateExpression: "set confirmAuthorReward = :authorReward",
         ExpressionAttributeValues:{
-            ":voteAmount": utils.getNumber(voteAmount)
+            ":authorReward": utils.getNumber(authorReward)
         },
         //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
         ReturnValues:"UPDATED_NEW"

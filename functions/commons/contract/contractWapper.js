@@ -84,6 +84,18 @@ exports.sendTransaction = (gasPrice, gasAmount, nonce, contractABI) => {
   })
 };
 
+exports.getAuthor3DayRewardOnDocument = function (accountId, documentId, blockchainTimestamp) {
+    //contract getAuthor3DayRewardOnDocument
+
+
+    //return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
+    const promise = DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
+      from: myAddress
+    });
+
+    return promise;
+  }
+
 exports.asciiToHex = function (str) {
   return web3.utils.asciiToHex(str);
 };
