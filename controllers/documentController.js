@@ -120,7 +120,7 @@ try{
         }
       }
     });
-} catch(e){
+  } catch(e){
     console.error(e);
     return callback(null, {
       statusCode: 500,
@@ -435,4 +435,65 @@ module.exports.vote = (event, context, callback) => {
         }),
     });
   });
+}
+
+module.exports.downloadFile = (event, context, callback) => {
+
+  //console.log(event);
+  const documentId = event.pathParameters.documentId;
+  const accountId = event.pathParameters.accountId;
+
+  if(!documentId || !accountId) {
+    callback(null, {
+        statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          message: "parameter is invaild"
+        }),
+      });
+
+    return;
+  }
+  docClient.get({
+      TableName: TABLE_NAME,
+      Key:{
+          "accountId": accountId,
+          "documentId": documentId
+      }
+  }, (err, data) => {
+
+    if(!err) {
+      console.log("GetItem", data);
+      const documentName = data.Item.documentName;
+      const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+      const signedUrl = s3.generateSignedUrl(data.Item.accountId, data.Item.documentId, ext);
+      callback(null, {
+          statusCode: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            downloadUrl: signedUrl,
+            document: data.Item
+          }),
+      });
+    } else {
+      callback(null, {
+          statusCode: 500,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            err: err
+          }),
+        });
+    }
+
+  });
+
 }

@@ -156,6 +156,18 @@ functions:
               Access-Control-Allow-Origin: '*'
               Access-Control-Allow-Credentials: true
 
+  documentDownload:
+    handler: controllers/documentController.downloadFile
+    events:
+      - http:
+          path: api/document/download/{accountId}/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
   contractGetDocuments:
     handler: controllers/contractController.getDocuments
     timeout: 300 # optional, in seconds, default is 6, 5min
