@@ -80,7 +80,7 @@ module.exports = {
         if(args.path && args.path.lastIndexOf("popular")>0){
           condition.indexName = "state-totalViewCount-index";
         } else if(args.path && args.path.lastIndexOf("featured")>0){
-          condition.indexName = "state-confirmVoteAmount-index";
+          condition.indexName = "state-cofirmAuthorReward-index";
         } else {
           condition.indexName = "state-created-index";
         }
