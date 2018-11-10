@@ -24,7 +24,7 @@ module.exports.handler = (event, context, callback) => {
   const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(today);//today
 
   contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
-    console.log("SUCCESS today - 1 ~ today - 3", blockchainTimestamp, documentId, voteAmount);
+    console.log("getCuratorDepositOnDocument", blockchainTimestamp, documentId, voteAmount);
     updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp);
 
     return callback(null, {
@@ -47,48 +47,30 @@ function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp
         "documentId": documentId
     }
 
-    //confirmViewCountHist Key isNotExist create
-    docClient.update({
+    const params = {
         TableName:TABLE_NAME,
         Key:queryKey,
-        UpdateExpression: "set confirmVoteAmountHist = if_not_exists(confirmVoteAmountHist, :emptyMap)",
-        ExpressionAttributeValues:{
-            ":emptyMap": {}
+        UpdateExpression: "set confirmVoteAmount = :confirmVoteAmount",
+        ExpressionAttributeNames: {
+            "#date": blockchainTimestamp
         },
+        ExpressionAttributeValues:{
+            ":confirmVoteAmount": utils.getNumber(voteAmount, 0)
+        },
+        //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
         ReturnValues:"UPDATED_NEW"
-    }, function(err, data) {
-        if(err){
+    };
+
+    docClient.update(params, function(err, data) {
+        if (err) {
             console.error(JSON.stringify({
-                message: "confirmVoteAmountHist init empty",
-                error:err})) ;
+                message: "Error updateVoteAmount to update item.",
+                params: params,
+                err: err
+            }));
+        } else {
+            console.log("SUCCESS updateVoteAmount UpdateItem", params);
         }
-
-        const params = {
-            TableName:TABLE_NAME,
-            Key:queryKey,
-            UpdateExpression: "set confirmVoteAmount = :confirmVoteAmount, confirmVoteAmountHist.#date = :confirmVoteAmount",
-            ExpressionAttributeNames: {
-                "#date": blockchainTimestamp
-            },
-            ExpressionAttributeValues:{
-                ":confirmVoteAmount": utils.getNumber(voteAmount, 0)
-            },
-            //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
-            ReturnValues:"UPDATED_NEW"
-        };
-
-        docClient.update(params, function(err, data) {
-            if (err) {
-                console.error(JSON.stringify({
-                    message: "Error updateVoteAmount to update item.",
-                    params: params,
-                    err: err
-                }));
-            } else {
-                console.log("SUCCESS updateVoteAmount UpdateItem", params);
-            }
-        });
-
     });
 
 

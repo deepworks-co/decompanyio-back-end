@@ -217,6 +217,7 @@ functions:
   cronVotesPerDocumentCurrent:
     handler: functions/sqs/cronVotesPerDocumentCurrent/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
+    reservedConcurrency: 10
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
@@ -226,6 +227,7 @@ functions:
   cronVotesPerDocumentYesterday:
     handler: functions/sqs/cronVotesPerDocumentYesterday/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
+    reservedConcurrency: 10
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-YESTERDAYVOTES
@@ -235,10 +237,11 @@ functions:
   cronAuthorConfirmReward:
     handler: functions/sqs/cronAuthorConfirmReward/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
+    reservedConcurrency: 10
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-AUTHORCONFIRMREWARD
-          batch: 100
+          batch: 1
           enabled: true
 
 

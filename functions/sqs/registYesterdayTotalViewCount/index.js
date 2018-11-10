@@ -11,8 +11,6 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 
   // smartcontract DocumentReg function confirmPageView(bytes32 _docId, uint _date, uint _pageView)
   console.log("event", event.Records[0].body);
@@ -51,21 +49,16 @@ module.exports.handler = (event, context, callback) => {
   docClient.put(putItem, (err, data) => {
     if(err){
       console.error("[ERROR Regist Yesterday Total View Count]", err);
+
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "done"
+        })
+      });
     } else {
       console.info("[SUCCESS Regist Yesterday Total View Count]", {params, data});
     }
-  });
-
-  return callback(null, {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      message: "done",
-      request: context.requestId
-    })
   });
 
 };
