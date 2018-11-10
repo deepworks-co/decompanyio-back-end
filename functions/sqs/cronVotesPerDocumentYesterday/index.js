@@ -50,9 +50,9 @@ function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp
     const params = {
         TableName:TABLE_NAME,
         Key:queryKey,
-        UpdateExpression: "set confirmVoteAmount = :confirmVoteAmount",
+        UpdateExpression: "set #confirmVoteAmount = :confirmVoteAmount",
         ExpressionAttributeNames: {
-            "#date": blockchainTimestamp
+            "#confirmVoteAmount": "confirmVoteAmount"
         },
         ExpressionAttributeValues:{
             ":confirmVoteAmount": utils.getNumber(voteAmount, 0)
