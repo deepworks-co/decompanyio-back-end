@@ -310,7 +310,7 @@ module.exports = {
 
       var params = {
           TableName: TABLE_NAME,
-          IndexName: "state-totalViewCount-index",
+          IndexName: "state-voteAmount-index",
           ScanIndexForward: false,
           KeyConditionExpression: "#state = :state",
           ExpressionAttributeNames: {
