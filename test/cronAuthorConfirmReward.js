@@ -14,20 +14,55 @@ describe('cronAuthorConfirmReward', () => {
 
   it('implement tests here', () => {
     //ae5bb91da55142f1b6aa038c04266c8c, 40cca9f5e8f34449bdaebe7516d9bdd7
-    const queueData = JSON.stringify({
-      "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
-      "documentId": "292d1a61262f45acb1ac161f5e5a541e"
-      });
+    const records = [
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+      JSON.stringify({
+        "accountId": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "documentId": "292d1a61262f45acb1ac161f5e5a541e"
+      }),
+    ];
 
     const event = {
-      Records: [ {
-          body: queueData
-        }
-      ]
+      Records: records
     }
 
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(1000 * 300);
 });

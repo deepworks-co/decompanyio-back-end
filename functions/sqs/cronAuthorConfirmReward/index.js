@@ -14,32 +14,72 @@ const utils = require('../../commons/utils.js');
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  console.log("event", event.Records.body);
-  const params = JSON.parse(event.Records[0].body);
+  console.log("event", event.Records);
+  const size = event.Records.length;
+  let promises = [];
+  for( const i in event.Records) {
 
-  const documentId = params.documentId;
-  const accountId = params.accountId;
-  //console.log(accountId, documentId);
-  const today = new Date();
-  //const yesterday = today.setDate(today.getDate() - 1);
+    const body = event.Records[i];
+    console.log("SQS message", i, body);
 
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-  contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((voteAmount) => {
-    console.log("SUCCESS Author Confirm Reward", blockchainTimestamp, documentId, voteAmount);
-    updateAuthorReward(accountId, documentId, voteAmount)
-  }).catch((err) => {
+    const params = JSON.parse(body);
+
+    const documentId = params.documentId;
+    const accountId = params.accountId;
+    //console.log(accountId, documentId);
+    const today = new Date();
+    //const yesterday = today.setDate(today.getDate() - 1);
+
+    const blockchainTimestamp = utils.getBlockchainTimestamp(today);
+
+    const promise = processAuthorReward(accountId, documentId, blockchainTimestamp);
+
+    promises.push(promise);
+
+  };
+  console.log("wati promises", promises.length)
+  Promise.all(promises).then((results) => {
+    console.log("SUCCESS Author Confirm Reward Results", results);
+    return callback(null, {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "done"
+      })
+    });
+  }).catch((errs) => {
     console.error(err);
+    return callback(errs, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "done"
+      })
+    });
   });
 
-
-  return callback(null, {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "done"
-    })
-  });
-
+  return ;
 };
+
+function processAuthorReward(accountId, documentId, blockchainTimestamp){
+  return new Promise((resolve, reject) => {
+    contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((voteAmount) => {
+      console.log("processAuthorReward", blockchainTimestamp, accountId, documentId, voteAmount);
+      updateAuthorReward(accountId, documentId, voteAmount).then((data)=>{
+        resolve({
+          message:"SUCCESS",
+          accountId: accountId,
+          documentId: documentId,
+          voteAmount: voteAmount,
+          blockchainTimestamp: blockchainTimestamp
+        });
+      }).catch((err) => {
+        reject(err);
+      })
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+
+}
 
 function updateAuthorReward(accountId, documentId, authorReward) {
     // Increment an atomic counter
@@ -60,17 +100,7 @@ function updateAuthorReward(accountId, documentId, authorReward) {
         ReturnValues:"UPDATED_NEW"
     };
 
-    docClient.update(params, function(err, data) {
-        if (err) {
-            console.error(JSON.stringify({
-                message: "Error updateVoteAmount to update item.",
-                params: params,
-                err: err
-            }));
-        } else {
-            console.log("SUCCESS updateVoteAmount UpdateItem", params);
-        }
-    });
+    return docClient.update(params).promise();
 
 
 
