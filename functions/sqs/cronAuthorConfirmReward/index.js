@@ -21,13 +21,14 @@ module.exports.handler = (event, context, callback) => {
 
     const body = event.Records[i];
 
-
     let params = null;
 
     if(typeof(body) ==  "string"){
       params = JSON.parse(body);
+      console.log("SQS message body string", body, typeof(body));
     } else {
       params = body;
+      console.log("SQS message body object", body, typeof(body));
     }
 
     const documentId = params.documentId;
