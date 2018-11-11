@@ -45,7 +45,7 @@ module.exports.handler = (event, context, callback) => {
     promises.push(promise);
 
   };
-  console.log("wati promises", promises.length)
+  console.log("waitting promises", promises.length)
   Promise.all(promises).then((results) => {
     console.log("SUCCESS Author Confirm Reward Results", results);
     return callback(null, {
@@ -55,7 +55,7 @@ module.exports.handler = (event, context, callback) => {
       })
     });
   }).catch((errs) => {
-    console.error(err);
+    console.error(errs);
     return callback(errs, {
       statusCode: 500,
       body: JSON.stringify({
@@ -69,14 +69,14 @@ module.exports.handler = (event, context, callback) => {
 
 function processAuthorReward(accountId, documentId, blockchainTimestamp, requestId){
   return new Promise((resolve, reject) => {
-    contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((voteAmount) => {
-      console.log("processAuthorReward", requestId, blockchainTimestamp, accountId, documentId, voteAmount);
-      updateAuthorReward(accountId, documentId, voteAmount).then((data)=>{
+    contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((reward) => {
+      console.log("processAuthorReward", requestId, blockchainTimestamp, accountId, documentId, reward);
+      updateAuthorReward(accountId, documentId, reward).then((data)=>{
         resolve({
           message:"SUCCESS",
           accountId: accountId,
           documentId: documentId,
-          voteAmount: voteAmount,
+          voteAmount: reward,
           blockchainTimestamp: blockchainTimestamp
         });
       }).catch((err) => {
