@@ -14,7 +14,7 @@ const utils = require('../../commons/utils.js');
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  console.log("event", event.Records[0].body);
+  console.log("event", event.Records.body);
   const params = JSON.parse(event.Records[0].body);
 
   const documentId = params.documentId;
