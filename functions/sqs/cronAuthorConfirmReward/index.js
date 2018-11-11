@@ -15,24 +15,32 @@ const utils = require('../../commons/utils.js');
 */
 module.exports.handler = (event, context, callback) => {
   console.log("event", event.Records);
-  const size = event.Records.length;
+  console.log("event size", event.Records.length)
   let promises = [];
   for( const i in event.Records) {
 
     const body = event.Records[i];
     console.log("SQS message", i, body);
 
-    const params = JSON.parse(body);
+    let params = null;
+
+    if(typeof(body) ==  "string"){
+      params = JSON.parse(body);
+    } else {
+      params = body;
+    }
 
     const documentId = params.documentId;
     const accountId = params.accountId;
+    const requestId = params.requestId;
     //console.log(accountId, documentId);
     const today = new Date();
+
     //const yesterday = today.setDate(today.getDate() - 1);
 
     const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
-    const promise = processAuthorReward(accountId, documentId, blockchainTimestamp);
+    const promise = processAuthorReward(accountId, documentId, blockchainTimestamp, requestId);
 
     promises.push(promise);
 
@@ -59,10 +67,10 @@ module.exports.handler = (event, context, callback) => {
   return ;
 };
 
-function processAuthorReward(accountId, documentId, blockchainTimestamp){
+function processAuthorReward(accountId, documentId, blockchainTimestamp, requestId){
   return new Promise((resolve, reject) => {
     contractUtil.getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp).then((voteAmount) => {
-      console.log("processAuthorReward", blockchainTimestamp, accountId, documentId, voteAmount);
+      console.log("processAuthorReward", requestId, blockchainTimestamp, accountId, documentId, voteAmount);
       updateAuthorReward(accountId, documentId, voteAmount).then((data)=>{
         resolve({
           message:"SUCCESS",
