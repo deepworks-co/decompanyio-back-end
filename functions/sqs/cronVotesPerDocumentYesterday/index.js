@@ -19,7 +19,7 @@ module.exports.handler = (event, context, callback) => {
   let promises = [];
   for( const i in event.Records) {
 
-    const body = event.Records[i];
+    const body = event.Records[i].body;
     console.log("SQS message", i, body);
 
     let params = null;
