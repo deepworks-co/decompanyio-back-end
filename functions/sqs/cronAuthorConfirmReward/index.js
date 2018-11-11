@@ -20,7 +20,7 @@ module.exports.handler = (event, context, callback) => {
   for( const i in event.Records) {
 
     const body = event.Records[i];
-    console.log("SQS message", i, body);
+
 
     let params = null;
 
@@ -33,13 +33,13 @@ module.exports.handler = (event, context, callback) => {
     const documentId = params.documentId;
     const accountId = params.accountId;
     const requestId = params.requestId;
-    //console.log(accountId, documentId);
     const today = new Date();
-
     //const yesterday = today.setDate(today.getDate() - 1);
-
     const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
+
+
+    console.log("SQS message Params", accountId, documentId, blockchainTimestamp, requestId);
     const promise = processAuthorReward(accountId, documentId, blockchainTimestamp, requestId);
 
     promises.push(promise);
@@ -51,15 +51,15 @@ module.exports.handler = (event, context, callback) => {
     return callback(null, {
       statusCode: 200,
       body: JSON.stringify({
-        message: "done"
+        message: "success"
       })
     });
   }).catch((errs) => {
-    console.error(errs);
-    return callback(errs, {
-      statusCode: 500,
+    console.error("ERROR Author Confirm Reward Results", errs);
+    return callback(null, {
+      statusCode: 200,
       body: JSON.stringify({
-        message: "done"
+        message: "error"
       })
     });
   });
