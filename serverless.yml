@@ -201,7 +201,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-          batch: 1
+          batchSize: 1
           enabled: true
 
   registYesterdayTotalViewCount:
@@ -211,7 +211,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-TOTALVIEWCOUNT
-          batch: 1
+          batchSize: 1
           enabled: true
 
   cronVotesPerDocumentCurrent:
@@ -221,7 +221,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
-          batch: 1
+          batchSize: 10
           enabled: false
 
   cronVotesPerDocumentYesterday:
@@ -231,7 +231,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-YESTERDAYVOTES
-          batch: 1
+          batchSize: 10
           enabled: true
 
   cronAuthorConfirmReward:
@@ -241,7 +241,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-AUTHORCONFIRMREWARD
-          batch: 1
+          batchSize: 10
           enabled: true
 
 

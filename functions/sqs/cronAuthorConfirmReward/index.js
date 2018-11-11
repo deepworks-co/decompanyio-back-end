@@ -64,7 +64,6 @@ module.exports.handler = (event, context, callback) => {
     });
   });
 
-  return ;
 };
 
 function processAuthorReward(accountId, documentId, blockchainTimestamp, requestId){

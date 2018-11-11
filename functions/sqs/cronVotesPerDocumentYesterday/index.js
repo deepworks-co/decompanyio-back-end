@@ -14,31 +14,76 @@ const utils = require('../../commons/utils.js');
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  console.log("event", event.Records[0].body);
-  const params = JSON.parse(event.Records[0].body);
+  console.log("event", event.Records);
+  console.log("event size", event.Records.length);
+  let promises = [];
+  for( const i in event.Records) {
 
-  const documentId = params.documentId;
-  const accountId = params.accountId;
-  const today = new Date(); /* 현재 */
-  //const yesterday = today.setDate(yesterday.getDate() - 1);
-  const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(today);//today
+    const body = event.Records[i];
+    console.log("SQS message", i, body);
 
-  contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
-    console.log("getCuratorDepositOnDocument", blockchainTimestamp, documentId, voteAmount);
-    updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp);
+    let params = null;
 
+    if(typeof(body) ==  "string"){
+      params = JSON.parse(body);
+    } else {
+      params = body;
+    }
+
+    const documentId = params.documentId;
+    const accountId = params.accountId;
+    const requestId = params.requestId;
+    const today = new Date(); /* 현재 */
+    //const yesterday = today.setDate(yesterday.getDate() - 1);
+    const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(today);//today
+
+    const promise = processCuratorReward(accountId, documentId, blockchainTimestamp, requestId);
+    promises.push(promise);
+
+  }
+
+
+  console.log("waitting promises", promises.length)
+  Promise.all(promises).then((results) => {
+    console.log("SUCCESS Curator Confirm Reward Results", results);
     return callback(null, {
       statusCode: 200,
       body: JSON.stringify({
         message: "done"
       })
     });
-
-  }).catch((err) => {
-    console.error(err);
+  }).catch((errs) => {
+    console.error(errs);
+    return callback(errs, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "done"
+      })
+    });
   });
 
+
 };
+
+function processCuratorReward(accountId, documentId, blockchainTimestamp, requestId){
+  return new Promise((resolve, reject) => {
+    contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
+      console.log("processCuratorReward", requestId, blockchainTimestamp, documentId, voteAmount);
+      updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp).then((data) => {
+        resolve({
+          accountId: accountId,
+          documentId: documentId,
+          voteAmount: voteAmount,
+          blockchainTimestamp: blockchainTimestamp
+        });
+      }).catch((err) => {
+        reject(err);
+      });
+    }).catch((err) => {
+      reject(err)
+    });
+  });
+}
 
 function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp) {
     // Increment an atomic counter
@@ -61,17 +106,7 @@ function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp
         ReturnValues:"UPDATED_NEW"
     };
 
-    docClient.update(params, function(err, data) {
-        if (err) {
-            console.error(JSON.stringify({
-                message: "Error updateVoteAmount to update item.",
-                params: params,
-                err: err
-            }));
-        } else {
-            console.log("SUCCESS updateVoteAmount UpdateItem", params);
-        }
-    });
+    return docClient.update(params).promise();
 
 
 }

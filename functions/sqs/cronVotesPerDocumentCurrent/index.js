@@ -38,6 +38,7 @@ module.exports.handler = (event, context, callback) => {
 
 };
 
+
 function updateVoteAmount(accountId, documentId, voteAmount) {
     // Increment an atomic counter
     const queryKey = {
