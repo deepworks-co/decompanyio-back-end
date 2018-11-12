@@ -11,7 +11,7 @@ const contractUtil = require('../../commons/contract/contractWapper.js');
 const utils = require('../../commons/utils.js');
 
 /*
-* registYesterdayViewCount
+* curator에 대한 오늘 예상 수익금(Deck) 배치 돌지않음 화면에서 실시간 처리예정
 */
 module.exports.handler = (event, context, callback) => {
   console.log("event.Records", event.Records.length, "records", event.Records);

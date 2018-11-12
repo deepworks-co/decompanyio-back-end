@@ -143,18 +143,15 @@ module.exports = {
       const accountId = args.accountId;
 
       var params = {
-          TableName: "DEV-CA-VOTE-HIST",
-          IndexName: "curatorId-created-index",
+          TableName: "DEV-CA-DOCUMENT-VOTE",
           ScanIndexForward:false,
-          KeyConditionExpression: "#curatorId = :curatorId",
+          KeyConditionExpression: "#id = :id",
           ExpressionAttributeNames: {
-            "#curatorId": "curatorId"
+            "#id": "id"
           },
           ExpressionAttributeValues: {
-            ":curatorId": accountId
-          },
-          Limit:50,
-          ExclusiveStartKey: key
+            ":id": accountId
+          }
       };
       console.log("dynamo queryDocumentByCurator params", params);
       return docClient.query(params).promise();
