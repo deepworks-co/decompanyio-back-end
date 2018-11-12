@@ -14,8 +14,7 @@ const utils = require('../../commons/utils.js');
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  console.log("event", event.Records);
-  console.log("event size", event.Records.length)
+  console.log("event.Records", event.Records.length, "records", event.Records);
   let promises = [];
   for( const i in event.Records) {
 

@@ -14,8 +14,8 @@ const utils = require('../../commons/utils.js');
 * registYesterdayViewCount
 */
 module.exports.handler = (event, context, callback) => {
-  console.log("event", event.Records);
-  console.log("event size", event.Records.length);
+  console.log("event.Records", event.Records.length, "records", event.Records);
+
   let promises = [];
   for( const i in event.Records) {
 
@@ -54,10 +54,10 @@ module.exports.handler = (event, context, callback) => {
     });
   }).catch((errs) => {
     console.error(errs);
-    return callback(errs, {
-      statusCode: 500,
+    return callback(null, {
+      statusCode: 200,
       body: JSON.stringify({
-        message: "done"
+        message: errs
       })
     });
   });
@@ -74,6 +74,7 @@ function processCuratorReward(accountId, documentId, blockchainTimestamp, reques
           accountId: accountId,
           documentId: documentId,
           voteAmount: voteAmount,
+          requestId: requestId,
           blockchainTimestamp: blockchainTimestamp
         });
       }).catch((err) => {
