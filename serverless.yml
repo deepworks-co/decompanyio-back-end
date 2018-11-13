@@ -224,8 +224,8 @@ functions:
           batchSize: 10
           enabled: false
 
-  cronVotesPerDocumentYesterday:
-    handler: functions/sqs/cronVotesPerDocumentYesterday/index.handler
+  cronDepositDocument:
+    handler: functions/sqs/cronDepositDocument/index.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     reservedConcurrency: 10
     events:

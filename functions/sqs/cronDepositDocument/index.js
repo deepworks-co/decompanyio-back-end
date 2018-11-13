@@ -37,7 +37,7 @@ module.exports.handler = (event, context, callback) => {
     //const yesterday = today.setDate(yesterday.getDate() - 1);
     const blockchainTimestamp = params.date?params.date:utils.getBlockchainTimestamp(today);//today
 
-    const promise = processCuratorReward(accountId, documentId, blockchainTimestamp, requestId);
+    const promise = processDepositDocument(accountId, documentId, blockchainTimestamp, requestId);
     promises.push(promise);
 
   }
@@ -65,7 +65,7 @@ module.exports.handler = (event, context, callback) => {
 
 };
 
-function processCuratorReward(accountId, documentId, blockchainTimestamp, requestId){
+function processDepositDocument(accountId, documentId, blockchainTimestamp, requestId){
   return new Promise((resolve, reject) => {
     contractUtil.getCuratorDepositOnDocument(documentId, blockchainTimestamp).then((voteAmount) => {
       console.log("processCuratorReward", requestId, blockchainTimestamp, documentId, voteAmount);

@@ -136,27 +136,67 @@ module.exports = {
     },
 
     queryVotedDocumentByCurator : queryVotedDocumentByCurator = (args) => {
-      let key = null;
-      if(args.nextPageKey){
-          key = args.nextPageKey;
-      }
-      const accountId = args.accountId;
 
-      var params = {
-          TableName: "DEV-CA-DOCUMENT-VOTE",
-          ScanIndexForward:false,
-          KeyConditionExpression: "#id = :id",
-          ExpressionAttributeNames: {
-            "#id": "id"
-          },
-          ExpressionAttributeValues: {
-            ":id": accountId
+      return new Promise((resolve, reject) => {
+
+        let key = null;
+        if(args.nextPageKey){
+            key = args.nextPageKey;
+        }
+        const accountId = args.accountId;
+
+        var params = {
+            TableName: "DEV-CA-DOCUMENT-VOTE",
+            ScanIndexForward:false,
+            KeyConditionExpression: "#id = :id",
+            ExpressionAttributeNames: {
+              "#id": "id"
+            },
+            ExpressionAttributeValues: {
+              ":id": accountId
+            }
+        };
+        console.log("dynamo queryDocumentByCurator params", params);
+
+        docClient.query(params).promise().then((data) => {
+          documentKeys = [];
+          keys = [];
+          //console.log(data);
+          data.Items.forEach((item) => {
+            const accountId = item.documentInfo.accountId;
+            const documentId = item.documentId;
+            if(!keys.includes(accountId + documentId)){
+              keys.push(accountId+documentId);
+              documentKeys.push({
+                accountId: accountId,
+                documentId: documentId
+              })
+            }
+
+          })
+          const params2 = {
+            "RequestItems": {
+              "DEV-CA-DOCUMENT": {
+                Keys: documentKeys
+              }
+            }
           }
-      };
-      console.log("dynamo queryDocumentByCurator params", params);
-      return docClient.query(params).promise();
+          docClient.batchGet(params2, function(err, result){
+            if(err){
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
+
+        }).catch((err) => {
+          reject(err);
+        });
+
+      });
 
     },
+
 
     queryTodayVotedDocumentByCurator : queryTodayVotedDocumentByCurator = (args) => {
       let key = null;
@@ -299,7 +339,7 @@ module.exports = {
       return docClient.update(updateItem).promise();
     },
 
-    getDocumentsOrderByViewCount : getDocumentsOrderByViewCount = (args) => {
+    getFeaturedDocuments : getFeaturedDocuments = (args) => {
       let key = null;
       if(args && args.nextPageKey){
           key = args.nextPageKey;
@@ -310,13 +350,17 @@ module.exports = {
           IndexName: "state-confirmVoteAmount-index",
           ScanIndexForward: false,
           KeyConditionExpression: "#state = :state",
+          FilterExpression: "#documentId <> :documentId",
           ExpressionAttributeNames: {
-            "#state": "state"
+            "#state": "state",
+            "#documentId": "documentId"
+
           },
           ExpressionAttributeValues: {
-            ":state": "CONVERT_COMPLETE"
+            ":state": "CONVERT_COMPLETE",
+            ":documentId": args.documentId
           },
-          Limit:5,
+          Limit:10,
           ExclusiveStartKey: key
       };
       console.log("getDocumentsOrderByViewCount params", params);

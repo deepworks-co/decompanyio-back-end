@@ -210,13 +210,19 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   console.log(body.params);
 
-  dynamo.queryVotedDocumentByCurator({
+  const promise1 = dynamo.queryVotedDocumentByCurator({
     nextPageKey: key,
     accountId: accountId,
     tag: tag
-  }).then((data) => {
+  })
 
-    console.log("listCuratorDocument succeeded.", data);
+  const date = utils.getBlockchainTimestamp(new Date());//today
+  const promise2 = dynamo.queryTotalViewCountByToday(date);
+
+  Promise.all([promise1, promise2]).then((results) => {
+    const data = results[0];
+    const resultList = data.Responses["DEV-CA-DOCUMENT"];
+    console.log("listCuratorDocument succeeded.", data, resultList);
 
     callback(null, {
       statusCode: 200,
@@ -226,15 +232,16 @@ module.exports.listCuratorDocument = (event, context, callback) => {
       },
       body: JSON.stringify({
         message: 'SUCCESS',
-        resultList: data.Items?data.Items:[],
+        resultList: resultList?resultList:[],
         nextPageKey: data.LastEvaluatedKey,
-        count: data.Count
+        count: data.Count,
+        totalViewCountInfo: results[1].Items[0]
       }),
     });
 
   }).catch((err) => {
 
-    console.error("Unable to listCuratorDocument. Error:", JSON.stringify(err, null, 2));
+    console.error("Unable to listCuratorDocument. Error:", err);
     callback(null, {
       statusCode: 500,
       headers: {
@@ -313,12 +320,13 @@ if(!documentId) return;
 
 const promise1 = dynamo.getDocumentById(documentId)
 
-const promise2 = dynamo.getDocumentsOrderByViewCount();
+const promise2 = dynamo.getFeaturedDocuments({documentId:documentId});
 
 Promise.all([promise1, promise2]).then((results) => {
 
   const data = results[0];
   const data2 = results[1];
+  const featuredList = data2.Items.length<5?data2.Items.length:data2.Items.slice(0, 4);
   //for view count log
   console.log("VIEWLOG", data.Items[0].documentId);
 
@@ -331,7 +339,7 @@ Promise.all([promise1, promise2]).then((results) => {
     body: JSON.stringify({
       message: 'SUCCESS',
       document: data.Items[0],
-      list: data2.Items
+      list: featuredList
     }),
   });
 }).catch((err) => {

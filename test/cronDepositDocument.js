@@ -6,9 +6,9 @@
 console.log("current path", __dirname, process.cwd());
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('cronVotesPerDocumentYesterday', '/functions/sqs/cronVotesPerDocumentYesterday/index.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('cronDepositDocument', '/functions/sqs/cronDepositDocument/index.js', 'handler');
 
-describe('SmartContractToDynamoVotesPerDocumentYesterday', () => {
+describe('cronDepositDocument', () => {
   before((done) => {
     done();
   });
