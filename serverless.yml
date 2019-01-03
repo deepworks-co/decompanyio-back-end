@@ -76,6 +76,10 @@ exclude:
   - .env
 
 functions:
+  oraclizeController:
+    handler: controllers/oraclizeController/index.handler
+    events:
+      - http: get /api/oraclize/viewcount
   documentRegist:
     handler: controllers/documentController.regist
     events:
