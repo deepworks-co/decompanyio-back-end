@@ -17,6 +17,9 @@ sudo node ../docker-npm.js rebuild
 # Deploy
 > sls deploy
 
+# deploy
+sls deploy list
+
 # Test
 > sls invoke test -f {FunctionName}
 > sls invoke test -f registYesterdayViewCount
