@@ -3,8 +3,13 @@ const uuidv4 = require('uuid/v4');
 module.exports.handler = (event, context, callback) => {
   const resultList = [];
   let yyyymmdd = getYYYYMMDD();
+  let c = 1;
   if(event.queryStringParameters && event.queryStringParameters.d){
     yyyymmdd = event.queryStringParameters.d;
+  }
+
+  if(event.queryStringParameters && event.queryStringParameters.c){
+    c = event.queryStringParameters.c;
   }
 
   for(var i=0;i<500;i++){
@@ -16,7 +21,11 @@ module.exports.handler = (event, context, callback) => {
 
 
   const result  = {};
-  result[yyyymmdd] = resultList;
+  result[yyyymmdd] = {
+    n: (Number(c)+1) + "",
+    c: c,
+    resultList: resultList
+  };
   const response = {
     statusCode: 200,
     body: JSON.stringify(result),
