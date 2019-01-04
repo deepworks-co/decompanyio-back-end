@@ -1,7 +1,7 @@
 # decompanyio-back-end
 Serverless Project
 
-# Dependencies
+# Setup Dependencies
 > npm install --save-dev serverless-mocha-plugin
 > npm install --save-dev serverless-offline
 > npm install web3
@@ -9,6 +9,11 @@ Serverless Project
 
 # Running Offline
 > sls offline start
+
+# Build using docker
+cd {project_dir}
+sudo node ../docker-npm.js rebuild
+
 # Deploy
 > sls deploy
 
