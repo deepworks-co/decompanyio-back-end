@@ -1,7 +1,8 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
 
-const dynamo = require('./documentDynamo');
+//const dynamo = require('./documentDynamo');
+const dynamo = require('./documentMongoDB');
 const s3 = require('./documentS3');
 const utils = require('../functions/commons/utils');
 
@@ -143,17 +144,14 @@ module.exports.list = (event, context, callback) => {
 
   const body = JSON.parse(event.body);
 
-  const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
-  const email = body.params.email;
+  const pageKey = body.params.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.pageKey), 'base64').toString()):null;
+  const accountId = body.params.accountId;
   const tag = body.params.tag;
   const path = body.params.path;
-  console.log(body.params);
-
-
 
   const promise1 = dynamo.queryDocumentByLatest({
-    nextPageKey: key,
-    email: email,
+    pageKey: pageKey,
+    accountId: accountId,
     tag: tag,
     path: path
 
@@ -164,9 +162,10 @@ module.exports.list = (event, context, callback) => {
 
 
   Promise.all([promise1, promise2]).then((datas) => {
-    const data = datas[0];
-    const data2 = datas[1];
-    console.log("queryDocumentByLatest succeeded.", data2);
+    const resultList = datas[0].resultList?datas[0].resultList:[];
+    const pageNo = !isNaN(datas[0].pageNo) && datas[0].pageNo>0? datas[0].pageNo : 1;
+    const pageKey = datas[0].pageKey;
+    const totalViewCountInfo = datas[1];
 
     callback(null, {
       statusCode: 200,
@@ -175,18 +174,20 @@ module.exports.list = (event, context, callback) => {
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
+        success: true,
         message: 'SUCCESS',
-        resultList: data.Items?data.Items:[],
-        nextPageKey: data.LastEvaluatedKey,
-        count: data.Count,
-        totalViewCountInfo: data2.Items?data2.Items[0]:null
+        resultList: resultList,
+        pageKey: pageKey,
+        count: resultList.length,
+        totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
       }),
     });
 
   }).catch((err) => {
 
-    console.error("Unable to queryDocumentByLatest. Error:", JSON.stringify(err, null, 2));
+    console.error("Exception queryDocumentByLatest.", err);
     callback(null, {
+      success: false,
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -203,7 +204,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   const body = JSON.parse(event.body);
 
-  const key = body.params.nextPageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.nextPageKey), 'base64').toString()):null;
+  const pageKey = body.params.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.pageKey), 'base64').toString()):null;
   const accountId = body.params.accountId;
   const tag = body.params.tag;
   const path = body.params.path;
@@ -211,7 +212,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
   console.log(body.params);
 
   const promise1 = dynamo.queryVotedDocumentByCurator({
-    nextPageKey: key,
+    pageKey: pageKey,
     accountId: accountId,
     tag: tag
   })
@@ -220,9 +221,11 @@ module.exports.listCuratorDocument = (event, context, callback) => {
   const promise2 = dynamo.queryTotalViewCountByToday(date);
 
   Promise.all([promise1, promise2]).then((results) => {
-    const data = results[0];
-    const resultList = data.Responses["DEV-CA-DOCUMENT"];
-    console.log("listCuratorDocument succeeded.", data, resultList);
+    console.log("listCuratorDocument succeeded.", JSON.stringify(results));
+    const result = results[0];
+    const resultList = result.resultList?result.resultList:[];
+    const totalViewCountInfo = results[1]
+
 
     callback(null, {
       statusCode: 200,
@@ -231,11 +234,12 @@ module.exports.listCuratorDocument = (event, context, callback) => {
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
+        success: true,
         message: 'SUCCESS',
-        resultList: resultList?resultList:[],
-        nextPageKey: data.LastEvaluatedKey,
-        count: data.Count,
-        totalViewCountInfo: results[1].Items[0]
+        resultList: resultList,
+        pageKey: result.pageKey,
+        count: resultList.length,
+        totalViewCountInfo: totalViewCountInfo
       }),
     });
 
@@ -243,6 +247,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
     console.error("Unable to listCuratorDocument. Error:", err);
     callback(null, {
+      success: false,
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -313,45 +318,47 @@ module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
 
 module.exports.info = (event, context, callback) => {
 
-//console.log(event);
-const documentId = event.pathParameters.documentId;
+  //console.log(event);
+  const documentId = event.pathParameters.documentId;
 
-if(!documentId) return;
+  if(!documentId) return;
 
-const promise1 = dynamo.getDocumentById(documentId)
+  const promise1 = dynamo.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
 
-const promise2 = dynamo.getFeaturedDocuments({documentId:documentId});
+  const promise2 = dynamo.getFeaturedDocuments({documentId: documentId});
 
-Promise.all([promise1, promise2]).then((results) => {
+  Promise.all([promise1, promise2]).then((results) => {
 
-  const data = results[0];
-  const data2 = results[1];
-  const featuredList = data2.Items.length<5?data2.Items.length:data2.Items.slice(0, 4);
-  //for view count log
-  console.log("VIEWLOG", data.Items[0].documentId);
+    const document = results[0];
+    const featuredList = results[1];
+    //console.log("query ok", results);
 
-  callback(null, {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      message: 'SUCCESS',
-      document: data.Items[0],
-      list: featuredList
-    }),
-  });
-}).catch((err) => {
-  console.error("error : ", err);
 
-  callback(null, {
+    callback(null, {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
+        success: true,
+        message: 'SUCCESS',
+        document: document,
+        featuredList: featuredList
+      }),
+    });
+
+  }).catch((err) => {
+    console.error("error : ", err);
+
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        success: false,
         message: err
       }),
     });
