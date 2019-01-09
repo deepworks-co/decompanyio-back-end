@@ -19,122 +19,95 @@ const defaultHeader = {
   stage: process.env.stage
 }
 
-module.exports.regist = (event, context, callback) => {
-try{
-  const parameter = JSON.parse(event.body).data;
-  console.log(parameter, parameter);
-  if(!parameter || !parameter.username) return callback(null, {
-    statusCode: 203,
-    body: JSON.stringify("parameter or user is invalid")
-  });
+module.exports.regist = async (event, context, callback) => {
+  try{
+    const parameter = JSON.parse(event.body).data;
+    console.log("parameter", parameter);
+    if(!parameter || !parameter.username) return callback(null, {
+      statusCode: 203,
+      body: JSON.stringify("parameter or user is invalid")
+    });
 
-  const accountId = parameter.username;
-  const nickname = parameter.nickname;
-  const documentId = uuidv4().replace(/-/gi, "");
-  const documentName = parameter.filename;
-  const documentSize = parameter.size;
-  const tags = parameter.tags?parameter.tags:[];//document tags
-  const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
-  const title = parameter.title;
-  const desc = parameter.desc;
-  const category = parameter.category;
-  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+    const accountId = parameter.username;
+    const nickname = parameter.nickname;
+    const documentId = uuidv4().replace(/-/gi, "");
+    const documentName = parameter.filename;
+    const documentSize = parameter.size;
+    const tags = parameter.tags?parameter.tags:[];//document tags
+    const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
+    const title = parameter.title;
+    const desc = parameter.desc;
+    const category = parameter.category;
+    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
 
+    const document = await dynamo.getDocumentById(documentId);
 
-  var item = {
-      TableName: TABLE_NAME,
-      Key:{
-          "accountId": accountId,
-          "documentId": documentId
-      }
-  };
-
-  docClient.get(item, (err, data) => {
-    if (err) {
-          console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-          return callback(null, {
-            statusCode: 500,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Credentials': true,
-            },
-            body: JSON.stringify(err, null, 2)
-          });
+    if(document){
+      throw new Error("The Document ID already exists. retry..." + JSON.stringify(document));
     } else {
-        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+      console.log("The new Document ID", documentId);
 
-        if(data == null || data.length > 0){
-          console.log("The Content ID already exists.", documentId);
-        } else {
-          console.log("The new Content ID", documentId);
-
-          const putItem = {
-            accountId: item.Key.accountId,
-            documentId: item.Key.documentId,
-            nickname: nickname,
-            documentName: documentName,
-            documentSize: documentSize,
-            ethAccount: ethAccount,
-            title: title,
-            desc: desc,
-            tags: tags,
-            confirmViewCountHist: {},
-            confirmVoteAmountHist: {},
-            category: category,
-            confirmViewCount: 0,
-            confirmVoteAmount: 0,
-            totalViewCount: 0,
-            viewCount: 0
-          }
-
-          dynamo.putDocument(putItem, (err, data) => {
-
-            let statusCode = 200;
-            let message = "SUCCESS";
-            if (err) {
-                console.error("PutItem Error JSON:", JSON.stringify(err, null, 2));
-                statusCode = 500;
-                message = err;
-            } else {
-                console.log("PutItem succeeded:");
-                const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
-                statusCode = 200;
-                message = {
-                  documentId: documentId,
-                  accountId: accountId,
-                  message: message,
-                  signedUrl: signedUrl
-                };
-            }
-
-            return callback(null, {
-              statusCode: statusCode,
-              headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': true,
-              },
-              body: JSON.stringify(message)
-            });
-
-          });
-
-        }
+      const putItem = {
+        accountId: accountId,
+        documentId: documentId,
+        nickname: nickname,
+        documentName: documentName,
+        documentSize: documentSize,
+        ethAccount: ethAccount,
+        title: title,
+        desc: desc,
+        tags: tags,
+        confirmViewCountHist: {},
+        confirmVoteAmountHist: {},
+        category: category,
+        confirmViewCount: 0,
+        confirmVoteAmount: 0,
+        totalViewCount: 0,
+        viewCount: 0
       }
-    });
+
+      const result = await dynamo.putDocument(putItem);
+      
+      if(result){
+        console.log("PutItem succeeded:", result);
+        const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
+        const payload = {
+          documentId: documentId,
+          accountId: accountId,
+          message: "SUCCESS",
+          signedUrl: signedUrl
+        };
+
+
+        return callback(null, {
+          success: true,
+          statusCode: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        throw new Error("PutItme Fail " + JSON.stringify(putItem));
+      }
+
+    }
+  
   } catch(e){
-    console.error(e);
-    return callback(null, {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify(e)
-    });
-}
 
-
-
+      console.error("regist exception", e);
+      return callback(null, {
+        success: false,
+        statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify(e)
+      });
+  }
+  
 // Use this code if you don't use the http event with the LAMBDA-PROXY integration
 // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 };

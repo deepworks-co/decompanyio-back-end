@@ -9,34 +9,23 @@ const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/deco
 
 module.exports = {
     getDocumentById : getDocumentById = async (documentId) => {
-      let wapper = new MongoWapper(connectionString);
+      const wapper = new MongoWapper(connectionString);
       return await wapper.findOne(TABLE_NAME, {documentId: documentId});
     },
 
-    putDocument : putDocument = (item, callback) => {
+    putDocument : putDocument = async (item, callback) => {
         const timestamp = Date.now();
-
-        console.log("Put Document Item", item);
-        console.log("timestamp", timestamp);
+        /* default value */
         const mergedItem = {
           "created": Number(timestamp),
           "state": "NOT_CONVERT",
           "viewCount": 0
         };
+        const params = Object.assign(mergedItem, item)
+        console.log("Save New Item", params);
 
-        var params = {
-            TableName: TABLE_NAME,
-            Item: Object.assign(mergedItem, item),
-            ReturnConsumedCapacity: "TOTAL"
-        };
-
-        console.log("Put Item", params);
-
-        docClient.put(params, (err, data) => {
-          if(err) console.error("[SERVER ERROR]", err);
-
-          callback(err, data);
-        });
+        const wapper = new MongoWapper(connectionString);
+        return await wapper.insert(TABLE_NAME, params);
     },
 
     queryDocumentByLatest : queryDocumentByLatest = async (args) => {
@@ -129,36 +118,6 @@ module.exports = {
       };
     },
 
-
-    queryTodayVotedDocumentByCurator : queryTodayVotedDocumentByCurator = (args) => {
-      let key = null;
-      if(args.nextPageKey){
-          key = args.nextPageKey;
-      }
-      const accountId = args.accountId;
-      const today = new Date();
-      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-      var params = {
-          TableName: "DEV-CA-VOTE-HIST",
-          IndexName: "curatorId-created-index",
-          ScanIndexForward:false,
-          KeyConditionExpression: "#curatorId = :curatorId and #created > :created",
-          ExpressionAttributeNames: {
-            "#curatorId": "curatorId",
-            "#created": "created"
-          },
-          ExpressionAttributeValues: {
-            ":curatorId": accountId,
-            ":created": blockchainTimestamp
-          },
-          Limit:50,
-          ExclusiveStartKey: key
-      };
-      console.log("dynamo queryTodayVotedDocumentByCurator params", params);
-      return docClient.query(params).promise();
-
-    },
-
     queryTotalViewCountByToday : queryTotalViewCountByToday = async (date) => {
       const query = {
         date: date
@@ -188,23 +147,41 @@ module.exports = {
           return Promise.reject({msg:"Parameter is invaild", detail:item});
         }
 
-        var params = {
-            TableName: TABLE_NAME_VOTE,
-            Item: {
-              id: curatorId,
-              created: timestamp,
-              blockchainTimestamp: blockchainTimestamp,
-              documentId: documentId,
-              voteAmount: Number(voteAmount),
-              documentInfo: documentInfo,
-              ethAccount: ethAccount,
-              transactionInfo: transactionInfo
-            },
-            ReturnConsumedCapacity: "TOTAL"
-        };
+        const item = {
+          id: curatorId,
+          created: timestamp,
+          blockchainTimestamp: blockchainTimestamp,
+          documentId: documentId,
+          voteAmount: Number(voteAmount),
+          ethAccount: ethAccount,
+          transactionInfo: transactionInfo
+        }
+        console.log("new vote", item);
+        const wapper = new MongoWapper(connectionString);
+        return await wapper.insert(TABLE_NAME_VOTE, item);
+        //return docClient.put(params).promise();
+    },
+
+    queryTodayVotedDocumentByCurator : queryTodayVotedDocumentByCurator = async (args) => {
+      let key = null;
+      if(args.nextPageKey){
+          key = args.nextPageKey;
+      }
+      const accountId = args.accountId;
+      const today = new Date();
+      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
 
-        return docClient.put(params).promise();
+      const query = {
+        curatorId: accountId,
+        created: {$gte: blockchainTimestamp}
+        
+      }
+      console.log("mongo queryTodayVotedDocumentByCurator qeury", qeury);
+
+      const wapper = new MongoWapper(connectionString);
+      const result = await wapper.findAll("DEV-CA-VOTE-HIST", query);
+
     },
 
     updateVoteHist : updateVoteHist = (item) => {
