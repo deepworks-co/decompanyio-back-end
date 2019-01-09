@@ -1,15 +1,12 @@
-const AWS = require('aws-sdk');
-AWS.config.update({
-  region: "us-west-1",
-});
-const s3 = new AWS.S3();
-const sqs = new AWS.SQS();
+const MongoWapper = require('../libs/mongo/MongoWapper.js');
+const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
 
 const TABLE_NAME = "DEV-CA-CRONHIST-VIEWCOUNT";
-const docClient = new AWS.DynamoDB.DocumentClient();
 
-exports.startCronViewCount = (documentId, documentIdByte32, blockchainTimestamp, data) => {
+
+exports.startCronViewCount = async (documentId, documentIdByte32, blockchainTimestamp, data) => {
     // Increment an atomic counter
+  try{
     const created = Date.now();//timestamp
     const putItem = {
       documentId: documentId,
@@ -20,80 +17,58 @@ exports.startCronViewCount = (documentId, documentIdByte32, blockchainTimestamp,
       created:created
     };
 
-    var params = {
-        TableName: TABLE_NAME,
-        Item: putItem,
-        ReturnConsumedCapacity: "TOTAL"
-    };
+    const wapper = new MongoWapper(connectionString);
+    await wapper.save(TABLE_NAME, putItem);
 
-    docClient.put(params, (err, data) => {
-      if(err){
-        console.error("[startCronViewCount ERROR]", err);
-      } else {
-        console.info("addViewCountHistory SUCCESS", data);
-      }
-    });
+    console.info("addViewCountHistory SUCCESS", data);
+  } catch(err) {
+    console.error("[startCronViewCount ERROR]", err);
+  }
+    
 }
 
 
-exports.completeCronViewCount = (documentId, blockchainTimestamp, transactionResult, retry) => {
+exports.completeCronViewCount = async (documentId, blockchainTimestamp, transactionResult, retry) => {
     // Increment an atomic counter
+  try{
     const created = Date.now();//timestamp
     const queryKey = {
       documentId: documentId,
       date: blockchainTimestamp
     };
 
-    docClient.update({
-        TableName:TABLE_NAME,
-        Key:queryKey,
-        UpdateExpression: "set #state = :state, transactionResult = :transactionResult, retry = :retry",
-        ExpressionAttributeNames:{
-          "#state": "state",
-        },
-        ExpressionAttributeValues:{
-            ":state": "COMPLETE",
-            ":transactionResult": transactionResult,
-            ":retry": retry?true:false
-        },
-        ReturnValues:"UPDATED_NEW"
-    }, function(err, data) {
-        if(err){
-            console.log(err) ;
-        }
+    const wapper = new MongoWapper(connectionString);
+    let doc = await wapper.findOne(TABLE_NAME, queryKey);
 
-    });
+    doc.state = "COMPLETE";
+    doc.transactionResult = transactionResult;
+    doc.retry = retry?true:false;
 
+    await wapper.save(TABLE_NAME, doc);
+  } catch(e){
+    console.error("completeCronViewCount", e);
+  }
 
 }
 
 exports.errorCronViewCount = (documentId, blockchainTimestamp, exception, retry) => {
     // Increment an atomic counter
+  try{
     const created = Date.now();//timestamp
     const queryKey = {
       documentId: documentId,
       date: blockchainTimestamp
     };
 
-    //confirmViewCountHist Key isNotExist create
-    docClient.update({
-        TableName: TABLE_NAME,
-        Key:queryKey,
-        UpdateExpression: "set #state = :state, #exception = :exception, retry = :retry",
-        ExpressionAttributeNames:{
-          "#state": "state",
-          "#exception": "exception"
-        },
-        ExpressionAttributeValues:{
-            ":state": "ERROR",
-            ":exception": JSON.stringify(exception),
-            ":retry": retry?true:false
-        },
-        ReturnValues:"UPDATED_NEW"
-    }, function(err, data) {
-        if(err){
-            console.log(err) ;
-        }
+    const wapper = new MongoWapper(connectionString);
+    let doc = await wapper.findOne(TABLE_NAME, queryKey);
 
-    });
+    doc.state = "ERROR";
+    doc.exception = JSON.stringify(exception);
+    doc.retry = retry?true:false;
+
+    await wapper.save(TABLE_NAME, doc);
+  } catch(e){
+    console.error("errorCronViewCount", e);
+  }
 }

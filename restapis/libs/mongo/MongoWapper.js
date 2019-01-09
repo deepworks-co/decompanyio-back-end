@@ -138,4 +138,22 @@ module.exports = class MongoWapper {
     });
   }
 
+  save(collection, item) {
+    this.init();
+
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).save(item, null, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        this.close();
+      });
+
+    });
+  }
+
 };

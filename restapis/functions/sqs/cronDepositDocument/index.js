@@ -1,11 +1,8 @@
 'use strict';
-const AWS = require('aws-sdk');
-AWS.config.update({
-  region: "us-west-1",
-});
+const MongoWapper = require('../libs/mongo/MongoWapper.js');
+const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
 
 const TABLE_NAME = "DEV-CA-DOCUMENT";
-const docClient = new AWS.DynamoDB.DocumentClient();
 
 const contractUtil = require('../../commons/contract/contractWapper.js');
 const utils = require('../../commons/utils.js');
@@ -86,28 +83,16 @@ function processDepositDocument(accountId, documentId, blockchainTimestamp, requ
   });
 }
 
-function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp) {
-    // Increment an atomic counter
-    const queryKey = {
-        "accountId": accountId,
-        "documentId": documentId
-    }
+async function updateVoteAmount(accountId, documentId, voteAmount, blockchainTimestamp) {
+  // Increment an atomic counter
+  const query = {
+    documentId: documentId
+  }
 
-    const params = {
-        TableName:TABLE_NAME,
-        Key:queryKey,
-        UpdateExpression: "set #confirmVoteAmount = :confirmVoteAmount",
-        ExpressionAttributeNames: {
-            "#confirmVoteAmount": "confirmVoteAmount"
-        },
-        ExpressionAttributeValues:{
-            ":confirmVoteAmount": utils.getNumber(voteAmount, 0)
-        },
-        //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
-        ReturnValues:"UPDATED_NEW"
-    };
-
-    return docClient.update(params).promise();
+  const wapper = new MongoWapper(connectionString);
+  let document = await wapper.findOne(TABLE_NAME, query);
+  document.confirmVoteAmount = utils.getNumber(voteAmount, 0);    
+  return await wapper.save(TABLE_NAME, document);
 
 
 }

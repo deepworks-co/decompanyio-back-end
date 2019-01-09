@@ -1,4 +1,4 @@
-let MongoWapper = require('../libs/mongo/MongoWapper.js');
+const MongoWapper = require('../libs/mongo/MongoWapper.js');
 const utils = require('../functions/commons/utils.js');
 
 
@@ -129,7 +129,7 @@ module.exports = {
 
     },
 
-    putVote : putVote = (item) => {
+    putVote : putVote = async (item) => {
       const timestamp = Date.now();
       const today = new Date(timestamp);
 
@@ -147,7 +147,7 @@ module.exports = {
           return Promise.reject({msg:"Parameter is invaild", detail:item});
         }
 
-        const item = {
+        const netItem = {
           id: curatorId,
           created: timestamp,
           blockchainTimestamp: blockchainTimestamp,
@@ -156,9 +156,9 @@ module.exports = {
           ethAccount: ethAccount,
           transactionInfo: transactionInfo
         }
-        console.log("new vote", item);
+        console.log("new vote", netItem);
         const wapper = new MongoWapper(connectionString);
-        return await wapper.insert(TABLE_NAME_VOTE, item);
+        return await wapper.insert(TABLE_NAME_VOTE, netItem);
         //return docClient.put(params).promise();
     },
 

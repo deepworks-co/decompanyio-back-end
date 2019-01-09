@@ -1,15 +1,11 @@
 'use strict';
-const AWS = require('aws-sdk');
-AWS.config.update({
-  region: "us-west-1",
-});
 
 const TABLE_NAME = "DEV-CA-DOCUMENT";
-const docClient = new AWS.DynamoDB.DocumentClient();
 
 const contractUtil = require('../../commons/contract/contractWapper.js');
 const utils = require('../../commons/utils.js');
-
+const MongoWapper = require('../libs/mongo/MongoWapper.js');
+const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
 /*
 * registYesterdayViewCount
 */
@@ -83,27 +79,14 @@ function processAuthorReward(accountId, documentId, blockchainTimestamp, request
 
 }
 
-function updateAuthorReward(accountId, documentId, authorReward) {
+async function updateAuthorReward(accountId, documentId, authorReward) {
     // Increment an atomic counter
-    const queryKey = {
-        "accountId": accountId,
-        "documentId": documentId
+    const query = {
+        documentId: documentId
     }
 
-
-    const params = {
-        TableName:TABLE_NAME,
-        Key:queryKey,
-        UpdateExpression: "set confirmAuthorReward = :authorReward",
-        ExpressionAttributeValues:{
-            ":authorReward": utils.getNumber(authorReward, 0)
-        },
-        //ConditionExpression: "attribute_not_exists(confirmViewCountHist.#date)",
-        ReturnValues:"UPDATED_NEW"
-    };
-
-    return docClient.update(params).promise();
-
-
-
+    const wapper = new MongoWapper(connectionString);
+    let document = await wapper.findOne(TABLE_NAME, query);
+    document.confirmAuthorReward = utils.getNumber(authorReward, 0);    
+    return await wapper.save(TABLE_NAME, document);
 }
