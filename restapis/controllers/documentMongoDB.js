@@ -147,7 +147,7 @@ module.exports = {
           return Promise.reject({msg:"Parameter is invaild", detail:item});
         }
 
-        const netItem = {
+        const newItem = {
           id: curatorId,
           created: timestamp,
           blockchainTimestamp: blockchainTimestamp,
@@ -156,9 +156,9 @@ module.exports = {
           ethAccount: ethAccount,
           transactionInfo: transactionInfo
         }
-        console.log("new vote", netItem);
+        console.log("new vote", newItem);
         const wapper = new MongoWapper(connectionString);
-        return await wapper.insert(TABLE_NAME_VOTE, netItem);
+        return await wapper.insert(TABLE_NAME_VOTE, newItem);
         //return docClient.put(params).promise();
     },
 

@@ -296,7 +296,7 @@ functions:
 
 custom:
   serverless-offline:
-    port: 4000
+    port: 4080
 
 
 plugins:
