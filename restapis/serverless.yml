@@ -93,7 +93,7 @@ functions:
     handler: controllers/oraclizeController/index.handler
     events:
       - http: get /api/oraclize/viewcount
-      
+
   documentRegist:
     handler: controllers/documentController.regist
     events:
@@ -186,113 +186,7 @@ functions:
                 paths:
                   id: true
 
-  contractGetDocuments:
-    handler: controllers/contractController.getDocuments
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    events:
-      - http:
-          path: api/contract/getDocuments
-          method: get
-          cors: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
-  contractRegistYesterdayTotalViewCount:
-    handler: controllers/contractController.registYesterdayTotalViewCount
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    events:
-      - http:
-          path: api/contract/registYesterdayTotalViewCount
-          method: post
-          cors: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
-
-  registYesterdayViewCount:
-    handler: functions/sqs/registYesterdayViewCount/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 1
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-          batchSize: 1
-          enabled: true
-
-  registYesterdayTotalViewCount:
-    handler: functions/sqs/registYesterdayTotalViewCount/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 1
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-TOTALVIEWCOUNT
-          batchSize: 1
-          enabled: true
-
-  cronVotesPerDocumentCurrent:
-    handler: functions/sqs/cronVotesPerDocumentCurrent/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
-          batchSize: 10
-          enabled: false
-
-  cronDepositDocument:
-    handler: functions/sqs/cronDepositDocument/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-YESTERDAYVOTES
-          batchSize: 10
-          enabled: true
-
-  cronAuthorConfirmReward:
-    handler: functions/sqs/cronAuthorConfirmReward/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-AUTHORCONFIRMREWARD
-          batchSize: 10
-          enabled: true
-
-
-  contractInfo:
-    handler: functions/contract/contractInfo/index.handler
-
-
-
-#  cronViewCount:
-#    handler: batch/cronViewCount.handler
-#    events:
-#      - schedule: rate(10 minutes)
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
-#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
 
 #    Define function environment variables here
 #    environment:

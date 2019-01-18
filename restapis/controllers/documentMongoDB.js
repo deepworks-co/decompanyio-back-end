@@ -1,5 +1,5 @@
 const MongoWapper = require('../libs/mongo/MongoWapper.js');
-const utils = require('../functions/commons/utils.js');
+const utils = require('decompany-common-utils');
 
 
 const TABLE_NAME = "DEV-CA-DOCUMENT";

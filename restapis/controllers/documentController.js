@@ -4,7 +4,7 @@ const uuidv4 = require('uuid/v4');
 //const dynamo = require('./documentDynamo');
 const dynamo = require('./documentMongoDB');
 const s3 = require('./documentS3');
-const utils = require('../functions/commons/utils');
+const utils = require('decompany-common-utils');
 
 var AWS = require("aws-sdk");
 
@@ -83,16 +83,14 @@ module.exports.regist = async (event, context, callback) => {
           message: "SUCCESS",
           signedUrl: signedUrl
         };
-
-
-        callback(null, {
+        return {
           statusCode: 200,
           headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true,
           },
           body: JSON.stringify(payload)
-        });
+        }
       } else {
         throw new Error("PutItme Fail " + JSON.stringify(putItem));
       }
@@ -101,18 +99,18 @@ module.exports.regist = async (event, context, callback) => {
   
   } catch(e){
 
-      console.error("regist exception", e);
-      callback(null, {
-        statusCode: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          success: false,
-          error: e
-        })
-      });
+    console.error("regist exception", e);
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        success: false,
+        error: e
+      })
+    };
   }
   
 // Use this code if you don't use the http event with the LAMBDA-PROXY integration
@@ -136,7 +134,7 @@ module.exports.list = (event, context, callback) => {
     path: path
 
   });
-
+  console.log(utils);
   const date = utils.getBlockchainTimestamp(new Date());//today
   const promise2 = dynamo.queryTotalViewCountByToday(date);
 
