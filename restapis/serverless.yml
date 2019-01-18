@@ -137,10 +137,6 @@ functions:
             parameters:
                 paths:
                   id: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
   documentText:
     handler: controllers/documentController.text
@@ -169,10 +165,6 @@ functions:
             parameters:
                 paths:
                   id: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
   documentDownload:
     handler: controllers/documentController.downloadFile
