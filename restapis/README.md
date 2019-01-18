@@ -31,5 +31,13 @@ sls invoke test -f registYesterdayViewCount
 sls logs -f {FunctionName}  -t
 sls logs -f registYesterdayViewCount  -t
 
+# serverless-mocha-plugin
 # create function
-sls create function -f accountSync --handler controllers/account/sync.handler --httpEvent "get /account/sync"
+sls create function -f accountSync --handler controllers/account/sync.handler --httpEvent "get /api/account/sync"
+
+
+sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
+
+sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
+
+sls create function -f accountPicture --handler controllers/account/picture.handler --httpEvent "post /api/account/picture"

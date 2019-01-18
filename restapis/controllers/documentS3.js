@@ -33,7 +33,4 @@ module.exports = {
     console.log("Generate Signed Url", url)
     return url;
   }
-
-
-
 }

@@ -1,6 +1,5 @@
 'use strict';
 const MongoWapper = require('../../libs/mongo/MongoWapper.js');
-
 const USER_TALBE = "USER";
 const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
 const mongo = new MongoWapper(connectionString);
@@ -26,6 +25,53 @@ module.exports = class AccountService {
 		} catch(e) {
 			console.error("syncUserInfo error", e);
 			return false;
+		}
+	}
+
+	async getUserInfo(user){
+		
+		try{
+			let query = {};
+			if(user.id){
+				query = {id: user.id};
+			} else if(user.email) {
+				query = {emali: user.emaill};
+			} else {
+				throw new Error("getUserInfo Not enough query parameters")
+			}
+				
+			const user = await mongo.findOne(USER_TALBE, query);
+
+			return user;
+		} catch(e) {
+			console.error("getUserInfo error", e);
+		}
+	}
+
+	async updateUserInfo(user){
+		
+		try{	
+			const savedUser = await mongo.findOne(USER_TALBE, {
+				id: user.id
+			});
+
+			if(savedUser){
+				console.log("saved user", savedUser);
+				if(user.nickname){
+					savedUser.nickname = user.nickname;
+				}
+				
+				if(user.picture){
+					savedUser.picture = user.picture;
+				}
+				
+				console.log("updated user", savedUser);
+				const result = await mongo.save(USER_TALBE, savedUser);
+			} 
+			
+			
+		} catch(e) {
+			console.error("updateUserInfo error", e);
 		}
 	}
 }

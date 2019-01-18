@@ -76,6 +76,21 @@ exclude:
   - .env
 
 functions:
+  accountPicture:
+    handler: controllers/account/picture.handler
+    events:
+      - http: post /api/account/picture
+      
+  accountGet:
+    handler: controllers/account/gethandler
+    events:
+      - http: get /api/account/get
+
+  accountUpdate:
+    handler: controllers/account/update.handler
+    events:
+      - http: post /api/account/update
+
   accountAuth:
     handler: controllers/account/auth.handler
     cors: true 
@@ -149,10 +164,6 @@ functions:
             parameters:
                 paths:
                   id: true
-          response:
-            headers:
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: true
 
   documentVote:
     handler: controllers/documentController.vote
@@ -185,12 +196,12 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+resources:
+  Resources:
+    AccountPicture:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: DC-ACCOUNT-PICTURE
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"
