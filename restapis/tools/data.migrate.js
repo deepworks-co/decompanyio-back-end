@@ -82,6 +82,7 @@ db.createUser(
      roles: [{role: "readWrite", db: "decompany"} ]
    }
 )
+db.auth("decompany", "decompany1234")
 */
 
 /*
@@ -99,4 +100,14 @@ db.createCollection("DE-CONTENTS", { capped: false,
                               collation: <document>,
                               writeConcern: <document>} )
 
+
+
+                    
+
 */
+
+/**
+ 
+#create index
+db.USER.createIndex({id: 1}, {unique:true})
+ */
