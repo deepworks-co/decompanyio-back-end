@@ -21,15 +21,20 @@ const defaultHeader = {
 
 module.exports.regist = async (event, context, callback) => {
   try{
-    const parameter = JSON.parse(event.body).data;
+    console.log("event", event.body);
+    const parameter = JSON.parse(event.body);
     console.log("parameter", parameter);
-    if(!parameter || !parameter.username) return callback(null, {
+    if(!parameter || !parameter.userid) return callback(null, {
       statusCode: 203,
-      body: JSON.stringify("parameter or user is invalid")
+      body: JSON.stringify({
+        success: false,
+        error: "user.id data is invalid"
+      })
     });
 
-    const accountId = parameter.username;
+    const accountId = parameter.userid;
     const nickname = parameter.nickname;
+    const username = parameter.username;
     const documentId = uuidv4().replace(/-/gi, "");
     const documentName = parameter.filename;
     const documentSize = parameter.size;
@@ -72,6 +77,7 @@ module.exports.regist = async (event, context, callback) => {
         console.log("PutItem succeeded:", result);
         const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
         const payload = {
+          success: true,
           documentId: documentId,
           accountId: accountId,
           message: "SUCCESS",
@@ -79,8 +85,7 @@ module.exports.regist = async (event, context, callback) => {
         };
 
 
-        return callback(null, {
-          success: true,
+        callback(null, {
           statusCode: 200,
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -97,14 +102,16 @@ module.exports.regist = async (event, context, callback) => {
   } catch(e){
 
       console.error("regist exception", e);
-      return callback(null, {
-        success: false,
+      callback(null, {
         statusCode: 500,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true,
         },
-        body: JSON.stringify(e)
+        body: JSON.stringify({
+          success: false,
+          error: e
+        })
       });
   }
   
@@ -160,13 +167,14 @@ module.exports.list = (event, context, callback) => {
 
     console.error("Exception queryDocumentByLatest.", err);
     callback(null, {
-      success: false,
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
+        success: false,
+        error: err,
         message: 'FAIL',
       })
     });

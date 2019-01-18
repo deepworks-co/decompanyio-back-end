@@ -30,3 +30,6 @@ sls invoke test -f registYesterdayViewCount
 # Log
 sls logs -f {FunctionName}  -t
 sls logs -f registYesterdayViewCount  -t
+
+# create function
+sls create function -f accountSync --handler controllers/account/sync.handler --httpEvent "get /account/sync"

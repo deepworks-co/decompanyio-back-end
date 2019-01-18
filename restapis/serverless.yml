@@ -28,6 +28,8 @@ provider:
   environment:
     message: "Deploy stage ${self:provider.stage}"
     stage: ${self:provider.stage}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -74,10 +76,24 @@ exclude:
   - .env
 
 functions:
+  accountAuth:
+    handler: controllers/account/auth.handler
+    cors: true 
+    
+  accountSync:
+    handler: controllers/account/sync.handler
+    events:
+      - http: 
+          path: /api/account/sync
+          method: post
+          cors: true
+          authorizer: accountAuth
+
   oraclizeController:
     handler: controllers/oraclizeController/index.handler
     events:
       - http: get /api/oraclize/viewcount
+      
   documentRegist:
     handler: controllers/documentController.regist
     events:
