@@ -1,10 +1,8 @@
 var AWS = require("aws-sdk");
 
-AWS.config.update({
-  region: "us-west-1"
-});
+const endpoint = new AWS.Endpoint("s3.us-west-1.amazonaws.com");
+var s3 = new AWS.S3({endpoint: endpoint});
 
-var s3 = new AWS.S3();
 const  bucketName = "dev-ca-document";
 
 module.exports = {
@@ -14,7 +12,7 @@ module.exports = {
       Bucket: bucketName,
       Key: 'THUMBNAIL/' + documentId + '/document.txt'
     }
-
+    console.log("getDocumentTextById", params);
     return s3.getObject(params).promise();
 
   },

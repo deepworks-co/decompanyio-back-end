@@ -208,6 +208,10 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: dc-account-picture
+    #DocumentBucket:
+    #  Type: AWS::S3::Bucket
+    #  Properties:
+    #    BucketName: dev-ca-document
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"

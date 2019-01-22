@@ -84,14 +84,14 @@ module.exports.regist = async (event, context, callback) => {
           message: "SUCCESS",
           signedUrl: signedUrl
         };
-        return {
+        callback(null, {
           statusCode: 200,
           headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true,
           },
           body: JSON.stringify(payload)
-        }
+        });
       } else {
         throw new Error("PutItme Fail " + JSON.stringify(putItem));
       }
@@ -101,7 +101,7 @@ module.exports.regist = async (event, context, callback) => {
   } catch(e){
 
     console.error("regist exception", e);
-    return {
+    callback(null, {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -111,7 +111,7 @@ module.exports.regist = async (event, context, callback) => {
         success: false,
         error: e
       })
-    };
+    });
   }
   
 // Use this code if you don't use the http event with the LAMBDA-PROXY integration
@@ -354,7 +354,7 @@ module.exports.text = (event, context, callback) => {
   const documentId = event.pathParameters.documentId;
 
   if(!documentId) return;
-
+  console.log(documentId);
   s3.getDocumentTextById(documentId).then((data) => {
     console.info(data);
 
