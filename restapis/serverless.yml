@@ -39,7 +39,12 @@ provider:
        - logs:*
        - sqs:*
       Resource: "*"
-
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
