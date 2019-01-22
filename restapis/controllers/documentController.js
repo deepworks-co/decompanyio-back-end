@@ -2,9 +2,10 @@
 const uuidv4 = require('uuid/v4');
 
 //const dynamo = require('./documentDynamo');
-const dynamo = require('./documentMongoDB');
+const documentService = require('./documentMongoDB');
 const s3 = require('./documentS3');
 const utils = require('decompany-common-utils');
+
 
 var AWS = require("aws-sdk");
 
@@ -45,7 +46,7 @@ module.exports.regist = async (event, context, callback) => {
     const category = parameter.category;
     const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
 
-    const document = await dynamo.getDocumentById(documentId);
+    const document = await documentService.getDocumentById(documentId);
 
     if(document){
       throw new Error("The Document ID already exists. retry..." + JSON.stringify(document));
@@ -71,7 +72,7 @@ module.exports.regist = async (event, context, callback) => {
         viewCount: 0
       }
 
-      const result = await dynamo.putDocument(putItem);
+      const result = await documentService.putDocument(putItem);
       
       if(result){
         console.log("PutItem succeeded:", result);
@@ -120,23 +121,25 @@ module.exports.regist = async (event, context, callback) => {
 
 module.exports.list = (event, context, callback) => {
 
-  const body = JSON.parse(event.body);
+  const body = event.body?JSON.parse(event.body):{};
 
-  const pageKey = body.params.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.pageKey), 'base64').toString()):null;
-  const accountId = body.params.accountId;
-  const tag = body.params.tag;
-  const path = body.params.path;
+  const params = body.params?body.params:body;
 
-  const promise1 = dynamo.queryDocumentByLatest({
+  const pageKey = params.pageKey?JSON.parse(Buffer.from(JSON.stringify(params.pageKey), 'base64').toString()):null;
+  const accountId = params.accountId;
+  const tag = params.tag;
+  const path = params.path;
+
+  const promise1 = documentService.queryDocumentByLatest({
     pageKey: pageKey,
     accountId: accountId,
     tag: tag,
     path: path
 
   });
-  console.log(utils);
+
   const date = utils.getBlockchainTimestamp(new Date());//today
-  const promise2 = dynamo.queryTotalViewCountByToday(date);
+  const promise2 = documentService.queryTotalViewCountByToday(date);
 
 
   Promise.all([promise1, promise2]).then((datas) => {
@@ -190,14 +193,14 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   console.log(body.params);
 
-  const promise1 = dynamo.queryVotedDocumentByCurator({
+  const promise1 = documentService.queryVotedDocumentByCurator({
     pageKey: pageKey,
     accountId: accountId,
     tag: tag
   })
 
   const date = utils.getBlockchainTimestamp(new Date());//today
-  const promise2 = dynamo.queryTotalViewCountByToday(date);
+  const promise2 = documentService.queryTotalViewCountByToday(date);
 
   Promise.all([promise1, promise2]).then((results) => {
     console.log("listCuratorDocument succeeded.", JSON.stringify(results));
@@ -249,14 +252,14 @@ module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
 
   console.log(body.params);
 
-  const promise1 = dynamo.queryTodayVotedDocumentByCurator({
+  const promise1 = documentService.queryTodayVotedDocumentByCurator({
     accountId: accountId,
   });
 
   const today = new Date();
   const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
-  const promise2 = dynamo.queryTotalViewCountByToday(blockchainTimestamp);
+  const promise2 = documentService.queryTotalViewCountByToday(blockchainTimestamp);
 
   Promise.all([promise1, promise2]).then((results) => {
 
@@ -302,9 +305,9 @@ module.exports.info = (event, context, callback) => {
 
   if(!documentId) return;
 
-  const promise1 = dynamo.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
+  const promise1 = documentService.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
 
-  const promise2 = dynamo.getFeaturedDocuments({documentId: documentId});
+  const promise2 = documentService.getFeaturedDocuments({documentId: documentId});
 
   Promise.all([promise1, promise2]).then((results) => {
 
@@ -394,8 +397,8 @@ module.exports.vote = (event, context, callback) => {
   console.log("params", params);
   if(!documentId) return;
 
-  const promise1 = dynamo.putVote(params);
-  const promise2 = dynamo.updateVoteHist(params);
+  const promise1 = documentService.putVote(params);
+  const promise2 = documentService.updateVoteHist(params);
 
   Promise.all([promise1, promise2]).then((results) => {
     //for view count log

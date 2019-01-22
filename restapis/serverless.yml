@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   # you can overwrite defaults here
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: us-west-1
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
@@ -30,6 +30,7 @@ provider:
     stage: ${self:provider.stage}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -80,7 +81,7 @@ functions:
     handler: controllers/account/picture.handler
     events:
       - http: post /api/account/picture
-      
+
   accountGet:
     handler: controllers/account/gethandler
     events:
@@ -201,7 +202,7 @@ resources:
     AccountPicture:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: DC-ACCOUNT-PICTURE
+        BucketName: dc-account-picture
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"

@@ -9,7 +9,7 @@ console.log = function(d) { //
   log_file.write(util.format(d) + '\n');
   log_stdout.write(util.format(d) + '\n');
 };
-
+   
 var AWS = require("aws-sdk");
 
 AWS.config.update({
@@ -17,60 +17,66 @@ AWS.config.update({
 });
 
 var docClient = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = "DEV-CA-DOCUMENT";
-const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
-const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
+
 
 const connectionString = "decompany:decompany1234@127.0.0.1/decompany"
 
 
-
-
-const  execute = async () => {
-  const tableName = TABLE_NAME_TOTALVIEWCOUNT;
-  const db = mongojs(connectionString);
-  const mycollection = db.collection(tableName);
-
-  db.on('error', function (err) {
-  	console.log('database error', err)
-  })
-
-  db.on('connect', function () {
-  	console.log('database connected');
-
-  })
-
+const  execute = async (source, target) => {
+  let count = 0;
   console.log("runing!!!! data.migrate.js");
+  const db = mongojs(connectionString);
+  try{
+    
+    const mycollection = db.collection(target);
 
-  mycollection.count({}, (data) => {
-    console.log("count", data);
-  });
-
-  const params = {
-    TableName: tableName
-  }
-
-  docClient.scan(params, (err, data)=>{
-
-    if(err) {
-      console.err(err);
-      throw err
+    const params = {
+      TableName: source
     }
+
+    const data = await docClient.scan(params).promise();
+    let i = 0;
+    for(i=0;i<data.Items.length;i++){
+      //console.log(JSON.stringify(item));
+      const item = data.Items[i];
+      mycollection.save(item);
+      count++;
+    }
+    console.log("total migrate: " + source + " to " + target + " count : " + i);
+    /*
     data.Items.forEach((item) => {
       //console.log(JSON.stringify(item));
-
-      mycollection.save(item);
-
+      //mycollection.save(item);
+      count++;
+      console.log("update ", count);
     });
-  });
-
+    */
+  } catch(e) {
+    console.error(e);
+  } finally{
+    console.log("db.close()");
+    db.close();
+  }
+ 
 };
 
-execute();
+const TABLE_NAME = "DEV-CA-DOCUMENT";
+const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
+const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
+
+execute(TABLE_NAME, "DC-DOCUMENT")
+execute(TABLE_NAME_VOTE, "DC-DOCUMENT-VOTE");
+execute(TABLE_NAME_TOTALVIEWCOUNT, "DC-DAILY-TOTALVIEWCOUNT");
 
 /*
 #login admin
 use admin
+db.createUser({
+  user: "root",
+  pwd: "1234",
+  roles: [ { role: "root", db: "admin" } ]
+})
+
 db.auth("root", "1234")
 
 #create database and create user
@@ -87,7 +93,7 @@ db.auth("decompany", "decompany1234")
 
 /*
 
-db.createCollection("DE-CONTENTS", { capped: false,
+db.createCollection("DC-DOCUMENT", { capped: false,
                               size: <number>,
                               max: <number>,
                               storageEngine: <document>,

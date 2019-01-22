@@ -1,11 +1,13 @@
-const MongoWapper = require('../libs/mongo/MongoWapper.js');
 const utils = require('decompany-common-utils');
-
+const { mongodb } = require('../resources/config.js').APP_PROPERTIES();
+const MongoWapper = require('../libs/mongo/MongoWapper.js');
 
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
 const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
-const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
+
+
+const connectionString = mongodb.endpoint;
 
 module.exports = {
     getDocumentById : getDocumentById = async (documentId) => {
@@ -30,6 +32,7 @@ module.exports = {
 
     queryDocumentByLatest : queryDocumentByLatest = async (args) => {
       console.log("queryDocumentByLatest args", args);
+
       const pageKey = args.pageKey;;
       let nextPageKey = {};
       const pageSize = 10;
