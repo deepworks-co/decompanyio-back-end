@@ -1,7 +1,6 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
 
-//const dynamo = require('./documentDynamo');
 const documentService = require('./documentMongoDB');
 const s3 = require('./documentS3');
 const utils = require('decompany-common-utils');
@@ -13,7 +12,6 @@ AWS.config.update({
   region: "us-west-1"
 });
 
-const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 
 const defaultHeader = {
@@ -434,51 +432,13 @@ module.exports.vote = (event, context, callback) => {
   });
 }
 
-module.exports.downloadFile = (event, context, callback) => {
+module.exports.downloadFile = async (event, context, callback) => {
+  try{
+    //console.log(event);
+    const documentId = event.pathParameters.documentId;
+    const accountId = event.pathParameters.accountId;
 
-  //console.log(event);
-  const documentId = event.pathParameters.documentId;
-  const accountId = event.pathParameters.accountId;
-
-  if(!documentId || !accountId) {
-    callback(null, {
-        statusCode: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          message: "parameter is invaild"
-        }),
-      });
-
-    return;
-  }
-  docClient.get({
-      TableName: TABLE_NAME,
-      Key:{
-          "accountId": accountId,
-          "documentId": documentId
-      }
-  }, (err, data) => {
-
-    if(!err) {
-      console.log("GetItem", data);
-      const documentName = data.Item.documentName;
-      const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-      const signedUrl = s3.generateSignedUrl(data.Item.accountId, data.Item.documentId, ext);
-      callback(null, {
-          statusCode: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-          },
-          body: JSON.stringify({
-            downloadUrl: signedUrl,
-            document: data.Item
-          }),
-      });
-    } else {
+    if(!documentId || !accountId) {
       callback(null, {
           statusCode: 500,
           headers: {
@@ -486,11 +446,44 @@ module.exports.downloadFile = (event, context, callback) => {
             'Access-Control-Allow-Credentials': true,
           },
           body: JSON.stringify({
-            err: err
+            message: "parameter is invaild"
           }),
         });
-    }
 
-  });
+      return;
+    }
+  
+    const document = await documentService.getDocumentById(documentId);
+    console.log("GetItem", document);
+    const documentName = document.documentName;
+    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+    const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
+    callback(null, {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          success: true,
+          downloadUrl: signedUrl,
+          document: document
+        }),
+    });
+
+  } catch(e) {
+    console.error(e);
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        success: false,
+        error: e
+      }),
+    });
+  }
 
 }

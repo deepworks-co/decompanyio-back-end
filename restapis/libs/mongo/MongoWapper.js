@@ -25,6 +25,7 @@ module.exports = class MongoWapper {
   }
 
   close() {
+    console.log("mongodb close()");
     this.db.close();
     MongoWapperSingletonInstance = null;
   }

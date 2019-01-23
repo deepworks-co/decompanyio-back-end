@@ -1,9 +1,12 @@
 # decompanyio-back-end
 Serverless Project
 
-# Setup Dependencies
+# install serverless framework plugin
 npm install --save-dev serverless-mocha-plugin
 npm install --save-dev serverless-offline
+npm install serverless-plugin-existing-s3
+
+# Setup Dependencies
 npm install web3
 npm install ethereumjs-tx
 
@@ -20,7 +23,7 @@ sudo node ../docker-npm.js rebuild
 # Deploy
 sls deploy
 
-# deploy
+# show deploy function list
 sls deploy list
 
 # Test
@@ -37,3 +40,7 @@ sls create function -f accountSync --handler controllers/account/sync.handler --
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
 sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
 sls create function -f accountPicture --handler controllers/account/picture.handler --httpEvent "post /api/account/picture"
+
+sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
+sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
+sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler

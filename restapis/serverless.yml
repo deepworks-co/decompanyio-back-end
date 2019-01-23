@@ -28,6 +28,7 @@ provider:
   environment:
     message: "Deploy stage ${self:provider.stage}"
     stage: ${self:provider.stage}
+    servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
 
@@ -39,6 +40,7 @@ provider:
        - logs:*
        - sqs:*
       Resource: "*"
+
   vpc:
     securityGroupIds:
       - sg-05a13849fc117801b
@@ -46,20 +48,7 @@ provider:
       - subnet-37594850
       - subnet-38bb9963
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+
 
 # you can define service wide environment variables here
   #environment:
@@ -82,6 +71,26 @@ exclude:
   - .env
 
 functions:
+  s3DocumentUploadComplete:
+    handler: s3/document/uploadComplete.handler
+    events:
+      - existingS3: 
+        bucket: dev-ca-document
+        events:
+          - s3:ObjectCreated:Put
+        rules:
+          - prefix: FILE/
+
+  s3DocumentConvertComplete:
+    handler: s3/document/convertComplete.handler
+    events:
+      - existingS3: 
+        bucket: dev-ca-document
+        events: 
+          - s3:ObjectCreated:Put
+        rules:
+          - prefix: THUMBNAIL/
+
   accountPicture:
     handler: controllers/account/picture.handler
     events:
@@ -225,3 +234,4 @@ custom:
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
+  - serverless-plugin-existing-s3
