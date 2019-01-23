@@ -37,7 +37,7 @@ exports.handler = function(event, context) {
   
   
 }
-
+/*
 async function run(items){
   let i=0;
 
@@ -70,6 +70,45 @@ async function run(items){
 
   return i;
 }
+*/
+
+async function run(items){
+  
+  let promises = [];
+  await items.forEach((record) => {
+    
+    
+    const key = record.s3.object.key;
+    const splits = key.split("/");
+    
+    const fileid = splits[2].split(".")[0];
+    const fileindex = decodeURIComponent(splits[1]);
+    const ext = splits[2].split(".")[1];
+    
+    const data = {
+      "fileindex": fileindex,
+      "fileid": fileid,
+      "ext": ext
+    }
+  
+    const messageBody = generateMessageBody(data);
+    const message = {
+      QueueUrl: QUEUE_URL,
+      MessageBody: messageBody
+    }
+    console.log(message);
+    promises.push(sendMessage(message));
+    
+
+  });
+
+  return await Promise.all(promises).then((results) => {
+    console.log("send sqs success", results.length);
+  }).catch((errs)=>{
+    console.error("error", results);
+  });
+
+}
 
 function sendMessage(message) {
   return new Promise((resolve, reject)=>{
@@ -77,10 +116,10 @@ function sendMessage(message) {
 
     sqs.sendMessage(message, function(err, res) {
       if(err){
-        console.error("error",err);
+        //console.error("error",err);
         reject(err);
       } else {
-        console.error("result", res);
+        //console.error("result", res);
         resolve(res);
       }
     });

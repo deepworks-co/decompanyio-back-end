@@ -35,7 +35,7 @@ module.exports = {
 
       const pageKey = args.pageKey;;
       let nextPageKey = {};
-      const pageSize = 10;
+      const pageSize = 50;
       const tag = args.tag;
       const accountId = args.accountId;
 

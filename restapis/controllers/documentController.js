@@ -311,9 +311,7 @@ module.exports.info = (event, context, callback) => {
 
     const document = results[0];
     const featuredList = results[1];
-    //console.log("query ok", results);
-
-
+    
     callback(null, {
       statusCode: 200,
       headers: {
@@ -321,12 +319,15 @@ module.exports.info = (event, context, callback) => {
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
-        success: true,
-        message: 'SUCCESS',
+        success: document?true:false,
+        message: document?"SUCCESS":"Document is not exist",
         document: document,
         featuredList: featuredList
       }),
     });
+
+
+    
 
   }).catch((err) => {
     console.error("error : ", err);
