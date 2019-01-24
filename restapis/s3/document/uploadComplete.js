@@ -129,7 +129,7 @@ function sendMessage(message) {
 
 const generateMessageBody = function(param){
   /*{"command": "image", "filePath":"dev-ca-document/FILE/doc/1", "storagePath":"dev-ca-document/THUMBNAIL/doc", "resolutionX":1200, "resolutionY":1200,
-  "startPage":1, "endPage":10, "ext":"hwp", "accesskey":"AKIAISOEZFZK56SFKAOA", "secretKey":"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"}*/
+  "startPage":1, "endPage":10, "ext":"hwp"}*/
   //console.log("param", param);
   var messageBody = new Object();
   messageBody.command="image";

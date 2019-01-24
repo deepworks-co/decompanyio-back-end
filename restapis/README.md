@@ -44,3 +44,7 @@ sls create function -f accountPicture --handler controllers/account/picture.hand
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
+
+
+#API GATEWAY Custom Access Log Format
+{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","userAgent":"$context.identity.userAgent", "requestTime":"$context.requestTime", "requestTimeEpoch":"$context.requestTimeEpoch", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "path":"$context.path", "responseLatency":"$context.responseLatency", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }

@@ -19,13 +19,13 @@ module.exports = class MongoWapper {
     if(MongoWapperSingletonInstance==null){
       this.db = mongojs(this.connectionString);
       MongoWapperSingletonInstance = this;
-      console.log("MongoWapper constructor runnging!!", this.connectionString);
+      //console.log("MongoWapper constructor runnging!!", this.connectionString);
     }
 
   }
 
   close() {
-    console.log("mongodb close()");
+    //console.log("mongodb close()");
     this.db.close();
     MongoWapperSingletonInstance = null;
   }

@@ -1,4 +1,5 @@
 'use strict';
+const uuidv4 = require('uuid/v4');
 const MongoWapper = require('../../libs/mongo/MongoWapper.js');
 const USER_TALBE = "USER";
 const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
@@ -11,20 +12,23 @@ module.exports = class AccountService {
 			let user = userInfo;
 
 			const queriedUser = await mongo.findOne(USER_TALBE, {
-				id: userInfo.id
+				sub: userInfo.sub
 			});
 
 			if(queriedUser){
 				console.log("saved user", queriedUser);
 				user._id = queriedUser._id;
+				user.id = queriedUser.id;
 				console.log("update user", user);
-			} 
+			}  else {
+				const uuid = uuidv4().replace(/-/gi, "");
+				user.id = uuid;
+			}
 			
 			const result = await mongo.save(USER_TALBE, user);
-			return true;
+			return user;
 		} catch(e) {
 			console.error("syncUserInfo error", e);
-			return false;
 		}
 	}
 

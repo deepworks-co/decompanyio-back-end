@@ -142,8 +142,7 @@ module.exports = {
 
         const curatorId = item.curatorId;
         const voteAmount = item.voteAmount;
-        const documentInfo = item.documentInfo;
-        const documentId = documentInfo.documentId;
+        const documentId = item.documentId;
         const transactionInfo = item.transactionInfo;
         const ethAccount = item.ethAccount;
         if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
@@ -188,6 +187,7 @@ module.exports = {
     },
 
     updateVoteHist : updateVoteHist = (item) => {
+      /* no used
       const timestamp = Date.now();
       const today = new Date(timestamp);
 
@@ -241,6 +241,8 @@ module.exports = {
       }
 
       return docClient.update(updateItem).promise();
+      */
+      return Promise.resolve("success");
     },
 
     getFeaturedDocuments : getFeaturedDocuments = async (args) => {

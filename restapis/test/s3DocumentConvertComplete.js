@@ -14,7 +14,6 @@ describe('s3DocumentConvertComplete', () => {
 
   const event = {
     "Records": [
-      
       {
         "eventVersion": "2.0",
         "eventSource": "aws:s3",
@@ -42,41 +41,7 @@ describe('s3DocumentConvertComplete', () => {
             "arn": "arn:aws:s3:::dev-ca-document"
           },
           "object": {
-            "key": "THUMBNAIL/6e1e0b4e86824eba81e9350a0fd1ff82/result.txt",
-            "size": 1476706,
-            "eTag": "1c1cb937280f8607f05a4fa86a1bc441",
-            "sequencer": "005BEB690CE5C89929"
-          }
-        }
-      },
-      {
-        "eventVersion": "2.0",
-        "eventSource": "aws:s3",
-        "awsRegion": "us-west-1",
-        "eventTime": "2018-11-14T00:15:09.033Z",
-        "eventName": "ObjectCreated:Put",
-        "userIdentity": {
-          "principalId": "AWS:AIDAIQHMZ3T4ECMZXJEVK"
-        },
-        "requestParameters": {
-          "sourceIPAddress": "24.7.45.54"
-        },
-        "responseElements": {
-          "x-amz-request-id": "F6873A708C4970C8",
-          "x-amz-id-2": "v1RlnnegbZEnn//UMh20ca1gv8fFuzdfhjulHVFvSFeL1hd2GQiODos6pleVD4pKUX5lMUYBcTc="
-        },
-        "s3": {
-          "s3SchemaVersion": "1.0",
-          "configurationId": "CreateDocThumbnailCompleteTrigger",
-          "bucket": {
-            "name": "dev-ca-document",
-            "ownerIdentity": {
-              "principalId": "A3C4A60J8BI88N"
-            },
-            "arn": "arn:aws:s3:::dev-ca-document"
-          },
-          "object": {
-            "key": "THUMBNAIL/6e1e0b4e86824eba81e9350a0fd1ff82/300X300/1",
+            "key": "THUMBNAIL/435660802fdd41f4bbf19abe46516790/result.txt",
             "size": 1476706,
             "eTag": "1c1cb937280f8607f05a4fa86a1bc441",
             "sequencer": "005BEB690CE5C89929"

@@ -23,15 +23,20 @@ module.exports.regist = async (event, context, callback) => {
     console.log("event", event.body);
     const parameter = JSON.parse(event.body);
     console.log("parameter", parameter);
-    if(!parameter || !parameter.userid) return callback(null, {
-      statusCode: 203,
-      body: JSON.stringify({
-        success: false,
-        error: "user.id data is invalid"
-      })
-    });
+    if(!parameter || !parameter.accountId) {
+      callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: false,
+          message: "email is invalid"
+        })
+      });
 
-    const accountId = parameter.userid;
+      return;
+    } 
+
+    const accountId = parameter.accountId;
+    const sub = parameter.sub;
     const nickname = parameter.nickname;
     const username = parameter.username;
     const documentId = uuidv4().replace(/-/gi, "");
@@ -55,6 +60,8 @@ module.exports.regist = async (event, context, callback) => {
         accountId: accountId,
         documentId: documentId,
         nickname: nickname,
+        username: username,
+        sub: sub,
         documentName: documentName,
         documentSize: documentSize,
         ethAccount: ethAccount,
@@ -402,7 +409,7 @@ module.exports.vote = (event, context, callback) => {
   Promise.all([promise1, promise2]).then((results) => {
     //for view count log
     const data = results[0]; //putVote
-    const result2 = results[1]; //putVoteHist
+    const result2 = results[1]; //putVoteHist 사용안함
 
     console.log("Put Vote", data);
     console.log("Put VoteHist", result2)
@@ -415,6 +422,7 @@ module.exports.vote = (event, context, callback) => {
       },
       body: JSON.stringify({
         message: 'SUCCESS',
+        vote: data
       }),
     });
   }).catch((errs) => {

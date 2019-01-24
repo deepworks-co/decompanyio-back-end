@@ -59,5 +59,6 @@ const generatePolicy = (principalId, effect, resource) => {
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
   }
+  console.log(authResponse);
   return authResponse;
 };
