@@ -32,54 +32,41 @@ module.exports = {
 
     queryDocumentList : queryDocumentList = async (args) => {
       console.log("queryDocumentByLatest args", args);
-
-      const pageKey = args.pageKey;;
-      let nextPageKey = {};
       const pageSize = 50;
       const tag = args.tag;
       const accountId = args.accountId;
-
-      if(pageKey){
-          nextPageKey = pageKey;
-          nextPageKey.pageNo = Number(pageKey.pageNo) + 1;
-      } else {
-
-        nextPageKey = {
-          query : {
-            state: "CONVERT_COMPLETE",
-            tags: tag,
-            accountId: accountId
-          },
-          sort : {
-            created: -1
-          },
-          pageNo: 1,
-          pageSize: pageSize
-        };
-
-        if(args.path && args.path.lastIndexOf("popular")>0){
-          nextPageKey.sort = {confirmAuthorReward: -1};
-        } else if(args.path && args.path.lastIndexOf("featured")>0){
-          nextPageKey.sort = {confirmVoteAmount: -1};
-        }
-
-        Object.keys(nextPageKey.query).forEach(function(key){
-            //console.log(key + ' - ' + nextPageKey.query[key]);
-            const value = nextPageKey.query[key];
-            if (!value){
-                delete nextPageKey.query[key];
-            }
-        });
-
+   
+      const pageNo = isNaN(args.pageNo)?1:Number(args.pageNo);
+      
+      let query = {
+        state: "CONVERT_COMPLETE"
       }
 
+      if(tag){
+        query.tags = tag;
+      }
+      
+      if(accountId){
+        query.accountId = accountId;
+      }
+     
+      let sort = {};      
+
+      if(args.path && args.path.lastIndexOf("popular")>0){
+        sort = {confirmAuthorReward: -1};
+      } else if(args.path && args.path.lastIndexOf("featured")>0){
+        sort = {confirmVoteAmount: -1};
+      } else {
+        sort = {created: -1};
+      };
+
       const wapper = new MongoWapper(connectionString);
-      console.log("nextPageKey", nextPageKey);
-      const resultList = await wapper.find(TABLE_NAME, nextPageKey.query, nextPageKey.pageNo, nextPageKey.pageSize, nextPageKey.sort);
+      console.log("query options query :", query, "sort :", sort, "pageNo :", pageNo, "pageSize :", pageSize);
+      const resultList = await wapper.find(TABLE_NAME, query, pageNo, pageSize, sort);
 
       return {
         resultList: resultList,
-        pageKey : nextPageKey,
+        pageNo : pageNo
       };
     },
 

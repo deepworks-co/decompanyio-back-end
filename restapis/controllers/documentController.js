@@ -125,18 +125,16 @@ module.exports.regist = async (event, context, callback) => {
 
 
 module.exports.list = (event, context, callback) => {
-
-  const body = event.body?JSON.parse(event.body):{};
-
-  const params = body.params?body.params:body;
-
-  const pageKey = params.pageKey?JSON.parse(Buffer.from(JSON.stringify(params.pageKey), 'base64').toString()):null;
+  console.log("event.body", event.body);
+  const params = event.body?JSON.parse(event.body):{};
+  
+  const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
   const accountId = params.accountId;
   const tag = params.tag;
   const path = params.path;
 
   const promise1 = documentService.queryDocumentList({
-    pageKey: pageKey,
+    pageNo: pageNo,
     accountId: accountId,
     tag: tag,
     path: path
@@ -147,11 +145,12 @@ module.exports.list = (event, context, callback) => {
   const promise2 = documentService.queryTotalViewCountByToday(date);
 
 
-  Promise.all([promise1, promise2]).then((datas) => {
-    const resultList = datas[0].resultList?datas[0].resultList:[];
-    const pageNo = !isNaN(datas[0].pageNo) && datas[0].pageNo>0? datas[0].pageNo : 1;
-    const pageKey = datas[0].pageKey;
-    const totalViewCountInfo = datas[1];
+  Promise.all([promise1, promise2]).then((results) => {
+    const result = results[0];
+    const result2 = results[1];
+    const resultList = result.resultList?result.resultList:[];
+    const pageNo = isNaN(result.pageNo)?1:Number(result.pageNo);
+    const totalViewCountInfo = result2;
 
     callback(null, {
       statusCode: 200,
@@ -163,7 +162,7 @@ module.exports.list = (event, context, callback) => {
         success: true,
         message: 'SUCCESS',
         resultList: resultList,
-        pageKey: pageKey,
+        pageNo: pageNo,
         count: resultList.length,
         totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
       }),
