@@ -51,6 +51,52 @@ db.createCollection("DEV-CA-DOCUMENT", { capped: false,
  
 #create index
 #USER Collection
+db.createCollection("USER");
 db.USER.createIndex({id: 1}, {unique:true})
 db.USER.createIndex({sub: 1}, {unique:true})
+
+#DOCUMENT (cur DEV-CA-DOCUMENT)
+db.createCollection("DOCUMENT");
+db.DOCUMENT.createIndex({documentId: 1}, {unique:true})
+db.DOCUMENT.createIndex({created: -1})
+db.DOCUMENT.createIndex({accountId: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, confirmAuthorReward: -1})
+db.DOCUMENT.createIndex({state: 1, confirmVoteAmount: -1})
+
+#VOTE (cur DEV-CA-DOCUMENT-VOTE)
+db.createCollection("VOTE");
+db.VOTE.createIndex({id: 1, created: -1}, {unique:true})
+db.VOTE.createIndex({created: -1})
+db.VOTE.createIndex({documentId: 1, created: -1})
  
+
+#query collection's index
+ db.getCollectionNames().forEach(function(collection) {
+   indexes = db[collection].getIndexes();
+   print("Indexes for " + collection + ":");
+   printjson(indexes);
+});
+
+#  Remove a field from Documents
+db["DEV-CA-DOCUMENT-VOTE"].update({},{$unset: {documentInfo:1}},{multi: true});
+
+
+db["DEV-CA-DOCUMENT-VOTE"].find({id:"worn29@gmail.com"}).sort({created: -1});
+
+db["DEV-CA-DOCUMENT-VOTE"].aggregate(
+    [   
+        {
+            $match: {
+              id: "0x8B1D39Cd838B6ceBA4ef2475994c6fc66fD1E100"
+            }
+        },     
+        {
+            $group:
+            {
+                _id: {documentId: "$documentId"},
+                totalVoteAmount: {$sum: "$voteAmount"}
+            }
+        }
+    ]
+)

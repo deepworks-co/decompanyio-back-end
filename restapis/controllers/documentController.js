@@ -135,7 +135,7 @@ module.exports.list = (event, context, callback) => {
   const tag = params.tag;
   const path = params.path;
 
-  const promise1 = documentService.queryDocumentByLatest({
+  const promise1 = documentService.queryDocumentList({
     pageKey: pageKey,
     accountId: accountId,
     tag: tag,
@@ -171,7 +171,7 @@ module.exports.list = (event, context, callback) => {
 
   }).catch((err) => {
 
-    console.error("Exception queryDocumentByLatest.", err);
+    console.error("Exception queryDocumentList.", err);
     callback(null, {
       statusCode: 500,
       headers: {
@@ -187,16 +187,19 @@ module.exports.list = (event, context, callback) => {
   });
 };
 
+/**
+ * @description voted documets
+ * @url : /api/curator/document/list
+ */
 module.exports.listCuratorDocument = (event, context, callback) => {
 
   const body = JSON.parse(event.body);
 
-  const pageKey = body.params.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.params.pageKey), 'base64').toString()):null;
-  const accountId = body.params.accountId;
-  const tag = body.params.tag;
-  const path = body.params.path;
+  const pageKey = body.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.pageKey), 'base64').toString()):null;
+  const accountId = body.accountId;
+  const tag = body.tag;
+  const path = body.path;
 
-  console.log(body.params);
 
   const promise1 = documentService.queryVotedDocumentByCurator({
     pageKey: pageKey,

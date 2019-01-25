@@ -30,7 +30,7 @@ module.exports = {
         return await wapper.insert(TABLE_NAME, params);
     },
 
-    queryDocumentByLatest : queryDocumentByLatest = async (args) => {
+    queryDocumentList : queryDocumentList = async (args) => {
       console.log("queryDocumentByLatest args", args);
 
       const pageKey = args.pageKey;;
@@ -102,11 +102,29 @@ module.exports = {
             }
           },
           {
+            $group:
+            {
+                _id: {documentId: "$documentId"},
+                voteAmount: {$sum: "$voteAmount"}
+            }
+          },
+          {
             $lookup: {
               from: TABLE_NAME,
               localField: "documentId",
               foreignField: "documentId",
               as: "documentInfo"
+            }
+          },
+          {
+            $unwind: {
+              path: "$documentInfo",
+              "preserveNullAndEmptyArrays": true
+            }
+          },
+          {
+            "$match": {
+              "documentInfo": { "$exists": true, "$ne": null }
             }
           }]
         }
@@ -127,7 +145,7 @@ module.exports = {
       }
       const wapper = new MongoWapper(connectionString);
       const result = await wapper.findOne(TABLE_NAME_TOTALVIEWCOUNT, query);
-
+      console.log("queryTotalViewCountByToday", query, result);
       return result;
 
     },

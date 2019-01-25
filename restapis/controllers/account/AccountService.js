@@ -1,35 +1,33 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
+const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
 const MongoWapper = require('../../libs/mongo/MongoWapper.js');
 const USER_TALBE = "USER";
-const connectionString = 'mongodb://decompany:decompany1234@localhost:27017/decompany';
+const connectionString = mongodb.endpoint;
 const mongo = new MongoWapper(connectionString);
 module.exports = class AccountService {
 
 	async syncUserInfo(userInfo){
 		
-		try{
-			let user = userInfo;
+		let user = userInfo;
 
-			const queriedUser = await mongo.findOne(USER_TALBE, {
-				sub: userInfo.sub
-			});
+		const queriedUser = await mongo.findOne(USER_TALBE, {
+			sub: userInfo.sub
+		});
 
-			if(queriedUser){
-				console.log("saved user", queriedUser);
-				user._id = queriedUser._id;
-				user.id = queriedUser.id;
-				console.log("update user", user);
-			}  else {
-				const uuid = uuidv4().replace(/-/gi, "");
-				user.id = uuid;
-			}
-			
-			const result = await mongo.save(USER_TALBE, user);
-			return user;
-		} catch(e) {
-			console.error("syncUserInfo error", e);
+		if(queriedUser){
+			console.log("saved user", queriedUser);
+			user._id = queriedUser._id;
+			user.id = queriedUser.id;
+			console.log("update user", user);
+		}  else {
+			const uuid = uuidv4().replace(/-/gi, "");
+			user.id = uuid;
 		}
+		
+		const result = await mongo.save(USER_TALBE, user);
+		return user;
+		
 	}
 
 	async getUserInfo(user){

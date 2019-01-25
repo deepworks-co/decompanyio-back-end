@@ -7,7 +7,7 @@ const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
 
 module.exports.handler = async (event, context, callback) => {
-  console.log("accountAuth");
+  console.log("accountAuth", event.authorizationToken);
   if (!event.authorizationToken) {
     return callback('Unauthorized');
   }

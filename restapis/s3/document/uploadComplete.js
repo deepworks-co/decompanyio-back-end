@@ -15,19 +15,6 @@ exports.handler = function(event, context) {
   
   // key : FILE/anonymous%40infrawareglobal.com/12a3b909-ec42-4ac2-b0e0-3b01c6ccd77e.hwp
   // %40 => @
-  /*
-  sqs.sendMessage({
-    QueueUrl: QUEUE_URL,
-    MessageBody: "messageBody"
-  }, function(err, data){
-    if(err){
-      console.error("false", err);
-    } else {
-      console.log("success", data);
-    }
-
-  });
-  */
   run(event.Records).then((success)=>{
     console.log("success message", success);
     context.done(null, "success")
@@ -37,40 +24,6 @@ exports.handler = function(event, context) {
   
   
 }
-/*
-async function run(items){
-  let i=0;
-
-  for(i=0;i<items.length;i++){
-    const record = items[i];
-    
-    const key = record.s3.object.key;
-    const splits = key.split("/");
-    
-    const fileid = splits[2].split(".")[0];
-    const fileindex = decodeURIComponent(splits[1]);
-    const ext = splits[2].split(".")[1];
-    
-    const data = {
-      "fileindex": fileindex,
-      "fileid": fileid,
-      "ext": ext
-    }
-  
-    const messageBody = generateMessageBody(data);
-    const message = {
-      QueueUrl: QUEUE_URL,
-      MessageBody: messageBody
-    }
-    //console.log(message);
-    const res = await sendMessage(message);
-    console.log("result ",i, res, message);
-
-  }
-
-  return i;
-}
-*/
 
 async function run(items){
   
