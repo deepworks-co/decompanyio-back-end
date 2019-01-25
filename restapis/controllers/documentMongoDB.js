@@ -72,53 +72,49 @@ module.exports = {
 
     queryVotedDocumentByCurator : queryVotedDocumentByCurator = async (args) => {
 
-      const pageKey = args.pageKey;
-      let nextPageKey = {};
-      const pageNo = 1;
-      const pageSize = 10;
+      const pageNo = args.pageNo;
+      const pageSize = 50;
+      
 
-      if(pageKey){
-        nextPageKey = pageKey;
-        nextPageKey.pageNo = Number(pageKey.pageNo) + 1;
-      } else {
-        const accountId = args.accountId;
-        nextPageKey = {
-          pipeline : [{
-            $match: {
-              id: accountId
-            }
-          },
-          {
-            $group:
-            {
-                _id: {documentId: "$documentId"},
-                voteAmount: {$sum: "$voteAmount"}
-            }
-          },
-          {
-            $lookup: {
-              from: TABLE_NAME,
-              localField: "documentId",
-              foreignField: "documentId",
-              as: "documentInfo"
-            }
-          },
-          {
-            $unwind: {
-              path: "$documentInfo",
-              "preserveNullAndEmptyArrays": true
-            }
-          },
-          {
-            "$match": {
-              "documentInfo": { "$exists": true, "$ne": null }
-            }
-          }]
+      
+      const accountId = args.accountId;
+
+      queryPipeline = [{
+        $match: {
+          id: accountId
         }
-      }
+      },
+      {
+        $group:
+        {
+            _id: {documentId: "$documentId"},
+            voteAmount: {$sum: "$voteAmount"}
+        }
+      },
+      {
+        $lookup: {
+          from: TABLE_NAME,
+          localField: "documentId",
+          foreignField: "documentId",
+          as: "documentInfo"
+        }
+      },
+      {
+        $unwind: {
+          path: "$documentInfo",
+          "preserveNullAndEmptyArrays": true
+        }
+      },
+      {
+        "$match": {
+          "documentInfo": { "$exists": true, "$ne": null }
+        }
+      }]
+      
+      
 
       const wapper = new MongoWapper(connectionString);
-      const resultList = await wapper.aggregate(TABLE_NAME_VOTE, nextPageKey.pipeline);
+      const resultList = await wapper.aggregate(TABLE_NAME_VOTE, queryPipeline);
 
       return {
         resultList: resultList,

@@ -128,7 +128,7 @@ module.exports.list = (event, context, callback) => {
   console.log("event.body", event.body);
   const params = event.body?JSON.parse(event.body):{};
   
-  const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
+  const pageNo = (isNaN(params.pageNo) || params.pageNo<1)?1:Number(params.pageNo);
   const accountId = params.accountId;
   const tag = params.tag;
   const path = params.path;
@@ -194,14 +194,14 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   const body = JSON.parse(event.body);
 
-  const pageKey = body.pageKey?JSON.parse(Buffer.from(JSON.stringify(body.pageKey), 'base64').toString()):null;
+  const pageNo = (isNaN(params.pageNo) || params.pageNo<1)?1:Number(params.pageNo);
   const accountId = body.accountId;
   const tag = body.tag;
   const path = body.path;
 
 
   const promise1 = documentService.queryVotedDocumentByCurator({
-    pageKey: pageKey,
+    pageNo: pageNo,
     accountId: accountId,
     tag: tag
   })
