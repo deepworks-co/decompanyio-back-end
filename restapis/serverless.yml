@@ -1,0 +1,237 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: backend-restapis # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: us-west-1
+  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
+  #apiName: ${self:service.name}-api      # Api Gateway Name
+  environment:
+    message: "Deploy stage ${self:provider.stage}"
+    stage: ${self:provider.stage}
+    servicename: ${self:service.name}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:*
+       - s3:*
+       - logs:*
+       - sqs:*
+      Resource: "*"
+
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+# you can add statements to the Lambda function's IAM Role here
+
+
+# you can define service wide environment variables here
+  #environment:
+  #  CROS: true
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+package:
+   individually: true
+
+exclude:
+  - .gitignore
+  - .env
+
+functions:
+  s3DocumentUploadComplete:
+    handler: s3/document/uploadComplete.handler
+    events:
+      - existingS3: 
+        bucket: dev-ca-document
+        events:
+          - s3:ObjectCreated:Put
+        rules:
+          - prefix: FILE/
+
+  s3DocumentConvertComplete:
+    handler: s3/document/convertComplete.handler
+    events:
+      - existingS3: 
+        bucket: dev-ca-document
+        events: 
+          - s3:ObjectCreated:Put
+        rules:
+          - prefix: THUMBNAIL/
+
+  accountPicture:
+    handler: controllers/account/picture.handler
+    events:
+      - http: post /api/account/picture
+
+  accountGet:
+    handler: controllers/account/gethandler
+    events:
+      - http: get /api/account/get
+
+  accountUpdate:
+    handler: controllers/account/update.handler
+    events:
+      - http: post /api/account/update
+
+  accountAuth:
+    handler: controllers/account/auth.handler
+    cors: true 
+    
+  accountSync:
+    handler: controllers/account/sync.handler
+    events:
+      - http: 
+          path: /api/account/sync
+          method: post
+          cors: true
+          authorizer: accountAuth
+
+  oraclizeController:
+    handler: controllers/oraclizeController/index.handler
+    events:
+      - http: get /api/oraclize/viewcount
+
+  documentRegist:
+    handler: controllers/documentController.regist
+    events:
+      - http:
+          path: api/document/regist
+          method: post
+          cors: true
+
+  documentList:
+    handler: controllers/documentController.list
+    events:
+      - http:
+          path: api/document/list
+          method: post
+          cors: true
+
+  curatorDocumentCuratingList:
+    handler: controllers/documentController.listCuratorDocument
+    events:
+      - http:
+          path: api/curator/document/list
+          method: post
+          cors: true
+
+  ListTodayVotedDocumentByCurator:
+    handler: controllers/documentController.listTodayVotedDocumentByCurator
+    events:
+      - http:
+          path: api/curator/document/today
+          method: post
+          cors: true
+
+  documentInfo:
+    handler: controllers/documentController.info
+    events:
+      - http:
+          path: api/document/info/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  documentText:
+    handler: controllers/documentController.text
+    events:
+      - http:
+          path: api/document/text/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  documentVote:
+    handler: controllers/documentController.vote
+    events:
+      - http:
+          path: api/document/vote/{documentId}
+          method: post
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  documentDownload:
+    handler: controllers/documentController.downloadFile
+    events:
+      - http:
+          path: api/document/download/{accountId}/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    AccountPicture:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: dc-account-picture
+    #DocumentBucket:
+    #  Type: AWS::S3::Bucket
+    #  Properties:
+    #    BucketName: dev-ca-document
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
+
+custom:
+  serverless-offline:
+    port: 4080
+
+
+plugins:
+  - serverless-offline
+  - serverless-mocha-plugin
+  - serverless-plugin-existing-s3
