@@ -88,7 +88,8 @@ module.exports = {
         $group:
         {
             _id: {documentId: "$documentId"},
-            voteAmount: {$sum: "$voteAmount"}
+            voteAmount: {$sum: "$voteAmount"},
+            documentId : { $first: '$documentId' }
         }
       },
       {
@@ -118,7 +119,7 @@ module.exports = {
 
       return {
         resultList: resultList,
-        pageKey: nextPageKey
+        pageNo: pageNo
       };
     },
 

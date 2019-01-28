@@ -194,7 +194,7 @@ module.exports.listCuratorDocument = (event, context, callback) => {
 
   const body = JSON.parse(event.body);
 
-  const pageNo = (isNaN(params.pageNo) || params.pageNo<1)?1:Number(params.pageNo);
+  const pageNo = (isNaN(body.pageNo) || body.pageNo<1)?1:Number(body.pageNo);
   const accountId = body.accountId;
   const tag = body.tag;
   const path = body.path;
@@ -243,8 +243,8 @@ module.exports.listCuratorDocument = (event, context, callback) => {
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
-        message: 'FAIL',
-        err: err
+        success: false,
+        error: err,
       })
     });
   });

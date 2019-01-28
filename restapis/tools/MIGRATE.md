@@ -88,14 +88,41 @@ db["DEV-CA-DOCUMENT-VOTE"].aggregate(
     [   
         {
             $match: {
-              id: "0x8B1D39Cd838B6ceBA4ef2475994c6fc66fD1E100"
+              id: "worn29@gmail.com"
             }
         },     
         {
             $group:
             {
                 _id: {documentId: "$documentId"},
-                totalVoteAmount: {$sum: "$voteAmount"}
+                voteAmount: {$sum: "$voteAmount"},
+                documentId : { $first: '$documentId' }
+            }
+        },
+        {
+            $lookup: {
+                from: "DEV-CA-DOCUMENT",
+                localField: "documentId",
+                foreignField: "documentId",
+                as: "documentInfo"
+            }
+      },
+    ]
+)
+
+db["DEV-CA-DOCUMENT-VOTE"].aggregate(
+    [   
+        {
+            $match: {
+              id: "worn29@gmail.com"
+            }
+        },     
+        {
+            $group:
+            {
+                _id: {documentId: "$documentId"},
+                voteAmount: {$sum: "$voteAmount"},
+                documentId : { $first: '$documentId' }
             }
         }
     ]

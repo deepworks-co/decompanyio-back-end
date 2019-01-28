@@ -6,9 +6,12 @@ npm install --save-dev serverless-mocha-plugin
 npm install --save-dev serverless-offline
 npm install serverless-plugin-existing-s3
 
-# Setup Dependencies
+# Install Ethereum lib Dependencies
 npm install web3
 npm install ethereumjs-tx
+
+# Install Local Dependencies
+npm install ../decompany-modules/decompany-common-utils/
 
 #https://github.com/mafintosh/mongojs
 npm install mongojs
