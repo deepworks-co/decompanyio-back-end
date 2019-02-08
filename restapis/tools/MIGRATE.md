@@ -69,6 +69,12 @@ db.createCollection("VOTE");
 db.VOTE.createIndex({id: 1, created: -1}, {unique:true})
 db.VOTE.createIndex({created: -1})
 db.VOTE.createIndex({documentId: 1, created: -1})
+
+
+#DOCUMENT-TRACKING
+db.createCollection("DOCUMENT-TRACKING");
+db["DOCUMENT-TRACKING"].createIndex({id: 1, cid: 1, sid: 1, created: -1})
+db["DOCUMENT-TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
  
 
 #query collection's index
@@ -127,3 +133,33 @@ db["DEV-CA-DOCUMENT-VOTE"].aggregate(
         }
     ]
 )
+
+
+db["DOCUMENT-TRACKING"].aggregate(
+   [
+    {
+        $match: {
+            id: "6e1e0b4e86824eba81e9350a0fd1ff82"
+        }
+    },
+    {
+        $group: {
+            _id: {id: "$id", cid: "$cid",  sid: '$sid' },
+            documentId : { $first: '$id' },
+            cid : { $first: '$cid' },
+            sid : { $first: '$sid' },
+            t : { $first: '$t' },
+            resultList: { $addToSet: {id: "$_id", n: "$n", t: "$t"} },
+        }
+    },
+    {
+     $sort: {"t": 1}
+    }]
+).
+
+
+db["DOCUMENT-TRACKING"].find().forEach( function (x) {   
+  x.t = Number(x.t); // convert field to string
+  x.n = Number(x.n); // convert field to string
+  db["DOCUMENT-TRACKING"].save(x);
+});

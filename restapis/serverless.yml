@@ -26,8 +26,8 @@ provider:
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
   environment:
-    message: "Deploy stage ${self:provider.stage}"
     stage: ${self:provider.stage}
+    region: ${self:provider.region}
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
@@ -71,6 +71,7 @@ exclude:
   - .env
 
 functions:
+  
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
     events:
@@ -155,6 +156,22 @@ functions:
           path: api/curator/document/today
           method: post
           cors: true
+  
+  documentTrackingInfo:
+    handler: controllers/document/trackinginfo.handler
+    events:
+      - http: 
+          path: api/document/trackinginfo
+          method: get
+          cors: true
+
+  documentTracking:
+    handler: controllers/document/tracking.handler
+    events:
+      - http: 
+          path: api/document/tracking
+          method: get
+          cors: true
 
   documentInfo:
     handler: controllers/documentController.info
@@ -165,8 +182,8 @@ functions:
           cors: true
           request:
             parameters:
-                paths:
-                  id: true
+              paths:
+                id: true
 
   documentText:
     handler: controllers/documentController.text
@@ -191,6 +208,7 @@ functions:
             parameters:
                 paths:
                   id: true
+            
 
   documentDownload:
     handler: controllers/documentController.downloadFile
@@ -213,10 +231,11 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    AccountPicture:
-      Type: AWS::S3::Bucket
+    RestApiLogGroup:
+      Type: AWS::Logs::LogGroup
       Properties:
-        BucketName: dc-account-picture
+        RetentionInDays: "7"
+        LogGroupName: LogGroup-${self:provider.region}-${self:service}
     #DocumentBucket:
     #  Type: AWS::S3::Bucket
     #  Properties:

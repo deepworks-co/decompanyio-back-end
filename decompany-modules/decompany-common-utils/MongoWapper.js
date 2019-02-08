@@ -72,8 +72,6 @@ module.exports = class MongoWapper {
 
     return new Promise((resolve, reject) => {
 
-      const skip = !isNaN(pageNo) && pageNo > 1? ((pageNo - 1) * pageSize) : 0;
-
       this.db.collection(collection).find(query).sort(sort).toArray((err, res)=>{
         if(err){
           reject(err);

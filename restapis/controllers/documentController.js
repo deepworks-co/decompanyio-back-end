@@ -305,55 +305,41 @@ module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
 };
 
 
-module.exports.info = (event, context, callback) => {
+module.exports.info = async (event, context, callback) => {
 
-  //console.log(event);
+  //console.log("event : ", event);
+  //console.log("context : ", context);
+
   const documentId = event.pathParameters.documentId;
 
-  if(!documentId) return;
-
-  const promise1 = documentService.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
-
-  const promise2 = documentService.getFeaturedDocuments({documentId: documentId});
-
-  Promise.all([promise1, promise2]).then((results) => {
-
-    const document = results[0];
-    const featuredList = results[1];
-    
-    callback(null, {
+  if(!documentId){
+    callback("document is not exist", {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: document?true:false,
-        message: document?"SUCCESS":"Document is not exist",
-        document: document,
-        featuredList: featuredList
-      }),
-    });
+      }});
+  }
 
+  const document = await documentService.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
 
-    
+  const featuredList = await documentService.getFeaturedDocuments({documentId: documentId});
 
-  }).catch((err) => {
-    console.error("error : ", err);
-
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        message: err
-      }),
-    });
-
+  callback(null, {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    body: JSON.stringify({
+      success: document?true:false,
+      message: document?"SUCCESS":"Document is not exist",
+      document: document,
+      featuredList: featuredList
+    }),
   });
+
+
 }
 
 module.exports.text = (event, context, callback) => {
@@ -362,9 +348,9 @@ module.exports.text = (event, context, callback) => {
   const documentId = event.pathParameters.documentId;
 
   if(!documentId) return;
-  console.log(documentId);
+  //console.log(documentId);
   s3.getDocumentTextById(documentId).then((data) => {
-    console.info(data);
+    //console.info(data);
 
     callback(null, {
       statusCode: 200,

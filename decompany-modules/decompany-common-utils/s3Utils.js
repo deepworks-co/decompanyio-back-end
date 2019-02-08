@@ -21,4 +21,4 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     });
 
     return url;
-  }
+ }
