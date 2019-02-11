@@ -11,7 +11,7 @@ module.exports.handler = async (event, context, callback) => {
 
 
   if(!body.id || !body.e){
-    console.log("tracking error", "parameter is invaildate")
+    console.log("tracking error", "parameter is invalid")
     return (null, {
       statusCode: 200,
       body: "e"
@@ -29,6 +29,7 @@ module.exports.handler = async (event, context, callback) => {
 
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
+      console.log("logging kinesis firehose...");
       await firehose.putRecord("us-east-1", applicationLogAppender.deliveryStream, body);
     } catch(e){
       console.error("applicationLogAppender error", e);
@@ -36,6 +37,7 @@ module.exports.handler = async (event, context, callback) => {
     
   }
 
+  console.log("logging mongodb...");
   const result = await documentService.putTrackingInfo(body);
   console.log(result);
 

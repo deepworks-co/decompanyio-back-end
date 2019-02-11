@@ -10,7 +10,7 @@
         "USER": "USER"
     },
     "applicationLogAppender": {
-        "enable": true,
+        "enable": false,
         "region": "us-east-1",
         "deliveryStream": "ApplicationLogToRedshiftDeliveryStream"
     }

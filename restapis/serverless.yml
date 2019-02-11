@@ -31,7 +31,7 @@ provider:
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
-
+  logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
       Action:

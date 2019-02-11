@@ -309,11 +309,10 @@ module.exports.info = async (event, context, callback) => {
 
   //console.log("event : ", event);
   //console.log("context : ", context);
-
   const documentId = event.pathParameters.documentId;
 
   if(!documentId){
-    callback("document is not exist", {
+    return("parameter is invalid!", {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -325,7 +324,7 @@ module.exports.info = async (event, context, callback) => {
 
   const featuredList = await documentService.getFeaturedDocuments({documentId: documentId});
 
-  callback(null, {
+  return (null, {
     statusCode: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
