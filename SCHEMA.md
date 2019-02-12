@@ -1,5 +1,6 @@
 # ver 3.6 over
-# DOCUMENT
+
+## create table DOCUMENT
 
 ```javascript
 db.createCollection("DOCUMENT", {
@@ -24,7 +25,7 @@ db.createCollection("DOCUMENT", {
                enum: [ "NOT_CONVERT", "CONVERT_COMPLETE", "CONVERT_ERROR", null ],
                description: "can only be one of the enum values and is required"
             }
-            
+
          }
       }
    }
@@ -60,16 +61,16 @@ db.runCommand( {
 } )
 ```
 
-#ver 3.2
+## ver 3.2
 
 ```javascript
 db.runCommand( {
    collMod: "DOCUMENT-TRACKING",
-   validator: { 
-       $and: [ 
-           { id: { $exists: true } }, 
-           { cid: { $exists: true } }, 
-           { sid: { $exists: true } }, 
+   validator: {
+       $and: [
+           { id: { $exists: true } },
+           { cid: { $exists: true } },
+           { sid: { $exists: true } },
            { created: { $exists: true }}
         ]
    }
