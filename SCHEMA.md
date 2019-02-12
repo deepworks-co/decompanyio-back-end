@@ -1,5 +1,7 @@
-#ver 3.6 over
-#DOCUMENT
+# ver 3.6 over
+# DOCUMENT
+
+```javascript
 db.createCollection("DOCUMENT", {
    validator: {
       $jsonSchema: {
@@ -27,7 +29,9 @@ db.createCollection("DOCUMENT", {
       }
    }
 })
+```
 
+```javascript
 db.runCommand( {
    collMod: "DEV-CA-DOCUMENT",
    validator: { $jsonSchema: {
@@ -54,8 +58,11 @@ db.runCommand( {
       }
    }
 } )
+```
 
 #ver 3.2
+
+```javascript
 db.runCommand( {
    collMod: "DOCUMENT-TRACKING",
    validator: { 
@@ -67,3 +74,4 @@ db.runCommand( {
         ]
    }
 } )
+```
