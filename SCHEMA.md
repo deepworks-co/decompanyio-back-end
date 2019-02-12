@@ -58,5 +58,12 @@ db.runCommand( {
 #ver 3.2
 db.runCommand( {
    collMod: "DOCUMENT-TRACKING",
-   validator: { $and: [ { id: { $exists: true } }, { cid: { $exists: true } }, { sid: { $exists: true } }, { created: { $exists: true }  ] }
+   validator: { 
+       $and: [ 
+           { id: { $exists: true } }, 
+           { cid: { $exists: true } }, 
+           { sid: { $exists: true } }, 
+           { created: { $exists: true }}
+        ]
+   }
 } )
