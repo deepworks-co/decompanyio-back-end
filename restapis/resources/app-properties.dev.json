@@ -1,5 +1,17 @@
 {
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@172.31.31.101:27017/decompany"
+    },
+    "tables":{
+        "DOCUMENT": "DEV-CA-DOCUMENT",
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "TRACKING": "DOCUMENT-TRACKING",
+        "USER": "USER"
+    },
+    "applicationLogAppender": {
+        "enable": false,
+        "region": "us-east-1",
+        "deliveryStream": "ApplicationLogToRedshiftDeliveryStream"
     }
 }

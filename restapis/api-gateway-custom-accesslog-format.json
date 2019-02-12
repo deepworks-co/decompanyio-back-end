@@ -1,0 +1,14 @@
+{
+    "patchOperations": [
+      {
+        "op": "replace",
+        "path": "/accessLogSettings/format",
+        "value": "{ \"requestid\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"useragent\":\"$context.identity.userAgent\", \"requesttime\":\"$context.requestTime\", \"requesttimeepoch\":\"$context.requestTimeEpoch\", \"httpmethod\":\"$context.httpMethod\",\"resourcepath\":\"$context.resourcePath\", \"path\":\"$context.path\", \"responselatency\":\"$context.responseLatency\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responselength\":\"$context.responseLength\"}"
+      },
+      {
+        "op": "replace",
+        "path": "/accessLogSettings/destinationArn",
+        "value": "arn:aws:logs:us-west-1:197966029048:log-group:us-west-1-backend-restapis-AccessLogGroup"
+      }
+    ]
+  }

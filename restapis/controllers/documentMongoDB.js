@@ -1,11 +1,11 @@
 const utils = require('decompany-common-utils');
-const { mongodb } = require('../resources/config.js').APP_PROPERTIES();
-const MongoWapper = require('../libs/mongo/MongoWapper.js');
+const { mongodb, tables } = require('../resources/config.js').APP_PROPERTIES();
+const MongoWapper = require('decompany-common-utils').MongoWapper;
 
-const TABLE_NAME = "DEV-CA-DOCUMENT";
-const TABLE_NAME_VOTE = "DEV-CA-DOCUMENT-VOTE";
-const TABLE_NAME_TOTALVIEWCOUNT = "DEV-CA-CRONHIST-TOTALVIEWCOUNT";
-
+const TABLE_NAME = tables.DOCUMENT;
+const TABLE_NAME_VOTE = tables.VOTE;
+const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
+const TB_TRACKING = tables.TRACKING;
 
 const connectionString = mongodb.endpoint;
 
@@ -88,7 +88,8 @@ module.exports = {
         $group:
         {
             _id: {documentId: "$documentId"},
-            voteAmount: {$sum: "$voteAmount"}
+            voteAmount: {$sum: "$voteAmount"},
+            documentId : { $first: '$documentId' }
         }
       },
       {
@@ -118,7 +119,7 @@ module.exports = {
 
       return {
         resultList: resultList,
-        pageKey: nextPageKey
+        pageNo: pageNo
       };
     },
 
@@ -188,7 +189,7 @@ module.exports = {
     },
 
     updateVoteHist : updateVoteHist = (item) => {
-      /* no used
+      /* not used
       const timestamp = Date.now();
       const today = new Date(timestamp);
 
@@ -261,5 +262,34 @@ module.exports = {
 
       let wapper = new MongoWapper(connectionString);
       return await wapper.find(TABLE_NAME, params, 1, 10);
+    },
+
+    putTrackingInfo : putTrackingInfo = async (body) => {
+      let wapper = new MongoWapper(connectionString);
+      
+      return await wapper.save(TB_TRACKING, body);
+    },
+
+    getTrackingInfo : getTrackingInfo = async (documentId) => {
+      const wapper = new MongoWapper(connectionString);
+      queryPipeline = [{
+        $match: {
+            id: documentId
+        }
+      },
+      {
+        $group: {
+            _id: {documentId: "$documentId", cid: "$cid",  sid: '$sid' },
+            cid : { $first: '$cid' },
+            sid : { $first: '$sid' },
+            resultList: { $addToSet: {id: "$_id", n: "$n", t: "$t", e: "$e", cid: "$cid", sid: "$sid"} },
+        }
+      },
+      {
+        $sort: {t: 1}
+      }]
+
+      
+      return await wapper.aggregate(TB_TRACKING, queryPipeline);
     },
 }

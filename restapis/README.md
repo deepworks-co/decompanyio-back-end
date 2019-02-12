@@ -6,9 +6,12 @@ npm install --save-dev serverless-mocha-plugin
 npm install --save-dev serverless-offline
 npm install serverless-plugin-existing-s3
 
-# Setup Dependencies
+# Install Ethereum lib Dependencies
 npm install web3
 npm install ethereumjs-tx
+
+# Install Local Dependencies
+npm install ../decompany-modules/decompany-common-utils/
 
 #https://github.com/mafintosh/mongojs
 npm install mongojs
@@ -45,6 +48,37 @@ sls create function -f s3DocumentUploadComplete --handler s3/document/create.han
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
 
+# api gateway stage custom access log enable
+aws apigateway update-stage \
+--rest-api-id "j5hgenjo04" \
+--stage-name "dev" \
+--cli-input-json "file://api-gateway-custom-accesslog-format.json"
 
 #API GATEWAY Custom Access Log Format
 { "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","userAgent":"$context.identity.userAgent", "requestTime":"$context.requestTime", "requestTimeEpoch":"$context.requestTimeEpoch", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "path":"$context.path", "responseLatency":"$context.responseLatency", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }
+
+#CloudWatch Custom Access Log Subscriptions to kinesis data stream
+aws logs put-subscription-filter \
+    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
+    --destination-arn "arn:aws:kinesis:us-east-1:197966029048:stream/AccessLogRestApiStream" \
+    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisRole" \
+    --filter-name "backend-restapis"  \
+    --filter-pattern ""
+
+#subscriptions to kinesis firehose delivery stream
+
+# to S3
+aws logs put-subscription-filter \
+    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
+    --filter-name "backend-restapis" \
+    --filter-pattern "" \
+    --destination-arn "arn:aws:firehose:us-east-1:197966029048:deliverystream/AccessLogDeliveryStream" \
+    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisFirehoseRole"
+
+# to Redshift
+aws logs put-subscription-filter \
+    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
+    --filter-name "backend-restapis" \
+    --filter-pattern "" \
+    --destination-arn "arn:aws:firehose:us-east-1:197966029048:deliverystream/AccessLogToRedshiftDeliveryStream" \
+    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisFirehoseRole"

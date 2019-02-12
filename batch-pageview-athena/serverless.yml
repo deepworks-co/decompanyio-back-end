@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: batch-onchain # NOTE: update this with your service name
+service: aws-nodejs # NOTE: update this with your service name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -20,8 +20,8 @@ service: batch-onchain # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
-  stage: ${opt:stage, 'dev'}
-  region: us-west-1
+  stage: dev
+  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -53,60 +53,11 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  registYesterdayViewCount:
-    handler: functions/sqs/registYesterdayViewCount/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 1
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-          batchSize: 1
-          enabled: true
+  s3AggregationPageView:
+    handler: s3/aggregation/pageview.handler
+  hello:
+    handler: handler.hello
 
-  registYesterdayTotalViewCount:
-    handler: functions/sqs/registYesterdayTotalViewCount/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 1
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-TOTALVIEWCOUNT
-          batchSize: 1
-          enabled: true
-
-  cronVotesPerDocumentCurrent:
-    handler: functions/sqs/cronVotesPerDocumentCurrent/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-CURRENTVOTES
-          batchSize: 10
-          enabled: false
-
-  cronDepositDocument:
-    handler: functions/sqs/cronDepositDocument/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-YESTERDAYVOTES
-          batchSize: 10
-          enabled: true
-
-  cronAuthorConfirmReward:
-    handler: functions/sqs/cronAuthorConfirmReward/index.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 10
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-AUTHORCONFIRMREWARD
-          batchSize: 10
-          enabled: true
-
-
-  contractInfo:
-    handler: functions/contract/contractInfo/index.handler
-    
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -151,3 +102,5 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+plugins:
+  - serverless-mocha-plugin
