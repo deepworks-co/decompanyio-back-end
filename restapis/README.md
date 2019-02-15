@@ -101,3 +101,7 @@ aws logs put-subscription-filter \
     --filter-pattern "" \
     --destination-arn "arn:aws:firehose:us-east-1:197966029048:deliverystream/AccessLogToRedshiftDeliveryStream" \
     --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisFirehoseRole"
+
+## API Document download
+
+serverless downloadDocumentation --outputFileName=restapis.yml -s dev
