@@ -1,7 +1,7 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
 const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
-const MongoWapper = require('../../libs/mongo/MongoWapper.js');
+const MongoWapper = require('decompany-common-utils').MongoWapper;
 const USER_TALBE = "USER";
 const connectionString = mongodb.endpoint;
 const mongo = new MongoWapper(connectionString);

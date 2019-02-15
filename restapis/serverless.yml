@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   # you can overwrite defaults here
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, ''}
   region: us-west-1
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
@@ -40,13 +40,6 @@ provider:
        - logs:*
        - sqs:*
       Resource: "*"
-
-  vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
 # you can add statements to the Lambda function's IAM Role here
 
 
@@ -70,8 +63,7 @@ exclude:
   - .gitignore
   - .env
 
-functions:
-  
+functions:  
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
     events:
@@ -157,21 +149,36 @@ functions:
           method: post
           cors: true
   
-  documentTrackingInfo:
-    handler: controllers/document/trackinginfo.handler
+  trackingList:
+    handler: controllers/tracking/list.handler
+    events:
+      - http: get /api/tracking/list
+        cors: true
+
+  trackingInfo:
+    handler: controllers/tracking/info.handler
     events:
       - http: 
-          path: api/document/trackinginfo
+          path: api/tracking/info
           method: get
           cors: true
 
-  documentTracking:
-    handler: controllers/document/tracking.handler
+  tracking/collect:
+    handler: controllers/tracking/collect.handler
     events:
       - http: 
-          path: api/document/tracking
+          path: api/tracking/collect
           method: get
           cors: true
+          documentation:
+            summary: "tracking collector"
+            description: "collector for user's event tracking"
+            pathParams:
+              - name: status
+                schema:
+                  type: string
+                  enum: [approved, pending, closed, new]
+              
 
   documentInfo:
     handler: controllers/documentController.info
@@ -222,8 +229,6 @@ functions:
                 paths:
                   id: true
 
-
-
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
@@ -248,9 +253,13 @@ resources:
 custom:
   serverless-offline:
     port: 4080
-
-
+  documentation:
+    version: '1'
+    title: '${self:service.name} API'
+    description: 'This is my API'
+ 
 plugins:
   - serverless-offline
+  - serverless-aws-documentation
   - serverless-mocha-plugin
   - serverless-plugin-existing-s3
