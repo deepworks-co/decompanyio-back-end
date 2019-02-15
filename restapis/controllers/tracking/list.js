@@ -4,7 +4,7 @@ const documentService = require('../documentMongoDB');
 module.exports.handler = async (event, context, callback) => {
 
   const body = event.queryStringParameters?event.queryStringParameters:{};
-  console.log("parameter", body);
+  //console.log("parameter", body);
   if(!body.documentId){
     callback ("parameter is null");
   }
@@ -13,7 +13,11 @@ module.exports.handler = async (event, context, callback) => {
     const cid = body.cid;
     const sid = body.sid;
     const resultList = await documentService.getTrackingList(documentId, cid, sid);
-    console.log(resultList);
+    console.log("query result", resultList);
+
+    const r = resultList[0]?resultList[0].resultList:null;
+
+    
 
     const response = {
       statusCode: 200,
@@ -23,7 +27,7 @@ module.exports.handler = async (event, context, callback) => {
       },
       body: JSON.stringify({
         success: true,
-        resultList: resultList
+        resultList: r
       })
     };
 

@@ -7,10 +7,11 @@
         "VOTE": "DEV-CA-DOCUMENT-VOTE",
         "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "TRACKING": "DOCUMENT-TRACKING",
+        "TRACKING_USER": "DOCUMENT-TRACKING-USER",
         "USER": "USER"
     },
     "applicationLogAppender": {
-        "enable": true,
+        "enable": false,
         "region": "us-east-1",
         "deliveryStream": "ApplicationLogToRedshiftDeliveryStream"
     }

@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ResponseModel",
+    "type": "object",
+    "properties": {
+      "success": { "type": "boolean" },
+      "resultList": {
+        "type": "array"
+      }
+    }
+}

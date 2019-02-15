@@ -10,11 +10,11 @@ module.exports.handler = async (event, context, callback) => {
   console.log("tracking call", body, headers);
 
 
-  if(!body.id || !body.e){
+  if(!body.id || !body.cid || !body.sid || !body.t){
     console.log("tracking error", "parameter is invalid")
     return (null, {
       statusCode: 200,
-      body: "e"
+      body: "no collecting"
     })
   }
 
@@ -36,14 +36,18 @@ module.exports.handler = async (event, context, callback) => {
     }
     
   }
+  await documentService.putTrackingUser({
+    cid: body.cid,
+    sid: body.sid,
+    e: body.e,
+    created: Date.now()
+  });
 
-  console.log("logging mongodb...");
   const result = await documentService.putTrackingInfo(body);
-  console.log(result);
 
   const response = {
     statusCode: 200,
-    body: ""
+    body: "ok"
   };
 
   return (null, response);

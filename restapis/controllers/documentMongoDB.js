@@ -6,6 +6,7 @@ const TABLE_NAME = tables.DOCUMENT;
 const TABLE_NAME_VOTE = tables.VOTE;
 const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
 const TB_TRACKING = tables.TRACKING;
+const TB_TRACKING_USER = tables.TRACKING_USER;
 
 const connectionString = mongodb.endpoint;
 
@@ -206,11 +207,35 @@ module.exports = {
       return await wapper.find(TABLE_NAME, params, 1, 10);
     },
 
-    putTrackingInfo : putTrackingInfo = async (body) => {
-      let wapper = new MongoWapper(connectionString);
-      
-      return await wapper.save(TB_TRACKING, body);
-    },
+  putTrackingInfo : putTrackingInfo = async (body) => {
+    let wapper = new MongoWapper(connectionString);
+    
+    return await wapper.save(TB_TRACKING, body);
+  },
+
+
+  /**
+   * @param  {} body
+   * @property cid
+   * @property sid
+   * @property e
+   * @property created
+   */
+  putTrackingUser : putTrackingUser = async (body) => {
+    let wapper = new MongoWapper(connectionString);
+
+    const result = await wapper.findOne(TB_TRACKING_USER, {
+      cid: body.cid, 
+      sid: body.sid,
+      e: body.e
+    });
+
+    if(!result){
+      return await wapper.save(TB_TRACKING_USER, body);
+    }
+    
+    return null;    
+  },
 
   
 
@@ -223,27 +248,29 @@ module.exports = {
         $match: {
             id: documentId
         }
-    },
-    {
+      },
+      {
         $group: {
           _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
           count: {$sum: 1},
           latest: {$min: "$t"},
           cid: {$first: "$cid"},
           sid: {$first: "$sid"},
+          e: {$first: "$e"},
           viewingPages: {$addToSet: "$n"}
         }
-    },
-    {
-        $sort: {"latest": -1}
-    }]
+      },
+      {
+          $sort: {"latest": -1}
+      }
+    ]
 
-    console.log(queryPipeline);
+    //console.log(queryPipeline);
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
   },
 
   getTrackingList : getTrackingList = async (documentId, cid, sid) => {
-    if(!documentId){
+    if(!documentId || !cid || !sid){
       throw new Error("document id is invalid");
     }
 
@@ -269,7 +296,7 @@ module.exports = {
           }
       },
       {
-      $sort: {"latest": -1}
+        $sort: {"latest": -1}
       }
     ]
     console.log(queryPipeline);
