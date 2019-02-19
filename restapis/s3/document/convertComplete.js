@@ -1,6 +1,6 @@
 'use strict';
 const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
-const MongoWapper = require('../../libs/mongo/MongoWapper.js');
+const MongoWapper = require('decompany-common-utils').MongoWapper;
 
 var AWS = require("aws-sdk");
 AWS.config.update({

@@ -6,6 +6,7 @@ const TABLE_NAME = tables.DOCUMENT;
 const TABLE_NAME_VOTE = tables.VOTE;
 const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
 const TB_TRACKING = tables.TRACKING;
+const TB_TRACKING_USER = tables.TRACKING_USER;
 
 const connectionString = mongodb.endpoint;
 
@@ -188,65 +189,7 @@ module.exports = {
 
     },
 
-    updateVoteHist : updateVoteHist = (item) => {
-      /* not used
-      const timestamp = Date.now();
-      const today = new Date(timestamp);
-
-      const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-
-      console.log("Put Vote Item", item, "timestamp", timestamp, "blockchainTimestamp", blockchainTimestamp);
-
-      const curatorId = item.curatorId;
-      const voteAmount = Number(item.voteAmount);
-      const documentInfo = item.documentInfo;
-      const documentId = documentInfo.documentId;
-      const transactionInfo = item.transactionInfo;
-      const ethAccount = item.ethAccount;   //curator's ether account
-      const state = item.state;
-      if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
-        return Promise.reject({msg:"Parameter is invaild", detail:item});
-      }
-
-      const queryKey = {
-        id: blockchainTimestamp + "#" + documentId,
-        curatorId: curatorId
-      }
-
-      const updateItem = {
-          TableName: "DEV-CA-VOTE-HIST",
-          Key: queryKey,
-          UpdateExpression: "set #created=:created, #documentId=:documentId, \
-          #ethAccount = list_append(if_not_exists(#ethAccount, :empty_list), :ethAccount), \
-          #voteAmount = list_append(if_not_exists(#voteAmount, :empty_list), :voteAmount), \
-          #documentInfo = :documentInfo, #state = :state, #transactionInfo = :transactionInfo",
-          ExpressionAttributeNames: {
-              "#voteAmount": "voteAmount",
-              "#created": "created",
-              "#ethAccount": "ethAccount",
-              "#documentId": "documentId",
-              "#documentInfo": "documentInfo",
-              "#state": "state",
-              "#transactionInfo": "transactionInfo"
-          },
-          ExpressionAttributeValues: {
-              ":voteAmount": [Number(voteAmount)],
-              ":created": timestamp,
-              ":ethAccount": [ethAccount],
-              ":documentId": documentId,
-              ":empty_list": [],
-              ":documentInfo": documentInfo,
-              ":state": state?state:"INIT",
-              ":transactionInfo": transactionInfo?transactionInfo:{}
-          },
-          ReturnValues: "UPDATED_NEW"
-      }
-
-      return docClient.update(updateItem).promise();
-      */
-      return Promise.resolve("success");
-    },
-
+  
     getFeaturedDocuments : getFeaturedDocuments = async (args) => {
 
       let params = null;
@@ -264,32 +207,100 @@ module.exports = {
       return await wapper.find(TABLE_NAME, params, 1, 10);
     },
 
-    putTrackingInfo : putTrackingInfo = async (body) => {
-      let wapper = new MongoWapper(connectionString);
-      
-      return await wapper.save(TB_TRACKING, body);
-    },
+  putTrackingInfo : putTrackingInfo = async (body) => {
+    let wapper = new MongoWapper(connectionString);
+    
+    return await wapper.save(TB_TRACKING, body);
+  },
 
-    getTrackingInfo : getTrackingInfo = async (documentId) => {
-      const wapper = new MongoWapper(connectionString);
-      queryPipeline = [{
+
+  /**
+   * @param  {} body
+   * @property cid
+   * @property sid
+   * @property e
+   * @property created
+   */
+  putTrackingUser : putTrackingUser = async (body) => {
+    let wapper = new MongoWapper(connectionString);
+
+    const result = await wapper.findOne(TB_TRACKING_USER, {
+      cid: body.cid, 
+      sid: body.sid,
+      e: body.e
+    });
+
+    if(!result){
+      return await wapper.save(TB_TRACKING_USER, body);
+    }
+    
+    return null;    
+  },
+
+  
+
+  getTrackingInfo : getTrackingInfo = async (documentId) => {
+    if(!documentId){
+      throw new Error("document id is invalid");
+    }
+    const wapper = new MongoWapper(connectionString);
+    queryPipeline = [{
         $match: {
             id: documentId
         }
       },
       {
         $group: {
-            _id: {documentId: "$documentId", cid: "$cid",  sid: '$sid' },
-            cid : { $first: '$cid' },
-            sid : { $first: '$sid' },
-            resultList: { $addToSet: {id: "$_id", n: "$n", t: "$t", e: "$e", cid: "$cid", sid: "$sid"} },
+          _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
+          count: {$sum: 1},
+          latest: {$min: "$t"},
+          cid: {$first: "$cid"},
+          sid: {$first: "$sid"},
+          e: {$first: "$e"},
+          viewingPages: {$addToSet: "$n"}
         }
       },
       {
-        $sort: {t: 1}
-      }]
+          $sort: {"latest": -1}
+      }
+    ]
 
-      
-      return await wapper.aggregate(TB_TRACKING, queryPipeline);
-    },
+    //console.log(queryPipeline);
+    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+  },
+
+  getTrackingList : getTrackingList = async (documentId, cid, sid) => {
+    if(!documentId || !cid || !sid){
+      throw new Error("document id is invalid");
+    }
+
+    const wapper = new MongoWapper(connectionString);
+    queryPipeline = [
+      {
+        $match: {
+          id: documentId, 
+          cid: cid,
+          sid: sid
+        }
+      },
+      {
+        $sort: {"t": 1}
+      },
+      {
+          $group: {
+            _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
+            cid : { $first: '$cid' },
+            sid : { $first: '$sid' },
+            latest: {$min: "$t"},
+            resultList: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+          }
+      },
+      {
+        $sort: {"latest": -1}
+      }
+    ]
+    console.log(queryPipeline);
+    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+  },
+
 }
