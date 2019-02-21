@@ -123,3 +123,8 @@ db["DOCUMENT-TRACKING"].find().forEach( function (x) {
   db["DOCUMENT-TRACKING"].save(x);
 });
 ```
+
+db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].find().forEach( function (x) {
+  x._id = x.date
+  db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].save(x);
+});
