@@ -35,6 +35,10 @@ sudo node ../docker-npm.js rebuild
 
 sls deploy
 
+# Deploy by function
+
+serverless deploy function -f trackingCollect
+
 # show deploy function list
 
 sls deploy list
@@ -50,7 +54,7 @@ sls logs -f registYesterdayViewCount  -t
 
 # serverless-mocha-plugin
 
-# create function example
+## create function example
 
 sls create function -f accountSync --handler controllers/account/sync.handler --httpEvent "get /api/account/sync"
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
@@ -60,48 +64,3 @@ sls create function -f accountPicture --handler controllers/account/picture.hand
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
-
-# api gateway stage custom access log enable
-
-aws apigateway update-stage \
---rest-api-id "j5hgenjo04" \
---stage-name "dev" \
---cli-input-json "file://api-gateway-custom-accesslog-format.json"
-
-# API GATEWAY Custom Access Log Format
-
-{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","userAgent":"$context.identity.userAgent", "requestTime":"$context.requestTime", "requestTimeEpoch":"$context.requestTimeEpoch", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "path":"$context.path", "responseLatency":"$context.responseLatency", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }
-
-# CloudWatch Custom Access Log Subscriptions to kinesis data stream
-
-aws logs put-subscription-filter \
-    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
-    --destination-arn "arn:aws:kinesis:us-east-1:197966029048:stream/AccessLogRestApiStream" \
-    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisRole" \
-    --filter-name "backend-restapis"  \
-    --filter-pattern ""
-
-# subscriptions to kinesis firehose delivery stream
-
-
-# to S3
-
-aws logs put-subscription-filter \
-    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
-    --filter-name "backend-restapis" \
-    --filter-pattern "" \
-    --destination-arn "arn:aws:firehose:us-east-1:197966029048:deliverystream/AccessLogDeliveryStream" \
-    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisFirehoseRole"
-
-# to Redshift
-
-aws logs put-subscription-filter \
-    --log-group-name "us-west-1-backend-restapis-AccessLogGroup" \
-    --filter-name "backend-restapis" \
-    --filter-pattern "" \
-    --destination-arn "arn:aws:firehose:us-east-1:197966029048:deliverystream/AccessLogToRedshiftDeliveryStream" \
-    --role-arn "arn:aws:iam::197966029048:role/CWLtoKinesisFirehoseRole"
-
-## API Document download
-
-serverless downloadDocumentation --outputFileName=restapis.yml -s dev

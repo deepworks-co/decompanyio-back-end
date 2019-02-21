@@ -1,0 +1,47 @@
+{
+  "DeliveryStreamName": "TrackingDeliveryStream", 
+  "DeliveryStreamType": "DirectPut", 
+  "RedshiftDestinationConfiguration": {
+      "RoleARN": "arn:aws:iam::197966029048:role/firehose_delivery_role", 
+      "ClusterJDBCURL": "jdbc:redshift://redshift-cluster-1.cqr2qidshnsj.us-east-1.redshift.amazonaws.com:5439/dev", 
+      "CopyCommand": {
+          "DataTableName": "tracking_log", 
+          "DataTableColumns": "", 
+          "CopyOptions": "format as json 'auto'"
+      }, 
+      "Username": "decompany", 
+      "Password": "Decompany1122!", 
+      "RetryOptions": {
+          "DurationInSeconds": 3600
+      }, 
+      "S3Configuration": {
+          "RoleARN": "arn:aws:iam::197966029048:role/firehose_delivery_role", 
+          "BucketARN": "arn:aws:s3:::dev-vi-decompany-logs", 
+          "Prefix": "firehose/TrackingDeliveryStream/source/",
+          "BufferingHints": {
+              "SizeInMBs": 5, 
+              "IntervalInSeconds": 300
+          }, 
+          "CompressionFormat": "UNCOMPRESSED", 
+          "EncryptionConfiguration": {
+              "NoEncryptionConfig": "NoEncryption"
+          }, 
+          "CloudWatchLoggingOptions": {
+              "Enabled": true, 
+              "LogGroupName": "/aws/kinesisfirehose/TrackingDeliveryStream", 
+              "LogStreamName": "S3Delivery"
+          }
+      },
+      "CloudWatchLoggingOptions": {
+          "Enabled": true, 
+          "LogGroupName": "/aws/kinesisfirehose/TrackingDeliveryStream", 
+          "LogStreamName": "RedshiftDelivery"
+      }
+  },
+  "Tags": [
+      {
+          "Key": "APPLICATION", 
+          "Value": "TRACKING"
+      }
+  ]
+}

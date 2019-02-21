@@ -1,0 +1,33 @@
+{
+    "DeliveryStreamName": "TrackingDeliveryStream", 
+    "DeliveryStreamType": "KinesisStreamAsSource",
+    "KinesisStreamSourceConfiguration": {
+        "KinesisStreamARN": "arn:aws:kinesis:us-west-1:197966029048:stream/TrackingDataStream", 
+        "RoleARN": "arn:aws:iam::197966029048:role/firehose_delivery_role"
+    }, 
+    "S3DestinationConfiguration": {
+        "RoleARN": "arn:aws:iam::197966029048:role/firehose_delivery_role", 
+        "BucketARN": "arn:aws:s3:::dev-vi-decompany-logs", 
+        "Prefix": "firehose/TrackingDeliveryStream/source/dt=!{timestamp:yyyy-MM-dd-HH}/",
+        "ErrorOutputPrefix": "firehose/TrackingDeliveryStream/error/!{firehose:error-output-type}/dt=!{timestamp:yyyy-MM-dd-HH}/",
+        "BufferingHints": {
+            "SizeInMBs": 5, 
+            "IntervalInSeconds": 300
+        }, 
+        "CompressionFormat": "UNCOMPRESSED", 
+        "EncryptionConfiguration": {
+            "NoEncryptionConfig": "NoEncryption"
+        }, 
+        "CloudWatchLoggingOptions": {
+            "Enabled": true, 
+            "LogGroupName": "/aws/kinesisfirehose/TrackingDeliveryStream", 
+            "LogStreamName": "S3Delivery"
+        }    
+    },
+    "Tags": [
+        {
+            "Key": "APPLICATION", 
+            "Value": "TRACKING"
+        }
+    ]
+}
