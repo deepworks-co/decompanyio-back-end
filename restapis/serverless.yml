@@ -39,6 +39,7 @@ provider:
        - s3:*
        - logs:*
        - sqs:*
+       - kinesis:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
@@ -299,13 +300,13 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    RestApiLogGroup:
-#      Type: AWS::Logs::LogGroup
-#      Properties:
-#        RetentionInDays: "7"
-#        LogGroupName: LogGroup-${self:provider.region}-${self:service}
+resources:
+  Resources:
+    RestApiLogGroup: #AccessLog Log Group
+      Type: AWS::Logs::LogGroup 
+      Properties:
+        RetentionInDays: "3"
+        LogGroupName: LogGroup-${self:provider.stage}-${self:service}
 #    DocumentBucket:
 #      Type: AWS::S3::Bucket
 #      Properties:

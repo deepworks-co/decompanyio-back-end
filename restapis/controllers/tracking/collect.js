@@ -1,14 +1,12 @@
 'use strict';
 const documentService = require('../documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
-const firehose = require('decompany-common-utils').firehose;
+const {kinesis} = require('decompany-common-utils');
 
 module.exports.handler = async (event, context, callback) => {
 
   const headers = event.headers?event.headers:{}
   const body = event.queryStringParameters?event.queryStringParameters:{};
-  console.log("tracking call", body, headers);
-
 
   if(!body.id || !body.cid || !body.sid || !body.t){
     console.log("tracking error", "parameter is invalid")
@@ -26,11 +24,12 @@ module.exports.handler = async (event, context, callback) => {
   body.n = Number(body.n)
   body.referer = headers.Referer;
   body.useragnet = headers["User-Agent"];
-
+  console.log("tracking body", body);
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
-      console.log("logging kinesis firehose...");
-      await firehose.putRecord("us-east-1", applicationLogAppender.deliveryStream, body);
+      const partitionKey = "tracking-" + Date.now();
+      console.log("put kinesis",applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
+      await kinesis.putRecord(applicationLogAppender.region, applicationLogAppender.streamName, partitionKey, body);
     } catch(e){
       console.error("applicationLogAppender error", e);
     }
@@ -49,6 +48,6 @@ module.exports.handler = async (event, context, callback) => {
     statusCode: 200,
     body: "ok"
   };
-
+  console.log("success", body);
   return (null, response);
 };
