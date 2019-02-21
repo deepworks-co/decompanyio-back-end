@@ -1,0 +1,23 @@
+{
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompany"
+    },
+    "tables":{
+        "DOCUMENT": "DEV-CA-DOCUMENT",
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "TRACKING": "DOCUMENT-TRACKING",
+        "TRACKING_USER": "DOCUMENT-TRACKING-USER",
+        "USER": "USER",
+        "PAGEVIEW_DAILY": "PAGEVIEW_DAILY",
+        "PAGEVIEW": "PAGEVIEW",
+        "PAGEVIEW_TOTALCOUNT": "DEV-CA-CRONHIST-TOTALVIEWCOUNT"
+    },
+    "sqsConfig": {
+        "region": "us-west-1",
+        "queueUrls":{
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
+            "PAGEVIEWTOTALCOUNT_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-TOTALVIEWCOUNT"
+        }
+    }
+
+}
