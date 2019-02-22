@@ -5,9 +5,9 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('pageviewRequestPutOnChainByDaily', '/functions/pageview/requestPutOnChainByDaily.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('pageviewRequestWritePageview', '/functions/pageview/requestWritePageview.js', 'handler');
 
-describe('pageviewRequestPutOnChainByDaily', () => {
+describe('pageviewRequestWritePageview', () => {
   before((done) => {
     done();
   });
