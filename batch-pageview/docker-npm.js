@@ -12,20 +12,24 @@ Usage:
 const childProcess = require('child_process')
 
 const nodejsImage = 'node:8.10'
-const innerWorkingDir = '/functions'
+const innerWorkingDir = '/src'
 const dockerArgs = [
   'run', '-i',
-  '-v', `${process.cwd()}:${innerWorkingDir}`,
-  '-w', innerWorkingDir,
+  '-v', `${process.cwd()}:${innerWorkingDir}/function`,
+  '-v', '/Users/jay/Documents/infraware/work/workspace-git/backend-new/decompany-modules/:/src/decompany-modules',
+  '-w', `${innerWorkingDir}/function`,
   nodejsImage, 'npm'
 ]
 const npmArgs = process.argv.slice(2)
+console.log(npmArgs);
+console.log(dockerArgs.concat(npmArgs));
 
 const cp = childProcess.execFile(
   'docker',
   dockerArgs.concat(npmArgs),
   {},
   (err, stdout, stderr) => {}
+  
 )
 
 cp.stderr.on('data', (data) => console.error(data))

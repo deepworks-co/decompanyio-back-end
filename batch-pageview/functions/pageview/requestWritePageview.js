@@ -97,12 +97,12 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
       count: {$sum: 1}
     }
   });
-  
+  console.log("queryPipeline", queryPipeline);
   const resultList = await wapper.aggregate(TB_TRACKING, queryPipeline, {
     allowDiskUse: true
   });
-   
-  const result = resultList[0];
+  
+  const result = resultList[0]?resultList[0]:{totalPageviewSquare:0, totalPageview:0, count:0};
   const result2 = await wapper.save(TB_PAGEVIEW_TOTALCOUNT, {
     _id: Number(blockchainTimestamp),
     date: Number(blockchainTimestamp),
