@@ -1,5 +1,0 @@
-{
-    "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.31.101:27017/decompany"
-    }
-}
