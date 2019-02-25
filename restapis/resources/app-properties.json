@@ -12,8 +12,8 @@
     },
     "applicationLogAppender": {
         "enable": false,
-        "region": "us-east-1",
-        "deliveryStream": "ApplicationLogToRedshiftDeliveryStream"
+        "region": "us-west-1",
+        "streamName": "TrackingDataStream"
     }
 
 }
