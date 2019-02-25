@@ -6,29 +6,26 @@ exports.getBlockchainTimestamp = (date) => {
   //let yesterday = new Date(); /* 현재 */
   //yesterday.setDate(yesterday.getDate() - 1);
 
-  /* 날짜 - 1일 */
-
+  
+  let convertedDate = null;
   if(typeof(date) === 'string'){
     //yyyy-mm-dd string
-    const yyyymmdd = toDate(date);
-    const d = Math.floor(yyyymmdd / (60 * 60 *24 * 1000)) * (60 * 60 *24 * 1000);
-    return d;
+    convertedDate = toUTCDate(date);    
   } else if(typeof(date) === 'object'){
     //Date type
-    const d = Math.floor(date / (60 * 60 *24 * 1000)) * (60 * 60 *24 * 1000);
-    return d;
+    convertedDate = date;
   } else {
     throw new Error('Unsupported datatype.' + typeof(date));
   }
-
   
-  //console.log("getBlockchainTimestamp", d, new Date(d));
-  return d;
+  const timestamp = convertedDate.getTime() - (convertedDate.getTime() % (1000 * 60 * 60 * 24));
+
+  return timestamp;
 }
 
-function toDate(dateStr) {
+function toUTCDate(dateStr) {
   const [year, month, day] = dateStr.split("-")
-  return new Date(year, month - 1, day)
+  return new Date(Date.UTC(year, month - 1, day));
 }
 
 exports.getNumber = (number, defaultNumber) => {

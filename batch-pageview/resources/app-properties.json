@@ -1,0 +1,30 @@
+{
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompany"
+    },
+    "tables":{
+        "DOCUMENT": "DEV-CA-DOCUMENT",
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "TRACKING": "DOCUMENT-TRACKING",
+        "TRACKING_USER": "DOCUMENT-TRACKING-USER",
+        "USER": "USER",
+        "PAGEVIEW_DAILY": "PAGEVIEW_DAILY",
+        "PAGEVIEW": "PAGEVIEW",
+        "PAGEVIEW_TOTALCOUNT": "DEV-CA-CRONHIST-TOTALVIEWCOUNT"
+    },
+    "sqsConfig": {
+        "region": "us-west-1",
+        "queueUrls":{
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
+            "PAGEVIEWTOTALCOUNT_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-TOTALVIEWCOUNT"
+        }
+    },
+    "ethereum": {
+        "network": "rinkeby", 
+        "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
+        "account": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
+        "privateKey": "E8760C95C5B615D791DFC1FAB3C4B736217845D5E818CA2472BD2D8E34C8CAB6",
+        "index": "4"
+    }
+
+}
