@@ -3,11 +3,11 @@
         "endpoint": "mongodb://decompany:decompany1234@172.31.31.101:27017/decompany"
     },
     "tables":{
-        "DOCUMENT": "DEV-CA-DOCUMENT",
-        "VOTE": "DEV-CA-DOCUMENT-VOTE",
-        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "DOCUMENT": "DOCUMENT",
         "TRACKING": "DOCUMENT-TRACKING",
         "TRACKING_USER": "DOCUMENT-TRACKING-USER",
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "USER": "USER"
     },
     "applicationLogAppender": {

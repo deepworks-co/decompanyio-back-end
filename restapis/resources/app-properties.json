@@ -1,13 +1,13 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@127.0.0.1:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompany"
     },
     "tables":{
-        "DOCUMENT": "DEV-CA-DOCUMENT",
-        "VOTE": "DEV-CA-DOCUMENT-VOTE",
-        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "DOCUMENT": "DOCUMENT",
         "TRACKING": "DOCUMENT-TRACKING",
         "TRACKING_USER": "DOCUMENT-TRACKING-USER",
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "USER": "USER"
     },
     "applicationLogAppender": {

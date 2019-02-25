@@ -24,7 +24,7 @@ module.exports = {
           "state": "NOT_CONVERT",
           "viewCount": 0
         };
-        const params = Object.assign(mergedItem, item)
+        const params = Object.assign(mergedItem, item);
         console.log("Save New Item", params);
 
         const wapper = new MongoWapper(connectionString);

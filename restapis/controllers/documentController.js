@@ -57,6 +57,7 @@ module.exports.regist = async (event, context, callback) => {
       console.log("The new Document ID", documentId);
 
       const putItem = {
+        _id: documentId,
         accountId: accountId,
         documentId: documentId,
         nickname: nickname,
