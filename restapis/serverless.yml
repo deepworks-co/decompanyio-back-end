@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   # you can overwrite defaults here
-  stage: ${opt:stage, ''}
+  stage: ${opt:stage, 'local'}
   region: us-west-1
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
