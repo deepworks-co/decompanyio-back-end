@@ -22,7 +22,7 @@ module.exports = {
       return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
     },
 
-    putDocument : putDocument = async (item, callback) => {
+    putDocument : putDocument = async (item) => {
         const timestamp = Date.now();
         /* default value */
         const mergedItem = {
