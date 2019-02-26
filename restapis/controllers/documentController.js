@@ -19,109 +19,97 @@ const defaultHeader = {
 }
 
 module.exports.regist = async (event, context, callback) => {
-  try{
-    console.log("event", event.body);
-    const parameter = JSON.parse(event.body);
-    console.log("parameter", parameter);
-    if(!parameter || !parameter.accountId) {
+
+  console.log("event", event.body);
+  const parameter = JSON.parse(event.body);
+  console.log("parameter", parameter);
+  if(!parameter || !parameter.accountId || !parameter.title) {
+    throw new Error("parameter is invalid");
+  } 
+
+  const accountId = parameter.accountId;
+  const sub = parameter.sub;
+  const nickname = parameter.nickname;
+  const username = parameter.username;
+  
+  const documentName = parameter.filename;
+  const documentSize = parameter.size;
+  const tags = parameter.tags?parameter.tags:[];//document tags
+  const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
+  const title = parameter.title;
+  const desc = parameter.desc;
+  const category = parameter.category;
+  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  
+  let seoTitle;
+  let documentId;
+  let document, friendUrl;
+
+  do {
+    documentId = uuidv4().replace(/-/gi, "");
+    document = await documentService.getDocumentById(documentId);
+  } while(document)
+  
+  do {
+    seoTitle = utils.toSeoFriendly(title);
+    friendUrl = await documentService.getFriendlyUrl(seoTitle);
+  } while(friendUrl)
+
+  if(!documentId || !seoTitle){
+    throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
+  } else {
+    console.log("The new Document ID", documentId);
+
+    const putItem = {
+      _id: documentId,
+      accountId: accountId,
+      documentId: documentId,
+      nickname: nickname,
+      username: username,
+      sub: sub,
+      documentName: documentName,
+      documentSize: documentSize,
+      ethAccount: ethAccount,
+      title: title,
+      desc: desc,
+      tags: tags,
+      confirmViewCountHist: {},
+      confirmVoteAmountHist: {},
+      category: category,
+      confirmViewCount: 0,
+      confirmVoteAmount: 0,
+      totalViewCount: 0,
+      viewCount: 0,
+      seoTitle: seoTitle
+    }
+
+    const result = await documentService.putDocument(putItem);
+    
+    if(result){
+      console.log("PutItem succeeded:", result);
+      const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
+      const payload = {
+        success: true,
+        documentId: documentId,
+        accountId: accountId,
+        message: "SUCCESS",
+        signedUrl: signedUrl
+      };
       callback(null, {
         statusCode: 200,
-        body: JSON.stringify({
-          success: false,
-          message: "email is invalid"
-        })
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify(payload)
       });
-
-      return;
-    } 
-
-    const accountId = parameter.accountId;
-    const sub = parameter.sub;
-    const nickname = parameter.nickname;
-    const username = parameter.username;
-    const documentId = uuidv4().replace(/-/gi, "");
-    const documentName = parameter.filename;
-    const documentSize = parameter.size;
-    const tags = parameter.tags?parameter.tags:[];//document tags
-    const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
-    const title = parameter.title;
-    const desc = parameter.desc;
-    const category = parameter.category;
-    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-
-    const document = await documentService.getDocumentById(documentId);
-
-    if(document){
-      throw new Error("The Document ID already exists. retry..." + JSON.stringify(document));
     } else {
-      console.log("The new Document ID", documentId);
-
-      const putItem = {
-        _id: documentId,
-        accountId: accountId,
-        documentId: documentId,
-        nickname: nickname,
-        username: username,
-        sub: sub,
-        documentName: documentName,
-        documentSize: documentSize,
-        ethAccount: ethAccount,
-        title: title,
-        desc: desc,
-        tags: tags,
-        confirmViewCountHist: {},
-        confirmVoteAmountHist: {},
-        category: category,
-        confirmViewCount: 0,
-        confirmVoteAmount: 0,
-        totalViewCount: 0,
-        viewCount: 0
-      }
-
-      const result = await documentService.putDocument(putItem);
-      
-      if(result){
-        console.log("PutItem succeeded:", result);
-        const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
-        const payload = {
-          success: true,
-          documentId: documentId,
-          accountId: accountId,
-          message: "SUCCESS",
-          signedUrl: signedUrl
-        };
-        callback(null, {
-          statusCode: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-          },
-          body: JSON.stringify(payload)
-        });
-      } else {
-        throw new Error("PutItme Fail " + JSON.stringify(putItem));
-      }
-
+      throw new Error("PutItme Fail " + JSON.stringify(putItem));
     }
-  
-  } catch(e){
 
-    console.error("regist exception", e);
-    callback(null, {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        error: e
-      })
-    });
   }
   
-// Use this code if you don't use the http event with the LAMBDA-PROXY integration
-// return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+
 };
 
 

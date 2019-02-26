@@ -3,6 +3,7 @@ const { mongodb, tables } = require('../resources/config.js').APP_PROPERTIES();
 const MongoWapper = require('decompany-common-utils').MongoWapper;
 
 const TABLE_NAME = tables.DOCUMENT;
+const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
 const TABLE_NAME_VOTE = tables.VOTE;
 const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
 const TB_TRACKING = tables.TRACKING;
@@ -13,7 +14,12 @@ const connectionString = mongodb.endpoint;
 module.exports = {
     getDocumentById : getDocumentById = async (documentId) => {
       const wapper = new MongoWapper(connectionString);
-      return await wapper.findOne(TABLE_NAME, {documentId: documentId});
+      return await wapper.findOne(TABLE_NAME, {_id: documentId});
+    },
+
+    getFriendlyUrl : getFriendlyUrl = async (seoTitle) => {
+      const wapper = new MongoWapper(connectionString);
+      return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
     },
 
     putDocument : putDocument = async (item, callback) => {
@@ -28,7 +34,15 @@ module.exports = {
         console.log("Save New Item", params);
 
         const wapper = new MongoWapper(connectionString);
-        return await wapper.insert(TABLE_NAME, params);
+        const newDoc = await wapper.insert(TABLE_NAME, params);
+
+        await wapper.insert(TB_SEO_FRIENDLY, {
+          _: item.seoTitle,
+          type: "DOCUMENT",
+          id: item.documentId,
+          create: Number(timestamp)
+        });
+        return newDoc;
     },
 
     queryDocumentList : queryDocumentList = async (args) => {

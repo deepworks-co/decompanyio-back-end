@@ -18,11 +18,10 @@ module.exports = class AccountService {
 		if(queriedUser){
 			console.log("saved user", queriedUser);
 			user._id = queriedUser._id;
-			user.id = queriedUser.id;
 			console.log("update user", user);
 		}  else {
 			const uuid = uuidv4().replace(/-/gi, "");
-			user.id = uuid;
+			user._id = uuid;
 		}
 		
 		const result = await mongo.save(USER_TALBE, user);
