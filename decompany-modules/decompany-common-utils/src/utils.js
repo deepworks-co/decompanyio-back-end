@@ -1,3 +1,5 @@
+const friendlyUrl = require('friendly-url')
+const shortid = require('shortid');
 /**
  * @description Date object를 Blockchain에 넣을 YYYY-MM-DD 00:00:00의 timestamp값으로 변경한다. 
  */
@@ -30,4 +32,8 @@ function toUTCDate(dateStr) {
 
 exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
+}
+
+exports.toSeoFriendly = (str) => {
+  return friendlyUrl(str).concat("-", shortid.generate());
 }

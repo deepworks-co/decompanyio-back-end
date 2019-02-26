@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.402.0",
-    "mongojs": "^2.6.0"
+    "friendly-url": "^1.0.3",
+    "mongojs": "^2.6.0",
+    "shortid": "^2.2.14"
   }
 }
