@@ -32,8 +32,6 @@ module.exports = class MongoWapper {
 
   findOne(collection, query) {
 
-    this.init();
-
     return new Promise((resolve, reject) => {
       this.db.collection(collection).findOne(query, (err, doc)=>{
 
@@ -41,8 +39,7 @@ module.exports = class MongoWapper {
           reject(err);
         } else {
           resolve(doc);
-        }
-        this.close();
+        }       
       });
 
     });
@@ -61,14 +58,13 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
       });
 
     });
   }
 
   findAll(collection, query, sort = {created : -1 /*decending*/ }) {
-    this.init();
+
 
     return new Promise((resolve, reject) => {
 
@@ -78,14 +74,12 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
       });
 
     });
   }
 
   count (collection, query) {
-    this.init();
 
     return new Promise((resolve, reject) => {
 

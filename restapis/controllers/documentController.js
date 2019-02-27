@@ -14,8 +14,9 @@ AWS.config.update({
 
 const TABLE_NAME = "DEV-CA-DOCUMENT";
 
-const defaultHeader = {
-  stage: process.env.stage
+const defaultHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Credentials': true,
 }
 
 module.exports.regist = async (event, context, callback) => {
@@ -97,10 +98,7 @@ module.exports.regist = async (event, context, callback) => {
       };
       callback(null, {
         statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
+        headers: defaultHeaders,
         body: JSON.stringify(payload)
       });
     } else {
@@ -296,38 +294,49 @@ module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
 
 module.exports.info = async (event, context, callback) => {
 
-  //console.log("event : ", event);
+  console.log("event : ", event.pathParameters);
   //console.log("context : ", context);
-  const documentId = event.pathParameters.documentId;
+  let documentId = event.pathParameters.documentId;
+  const seoTitle = event.pathParameters.documentId;
 
-  if(!documentId){
-    return("parameter is invalid!", {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      }});
+  if(!documentId && !seoTitle){
+    throw new Error("parameter is invaild!!");
   }
 
-  const document = await documentService.getDocumentById(documentId) //Promise.resolve({documentId: "asfdasf"});
+  let document = null;
+  
+  if(documentId){
+    document = await documentService.getDocumentById(documentId);  
+  }
 
-  const featuredList = await documentService.getFeaturedDocuments({documentId: documentId});
+  if(!document && seoTitle){
+    document = await documentService.getDocumentBySeoTitle(seoTitle);  
+  }
 
-  return (null, {
+  if(!document){
+    throw new Error("document is not exist!");
+  }
+
+  const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+
+
+  const response = {
     statusCode: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify({
-      success: document?true:false,
-      message: document?"SUCCESS":"Document is not exist",
-      document: document,
-      featuredList: featuredList
-    }),
-  });
+    body: JSON.stringify(
+      {
+        success: document?true:false,
+        message: document?"SUCCESS":"Document is not exist",
+        document: document,
+        featuredList: featuredList
+      }
+    )
+  };
 
-
+  return (null, response);
 }
 
 module.exports.text = (event, context, callback) => {

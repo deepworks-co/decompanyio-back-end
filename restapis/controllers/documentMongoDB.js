@@ -1,6 +1,6 @@
-const utils = require('decompany-common-utils');
+'use strict';
 const { mongodb, tables } = require('../resources/config.js').APP_PROPERTIES();
-const MongoWapper = require('decompany-common-utils').MongoWapper;
+const {MongoWapper, utils} = require('decompany-common-utils');
 
 const TABLE_NAME = tables.DOCUMENT;
 const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
@@ -14,7 +14,36 @@ const connectionString = mongodb.endpoint;
 module.exports = {
     getDocumentById : getDocumentById = async (documentId) => {
       const wapper = new MongoWapper(connectionString);
-      return await wapper.findOne(TABLE_NAME, {_id: documentId});
+      let result = null;
+      try{
+        
+        result = await wapper.findOne(TABLE_NAME, {_id: documentId});
+        
+      } catch (err){
+        throw err;
+      } finally{
+        wapper.close();
+      }
+      return result;
+    },
+
+    getDocumentBySeoTitle : getDocumentBySeoTitle = async (seoTitle) => {
+      const wapper = new MongoWapper(connectionString);
+      let document = null;//await wapper.findOne(TABLE_NAME, {seoTitle: seoTitle});
+      try{
+        if(!document){
+          document = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
+          console.log(TB_SEO_FRIENDLY, document);
+          if(document) {
+            document = await getDocumentById(document.id);
+          }
+        }
+        return document;
+      } catch (err) {
+        throw err;
+      } finally {
+        wapper.close();
+      }      
     },
 
     getFriendlyUrl : getFriendlyUrl = async (seoTitle) => {
@@ -23,6 +52,9 @@ module.exports = {
     },
 
     putDocument : putDocument = async (item) => {
+      const wapper = new MongoWapper(connectionString);
+
+      try{
         const timestamp = Date.now();
         /* default value */
         const mergedItem = {
@@ -33,7 +65,7 @@ module.exports = {
         const params = Object.assign(mergedItem, item);
         console.log("Save New Item", params);
 
-        const wapper = new MongoWapper(connectionString);
+        
         const newDoc = await wapper.insert(TABLE_NAME, params);
 
         await wapper.insert(TB_SEO_FRIENDLY, {
@@ -43,10 +75,17 @@ module.exports = {
           created: Number(timestamp)
         });
         return newDoc;
+
+      } catch(err){
+        throw err;
+      } finally{
+        wapper.close();
+      }
+        
     },
 
     queryDocumentList : queryDocumentList = async (args) => {
-      console.log("queryDocumentByLatest args", args);
+      
       const pageSize = 50;
       const tag = args.tag;
       const accountId = args.accountId;
@@ -76,25 +115,30 @@ module.exports = {
       };
 
       const wapper = new MongoWapper(connectionString);
-      console.log("query options query :", query, "sort :", sort, "pageNo :", pageNo, "pageSize :", pageSize);
-      const resultList = await wapper.find(TABLE_NAME, query, pageNo, pageSize, sort);
 
-      return {
-        resultList: resultList,
-        pageNo : pageNo
-      };
+      try{
+        console.log("query options query :", query, "sort :", sort, "pageNo :", pageNo, "pageSize :", pageSize);
+        const resultList = await wapper.find(TABLE_NAME, query, pageNo, pageSize, sort);
+
+        return {
+          resultList: resultList,
+          pageNo : pageNo
+        };
+      } catch(err) {
+        throw err;
+      } finally {
+        wapper.close();
+      }
+      
     },
 
     queryVotedDocumentByCurator : queryVotedDocumentByCurator = async (args) => {
 
       const pageNo = args.pageNo;
       const pageSize = 50;
-      
-
-      
       const accountId = args.accountId;
 
-      queryPipeline = [{
+      const queryPipeline = [{
         $match: {
           id: accountId
         }
@@ -130,12 +174,20 @@ module.exports = {
       
 
       const wapper = new MongoWapper(connectionString);
-      const resultList = await wapper.aggregate(TABLE_NAME_VOTE, queryPipeline);
 
-      return {
-        resultList: resultList,
-        pageNo: pageNo
-      };
+      try{
+        const resultList = await wapper.aggregate(TABLE_NAME_VOTE, queryPipeline);
+
+        return {
+          resultList: resultList,
+          pageNo: pageNo
+        };
+      }catch(err){
+        throw err;
+      }finally{
+        wapper.close();
+      }
+      
     },
 
     queryTotalViewCountByToday : queryTotalViewCountByToday = async (date) => {
@@ -218,13 +270,26 @@ module.exports = {
       }
 
       let wapper = new MongoWapper(connectionString);
-      return await wapper.find(TABLE_NAME, params, 1, 10);
+      try{
+        return await wapper.find(TABLE_NAME, params, 1, 10);
+      } catch (err){
+        throw err;
+      } finally {
+        wapper.close();
+      }
+      
     },
 
   putTrackingInfo : putTrackingInfo = async (body) => {
     let wapper = new MongoWapper(connectionString);
+    try{
+      return await wapper.save(TB_TRACKING, body);
+    } catch(err){
+      throw err;
+    } finally{
+      wapper.close();
+    }
     
-    return await wapper.save(TB_TRACKING, body);
   },
 
 
@@ -238,17 +303,22 @@ module.exports = {
   putTrackingUser : putTrackingUser = async (body) => {
     let wapper = new MongoWapper(connectionString);
 
-    const result = await wapper.findOne(TB_TRACKING_USER, {
-      cid: body.cid, 
-      sid: body.sid,
-      e: body.e
-    });
-
-    if(!result){
-      return await wapper.save(TB_TRACKING_USER, body);
+    try{
+      const result = await wapper.findOne(TB_TRACKING_USER, {
+        cid: body.cid, 
+        sid: body.sid,
+        e: body.e
+      });
+  
+      if(!result){
+        return await wapper.save(TB_TRACKING_USER, body);
+      }
+    } catch(err) {
+      throw err;
+    } finally{
+      wapper.close();
     }
-    
-    return null;    
+ 
   },
 
   
@@ -257,7 +327,7 @@ module.exports = {
     if(!documentId){
       throw new Error("document id is invalid");
     }
-    const wapper = new MongoWapper(connectionString);
+    
     queryPipeline = [{
         $match: {
             id: documentId
@@ -278,9 +348,16 @@ module.exports = {
           $sort: {"latest": -1}
       }
     ]
-
-    //console.log(queryPipeline);
-    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+    const wapper = new MongoWapper(connectionString);
+    try{
+      //console.log(queryPipeline);
+      return await wapper.aggregate(TB_TRACKING, queryPipeline);
+    }catch(err){
+      throw err;
+    } finally{
+      wapper.close();
+    }
+    
   },
 
   getTrackingList : getTrackingList = async (documentId, cid, sid) => {
@@ -288,7 +365,7 @@ module.exports = {
       throw new Error("document id is invalid");
     }
 
-    const wapper = new MongoWapper(connectionString);
+    
     queryPipeline = [
       {
         $match: {
@@ -313,8 +390,17 @@ module.exports = {
         $sort: {"latest": -1}
       }
     ]
-    console.log(queryPipeline);
-    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+
+    const wapper = new MongoWapper(connectionString);
+    try{
+      console.log(queryPipeline);
+      return await wapper.aggregate(TB_TRACKING, queryPipeline);
+    } catch(err){
+      throw err;
+    } finally {
+      wapper.close();
+    }
+    
   },
 
 }

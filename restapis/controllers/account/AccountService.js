@@ -1,36 +1,43 @@
 'use strict';
 const uuidv4 = require('uuid/v4');
 const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
-const MongoWapper = require('decompany-common-utils').MongoWapper;
+const {MongoWapper} = require('decompany-common-utils');
 const USER_TALBE = "USER";
 const connectionString = mongodb.endpoint;
-const mongo = new MongoWapper(connectionString);
+
 module.exports = class AccountService {
 
 	async syncUserInfo(userInfo){
 		
 		let user = userInfo;
 
-		const queriedUser = await mongo.findOne(USER_TALBE, {
-			sub: userInfo.sub
-		});
-
-		if(queriedUser){
-			console.log("saved user", queriedUser);
-			user._id = queriedUser._id;
-			console.log("update user", user);
-		}  else {
-			const uuid = uuidv4().replace(/-/gi, "");
-			user._id = uuid;
+		const mongo = new MongoWapper(connectionString);
+		try{
+			const queriedUser = await mongo.findOne(USER_TALBE, {
+				sub: userInfo.sub
+			});
+	
+			if(queriedUser){
+				console.log("saved user", queriedUser);
+				user._id = queriedUser._id;
+				console.log("update user", user);
+			}  else {
+				const uuid = uuidv4().replace(/-/gi, "");
+				user._id = uuid;
+			}
+			
+			const result = await mongo.save(USER_TALBE, user);
+			return user;
+		}catch(err){
+			throw err;
+		} finally {
+			mongo.close();
 		}
-		
-		const result = await mongo.save(USER_TALBE, user);
-		return user;
-		
+
 	}
 
 	async getUserInfo(user){
-		
+		const mongo = new MongoWapper(connectionString);
 		try{
 			let query = {};
 			if(user.id){
@@ -45,12 +52,14 @@ module.exports = class AccountService {
 
 			return user;
 		} catch(e) {
-			console.error("getUserInfo error", e);
+			throw e;
+		} finally{
+			mongo.close();
 		}
 	}
 
 	async updateUserInfo(user){
-		
+		const mongo = new MongoWapper(connectionString);
 		try{	
 			const savedUser = await mongo.findOne(USER_TALBE, {
 				id: user.id
@@ -72,7 +81,9 @@ module.exports = class AccountService {
 			
 			
 		} catch(e) {
-			console.error("updateUserInfo error", e);
+			throw e;
+		} finally{
+			mongo.close();
 		}
 	}
 }
