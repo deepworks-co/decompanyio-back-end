@@ -12,7 +12,7 @@ module.exports.handler = async (event, context, callback) => {
   try{
     const documentId = body.documentId;
     const cid = body.cid;
-    const resultList = await documentService.getTrackingList(documentId, cid);
+    const resultList = await documentService.getTrackingInfo(documentId, cid);
     //console.log("query result", resultList);
     //const r = resultList[0]?resultList[0].resultList:resultList;
 
