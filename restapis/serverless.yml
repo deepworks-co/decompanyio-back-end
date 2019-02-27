@@ -70,6 +70,7 @@ exclude:
   - .env
 
 functions:  
+
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
     events:
@@ -153,7 +154,7 @@ functions:
           path: api/curator/document/today
           method: post
           cors: true
-  
+
   trackingList:
     handler: controllers/tracking/list.handler
     events:
@@ -169,14 +170,7 @@ functions:
                 description: document id
                 type: string
                 required: true
-              - name: cid
-                description: client id
-                type: string
-                required: true
-              - name: sid
-                description: session id
-                type: string
-                required: true
+              
             methodResponses:
               -
                 statusCode: "200"
@@ -199,6 +193,10 @@ functions:
               - name: documentid
                 type: string
                 description: document id
+                required: true
+              - name: cid
+                description: client id
+                type: string
                 required: true
             methodResponses:
               -

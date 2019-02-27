@@ -1,5 +1,5 @@
 'use strict';
-const utils = require('decompany-common-utils');
+const {utils} = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
   
   const data = JSON.parse(event.body);

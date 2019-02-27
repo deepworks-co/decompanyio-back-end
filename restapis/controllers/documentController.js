@@ -3,7 +3,7 @@ const uuidv4 = require('uuid/v4');
 
 const documentService = require('./documentMongoDB');
 const s3 = require('./documentS3');
-const utils = require('decompany-common-utils');
+const {utils} = require('decompany-common-utils');
 
 
 var AWS = require("aws-sdk");
