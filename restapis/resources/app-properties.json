@@ -1,6 +1,6 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompanydev"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",

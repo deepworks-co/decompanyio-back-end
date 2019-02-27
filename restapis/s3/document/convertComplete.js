@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const MongoWapper = require('decompany-common-utils').MongoWapper;
 
 var AWS = require("aws-sdk");
@@ -8,7 +8,7 @@ AWS.config.update({
 });
 var s3 = new AWS.S3();
 
-const TABLE_NAME = "DEV-CA-DOCUMENT";
+const TABLE_NAME = tables.DOCUMENT;
 const CONVERT_COMPLETE = "CONVERT_COMPLETE";
 
 exports.handler = (event, context) => {
@@ -36,11 +36,10 @@ async function run(event){
     const prefix = keys[0];
     const documentId = keys[1];
     const filename = keys[2];
-    console.log("convertComplete start", key);
+    console.log("convertComplete start", key, prefix, documentId, filename);
     if("result.txt" == filename){       
       const promise = runConvertComplete(bucket, key, documentId);
       promises.push(promise);
-    
     } else if("document.txt" == filename) {
         //아무것도 안함
     } else {
@@ -57,7 +56,7 @@ async function run(event){
     await Promise.all(promises).then((data) => {
       console.log("success", data) ;
     }).catch((errs)=>{
-      console.errs("Error", errs) ;
+      console.error("Error", errs) ;
     });
   }
 }
@@ -74,6 +73,8 @@ async function changeImageMetadata(bucket, key){
 }
 
 function runConvertComplete(bucket, key, documentId){
+
+  console.log(bucket, key, documentId);
   const totalPagesPromise = getTotalPages(bucket, key);
   const getDocumentPromise = getDocument(documentId);
 
@@ -81,31 +82,27 @@ function runConvertComplete(bucket, key, documentId){
     Promise.all([totalPagesPromise, getDocumentPromise]).then((data) => {       
       //console.log(data);
       let totalPages = -1;
-      let accountId = null;
-      let documentId = null;
       const resultTxtFile = data[0];
       const document = data[1];
+      console.log(document);
+      if(!document){
+        throw new Error("documet is not exist, " + documentId);
+      }
+
       if(resultTxtFile){
         totalPages = resultTxtFile.Body.toString('ascii');
         totalPages *= 1;
       }
-      
-      if(document){
-          accountId = document.accountId;
-          documentId = document.documentId;
-      }
-        
-      console.log("accountId", accountId, "documentId", documentId, "totalPages", totalPages);
-      
-      if(totalPages>0 && accountId && documentId) {
+
+      console.log("documentId", documentId, "totalPages", totalPages);
+      if(totalPages>0 && documentId) {
   
-        updateConvertCompleteDocument(accountId, documentId, totalPages).then((data) =>{
-          console.log("Update SUCCESS CONVERT_COMPLETE", accountId, documentId);
+        updateConvertCompleteDocument(documentId, totalPages).then((data) =>{
+          console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
           resolve({message: "SUCCESS",
-                  documentId: documentId,
-                  accountId: accountId});
+                  documentId: documentId});
         }).catch((err)=> {
-          console.error("Unable to update item. Error JSON:", accountId, documentId, JSON.stringify(err, null, 2));
+          console.error("Unable to update item. Error JSON:", documentId, JSON.stringify(err, null, 2));
           reject(err);
         });
       }
@@ -129,14 +126,14 @@ async function getDocument(documentId){
   
   //throw new Error("error getDocument() : " + documentId);
   const wapper = new MongoWapper(mongodb.endpoint);
-  return await wapper.findOne(TABLE_NAME, {documentId: documentId});
+  return await wapper.findOne(TABLE_NAME, {_id: documentId});
 
 }
 
-async function updateConvertCompleteDocument(accountId, documentId, totalPages){
+async function updateConvertCompleteDocument(documentId, totalPages){
   const wapper = new MongoWapper(mongodb.endpoint);
 
-  const document = await wapper.findOne(TABLE_NAME, {documentId: documentId});
+  const document = await wapper.findOne(TABLE_NAME, {_id: documentId});
 
   if(document){
     document.state = "CONVERT_COMPLETE";

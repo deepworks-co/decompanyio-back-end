@@ -40,7 +40,7 @@ module.exports = {
           _: item.seoTitle,
           type: "DOCUMENT",
           id: item.documentId,
-          create: Number(timestamp)
+          created: Number(timestamp)
         });
         return newDoc;
     },
