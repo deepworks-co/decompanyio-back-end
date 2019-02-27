@@ -1,5 +1,5 @@
 const friendlyUrl = require('friendly-url')
-const shortid = require('shortid');
+const generate = require('nanoid/generate')
 /**
  * @description Date object를 Blockchain에 넣을 YYYY-MM-DD 00:00:00의 timestamp값으로 변경한다. 
  */
@@ -35,5 +35,9 @@ exports.getNumber = (number, defaultNumber) => {
 }
 
 exports.toSeoFriendly = (str) => {
-  return friendlyUrl(str).concat("-", shortid.generate());
+  if(!str)
+    return;
+
+  const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
+  return friendlyUrl(str).concat("-", id);
 }
