@@ -322,6 +322,16 @@ async function getFeaturedDocuments (args) {
 async function putTrackingInfo (body) {
   let wapper = new MongoWapper(connectionString);
   try{
+
+    if(body.cid && body.e){
+      const r = await wapper.save(TB_TRACKING_USER, {
+        _id: body.cid,
+        e: body.e,
+        created: Date.now()
+      });
+      console.log("tracking target user", r);
+    }
+    
     return await wapper.save(TB_TRACKING, body);
   } catch(err){
     throw err;
@@ -343,15 +353,7 @@ async function putTrackingUser (body) {
   let wapper = new MongoWapper(connectionString);
 
   try{
-    const result = await wapper.findOne(TB_TRACKING_USER, {
-      cid: body.cid, 
-      sid: body.sid,
-      e: body.e
-    });
-
-    if(!result){
-      return await wapper.save(TB_TRACKING_USER, body);
-    }
+    return await wapper.save(TB_TRACKING_USER, body);
   } catch(err) {
     throw err;
   } finally{
@@ -388,6 +390,13 @@ async function getTrackingList(documentId) {
       count: {$sum: 1},
       viewTimestamp: {$min: "$viewTimestamp"},
       sidList: { $push: "$_id.sid" },
+    }
+  }, {
+    $lookup: {
+      from: TB_TRACKING_USER,
+      localField: "cid",
+      foreignField: "_id",
+      as: "user"
     }
   }, {
     $sort: {

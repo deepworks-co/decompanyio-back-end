@@ -24,7 +24,7 @@ module.exports.handler = async (event, context, callback) => {
   body.n = Number(body.n)
   body.referer = headers.Referer;
   body.useragnet = headers["User-Agent"];
-  console.log("tracking body", body);
+  //console.log("tracking body", body);
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
       const partitionKey = "tracking-" + Date.now();
@@ -35,19 +35,13 @@ module.exports.handler = async (event, context, callback) => {
     }
     
   }
-  await documentService.putTrackingUser({
-    cid: body.cid,
-    sid: body.sid,
-    e: body.e,
-    created: Date.now()
-  });
 
   const result = await documentService.putTrackingInfo(body);
-
+  console.log("tracking save", result);
   const response = {
     statusCode: 200,
     body: "ok"
   };
-  console.log("success", body);
+  //console.log("success", body);
   return (null, response);
 };
