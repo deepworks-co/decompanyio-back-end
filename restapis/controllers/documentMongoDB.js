@@ -144,7 +144,7 @@ async function putDocument (item) {
     const newDoc = await wapper.insert(TABLE_NAME, params);
 
     await wapper.insert(TB_SEO_FRIENDLY, {
-      _: item.seoTitle,
+      _id: item.seoTitle,
       type: "DOCUMENT",
       id: item.documentId,
       created: Number(timestamp)
