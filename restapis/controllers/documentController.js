@@ -308,7 +308,7 @@ module.exports.info = async (event, context, callback) => {
   if(documentId){
     document = await documentService.getDocumentById(documentId);  
   }
-
+  console.log(document);
   if(!document && seoTitle){
     document = await documentService.getDocumentBySeoTitle(seoTitle);  
   }
@@ -316,6 +316,9 @@ module.exports.info = async (event, context, callback) => {
   if(!document){
     throw new Error("document is not exist!");
   }
+
+  const textBuffer = await s3.getDocumentTextById(document.documentId);
+  const textString = textBuffer.Body.toString("utf-8").substring(0, 3000);
 
   const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
 
@@ -331,6 +334,7 @@ module.exports.info = async (event, context, callback) => {
         success: document?true:false,
         message: document?"SUCCESS":"Document is not exist",
         document: document,
+        text: textString,
         featuredList: featuredList
       }
     )

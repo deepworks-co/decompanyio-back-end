@@ -48,7 +48,7 @@ module.exports = {
   */
  async function getDocumentBySeoTitle(seoTitle) {
   const wapper = new MongoWapper(connectionString);
-  let document = null;//await wapper.findOne(TABLE_NAME, {seoTitle: seoTitle});
+  let document = await wapper.findOne(TABLE_NAME, {seoTitle: seoTitle});
   try{
     if(!document){
       document = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
