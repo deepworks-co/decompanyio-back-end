@@ -39,11 +39,11 @@ module.exports.handler = async (event, context, callback) => {
   const estimateGas = await contractWapper.getConfirmPageViewEstimateGas(documentIdByte32, date, confirmPageview);
   const gasLimit = Math.round(estimateGas);
 
-  contractWapper.sendTransaction(gasPrice, gasLimit, nonce, 
+  const transactionResult = await contractWapper.sendTransaction(gasPrice, gasLimit, nonce, 
     contractWapper.confirmPageViewContract(documentIdByte32, date, confirmPageview).encodeABI());
 
  
-  console.log("Transaction Request Result", {documentIdByte32, params, recentlyBlockNumber, nonce, gasPrice});
+  console.log("Transaction Request Result", {documentIdByte32, params, recentlyBlockNumber, nonce, gasPrice, transactionResult});
 
   return (null, "complete");
 
