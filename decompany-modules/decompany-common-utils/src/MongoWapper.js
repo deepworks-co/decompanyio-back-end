@@ -83,21 +83,20 @@ module.exports = class MongoWapper {
 
     return new Promise((resolve, reject) => {
 
-
       this.db.collection(collection).count(query, (err, res)=>{
         if(err){
           reject(err);
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
   aggregate(collection, pipelines, options) {
-    this.init();
+
 
     return new Promise((resolve, reject) => {
 
@@ -107,14 +106,13 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+ 
       });
 
     });
   }
 
   insert(collection, item) {
-    this.init();
 
     return new Promise((resolve, reject) => {
 
@@ -125,14 +123,13 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
   save(collection, item) {
-    this.init();
 
     return new Promise((resolve, reject) => {
 
@@ -143,14 +140,14 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
-  save(collection, item, options, isStayConnected) {
-    this.init();
+  save(collection, item, options) {
+
 
     return new Promise((resolve, reject) => {
 
@@ -161,8 +158,26 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        if(!isStayConnected){
-          this.close();
+        
+        
+      });
+
+    });
+  }
+
+
+  update(collection, query, update, options) {
+
+    console.log(collection, query, update, options);
+
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).update(query, update, options?options:{}, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
         }
         
       });
