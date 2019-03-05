@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   region: us-west-1
-  stage: ${opt:stage, 'local'}
+  stage: ${opt:stage, 'dev'}
   vpc:
     securityGroupIds:
       - sg-05a13849fc117801b

@@ -11,7 +11,7 @@ const { mongodb, tables, ethereum } = require('../../resources/config.js').APP_P
  * smartcontract DocumentReg.confirmPageView(bytes32 _docId, uint _date, uint _pageView)
  */
 module.exports.handler = async (event, context, callback) => {
- 
+  console.log(JSON.stringify(event.Records));
   const parsed= JSON.parse(fs.readFileSync(jsonFile));
   
   const params = JSON.parse(event.Records[0].body);

@@ -16,16 +16,16 @@ module.exports.handler = async (event, context, callback) => {
   const now = new Date();
   const yesterday = new Date(now - 1000 * 60 * 60 * 24);
   const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
-  const nowBT = utils.getBlockchainTimestamp(now);
+  const currentBlockchainTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("blockchainTimestamp", blockchainTimestamp, nowBT);
+  console.log("blockchainTimestamp", blockchainTimestamp, currentBlockchainTimestamp);
 
 
-  const result = await aggregatePageviewTotalCount(blockchainTimestamp, nowBT);
+  const result = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
   console.log("aggregatePageviewTotalCount", result);
 
   const promises = [];
-  const resultList = await aggregatePageview(blockchainTimestamp, nowBT);
+  const resultList = await aggregatePageview(blockchainTimestamp, currentBlockchainTimestamp);
   console.log("aggregatePageview", resultList)
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
