@@ -2,7 +2,7 @@
 const fs = require('fs');
 const jsonFile = "contracts-rinkeby/DocumentReg.json";
 
-const {ContractWapper} = require('decompany-common-utils');
+const ContractWapper = require('../ContractWapper');
 const { mongodb, tables, ethereum } = require('../../resources/config.js').APP_PROPERTIES();
 
 /**

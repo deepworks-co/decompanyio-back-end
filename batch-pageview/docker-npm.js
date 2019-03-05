@@ -16,7 +16,7 @@ const innerWorkingDir = '/src'
 const dockerArgs = [
   'run', '-i',
   '-v', `${process.cwd()}:${innerWorkingDir}/function`,
-  '-v', '/Users/jay/Documents/infraware/work/workspace-git/backend-new/decompany-modules/:/src/decompany-modules',
+  '-v', `/Users/jay/Documents/infraware/work/workspace-git/backend-new/decompany-modules/:${innerWorkingDir}/decompany-modules`,
   '-w', `${innerWorkingDir}/function`,
   nodejsImage, 'npm'
 ]

@@ -26,3 +26,8 @@ sls create function -f pageviewByHourly --handler functions/pageview/hourly.hand
 sls create function -f pageviewRequestPutOnChainByDaily --handler functions/pageview/requestPutOnChainByDaily.handler
 sls create function -f onchainWritePageview --handler functions/onchain/writePageview.handler
 sls create function -f onchainWritePageviewTotalCount --handler functions/onchain/writePageviewTotalCount.handler
+
+# Test
+
+sls invoke test -f {FunctionName}
+sls invoke test -f registYesterdayViewCount

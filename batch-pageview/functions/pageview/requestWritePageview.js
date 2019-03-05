@@ -18,15 +18,13 @@ module.exports.handler = async (event, context, callback) => {
   const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
   const nowBT = utils.getBlockchainTimestamp(now);
 
-  console.log("blockchainTimestamp",blockchainTimestamp, nowBT);
+  console.log("blockchainTimestamp", blockchainTimestamp, nowBT);
 
 
   const result = await aggregatePageviewTotalCount(blockchainTimestamp, nowBT);
   console.log("aggregatePageviewTotalCount", result);
 
   const promises = [];
-  promises.push(sendMessagePageviewTotalCountOnchain(blockchainTimestamp, result.totalPageviewCount, result.totalPageviewSquare, result.count));
-
   const resultList = await aggregatePageview(blockchainTimestamp, nowBT);
   console.log("aggregatePageview", resultList)
   resultList.forEach((item)=>{
@@ -103,6 +101,8 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
   });
   
   const result = resultList[0]?resultList[0]:{totalPageviewSquare:0, totalPageview:0, count:0};
+  console.log(result);
+
   const result2 = await wapper.save(TB_PAGEVIEW_TOTALCOUNT, {
     _id: Number(blockchainTimestamp),
     date: Number(blockchainTimestamp),
@@ -111,7 +111,8 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
     count: result.count,
     created: Date.now()
   });
-
+  
+  console.log(result2);
   
   return result;
 }
@@ -147,22 +148,5 @@ function sendMessagePageviewOnchain(blockchainTimestamp, documentId, confirmPage
 
   const queueUrl = sqsConfig.queueUrls.PAGEVIEW_TO_ONCHAIN;
   
-  return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
-}
-/**
- * @param  {} blockchainTimestamp
- * @param  {} totalViewCount
- * @param  {} totalViewCountSquare
- * @param  {} count
- */
-function sendMessagePageviewTotalCountOnchain(blockchainTimestamp, totalViewCount, totalViewCountSquare, count){
-  const messageBody = JSON.stringify({
-    date: blockchainTimestamp,
-    totalViewCount: totalViewCount,
-    totalViewCountSquare: totalViewCountSquare,
-    count
-  });
-
-  const queueUrl = sqsConfig.queueUrls.PAGEVIEWTOTALCOUNT_TO_ONCHAIN;
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }
