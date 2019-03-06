@@ -79,6 +79,18 @@ module.exports = class MongoWapper {
     });
   }
 
+  findWithProjection(collection, query, projection) {
+    this.init();
+
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).find(query, projection, (err, res)=>{
+        if(err) reject(err);
+        else  resolve(res);
+      });
+    });
+  }
+
   count (collection, query) {
 
     return new Promise((resolve, reject) => {
@@ -185,4 +197,14 @@ module.exports = class MongoWapper {
     });
   }
 
+
+  mapReduce(collection, map, reduce, opts) {
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).mapReduce(map, reduce, opts, (err, res)=>{
+        if(err) reject(err);
+        else  resolve(res);
+      });
+    });
+  }
 };
