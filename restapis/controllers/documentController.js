@@ -351,7 +351,7 @@ module.exports.text = async (event, context, callback) => {
 
   if(!documentId) return;
 
-  let text = await s3.getDocumentTextById(document.documentId);
+  let text = await s3.getDocumentTextById(documentId);
 
   const response = {
     statusCode: 200,
