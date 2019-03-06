@@ -350,36 +350,24 @@ module.exports.text = (event, context, callback) => {
   const documentId = event.pathParameters.documentId;
 
   if(!documentId) return;
-  //console.log(documentId);
-  s3.getDocumentTextById(documentId).then((data) => {
-    //console.info(data);
 
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        text: data.Body.toString("utf-8").substring(0, 3000)
-      }),
-    });
+  let text = await s3.getDocumentTextById(document.documentId);
 
-  }).catch((err) => {
-    console.err("Get Text Error", err);
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        text: "NO Text",
-        error:err
-      }),
-    });
-  });
+  const response = {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    body: JSON.stringify(
+      {
+        success: true,
+        text: text
+      }
+    )
+  };
 
+  return (null, response);
 
 
 };
