@@ -344,7 +344,7 @@ module.exports.info = async (event, context, callback) => {
   return (null, response);
 }
 
-module.exports.text = (event, context, callback) => {
+module.exports.text = async (event, context, callback) => {
 
   //console.log(event);
   const documentId = event.pathParameters.documentId;
