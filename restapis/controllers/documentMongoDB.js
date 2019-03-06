@@ -24,7 +24,8 @@ module.exports = {
   putTrackingInfo,
   putTrackingUser,
   getTrackingInfo,
-  getTrackingList
+  getTrackingList,
+  getTopTag
 }
 
  /**
@@ -454,4 +455,18 @@ async function getTrackingInfo(documentId, cid, sid) {
     wapper.close();
   }
 
+}
+/**
+ * @description Get Top-Tag
+ */
+async function getTopTag() {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    //console.log(queryPipeline);
+    return await wapper.findAll(tables.TOP_TAG, {}, {value: -1}, 1000);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
 }

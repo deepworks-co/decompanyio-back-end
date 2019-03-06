@@ -64,3 +64,7 @@ sls create function -f accountPicture --handler controllers/account/picture.hand
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
+
+
+
+sls create function -f tagList --handler controllers/tag/list.handler --httpEvent "get /api/tags"

@@ -9,7 +9,8 @@
         "VOTE": "DEV-CA-DOCUMENT-VOTE",
         "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "USER": "USER",
-        "SEO_FRIENDLY": "SEO-FRIENDLY"
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG"
     },
     "applicationLogAppender": {
         "enable": true,

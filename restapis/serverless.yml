@@ -70,6 +70,10 @@ exclude:
   - .env
 
 functions:  
+  tagList:
+    handler: controllers/tag/list.handler
+    events:
+      - http: get /api/tags
 
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler

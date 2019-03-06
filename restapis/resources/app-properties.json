@@ -1,6 +1,6 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.183.122:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@54.183.186.198:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
@@ -9,7 +9,8 @@
         "VOTE": "DEV-CA-DOCUMENT-VOTE",
         "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "USER": "USER",
-        "SEO_FRIENDLY": "SEO-FRIENDLY"
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG"
     },
     "applicationLogAppender": {
         "enable": false,

@@ -297,29 +297,30 @@ module.exports.info = async (event, context, callback) => {
   console.log("event : ", event.pathParameters);
   //console.log("context : ", context);
   let documentId = event.pathParameters.documentId;
-  const seoTitle = event.pathParameters.documentId;
 
-  if(!documentId && !seoTitle){
+  if(!documentId){
     throw new Error("parameter is invaild!!");
   }
 
   let document = null;
+
+  if(!document){
+    document = await documentService.getDocumentBySeoTitle(documentId);  
+  }
   
-  if(documentId){
+  if(!document){
     document = await documentService.getDocumentById(documentId);  
-  }
-  console.log(document);
-  if(!document && seoTitle){
-    document = await documentService.getDocumentBySeoTitle(seoTitle);  
-  }
+  }  
 
   if(!document){
     throw new Error("document is not exist!");
   }
+  //console.log("query : ", document);
+  
+  let textList = await s3.getDocumentTextById(document.documentId);
 
-  const textBuffer = await s3.getDocumentTextById(document.documentId);
-  const textString = textBuffer.Body.toString("utf-8").substring(0, 3000);
-
+  //console.log(textList);
+  
   const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
 
 
@@ -331,10 +332,10 @@ module.exports.info = async (event, context, callback) => {
     },
     body: JSON.stringify(
       {
-        success: document?true:false,
-        message: document?"SUCCESS":"Document is not exist",
+        success: document? true:false,
+        message: document? "SUCCESS":"Document is not exist",
         document: document,
-        text: textString,
+        text: textList,
         featuredList: featuredList
       }
     )
