@@ -63,12 +63,11 @@ module.exports = class MongoWapper {
     });
   }
 
-  findAll(collection, query, sort = {created : -1 /*decending*/ }) {
-
+  findAll(collection, query, sort = {created : -1 /*decending*/ }, limit = 1000) {
 
     return new Promise((resolve, reject) => {
 
-      this.db.collection(collection).find(query).sort(sort).toArray((err, res)=>{
+      this.db.collection(collection).find(query).sort(sort).limit(limit).toArray((err, res)=>{
         if(err){
           reject(err);
         } else {
