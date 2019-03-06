@@ -20,11 +20,12 @@ module.exports.handler = async (event, context, callback) => {
   const privateKey = ethereum.privateKey;
   const networkIndex = ethereum.index;
 
-  const contractWapper = new ContractWapper(parsed.abi, providerUrl, parsed.networks[networkIndex], account, privateKey);
   console.log(params);
   if(!params.documentId || isNaN(params.confirmPageview) || isNaN(params.date)) {
-    return (null, "Invaild Parameter");
+    throw new Error("Invaild Parameter");
   }
+  
+  const contractWapper = new ContractWapper(parsed.abi, providerUrl, parsed.networks[networkIndex], account, privateKey);
   const {documentId, confirmPageview, date} = params;
   const documentIdByte32 = contractWapper.asciiToHex(documentId);
 
@@ -45,6 +46,6 @@ module.exports.handler = async (event, context, callback) => {
  
   console.log("Transaction Request Result", {documentIdByte32, params, recentlyBlockNumber, nonce, gasPrice, transactionResult});
 
-  return (null, "complete");
+  return "complete"
 
 };

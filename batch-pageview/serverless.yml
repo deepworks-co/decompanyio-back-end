@@ -41,6 +41,7 @@ provider:
        - sqs:*
        - kinesis:*
        - events:*
+       - kms:*
       Resource: "*"   
   exclude:
     - .gitignore

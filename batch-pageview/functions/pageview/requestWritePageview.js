@@ -18,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
   const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
   const currentBlockchainTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("blockchainTimestamp", blockchainTimestamp, currentBlockchainTimestamp);
+  console.log("blockchainTimestamp", blockchainTimestamp, "~", currentBlockchainTimestamp);
 
 
   const result = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
@@ -29,11 +29,11 @@ module.exports.handler = async (event, context, callback) => {
   console.log("aggregatePageview", resultList)
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
-    promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.id, item.pageview));
+    promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
   })
 
   const resultPromise = await Promise.all(promises);
-  //console.log(resultPromise);
+  console.log(resultPromise);
   return (null, "success");
 
 }
@@ -71,6 +71,7 @@ function getQueryPipeline(startTimestamp, endTimestamp){
         dayOfMonth: "$_id.dayOfMonth",
         id: "$_id.id"
       },
+      documentId: {$first: "$_id.id"},
       pageview: {$sum: "$count"},
     }
   }] 

@@ -11,7 +11,7 @@ npm install aws-sdk
 
 ## Install Ethereum lib Dependencies
 
-npm install web3
+npm install web3
 npm install ethereumjs-tx
 
 ## Install Local Dependencies
