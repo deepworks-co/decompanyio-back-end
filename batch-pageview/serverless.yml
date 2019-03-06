@@ -59,14 +59,20 @@ functions:
 #          enabled: true
 
   pageviewRequestWritePageview:
-    handler: functions/pageview/requestWritePageview.handler
+    handler: functions/cron/requestWritePageview.handler
     timeout: 300
     events:
       - schedule: cron(10 0 * * ? *) # daily 00:10:00
 
   pageviewByHourly:
-    handler: functions/pageview/hourly.handler
+    handler: functions/cron/hourly.handler
     timeout: 300
+    events:
+      - schedule: rate(1 hour) # 10min, hourly
+
+  generateTopTag:
+    handler: functions/cron/generateTopTag.handler
+    timeout: 300 # optional, in seconds, default is 6, 5min
     events:
       - schedule: rate(1 hour) # 10min, hourly
 

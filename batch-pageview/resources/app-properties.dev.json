@@ -10,7 +10,8 @@
         "USER": "USER",
         "PAGEVIEW_DAILY": "PAGEVIEW_DAILY",
         "PAGEVIEW": "PAGEVIEW",
-        "PAGEVIEW_TOTALCOUNT": "DEV-CA-CRONHIST-TOTALVIEWCOUNT"
+        "PAGEVIEW_TOTALCOUNT": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "TOP_TAG": "TOP-TAG"
     },
     "sqsConfig": {
         "region": "us-west-1",

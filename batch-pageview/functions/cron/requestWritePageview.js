@@ -26,6 +26,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const promises = [];
   const resultList = await aggregatePageview(blockchainTimestamp, currentBlockchainTimestamp);
+  console.log("aggregatePageview Count", resultList?resultList.length:0);
   console.log("aggregatePageview", resultList)
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
@@ -33,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
   })
 
   const resultPromise = await Promise.all(promises);
-  console.log(resultPromise);
+  //console.log(resultPromise);
   return (null, "success");
 
 }
@@ -146,7 +147,7 @@ function sendMessagePageviewOnchain(blockchainTimestamp, documentId, confirmPage
     confirmPageview: confirmPageview,
     date: blockchainTimestamp
   });
-
+  console.info("messageBody", messageBody);
   const queueUrl = sqsConfig.queueUrls.PAGEVIEW_TO_ONCHAIN;
   
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
