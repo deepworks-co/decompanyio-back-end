@@ -3,11 +3,18 @@ const {utils} = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
   
   const data = JSON.parse(event.body);
-  const name = Date.now();
-  const key = data.userid + "/" + name;
+  const filename = Date.now();
+  if(!data.id) {
+    throw new Error("parameter is invalid");
+  }
+  const key = data.id + "/" + filename;
   const signedUploadUrl = utils.s3.signedUploadUrl("us-west-1", "DC-ACCOUNT-PICTURE", key);
   const response = {
     statusCode:200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
     body: JSON.stringify({
       success: true,
       signedUploadUrl: signedUploadUrl

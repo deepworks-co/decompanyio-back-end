@@ -40,6 +40,7 @@ provider:
        - logs:*
        - sqs:*
        - kinesis:*
+       - kms:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
@@ -73,7 +74,20 @@ functions:
   tagList:
     handler: controllers/tag/list.handler
     events:
-      - http: get /api/tags
+      - http:
+          path: /api/tags
+          method: get
+          documentation:
+            summary: "top tag list"
+            description: get top tag list
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
+
 
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
@@ -98,17 +112,29 @@ functions:
   accountPicture:
     handler: controllers/account/picture.handler
     events:
-      - http: post /api/account/picture
+      - http: 
+          path: /api/account/picture
+          method: post
+          cors: true
+          authorizer: accountAuth
 
   accountGet:
     handler: controllers/account/gethandler
     events:
-      - http: get /api/account/get
+      - http:
+          path: /api/account/get
+          method: get
+          cors: true
+          authorizer: accountAuth
 
   accountUpdate:
     handler: controllers/account/update.handler
     events:
-      - http: post /api/account/update
+      - http: 
+          path: /api/account/update
+          method: post
+          cors: true
+          authorizer: accountAuth
 
   accountAuth:
     handler: controllers/account/auth.handler
@@ -167,8 +193,8 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: "tracking detail list"
-            description: tracking detail list
+            summary: "tracking list"
+            description: tracking list
             queryParams:
               - name: documentid
                 description: document id
@@ -191,8 +217,8 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: "tracking summary list"
-            description: tracking summary list
+            summary: "tracking detail"
+            description: tracking detail
             queryParams:
               - name: documentid
                 type: string

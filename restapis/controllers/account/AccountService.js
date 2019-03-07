@@ -41,7 +41,7 @@ module.exports = class AccountService {
 		try{
 			let query = {};
 			if(user.id){
-				query = {id: user.id};
+				query = {_id: user.id};
 			} else if(user.email) {
 				query = {emali: user.emaill};
 			} else {
@@ -61,8 +61,12 @@ module.exports = class AccountService {
 	async updateUserInfo(user){
 		const mongo = new MongoWapper(connectionString);
 		try{	
+			if(!user || !user.id){
+				throw new Error("user id is invalid!!");
+			}
+
 			const savedUser = await mongo.findOne(USER_TALBE, {
-				id: user.id
+				_id: user.id
 			});
 
 			if(savedUser){
@@ -74,12 +78,18 @@ module.exports = class AccountService {
 				if(user.picture){
 					savedUser.picture = user.picture;
 				}
+
+				if(user.username){
+					savedUser.username = user.username;
+				}
 				
 				console.log("updated user", savedUser);
 				const result = await mongo.save(USER_TALBE, savedUser);
-			} 
-			
-			
+				return result;
+			} else {
+				console.info("user is not exist", user.id);
+			}
+
 		} catch(e) {
 			throw e;
 		} finally{
