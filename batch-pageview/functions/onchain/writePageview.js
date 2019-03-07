@@ -1,6 +1,6 @@
 'use strict';
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables} = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 
 /**
  * @function writePageview
@@ -9,9 +9,6 @@ const { mongodb, tables} = require('../../resources/config.js').APP_PROPERTIES()
  */
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event.Records));
-  const params = JSON.parse(event.Records[0].body);
-
-
 
   console.log(params);
   if(!params.documentId || isNaN(params.confirmPageview) || isNaN(params.date)) {
@@ -39,6 +36,6 @@ module.exports.handler = async (event, context, callback) => {
  
   console.log("Transaction Request Result", {documentIdByte32, params, recentlyBlockNumber, nonce, gasPrice, transactionResult});
 
-  return "complete"
+  return callback(null, "complete");
 
 };

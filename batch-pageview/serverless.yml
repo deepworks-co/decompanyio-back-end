@@ -56,7 +56,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-#          batchSize: 1
+          batchSize: 1
 #          enabled: true
   readLatestVoteAmount:
     handler: functions/onchain/readLatestVoteAmount.handler
@@ -64,6 +64,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN	
+          batchSize: 3
 
   pageviewRequestWritePageview:
     handler: functions/cron/requestWritePageview.handler

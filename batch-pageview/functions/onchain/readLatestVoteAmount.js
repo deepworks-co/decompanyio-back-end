@@ -6,9 +6,11 @@ const {utils, MongoWapper} = require('decompany-common-utils');
 /*
 * @description 문서에 현재까지(어제 기준) Vote된 Deck
 */
-const wapper = new MongoWapper(mongodb.endpoint);
+
 
 module.exports.handler = async (event, context, callback) => {
+  const wapper = new MongoWapper(mongodb.endpoint);
+
   try{
     let promises = [];
     event.Records.forEach((record) => {
@@ -32,9 +34,6 @@ module.exports.handler = async (event, context, callback) => {
   } finally {
     wapper.close();
   }
-  
-  
-
 };
 
 async function processDepositDocument(documentId, blockchainTimestamp){
@@ -47,8 +46,11 @@ async function processDepositDocument(documentId, blockchainTimestamp){
 
 async function updateVoteAmount(documentId, voteAmount) {
     // Increment an atomic counter
-
-    const result = await wapper.update(tables.DOCUMENT, {_id: documentId}, {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()});
-    console.log("update success", result);
-    return result;
+    try{
+      const result = await wapper.update(tables.DOCUMENT, {_id: documentId}, {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()});
+      console.log("update success", result);
+      return result;
+    } catch(e){
+      throw e;
+    }    
 }
