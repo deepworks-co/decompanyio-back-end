@@ -188,8 +188,6 @@ module.exports = class MongoWapper {
 
   update(collection, query, update, options) {
 
-    console.log(collection, query, update, options);
-
     return new Promise((resolve, reject) => {
 
       this.db.collection(collection).update(query, update, options?options:{}, (err, res)=>{
