@@ -77,6 +77,7 @@ functions:
       - http:
           path: /api/tags
           method: get
+          cors: true
           documentation:
             summary: "top tag list"
             description: get top tag list
