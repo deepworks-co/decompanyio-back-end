@@ -48,6 +48,7 @@ provider:
     - .env
 
 functions:
+
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
@@ -57,6 +58,12 @@ functions:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
 #          batchSize: 1
 #          enabled: true
+  readLatestVoteAmount:
+    handler: functions/onchain/readLatestVoteAmount.handler
+    timeout: 15 # optional, in seconds, default is 6, 5min
+    events:
+      - sqs:
+          arn: https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN
 
   pageviewRequestWritePageview:
     handler: functions/cron/requestWritePageview.handler

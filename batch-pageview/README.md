@@ -27,6 +27,8 @@ sls create function -f pageviewRequestPutOnChainByDaily --handler functions/page
 sls create function -f onchainWritePageview --handler functions/onchain/writePageview.handler
 sls create function -f onchainWritePageviewTotalCount --handler functions/onchain/writePageviewTotalCount.handler
 sls create function -f generateTopTag --handler functions/cron/generateTopTag.handler
+sls create function -f voteRequestWriteOnchain --handler functions/cron/requestWriteVote.handler
+sls create function -f readLatestVoteAmount --handler functions/onchain/readLatestVoteAmount.handler
 
 # Test
 

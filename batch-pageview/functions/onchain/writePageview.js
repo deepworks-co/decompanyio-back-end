@@ -1,9 +1,6 @@
 'use strict';
-const fs = require('fs');
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
-
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables, ethereum } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables} = require('../../resources/config.js').APP_PROPERTIES();
 
 /**
  * @function writePageview
@@ -12,20 +9,16 @@ const { mongodb, tables, ethereum } = require('../../resources/config.js').APP_P
  */
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event.Records));
-  const parsed= JSON.parse(fs.readFileSync(jsonFile));
-  
   const params = JSON.parse(event.Records[0].body);
-  const providerUrl = ethereum.providerUrl;
-  const account = ethereum.account;
-  const privateKey = ethereum.privateKey;
-  const networkIndex = ethereum.index;
+
+
 
   console.log(params);
   if(!params.documentId || isNaN(params.confirmPageview) || isNaN(params.date)) {
     throw new Error("Invaild Parameter");
   }
   
-  const contractWapper = new ContractWapper(parsed.abi, providerUrl, parsed.networks[networkIndex], account, privateKey);
+  const contractWapper = new ContractWapper();
   const {documentId, confirmPageview, date} = params;
   const documentIdByte32 = contractWapper.asciiToHex(documentId);
 
