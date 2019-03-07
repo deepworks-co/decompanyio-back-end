@@ -2,7 +2,6 @@
 const documentService = require('../documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
 const {kinesis} = require('decompany-common-utils');
-const geoip = require('geoip-lite');
 
 module.exports.handler = async (event, context, callback) => {
   //console.log(JSON.stringify(event));
@@ -23,14 +22,15 @@ module.exports.handler = async (event, context, callback) => {
   }
   const xforwardedfor = headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
   //const xforwardedfor = "211.45.65.70, 54.239.154.128";
-  const geoIp = await getGeoIps(xforwardedfor.split(","));
-  console.log("result lookup", geoIp);
- 
-  body.t = Number(body.t)
-  body.n = Number(body.n)
+  const ips = xforwardedfor.split(",").map((ip)=>{
+    return ip.replace(/^\s+|\s+$/g,"");
+  });
+  
+  body.t = Number(body.t);
+  body.n = Number(body.n);
   body.referer = headers.Referer;
   body.useragnet = headers["User-Agent"];
-  body.geoIp = geoIp;
+  body.xforwardedfor = ips;
   //console.log("tracking body", body);
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
@@ -53,8 +53,9 @@ module.exports.handler = async (event, context, callback) => {
   return (null, response);
 };
 
+/*
+* geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...
 function getGeoIps(ips){
-  console.log("ips", ips);
   const returnValues = [];
   ips.forEach((ip) => {
     const geo = geoip.lookup(ip.replace(/^\s+|\s+$/g,""));
@@ -67,3 +68,4 @@ function getGeoIps(ips){
 
   return returnValues;
 }
+*/
