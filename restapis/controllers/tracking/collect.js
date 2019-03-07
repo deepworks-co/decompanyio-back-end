@@ -31,6 +31,7 @@ module.exports.handler = async (event, context, callback) => {
   body.referer = headers.Referer;
   body.useragnet = headers["User-Agent"];
   body.xforwardedfor = ips;
+  body.headers = headers;
   //console.log("tracking body", body);
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
