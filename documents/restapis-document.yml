@@ -1,7 +1,8 @@
+---
 swagger: "2.0"
 info:
   description: "Decompany Rest Api"
-  version: "2019-02-28T01:00:44Z"
+  version: "2019-03-07T06:27:15Z"
   title: "dev-backend-restapis"
   termsOfService: "https://www.google.com"
   contact:
@@ -18,29 +19,52 @@ paths:
   /api/account/get:
     get:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-accountGet/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/account/picture:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-accountPicture/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/account/sync:
     post:
       responses: {}
       security:
       - accountAuth: []
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-accountSync/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -58,36 +82,31 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/account/update:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-accountUpdate/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/curator/document/list:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-curatorDocumentCuratingList/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -105,28 +124,9 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/curator/document/today:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-ListTodayVotedDocumentByCurator/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -144,20 +144,6 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/download/{accountId}/{documentId}:
     get:
       parameters:
@@ -166,11 +152,6 @@ paths:
         required: true
         type: "string"
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentDownload/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -188,20 +169,6 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/info/{documentId}:
     get:
       parameters:
@@ -210,11 +177,6 @@ paths:
         required: true
         type: "string"
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentInfo/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -232,28 +194,9 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/list:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentList/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -271,28 +214,9 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/regist:
     post:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentRegist/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -310,20 +234,6 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/text/{documentId}:
     get:
       parameters:
@@ -332,11 +242,6 @@ paths:
         required: true
         type: "string"
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentText/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -354,20 +259,6 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/document/vote/{documentId}:
     post:
       parameters:
@@ -376,11 +267,6 @@ paths:
         required: true
         type: "string"
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-documentVote/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -398,28 +284,20 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/oraclize/viewcount:
     get:
       responses: {}
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-oraclizeController/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
+  /api/tags:
+    get:
+      summary: "top tag list"
+      description: "get top tag list"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/DefaultResponse"
   /api/tracking/collect:
     get:
       summary: "tracking collector"
@@ -457,11 +335,6 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/DefaultResponse"
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-trackingCollect/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -479,24 +352,10 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/tracking/info:
     get:
-      summary: "tracking summary list"
-      description: "tracking summary list"
+      summary: "tracking detail"
+      description: "tracking detail"
       produces:
       - "application/json"
       parameters:
@@ -515,11 +374,6 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/DefaultResponse"
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-trackingInfo/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -537,24 +391,10 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
   /api/tracking/list:
     get:
-      summary: "tracking detail list"
-      description: "tracking detail list"
+      summary: "tracking list"
+      description: "tracking list"
       produces:
       - "application/json"
       parameters:
@@ -568,11 +408,6 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/DefaultResponse"
-      x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-trackingList/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
     options:
       consumes:
       - "application/json"
@@ -590,30 +425,12 @@ paths:
               type: "string"
             Access-Control-Allow-Headers:
               type: "string"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Credentials: "'false'"
-              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json: "{statusCode:200}"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "mock"
 securityDefinitions:
   accountAuth:
     type: "apiKey"
     name: "Authorization"
     in: "header"
     x-amazon-apigateway-authtype: "custom"
-    x-amazon-apigateway-authorizer:
-      authorizerUri: "arn:aws:apigateway:us-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-1:197966029048:function:backend-restapis-dev-accountAuth/invocations"
-      authorizerResultTtlInSeconds: 300
-      type: "token"
 definitions:
   DefaultResponse:
     type: "object"
@@ -624,129 +441,3 @@ definitions:
         type: "array"
     title: "ResponseModel"
     description: "default response"
-x-amazon-apigateway-documentation:
-  version: "1.0"
-  createdDate: "2019-02-28T01:24:24Z"
-  documentationParts:
-  - location:
-      type: "API"
-    properties:
-      info:
-        version: "1"
-        title: "Rest API"
-        description: "Decompany Rest Api"
-        termsOfService: "https://www.google.com"
-        contact:
-          name: "Jay"
-          email: "jay@decompany.io"
-        license:
-          name: "Decompany"
-          url: "https://www.decompany.io"
-  - location:
-      type: "METHOD"
-      path: "/api/tracking/collect"
-      method: "GET"
-    properties:
-      description: "collector for user's event tracking"
-      summary: "tracking collector"
-  - location:
-      type: "METHOD"
-      path: "/api/tracking/info"
-      method: "GET"
-    properties:
-      description: "tracking summary list"
-      summary: "tracking summary list"
-  - location:
-      type: "METHOD"
-      path: "/api/tracking/list"
-      method: "GET"
-    properties:
-      description: "tracking detail list"
-      summary: "tracking detail list"
-  - location:
-      type: "MODEL"
-      name: "DefaultResponse"
-    properties:
-      description: "default response"
-  - location:
-      type: "MODEL"
-      name: "ErrorResponse"
-    properties:
-      description: "This is an error"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/collect"
-      method: "GET"
-      name: "cid"
-    properties:
-      description: "client id"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/info"
-      method: "GET"
-      name: "cid"
-    properties:
-      description: "client id"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/info"
-      method: "GET"
-      name: "documentid"
-    properties:
-      description: "document id"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/list"
-      method: "GET"
-      name: "documentid"
-    properties:
-      description: "document id"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/collect"
-      method: "GET"
-      name: "e"
-    properties:
-      description: "email"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/collect"
-      method: "GET"
-      name: "ev"
-    properties:
-      description: "event type [view, leave]"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/collect"
-      method: "GET"
-      name: "sid"
-    properties:
-      description: "session id"
-  - location:
-      type: "QUERY_PARAMETER"
-      path: "/api/tracking/collect"
-      method: "GET"
-      name: "t"
-    properties:
-      description: "event timestamp"
-  - location:
-      type: "RESPONSE_BODY"
-      path: "/api/tracking/collect"
-      method: "GET"
-      statusCode: "200"
-    properties:
-      description: "Response body description"
-  - location:
-      type: "RESPONSE_BODY"
-      path: "/api/tracking/info"
-      method: "GET"
-      statusCode: "200"
-    properties:
-      description: "Response body description"
-  - location:
-      type: "RESPONSE_BODY"
-      path: "/api/tracking/list"
-      method: "GET"
-      statusCode: "200"
-    properties:
-      description: "Response body description"

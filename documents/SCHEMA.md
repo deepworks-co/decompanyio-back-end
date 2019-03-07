@@ -1,78 +1,62 @@
-# ver 3.6 over
+# SCHEMA
 
-## create table DOCUMENT
+## USER Collection
 
-```javascript
-db.createCollection("DOCUMENT", {
-   validator: {
-      $jsonSchema: {
-         bsonType: "object",
-         required: [ "documentId", "created", "accountId", "status"],
-         properties: {
-            documentId: {
-               bsonType: "string",
-               description: "must be a string and is required"
-            },
-            created: {
-               bsonType: "long",
-               description: "must be a long(32-bit integer) and is required"
-            },
-            accountId: {
-               bsonType: "string",
-               description: "must be an string and is required"
-            },
-            status: {
-               enum: [ "NOT_CONVERT", "CONVERT_COMPLETE", "CONVERT_ERROR", null ],
-               description: "can only be one of the enum values and is required"
-            }
+db.createCollection("USER");
+db.USER.createIndex({email: 1}, {unique:true})
+db.USER.createIndex({username: 1}, {unique:true})
+db.USER.createIndex({sub: 1}, {unique:true})
 
-         }
-      }
-   }
-})
-```
+## DOCUMENT COLLECTION
 
-```javascript
-db.runCommand( {
-   collMod: "DEV-CA-DOCUMENT",
-   validator: { $jsonSchema: {
-      bsonType: "object",
-         required: [ "documentId", "created", "accountId", "status"],
-         properties: {
-            documentId: {
-               bsonType: "string",
-               description: "must be a string and is required"
-            },
-            created: {
-               bsonType: "long",
-               description: "must be a long(32-bit integer) and is required"
-            },
-            accountId: {
-               bsonType: "string",
-               description: "must be an string and is required"
-            },
-            status: {
-               enum: [ "NOT_CONVERT", "CONVERT_COMPLETE", "CONVERT_ERROR", null ],
-               description: "can only be one of the enum values and is required"
-            }
-         }
-      }
-   }
-} )
-```
+db.createCollection("DOCUMENT");
+db.DOCUMENT.createIndex({documentId: 1}, {unique: true})
+db.DOCUMENT.createIndex({created: -1})
+db.DOCUMENT.createIndex({seoTitle: 1}, {unique: true});
+db.DOCUMENT.createIndex({accountId: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, confirmAuthorReward: -1})
+db.DOCUMENT.createIndex({state: 1, confirmVoteAmount: -1})
+db.DOCUMENT.createIndex({state: 1, latestPageview: -1})
 
-## ver 3.2
+## SEO-FRIENDLY
+
+db.createCollection("SEO-FRIENDLY")
+db["SEO-FRIENDLY"].createIndex({{created: -1}})
+
+
+## DOCUMENT-VOTE (cur DEV-CA-DOCUMENT-VOTE)
+
+db.createCollection("VOTE");
+db["DOCUMENT-VOTE"].createIndex({id: 1, created: -1}, {unique:true})
+db["DOCUMENT-VOTE"].createIndex({created: -1})
+db["DOCUMENT-VOTE"].createIndex({documentId: 1, created: -1})
+
+## DOCUMENT-TRACKING
+
+db.createCollection("DOCUMENT-TRACKING");
+db["DOCUMENT-TRACKING"].createIndex({id: 1, cid: 1, sid: 1, created: -1})
+db["DOCUMENT-TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
+
+
+## DOCUMENT-TRACKING-USER
+
+db.createCollection("DOCUMENT-TRACKING-USER");
+db["DOCUMENT-TRACKING-USER"].createIndex({id: 1})
+db["DOCUMENT-TRACKING-USER"].createIndex({id: 1, cid: 1})
+
+
+## TOP-TAG
+
+db.createCollection("TOP-TAG");
+db["TOP-TAG"].createIndex({value: -1})
+
+## query collection's index
 
 ```javascript
-db.runCommand( {
-   collMod: "DOCUMENT-TRACKING",
-   validator: {
-      $and: [
-         { id: { $exists: true } },
-         { cid: { $exists: true } },
-         { sid: { $exists: true } },
-         { created: { $exists: true }}
-      ]
-   }
-} )
+ db.getCollectionNames().forEach(function(collection) {
+   indexes = db[collection].getIndexes();
+   print("Indexes for " + collection + ":");
+   printjson(indexes);
+});
 ```
