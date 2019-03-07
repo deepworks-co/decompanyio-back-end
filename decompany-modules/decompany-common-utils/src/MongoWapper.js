@@ -63,18 +63,27 @@ module.exports = class MongoWapper {
     });
   }
 
-  findAll(collection, query, sort = {created : -1 /*decending*/ }, limit = 1000) {
+  findAll(collection, query, sort = {created : -1 /*decending*/ }, limit) {
 
     return new Promise((resolve, reject) => {
 
-      this.db.collection(collection).find(query).sort(sort).limit(limit).toArray((err, res)=>{
-        if(err){
-          reject(err);
-        } else {
-          resolve(res);
-        }
-      });
-
+      if(limit && !NaN(limit) && Number(limit)>0){
+        this.db.collection(collection).find(query).sort(sort).limit(limit).toArray((err, res)=>{
+          if(err){
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      } else {
+        this.db.collection(collection).find(query).sort(sort).toArray((err, res)=>{
+          if(err){
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      }
     });
   }
 
