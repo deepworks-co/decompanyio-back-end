@@ -47,7 +47,7 @@ module.exports.handler = (event, context, callback) => {
       })
     });
   }).catch((err)=>{
-    return callback(null, {
+    return callback(err, {
       statusCode: 200,
       headers: {
           /* Required for CORS support to work */
