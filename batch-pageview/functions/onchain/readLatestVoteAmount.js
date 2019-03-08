@@ -3,13 +3,14 @@ const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
-const wapper = new MongoWapper(mongodb.endpoint);
 
 /*
 * @description 문서에 현재까지(어제 기준) Vote된 Deck
 */
 module.exports.handler = async (event, context, callback) => {
   
+  const wapper = new MongoWapper(mongodb.endpoint);
+
   try{
 
     const bulk = wapper.getUnorderedBulkOp(tables.DOCUMENT);
