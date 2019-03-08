@@ -9,7 +9,11 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
  */
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event.Records));
-  const {documentId, confirmPageview, date} = JSON.parse(event.Records[0].body);
+  const json = parse(event.Records[0].body);
+  if(!json){
+    return callback(null, "message is invail");
+  }
+  const {documentId, confirmPageview, date} =  json;//JSON.parse(event.Records[0].body);
 
   if(!documentId || isNaN(confirmPageview) || isNaN(date)) {
     throw new Error("Invaild Parameter");
@@ -44,3 +48,13 @@ module.exports.handler = async (event, context, callback) => {
   return callback(null, "complete");
 
 };
+
+
+function parse(message){
+  //JSON.parse(event.Records[0].body);
+  try{
+    return JSON.parse(event.Records[0].body);
+  } catch (e) {
+    console.error("parse error", message);
+  } 
+}
