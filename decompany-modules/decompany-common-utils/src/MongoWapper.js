@@ -67,7 +67,7 @@ module.exports = class MongoWapper {
 
     return new Promise((resolve, reject) => {
 
-      if(limit && !NaN(limit) && Number(limit)>0){
+      if(Number(limit)>0){
         this.db.collection(collection).find(query).sort(sort).limit(limit).toArray((err, res)=>{
           if(err){
             reject(err);
@@ -212,5 +212,25 @@ module.exports = class MongoWapper {
         else  resolve(res);
       });
     });
+  }
+
+  getOrderedBulkOp(collection) {
+    return this.db.collection(collection).initializeOrderedBulkOp();
+  }
+
+  getUnorderedBulkOp(collection) {
+    return this.db.collection(collection).initializeUnorderedBulkOp();
+  }
+
+  execute(bulk) {
+
+    return new Promise((resolve, reject) => {
+
+      bulk.execute(function(err, res){
+        if(err) reject(err);
+        else resolve(res);
+      });
+    });
+
   }
 };
