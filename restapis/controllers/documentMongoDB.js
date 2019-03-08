@@ -437,12 +437,12 @@ async function getTrackingInfo(documentId, cid, sid) {
       _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
       cid : { $first: '$cid' },
       sid : { $first: '$sid' },
-      viewTiemstamp: {$min: "$t"},
+      viewTimestamp: {$max: "$t"},
       viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
     }
   },
   {
-    $sort: {"viewTiemstamp": -1}
+    $sort: {"viewTimestamp": -1}
   }]
 
   const wapper = new MongoWapper(connectionString);
