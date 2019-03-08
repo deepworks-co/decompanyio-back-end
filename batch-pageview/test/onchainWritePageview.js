@@ -18,7 +18,7 @@ describe('onchainWritePageview', () => {
       Records:[
         {
           body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3",
+            documentId: "c4754f829e8f48d7a737e9e5ac592885",
             date: 1550620800000,
             confirmPageview: 32
           })

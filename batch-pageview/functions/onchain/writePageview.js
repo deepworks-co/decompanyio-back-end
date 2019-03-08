@@ -11,9 +11,9 @@ module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event.Records));
   const json = parse(event.Records[0].body);
   if(!json){
-    return callback(null, "message is invail");
+    return callback(null, "sqs message is invail", event.Records[0].body);
   }
-  const {documentId, confirmPageview, date} =  json;//JSON.parse(event.Records[0].body);
+  const {documentId, confirmPageview, date} = json;//JSON.parse(event.Records[0].body);
 
   if(!documentId || isNaN(confirmPageview) || isNaN(date)) {
     throw new Error("Invaild Parameter");
@@ -22,9 +22,14 @@ module.exports.handler = async (event, context, callback) => {
   const contractWapper = new ContractWapper();
   const documentIdByte32 = contractWapper.asciiToHex(documentId);
 
-  const isExist = await contractWapper.isExistsDocument(documentId);
-  if(!isExist){
-    console.log("Document is not exist in on-chain!", documentId);
+  /*
+  * boolean으로 형변환하기 위하여 실제 리턴은 string 타입의 "true" or "false"가 리턴된다.
+  * 형변환을 위하여 JSON으로 parse한다. Boolean으로 변경시키면 "true", "false"모두 true가 리턴된다.
+  */
+  const isExist = JSON.parse(await contractWapper.isExistsDocument(documentId));
+  console.log("checking document in blockchain :", isExist, typeof(isExist));
+  if(isExist === false){
+    console.log("Document is not exists in on-chain!", documentId);
     return callback(null, `${documentId} Document is not exist in on-chain!`);
   }
 
