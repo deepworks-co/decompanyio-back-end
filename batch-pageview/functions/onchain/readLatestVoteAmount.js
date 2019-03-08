@@ -3,31 +3,35 @@ const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
+const wapper = new MongoWapper(mongodb.endpoint);
+
 /*
 * @description 문서에 현재까지(어제 기준) Vote된 Deck
 */
-
-
 module.exports.handler = async (event, context, callback) => {
-  const wapper = new MongoWapper(mongodb.endpoint);
-
+  
   try{
-    let promises = [];
-    event.Records.forEach((record) => {
 
-      const body = JSON.parse(record.body);
-      
+    const bulk = wapper.getUnorderedBulkOp(tables.DOCUMENT);
+    const contractWapper = new ContractWapper();
+    const now = new Date();
+    const blockchainTimestamp = utils.getBlockchainTimestamp(now); //today
+  
+    const promises = await event.Records.map(async (record, index) => {
+    
+      const body = JSON.parse(record.body); 
       const {documentId} = body;
-      const now = new Date();
-      const blockchainTimestamp = utils.getBlockchainTimestamp(now); //today
-      const promise = processDepositDocument(documentId, blockchainTimestamp);
-      promises.push(promise);
-
+      const voteAmount = await contractWapper.getDepositOnDocument(documentId, blockchainTimestamp);
+      bulk.find({_id: documentId}).update({$set: {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()}})
+      return {documentId, voteAmount};
     });
     
     const results = await Promise.all(promises);
-
-    return callback(null, results);
+    console.log("promise results", results);
+    console.log("bulk execute", JSON.stringify(bulk));
+    const result = await wapper.execute(bulk);
+    console.log(result);
+    return callback(null, result);
   } catch(e){
     console.error(e);
     return callback(e);
@@ -35,22 +39,3 @@ module.exports.handler = async (event, context, callback) => {
     wapper.close();
   }
 };
-
-async function processDepositDocument(documentId, blockchainTimestamp){
-  const contractWapper = new ContractWapper();
-  const voteAmount = await contractWapper.getDepositOnDocument(documentId, blockchainTimestamp);
-  console.log("getDepositOnDocument result", voteAmount);
-  return updateVoteAmount(documentId, voteAmount);   
-  
-}
-
-async function updateVoteAmount(documentId, voteAmount) {
-    // Increment an atomic counter
-    try{
-      const result = await wapper.update(tables.DOCUMENT, {_id: documentId}, {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()});
-      console.log("update success", result);
-      return result;
-    } catch(e){
-      throw e;
-    }    
-}

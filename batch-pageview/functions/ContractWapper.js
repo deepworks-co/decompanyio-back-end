@@ -95,7 +95,7 @@ module.exports = class ContractWapper {
   getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp) {
     //contract getAuthor3DayRewardOnDocument
     //return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
-    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, asciiToHex(documentId), blockchainTimestamp).call({
+    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
       from: this.myAddress
     });
 
@@ -108,12 +108,11 @@ module.exports = class ContractWapper {
 
 
   isExistsDocument(documentId) {
-    return this.DocumentReg.methods.contains(asciiToHex(documentId)).call({from: this.myAddress})
+    return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
   getDepositOnDocument (documentId, blockchainTimestamp) {
     //function getCuratorDepositOnDocument(bytes32 _docId, uint _dateMillis) public view returns (uint)
-    console.log("getDepositOnDocument", documentId, blockchainTimestamp);
     return this.DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: this.myAddress});
   }
 

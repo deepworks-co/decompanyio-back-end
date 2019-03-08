@@ -9,17 +9,22 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
  */
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event.Records));
+  const {documentId, confirmPageview, date} = JSON.parse(event.Records[0].body);
 
-  console.log(params);
-  if(!params.documentId || isNaN(params.confirmPageview) || isNaN(params.date)) {
+  if(!documentId || isNaN(confirmPageview) || isNaN(date)) {
     throw new Error("Invaild Parameter");
   }
   
   const contractWapper = new ContractWapper();
-  const {documentId, confirmPageview, date} = params;
   const documentIdByte32 = contractWapper.asciiToHex(documentId);
 
-  console.log("Transaction Request Start", documentIdByte32, params);
+  const isExist = await contractWapper.isExistsDocument(documentId);
+  if(!isExist){
+    console.log("Document is not exist in on-chain!", documentId);
+    return callback(null, `${documentId} Document is not exist in on-chain!`);
+  }
+
+  console.log("Transaction Request Start", documentIdByte32, documentId);
 
   const values = await contractWapper.getPrepareTransaction();
  
@@ -34,7 +39,7 @@ module.exports.handler = async (event, context, callback) => {
     contractWapper.confirmPageViewContract(documentIdByte32, date, confirmPageview).encodeABI());
 
  
-  console.log("Transaction Request Result", {documentIdByte32, params, recentlyBlockNumber, nonce, gasPrice, transactionResult});
+  console.log("Transaction Request Result", {documentIdByte32, documentId, date, confirmPageview, recentlyBlockNumber, nonce, gasPrice, transactionResult});
 
   return callback(null, "complete");
 

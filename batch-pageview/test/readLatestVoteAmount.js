@@ -26,6 +26,42 @@ describe('readLatestVoteAmount', () => {
           body: JSON.stringify({
             documentId: "28aa48c287a141868243360dffcda4a3"
           })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
+        },
+
+        {
+          body: JSON.stringify({
+            documentId: "28aa48c287a141868243360dffcda4a3"
+          })
         }
       ]
     }
