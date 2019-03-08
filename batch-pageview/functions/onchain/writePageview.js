@@ -53,7 +53,7 @@ module.exports.handler = async (event, context, callback) => {
 function parse(message){
   //JSON.parse(event.Records[0].body);
   try{
-    return JSON.parse(event.Records[0].body);
+    return JSON.parse(message);
   } catch (e) {
     console.error("parse error", message);
   } 
