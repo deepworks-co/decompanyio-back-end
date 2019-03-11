@@ -29,7 +29,7 @@ module.exports.handler = async (event, context, callback) => {
   body.t = Number(body.t);
   body.n = Number(body.n);
   body.referer = headers.Referer;
-  body.useragnet = headers["User-Agent"];
+  body.useragent = headers["User-Agent"];
   body.xforwardedfor = ips;
   body.headers = headers;
   //console.log("tracking body", body);
