@@ -1,19 +1,21 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@127.0.0.1:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@54.183.186.198:27017/decompany"
     },
     "tables":{
-        "DOCUMENT": "DEV-CA-DOCUMENT",
-        "VOTE": "DEV-CA-DOCUMENT-VOTE",
-        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "DOCUMENT": "DOCUMENT",
         "TRACKING": "DOCUMENT-TRACKING",
         "TRACKING_USER": "DOCUMENT-TRACKING-USER",
-        "USER": "USER"
+        "VOTE": "DEV-CA-DOCUMENT-VOTE",
+        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "USER": "USER",
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG"
     },
     "applicationLogAppender": {
         "enable": false,
-        "region": "us-east-1",
-        "deliveryStream": "ApplicationLogToRedshiftDeliveryStream"
+        "region": "us-west-1",
+        "streamName": "TrackingDataStream"
     }
 
 }

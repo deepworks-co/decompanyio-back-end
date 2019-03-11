@@ -1,24 +1,32 @@
+'use strict';
+const fs = require('fs');
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx');
+const jsonFile = "contracts-rinkeby/DocumentReg.json";
+const { ethereum } = require('../resources/config.js').APP_PROPERTIES();
 
 module.exports = class ContractWapper {
-  
-  constructor(abi, networkUrl, network, account, priveteKey) {
 
-    this.web3 = new Web3(new Web3.providers.HttpProvider(networkUrl));
-    this.contractABI = abi;
-    this.myAddress = account;//priv.address;
-    this.privateKey = Buffer.from(priveteKey, 'hex');
+  constructor() {
+    const contract= JSON.parse(fs.readFileSync(jsonFile));  
+    const providerUrl = ethereum.providerUrl;
+    const account = ethereum.account;
+    const privateKey = ethereum.privateKey;
+    const networkIndex = ethereum.index;
+
+    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
+    this.contractABI = contract.abi;
+    this.myAddress = account;
+    this.privateKey = Buffer.from(privateKey, 'hex');
     //contract abi is the array that you can get from the ethereum wallet or etherscan
-    this.contractAddress = network.address;//"0xf84cffd9aab0c98ea4df989193a0419dfa00b07e";
+    this.contractAddress = contract.networks[networkIndex].address;
     //creating contract object
     this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
       from: this.myAddress
     });
     this.confirmPageViewContract = this.DocumentReg.methods.confirmPageView;
-    
-
   }
+ 
 
   getPrepareTransaction() {
     return new Promise((resolve, reject) => {
@@ -87,7 +95,7 @@ module.exports = class ContractWapper {
   getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp) {
     //contract getAuthor3DayRewardOnDocument
     //return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
-    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, asciiToHex(documentId), blockchainTimestamp).call({
+    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
       from: this.myAddress
     });
 
@@ -100,19 +108,18 @@ module.exports = class ContractWapper {
 
 
   isExistsDocument(documentId) {
-    return this.DocumentReg.methods.contains(asciiToHex(documentId)).call({from: this.myAddress})
+    return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
-  getCuratorDepositOnDocument (documentId, blockchainTimestamp) {
+  getDepositOnDocument (documentId, blockchainTimestamp) {
     //function getCuratorDepositOnDocument(bytes32 _docId, uint _dateMillis) public view returns (uint)
-    console.log(documentId, blockchainTimestamp);
-    return this.DocumentReg.methods.getCuratorDepositOnDocument(asciiToHex(documentId), blockchainTimestamp).call({from: this.myAddress});
+    return this.DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: this.myAddress});
   }
 
   calculateCuratorReward(curatorId, documentId, viewCount, totalViewCount) {
     //function calculateCuratorReward(address _addr, bytes32 _docId, uint _pv, uint _tpvs) public view returns (uint)
     console.log(curatorId, documentId, viewCount, totalViewCount);
-    return this.DocumentReg.methods.calculateCuratorReward(curatorId, asciiToHex(documentId), viewCount, totalViewCount).call({from: this.myAddress});
+    return this.DocumentReg.methods.calculateCuratorReward(curatorId, this.asciiToHex(documentId), viewCount, totalViewCount).call({from: this.myAddress});
   }
 }
 

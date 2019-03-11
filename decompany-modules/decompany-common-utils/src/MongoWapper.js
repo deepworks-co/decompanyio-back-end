@@ -32,8 +32,6 @@ module.exports = class MongoWapper {
 
   findOne(collection, query) {
 
-    this.init();
-
     return new Promise((resolve, reject) => {
       this.db.collection(collection).findOne(query, (err, doc)=>{
 
@@ -41,8 +39,7 @@ module.exports = class MongoWapper {
           reject(err);
         } else {
           resolve(doc);
-        }
-        this.close();
+        }       
       });
 
     });
@@ -61,34 +58,50 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
       });
 
     });
   }
 
-  findAll(collection, query, sort = {created : -1 /*decending*/ }) {
+  findAll(collection, query, sort = {created : -1 /*decending*/ }, limit) {
+
+    return new Promise((resolve, reject) => {
+
+      if(Number(limit)>0){
+        this.db.collection(collection).find(query).sort(sort).limit(limit).toArray((err, res)=>{
+          if(err){
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      } else {
+        this.db.collection(collection).find(query).sort(sort).toArray((err, res)=>{
+          if(err){
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      }
+    });
+  }
+
+  findWithProjection(collection, query, projection) {
     this.init();
 
     return new Promise((resolve, reject) => {
 
-      this.db.collection(collection).find(query).sort(sort).toArray((err, res)=>{
-        if(err){
-          reject(err);
-        } else {
-          resolve(res);
-        }
-        this.close();
+      this.db.collection(collection).find(query, projection, (err, res)=>{
+        if(err) reject(err);
+        else  resolve(res);
       });
-
     });
   }
 
   count (collection, query) {
-    this.init();
 
     return new Promise((resolve, reject) => {
-
 
       this.db.collection(collection).count(query, (err, res)=>{
         if(err){
@@ -96,14 +109,14 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
   aggregate(collection, pipelines, options) {
-    this.init();
+
 
     return new Promise((resolve, reject) => {
 
@@ -113,14 +126,13 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+ 
       });
 
     });
   }
 
   insert(collection, item) {
-    this.init();
 
     return new Promise((resolve, reject) => {
 
@@ -131,14 +143,13 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
   save(collection, item) {
-    this.init();
 
     return new Promise((resolve, reject) => {
 
@@ -149,14 +160,14 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        this.close();
+
       });
 
     });
   }
 
-  save(collection, item, options, isStayConnected) {
-    this.init();
+  save(collection, item, options) {
+
 
     return new Promise((resolve, reject) => {
 
@@ -167,8 +178,24 @@ module.exports = class MongoWapper {
         } else {
           resolve(res);
         }
-        if(!isStayConnected){
-          this.close();
+        
+        
+      });
+
+    });
+  }
+
+
+  update(collection, query, update, options) {
+
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).update(query, update, options?options:{}, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
         }
         
       });
@@ -176,4 +203,34 @@ module.exports = class MongoWapper {
     });
   }
 
+
+  mapReduce(collection, map, reduce, opts) {
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).mapReduce(map, reduce, opts, (err, res)=>{
+        if(err) reject(err);
+        else  resolve(res);
+      });
+    });
+  }
+
+  getOrderedBulkOp(collection) {
+    return this.db.collection(collection).initializeOrderedBulkOp();
+  }
+
+  getUnorderedBulkOp(collection) {
+    return this.db.collection(collection).initializeUnorderedBulkOp();
+  }
+
+  execute(bulk) {
+
+    return new Promise((resolve, reject) => {
+
+      bulk.execute(function(err, res){
+        if(err) reject(err);
+        else resolve(res);
+      });
+    });
+
+  }
 };

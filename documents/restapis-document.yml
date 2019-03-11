@@ -1,7 +1,8 @@
+---
 swagger: "2.0"
 info:
   description: "Decompany Rest Api"
-  version: "2019-02-15T09:19:49Z"
+  version: "2019-03-07T06:27:15Z"
   title: "dev-backend-restapis"
   termsOfService: "https://www.google.com"
   contact:
@@ -17,12 +18,48 @@ schemes:
 paths:
   /api/account/get:
     get:
+      responses: {}
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
       produces:
       - "application/json"
-      responses: {}
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/account/picture:
     post:
       responses: {}
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/account/sync:
     post:
       responses: {}
@@ -48,6 +85,25 @@ paths:
   /api/account/update:
     post:
       responses: {}
+      security:
+      - accountAuth: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Credentials:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
   /api/curator/document/list:
     post:
       responses: {}
@@ -115,8 +171,6 @@ paths:
               type: "string"
   /api/document/info/{documentId}:
     get:
-      produces:
-      - "application/json"
       parameters:
       - name: "id"
         in: "path"
@@ -182,8 +236,6 @@ paths:
               type: "string"
   /api/document/text/{documentId}:
     get:
-      produces:
-      - "application/json"
       parameters:
       - name: "id"
         in: "path"
@@ -235,6 +287,17 @@ paths:
   /api/oraclize/viewcount:
     get:
       responses: {}
+  /api/tags:
+    get:
+      summary: "top tag list"
+      description: "get top tag list"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/DefaultResponse"
   /api/tracking/collect:
     get:
       summary: "tracking collector"
@@ -291,11 +354,16 @@ paths:
               type: "string"
   /api/tracking/info:
     get:
-      summary: "tracking summary list"
-      description: "tracking summary list"
+      summary: "tracking detail"
+      description: "tracking detail"
       produces:
       - "application/json"
       parameters:
+      - name: "cid"
+        in: "query"
+        description: "client id"
+        required: true
+        type: "string"
       - name: "documentid"
         in: "query"
         description: "document id"
@@ -325,21 +393,11 @@ paths:
               type: "string"
   /api/tracking/list:
     get:
-      summary: "tracking detail list"
-      description: "tracking detail list"
+      summary: "tracking list"
+      description: "tracking list"
       produces:
       - "application/json"
       parameters:
-      - name: "cid"
-        in: "query"
-        description: "client id"
-        required: true
-        type: "string"
-      - name: "sid"
-        in: "query"
-        description: "session id"
-        required: true
-        type: "string"
       - name: "documentid"
         in: "query"
         description: "document id"

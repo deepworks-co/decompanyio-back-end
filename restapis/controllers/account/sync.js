@@ -38,9 +38,7 @@ module.exports.handler = (event, context, callback) => {
     return callback(null, {
       statusCode: 200,
       headers: {
-          /* Required for CORS support to work */
         'Access-Control-Allow-Origin': '*',
-          /* Required for cookies, authorization headers with HTTPS */
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
@@ -49,7 +47,7 @@ module.exports.handler = (event, context, callback) => {
       })
     });
   }).catch((err)=>{
-    return callback(null, {
+    return callback(err, {
       statusCode: 200,
       headers: {
           /* Required for CORS support to work */

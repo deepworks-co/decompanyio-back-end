@@ -16,7 +16,7 @@ exports.handler = function(event, context) {
   // key : FILE/anonymous%40infrawareglobal.com/12a3b909-ec42-4ac2-b0e0-3b01c6ccd77e.hwp
   // %40 => @
   run(event.Records).then((success)=>{
-    console.log("success message", success);
+    //console.log("success message", success);
     context.done(null, "success")
   }).catch((err)=>{
     context.done(err);

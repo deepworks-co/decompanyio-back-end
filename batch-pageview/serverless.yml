@@ -41,12 +41,14 @@ provider:
        - sqs:*
        - kinesis:*
        - events:*
+       - kms:*
       Resource: "*"   
   exclude:
     - .gitignore
     - .env
 
 functions:
+
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
@@ -54,18 +56,31 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-#          batchSize: 1
+          batchSize: 1
 #          enabled: true
+  readLatestVoteAmount:
+    handler: functions/onchain/readLatestVoteAmount.handler
+    timeout: 60 # optional, in seconds, default is 6, 5min
+    events:
+      - sqs:
+          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN	
+#          batchSize: 10   # default 10
 
   pageviewRequestWritePageview:
-    handler: functions/pageview/requestWritePageview.handler
+    handler: functions/cron/requestWritePageview.handler
     timeout: 300
     events:
       - schedule: cron(10 0 * * ? *) # daily 00:10:00
 
   pageviewByHourly:
-    handler: functions/pageview/hourly.handler
+    handler: functions/cron/hourly.handler
     timeout: 300
+    events:
+      - schedule: rate(1 hour) # 10min, hourly
+
+  generateTopTag:
+    handler: functions/cron/generateTopTag.handler
+    timeout: 300 # optional, in seconds, default is 6, 5min
     events:
       - schedule: rate(1 hour) # 10min, hourly
 

@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   # you can overwrite defaults here
-  stage: ${opt:stage, ''}
+  stage: ${opt:stage, 'dev'}
   region: us-west-1
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
@@ -40,6 +40,7 @@ provider:
        - logs:*
        - sqs:*
        - kinesis:*
+       - kms:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
@@ -70,6 +71,25 @@ exclude:
   - .env
 
 functions:  
+  tagList:
+    handler: controllers/tag/list.handler
+    events:
+      - http:
+          path: /api/tags
+          method: get
+          cors: true
+          documentation:
+            summary: "top tag list"
+            description: get top tag list
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
+
+
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
     events:
@@ -93,17 +113,29 @@ functions:
   accountPicture:
     handler: controllers/account/picture.handler
     events:
-      - http: post /api/account/picture
+      - http: 
+          path: /api/account/picture
+          method: post
+          cors: true
+          authorizer: accountAuth
 
   accountGet:
     handler: controllers/account/gethandler
     events:
-      - http: get /api/account/get
+      - http:
+          path: /api/account/get
+          method: get
+          cors: true
+          authorizer: accountAuth
 
   accountUpdate:
     handler: controllers/account/update.handler
     events:
-      - http: post /api/account/update
+      - http: 
+          path: /api/account/update
+          method: post
+          cors: true
+          authorizer: accountAuth
 
   accountAuth:
     handler: controllers/account/auth.handler
@@ -153,7 +185,7 @@ functions:
           path: api/curator/document/today
           method: post
           cors: true
-  
+
   trackingList:
     handler: controllers/tracking/list.handler
     events:
@@ -162,21 +194,14 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: "tracking detail list"
-            description: tracking detail list
+            summary: "tracking list"
+            description: tracking list
             queryParams:
               - name: documentid
                 description: document id
                 type: string
                 required: true
-              - name: cid
-                description: client id
-                type: string
-                required: true
-              - name: sid
-                description: session id
-                type: string
-                required: true
+              
             methodResponses:
               -
                 statusCode: "200"
@@ -193,12 +218,16 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: "tracking summary list"
-            description: tracking summary list
+            summary: "tracking detail"
+            description: tracking detail
             queryParams:
               - name: documentid
                 type: string
                 description: document id
+                required: true
+              - name: cid
+                description: client id
+                type: string
                 required: true
             methodResponses:
               -

@@ -1,3 +1,5 @@
+const friendlyUrl = require('friendly-url')
+const generate = require('nanoid/generate')
 /**
  * @description Date object를 Blockchain에 넣을 YYYY-MM-DD 00:00:00의 timestamp값으로 변경한다. 
  */
@@ -30,4 +32,12 @@ function toUTCDate(dateStr) {
 
 exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
+}
+
+exports.toSeoFriendly = (str) => {
+  if(!str)
+    return;
+
+  const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
+  return friendlyUrl(str).concat("-", id);
 }

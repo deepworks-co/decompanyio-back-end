@@ -128,3 +128,6 @@ db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].find().forEach( function (x) {
   x._id = x.date
   db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].save(x);
 });
+
+
+db.DOCUMENT.update({}, {$unset: {confirmViewCountHist: 1}} , {multi: true});

@@ -5,7 +5,7 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('pageviewByHourly', '/functions/pageview/hourly.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('pageviewByHourly', '/functions/cron/hourly.js', 'handler');
 
 describe('pageviewByHourly', () => {
   before((done) => {

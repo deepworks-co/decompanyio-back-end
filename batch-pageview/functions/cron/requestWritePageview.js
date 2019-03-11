@@ -8,30 +8,33 @@ const TB_PAGEVIEW_TOTALCOUNT = tables.PAGEVIEW_TOTALCOUNT;
 const wapper = new MongoWapper(mongodb.endpoint);
 
 /**
+ * @description 전날 하루동안의 pageview를 집계 및 추가 작업
+ *  - 전날 pageview 블록체인이 입력하기용 큐 발생
+ *  - 전날 pageview 가 있는 문서의 voteAmount를 블록체인에서 읽어오기 큐 발생
+ *  - 전날 totalpageview 를 mongodb에 저장
  * @function
  * @cron 
- * @description 
  */
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
   const yesterday = new Date(now - 1000 * 60 * 60 * 24);
   const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
-  const nowBT = utils.getBlockchainTimestamp(now);
+  const currentBlockchainTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("blockchainTimestamp",blockchainTimestamp, nowBT);
+  console.log("blockchainTimestamp", blockchainTimestamp, "~", currentBlockchainTimestamp);
 
 
-  const result = await aggregatePageviewTotalCount(blockchainTimestamp, nowBT);
+  const result = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
   console.log("aggregatePageviewTotalCount", result);
 
   const promises = [];
-  promises.push(sendMessagePageviewTotalCountOnchain(blockchainTimestamp, result.totalPageviewCount, result.totalPageviewSquare, result.count));
-
-  const resultList = await aggregatePageview(blockchainTimestamp, nowBT);
+  const resultList = await aggregatePageview(blockchainTimestamp, currentBlockchainTimestamp);
+  console.log("aggregatePageview Count", resultList?resultList.length:0);
   console.log("aggregatePageview", resultList)
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
-    promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.id, item.pageview));
+    promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
+    promises.push(sendMessageReadVote(item.documentId));
   })
 
   const resultPromise = await Promise.all(promises);
@@ -73,6 +76,7 @@ function getQueryPipeline(startTimestamp, endTimestamp){
         dayOfMonth: "$_id.dayOfMonth",
         id: "$_id.id"
       },
+      documentId: {$first: "$_id.id"},
       pageview: {$sum: "$count"},
     }
   }] 
@@ -103,6 +107,8 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
   });
   
   const result = resultList[0]?resultList[0]:{totalPageviewSquare:0, totalPageview:0, count:0};
+  console.log(result);
+
   const result2 = await wapper.save(TB_PAGEVIEW_TOTALCOUNT, {
     _id: Number(blockchainTimestamp),
     date: Number(blockchainTimestamp),
@@ -111,7 +117,8 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
     count: result.count,
     created: Date.now()
   });
-
+  
+  console.log(result2);
   
   return result;
 }
@@ -144,25 +151,25 @@ function sendMessagePageviewOnchain(blockchainTimestamp, documentId, confirmPage
     confirmPageview: confirmPageview,
     date: blockchainTimestamp
   });
-
+  console.info("sendMessagePageviewOnchain", messageBody);
   const queueUrl = sqsConfig.queueUrls.PAGEVIEW_TO_ONCHAIN;
   
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }
+
+
 /**
  * @param  {} blockchainTimestamp
- * @param  {} totalViewCount
- * @param  {} totalViewCountSquare
- * @param  {} count
+ * @param  {} documentId
+ * @param  {} confirmPageview
  */
-function sendMessagePageviewTotalCountOnchain(blockchainTimestamp, totalViewCount, totalViewCountSquare, count){
+function sendMessageReadVote(documentId){
+  
   const messageBody = JSON.stringify({
-    date: blockchainTimestamp,
-    totalViewCount: totalViewCount,
-    totalViewCountSquare: totalViewCountSquare,
-    count
+    documentId: documentId
   });
-
-  const queueUrl = sqsConfig.queueUrls.PAGEVIEWTOTALCOUNT_TO_ONCHAIN;
+  console.info("sendMessageReadVote", messageBody);
+  const queueUrl = sqsConfig.queueUrls.LATEST_VOTE_READ_FROM_ONCHAIN;
+  
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }

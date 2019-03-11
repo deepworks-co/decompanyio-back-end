@@ -4,36 +4,43 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
 
 const TB_TRACKING = tables.TRACKING;
 const TB_PAGEVIEW = tables.PAGEVIEW;
+const TB_DOCUMENT = tables.DOCUMENT;
+
+const period = 7; //days
 
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
-  const beforeThreeDaysAgo = new Date(now - 1000 * 60 * 60 * 24 * 3);
+  const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
 
-  console.log("QUERY TIME", beforeThreeDaysAgo, "(include) between (exclude)", now);
+  console.log("QUERY TIME", beforeDays, "(include) between (exclude)", now);
 
-  const queryPipeline = getQueryPipeline(beforeThreeDaysAgo.getTime());
+  const queryPipeline = getQueryPipeline(beforeDays.getTime());
 
   const wapper = new MongoWapper(mongodb.endpoint);
   const resultList = await wapper.aggregate(TB_TRACKING, queryPipeline, {
     allowDiskUse: true
   });
 
-
   console.log("aggregation success", resultList);
+
+  const r = await wapper.update(TB_DOCUMENT, {}, {$set: { latestPageview: 0 }}, {multi: true});
+  console.log(r);
 
   const promises = [];
   resultList.forEach((item, index) => {
     item.created = now.getTime();
-    item.expireAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 3);//3일뒤 expired
-    promises.push(wapper.save(TB_PAGEVIEW, item), null, true);
+    item.expireAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * period); //period 후 expire
+    promises.push(wapper.save(TB_PAGEVIEW, item));
+    promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview }}));
   });
-  
-  
 
   const result = await Promise.all(promises);
-  console.log("success", result);
+  console.log("complete", result);
   wapper.close();
+
+ 
   return (null, "success");
+  
 };
 
 /**
