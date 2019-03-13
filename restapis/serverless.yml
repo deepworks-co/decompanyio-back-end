@@ -64,7 +64,7 @@ provider:
 #    - exclude-me-dir/**
 
 package:
-   individually: true
+  individually: true
 
 exclude:
   - .gitignore
@@ -78,7 +78,32 @@ functions:
           path: /api/analytics/list
           method: get
           cors: true
-
+          documentation:
+            summary: "analytics list"
+            description: analytics list
+            queryParams:
+              - name: userid
+                type: string
+                description: userid
+                required: true
+              - name: documentId
+                description: document id
+                type: string
+                required: true
+              - name: week
+                description: 4 week(1 month), 8 week (2month)
+                type: integer
+              - name: csv
+                description: csv(true or false ) default false
+                type: boolean
+   
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
 
   tagList:
     handler: controllers/tag/list.handler
