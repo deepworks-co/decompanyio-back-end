@@ -62,8 +62,6 @@ module.exports.handler = async (event, context, callback) => {
     const statDate = new Date(Date.UTC(item.year, item.month-1, item.dayOfMonth));
     item.created = Date.now();
     item.statDate = statDate;
-    //console.log(item);
-    //bulk.insert(item);
     bulk.find(item._id).upsert().updateOne(item);
   });
 
