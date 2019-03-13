@@ -18,9 +18,9 @@ const projectname = path.parse(process.cwd()).name;
 const commonmodulesname = 'decompany-modules';
 const dockerArgs = [
   'run', '-i',
-  '-v', `${parentDir}/batch-pageview:${innerWorkingDir}/${projectname}`,
-  '-v', `${parentDir}/decompany-modules:${innerWorkingDir}/${commonmodulesname}`,
-  '-w', `${innerWorkingDir}/function`,
+  '-v', `${parentDir}/${projectname}:${innerWorkingDir}/${projectname}`,
+  '-v', `${parentDir}/${commonmodulesname}:${innerWorkingDir}/${commonmodulesname}`,
+  '-w', `${innerWorkingDir}/${projectname}`,
   nodejsImage, 'npm'
 ]
 
