@@ -48,6 +48,11 @@ provider:
     - .env
 
 functions:
+  audienceAnalytics:
+    handler: functions/cron/audienceAnalytics.handler
+    timeout: 300
+    events:
+      - schedule: cron(15 0 * * ? *) # 00 hour, 15 min, 00 sec daily
 
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
@@ -58,6 +63,7 @@ functions:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
           batchSize: 1
 #          enabled: true
+
   readLatestVoteAmount:
     handler: functions/onchain/readLatestVoteAmount.handler
     timeout: 60 # optional, in seconds, default is 6, 5min
