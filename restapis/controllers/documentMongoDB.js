@@ -15,6 +15,7 @@ const connectionString = mongodb.endpoint;
 module.exports = {
   getDocumentById,
   getDocumentBySeoTitle,
+  getUser,
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
