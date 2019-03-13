@@ -535,7 +535,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
       }
     }, {
       $group: {
-        _id: {$week: "$statDate"},
+        _id: {$isoWeek: "$statDate"},
         totalCount: {$sum: "$count"},
         start: {$min: "$statDate"},
         end: {$max: "$statDate"},
