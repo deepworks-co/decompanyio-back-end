@@ -8,6 +8,7 @@ const TABLE_NAME_VOTE = tables.VOTE;
 const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
 const TB_TRACKING = tables.TRACKING;
 const TB_TRACKING_USER = tables.TRACKING_USER;
+const TB_USER = tables.USER;
 
 const connectionString = mongodb.endpoint;
 
@@ -67,6 +68,17 @@ module.exports = {
   } finally {
     wapper.close();
   }      
+}
+
+async function getUser(userid) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    return await wapper.findOne(TB_USER, {_id: userid});
+  } catch (e) {
+    throw e
+  } finally {
+    wapper.close();
+  }
 }
 /**
  * @param  {} args

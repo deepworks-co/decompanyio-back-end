@@ -18,91 +18,109 @@ const defaultHeaders = {
 }
 
 module.exports.regist = async (event, context, callback) => {
-
   console.log("event", event.body);
-  const parameter = JSON.parse(event.body);
-  console.log("parameter", parameter);
-  if(!parameter || !parameter.accountId || !parameter.title) {
-    throw new Error("parameter is invalid");
-  } 
 
-  const accountId = parameter.accountId;
-  const sub = parameter.sub;
-  const nickname = parameter.nickname;
-  const username = parameter.username;
-  
-  const documentName = parameter.filename;
-  const documentSize = parameter.size;
-  const tags = parameter.tags?parameter.tags:[];//document tags
-  const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
-  const title = parameter.title;
-  const desc = parameter.desc;
-  const category = parameter.category;
-  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-  
-  let seoTitle;
-  let documentId;
-  let document, friendUrl;
+  try{
+    const parameter = JSON.parse(event.body);
+    console.log("parameter", parameter);
+    if(!parameter || !parameter.accountId || !parameter.title) {
+      throw new Error("parameter is invalid");
+    } 
 
-  do {
-    documentId = uuidv4().replace(/-/gi, "");
-    document = await documentService.getDocumentById(documentId);
-  } while(document)
-  
-  do {
-    seoTitle = utils.toSeoFriendly(title);
-    friendUrl = await documentService.getFriendlyUrl(seoTitle);
-  } while(friendUrl)
-
-  if(!documentId || !seoTitle){
-    throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
-  } else {
-    console.log("The new Document ID", documentId);
-
-    const putItem = {
-      _id: documentId,
-      accountId: accountId,
-      documentId: documentId,
-      nickname: nickname,
-      username: username,
-      sub: sub,
-      documentName: documentName,
-      documentSize: documentSize,
-      ethAccount: ethAccount,
-      title: title,
-      desc: desc,
-      tags: tags,
-      category: category,
-      confirmViewCount: 0,
-      confirmVoteAmount: 0,
-      totalViewCount: 0,
-      viewCount: 0,
-      seoTitle: seoTitle
-    }
-
-    const result = await documentService.putDocument(putItem);
+    const accountId = parameter.accountId;
+    const sub = parameter.sub;
+    const nickname = parameter.nickname;
+    const username = parameter.username;
     
-    if(result){
-      console.log("PutItem succeeded:", result);
-      const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
-      const payload = {
-        success: true,
-        documentId: documentId,
-        accountId: accountId,
-        message: "SUCCESS",
-        signedUrl: signedUrl
-      };
-      callback(null, {
-        statusCode: 200,
-        headers: defaultHeaders,
-        body: JSON.stringify(payload)
-      });
-    } else {
-      throw new Error("PutItme Fail " + JSON.stringify(putItem));
+    const documentName = parameter.filename;
+    const documentSize = parameter.size;
+    const tags = parameter.tags?parameter.tags:[];//document tags
+    const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
+    const title = parameter.title;
+    const desc = parameter.desc;
+    const category = parameter.category;
+    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+    
+    let seoTitle;
+    let documentId;
+    let document, friendUrl;
+
+
+    const user = await documentService.getUser(accountId);
+    if(!user.email || !user.sub){
+      throw new Error("user is not exist : " + accountId);
     }
+
+    do {
+      documentId = uuidv4().replace(/-/gi, "");
+      document = await documentService.getDocumentById(documentId);
+    } while(document)
+    
+    do {
+      seoTitle = utils.toSeoFriendly(title);
+      friendUrl = await documentService.getFriendlyUrl(seoTitle);
+    } while(friendUrl)
+
+    if(!documentId || !seoTitle){
+      throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
+    } else {
+      console.log("The new Document ID", documentId);
+
+      const putItem = {
+        _id: documentId,
+        accountId: accountId,
+        documentId: documentId,
+        nickname: nickname,
+        username: username,
+        sub: sub,
+        documentName: documentName,
+        documentSize: documentSize,
+        ethAccount: ethAccount,
+        title: title,
+        desc: desc,
+        tags: tags,
+        category: category,
+        confirmViewCount: 0,
+        confirmVoteAmount: 0,
+        totalViewCount: 0,
+        viewCount: 0,
+        seoTitle: seoTitle
+      }
+
+      const result = await documentService.putDocument(putItem);
+      
+      if(result){
+        console.log("PutItem succeeded:", result);
+        const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
+        const payload = {
+          success: true,
+          documentId: documentId,
+          accountId: accountId,
+          message: "SUCCESS",
+          signedUrl: signedUrl
+        };
+        return (null, {
+          statusCode: 200,
+          headers: defaultHeaders,
+          body: JSON.stringify(payload)
+        });
+      } else {
+        throw new Error("PutItme Fail " + JSON.stringify(putItem));
+      }
+
+    }
+  } catch (e){
+    console.error(e);
+
+    return (e, {
+      statusCode: 200,
+      headers: defaultHeaders,
+      body: JSON.stringify({
+        error:e.message
+      })
+    });
 
   }
-  
 
 };
 
