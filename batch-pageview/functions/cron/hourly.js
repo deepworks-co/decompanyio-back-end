@@ -22,7 +22,8 @@ module.exports.handler = async (event, context, callback) => {
   });
 
   console.log("aggregation success", resultList);
-
+  
+  // 모든 문서의latestPageview를 0으로 초기화 시킨다.
   const r = await wapper.update(TB_DOCUMENT, {}, {$set: { latestPageview: 0 }}, {multi: true});
   console.log(r);
 
@@ -30,8 +31,10 @@ module.exports.handler = async (event, context, callback) => {
   resultList.forEach((item, index) => {
     item.created = now.getTime();
     item.expireAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * period); //period 후 expire
+    //PAGEVIEW 임시테이블에 기록 period이후 소멸됨
     promises.push(wapper.save(TB_PAGEVIEW, item));
-    promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview }}));
+    //DOCUMENT 테이블에 기록
+    promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview, latestPageviewUpdated:now.getTime() }}));
   });
 
   const result = await Promise.all(promises);

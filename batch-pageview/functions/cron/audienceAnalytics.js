@@ -50,8 +50,6 @@ module.exports.handler = async (event, context, callback) => {
       dayOfMonth:"$_id.dayOfMonth",
       documentId:"$_id.id",
     }
-  }, {
-    $sort:{year: 1, month:1, dayOfMonth:1}
   }] 
 
   

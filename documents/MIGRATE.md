@@ -62,3 +62,14 @@ db["DEV-CA-DOCUMENT"].find().forEach( function (x) {
 });
 ```
 
+
+
+```javascript
+db["DOCUMENT-TRACKING"].find({useragnet:{$exists:1}}).forEach( function (x) {
+  x.useragent = x.useragnet;
+  db["DOCUMENT-TRACKING"].save(x);
+});
+
+db["DOCUMENT-TRACKING"].update({}, {$unset: {useragnet: ""}}, {multi: true});
+```
+
