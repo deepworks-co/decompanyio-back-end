@@ -7,8 +7,11 @@ const TB_TRACKING = tables.TRACKING;
 const TB_STAT_PAGEVIEW_DAILY = tables.STAT_PAGEVIEW_DAILY;
 module.exports.handler = async (event, context, callback) => {
   //const startTimestamp = new Date(now - 1000 * 60 * 60 * 1); //1시간전
-  const startTimestamp = 0;
-
+  //UTC기준의 어제 timestamp
+  const now = new Date();
+  const yesterday = new Date(now - 1000 * 60 * 60 * 24);
+  const startTimestamp = utils.getBlockchainTimestamp(yesterday);
+  console.log("query start timestamp", startTimestamp, new Date(startTimestamp));
   const wapper = new MongoWapper(mongodb.endpoint);
 
   const queryPipeline = [{
