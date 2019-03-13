@@ -68,3 +68,5 @@ sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
 
 
 sls create function -f tagList --handler controllers/tag/list.handler --httpEvent "get /api/tags"
+
+sls create function -f analyticsList --handler controllers/analytics/list.handler --httpEvent "get /api/analytics/list"

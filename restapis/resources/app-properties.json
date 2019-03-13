@@ -10,12 +10,12 @@
         "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
         "USER": "USER",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
-        "TOP_TAG": "TOP-TAG"
+        "TOP_TAG": "TOP-TAG",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY"
     },
     "applicationLogAppender": {
         "enable": false,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
     }
-
 }

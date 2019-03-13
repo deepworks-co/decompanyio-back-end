@@ -31,8 +31,7 @@ module.exports.handler = (event, context, callback) => {
     family_name: claims.family_name,
     locale: claims.locale,
     sub: claims.sub,
-    provider: provider,
-    connected: Date.now()
+    provider: provider
   }
   accountService.syncUserInfo(user).then((result)=>{
     return callback(null, {

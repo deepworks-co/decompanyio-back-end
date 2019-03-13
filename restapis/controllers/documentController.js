@@ -12,8 +12,6 @@ AWS.config.update({
   region: "us-west-1"
 });
 
-const TABLE_NAME = "DEV-CA-DOCUMENT";
-
 const defaultHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Credentials': true,
@@ -74,8 +72,6 @@ module.exports.regist = async (event, context, callback) => {
       title: title,
       desc: desc,
       tags: tags,
-      confirmViewCountHist: {},
-      confirmVoteAmountHist: {},
       category: category,
       confirmViewCount: 0,
       confirmVoteAmount: 0,

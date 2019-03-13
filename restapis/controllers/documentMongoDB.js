@@ -25,7 +25,10 @@ module.exports = {
   putTrackingUser,
   getTrackingInfo,
   getTrackingList,
-  getTopTag
+  getTopTag,
+  getAnalyticsListDaily,
+  getAnalyticsListWeekly,
+  getAnalyticsListByUserId
 }
 
  /**
@@ -462,8 +465,105 @@ async function getTrackingInfo(documentId, cid, sid) {
 async function getTopTag() {
   const wapper = new MongoWapper(connectionString);
   try{
-    //console.log(queryPipeline);
     return await wapper.findAll(tables.TOP_TAG, {}, {value: -1}, 1000);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+/**
+ * @param  {} documentIds
+ * @param  {} start
+ * @param  {} end
+ */
+async function getAnalyticsListDaily(documentIds, start, end) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const queryPipeline = [{
+      $match: {
+        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+      }
+    }, {
+      $group: {
+        _id: {year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
+        totalCount: {$sum: "$count"}
+      }
+    }, {
+      $sort:{_id:1}
+    },{ 
+      $project: {
+        "_id": 0,
+        year: "$_id.year",
+        month: "$_id.month",
+        dayOfMonth: "$_id.dayOfMonth",
+        count: "$totalCount"
+
+      }
+    }]
+    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+/**
+ * @param  {} documentIds
+ * @param  {} start
+ * @param  {} end
+ */
+async function getAnalyticsListWeekly(documentIds, start, end) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const queryPipeline = [{
+      $match: {
+        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+      }
+    }, {
+      $group: {
+        _id: {$week: "$statDate"},
+        totalCount: {$sum: "$count"},
+        start: {$min: "$statDate"},
+        end: {$max: "$statDate"},
+      }
+    }, {
+      $sort:{_id:1}
+    },{ 
+      $project: {
+        "_id": 0,
+        week: "$_id",
+        count: "$totalCount",
+        start: 1,
+        end:1
+
+      }
+    }]
+    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+
+async function getAnalyticsListByUserId(userid, start, end, isWeekly) {
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+
+    const doclist = await wapper.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
+    
+    const documentIds = doclist.map((doc)=>{return doc.documentId});
+    //console.log(documentIds);
+    if(isWeekly){
+      return await getAnalyticsListWeekly(documentIds, start, end);
+    } else {
+      return await getAnalyticsListDaily(documentIds, start, end);
+    }
+    
   } catch(err){
     throw err;
   } finally {

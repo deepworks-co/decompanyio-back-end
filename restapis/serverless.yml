@@ -71,6 +71,15 @@ exclude:
   - .env
 
 functions:  
+  analyticsList:
+    handler: controllers/analytics/list.handler
+    events:
+      - http:
+          path: /api/analytics/list
+          method: get
+          cors: true
+
+
   tagList:
     handler: controllers/tag/list.handler
     events:
