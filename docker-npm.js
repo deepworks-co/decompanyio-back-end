@@ -10,7 +10,7 @@ Usage:
   node docker-npm.js rebuild
 */
 const childProcess = require('child_process')
-
+const path = require('path');
 const nodejsImage = 'node:8.10'
 const innerWorkingDir = '/src'
 const dockerArgs = [
@@ -21,8 +21,8 @@ const dockerArgs = [
   nodejsImage, 'npm'
 ]
 const npmArgs = process.argv.slice(2)
-console.log(npmArgs);
-console.log(dockerArgs.concat(npmArgs));
+
+console.log(path.parse(process.cwd()));
 
 const cp = childProcess.execFile(
   'docker',
