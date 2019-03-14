@@ -92,15 +92,7 @@ module.exports = class ContractWapper {
 
   }
 
-  getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp) {
-    //contract getAuthor3DayRewardOnDocument
-    //return DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: myAddress});
-    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
-      from: this.myAddress
-    });
 
-    return promise;
-  }
 
   asciiToHex(str){
     return this.web3.utils.asciiToHex(str);
@@ -111,9 +103,32 @@ module.exports = class ContractWapper {
     return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
-  getDepositOnDocument (documentId, blockchainTimestamp) {
+
+  getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp) {
+    //contract getAuthor3DayRewardOnDocument
+    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
+      from: this.myAddress
+    });
+
+    return promise;
+  }
+
+  /**
+   * @description 문서에 대한 현재로 부터 3일간의  전체 Curator Reward의 총합
+   * @param  {} documentId
+   * @param  {} blockchainTimestamp
+   */
+  getCuratorDepositOnDocument (documentId, blockchainTimestamp) {
     //function getCuratorDepositOnDocument(bytes32 _docId, uint _dateMillis) public view returns (uint)
     return this.DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: this.myAddress});
+  }
+    
+  calculateAuthorReward(authorAddress, viewCount, totalViewCount) {
+
+    return this.DocumentReg.methods.calculateAuthorReward(viewCount, totalViewCount).call({
+      from: authorAddress
+    });
+
   }
 
   calculateCuratorReward(curatorId, documentId, viewCount, totalViewCount) {

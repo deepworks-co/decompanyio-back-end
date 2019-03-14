@@ -23,7 +23,6 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("blockchainTimestamp", blockchainTimestamp, "~", currentBlockchainTimestamp);
 
-
   const result = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
   console.log("aggregatePageviewTotalCount", result);
 

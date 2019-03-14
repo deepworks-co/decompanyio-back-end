@@ -3,7 +3,7 @@ const {utils, MongoWapper} = require('decompany-common-utils');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 
 const TB_TRACKING = tables.TRACKING;
-const TB_PAGEVIEW = tables.PAGEVIEW;
+const TB_PAGEVIEW_LATEST = tables.PAGEVIEW_LATEST;
 const TB_DOCUMENT = tables.DOCUMENT;
 
 const period = 7; //days
@@ -11,7 +11,7 @@ const period = 7; //days
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
   const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
-
+  
   console.log("QUERY TIME", beforeDays, "(include) between (exclude)", now);
 
   const queryPipeline = getQueryPipeline(beforeDays.getTime());
@@ -21,23 +21,30 @@ module.exports.handler = async (event, context, callback) => {
     allowDiskUse: true
   });
 
-  console.log("aggregation success", resultList);
-  
+  console.log("pageview aggregation success count ", resultList.length);
+  const bulk = wapper.getUnorderedBulkOp(TB_PAGEVIEW_LATEST);
+
   // 모든 문서의latestPageview를 0으로 초기화 시킨다.
+  /*
   const r = await wapper.update(TB_DOCUMENT, {}, {$set: { latestPageview: 0 }}, {multi: true});
   console.log(r);
+  */
 
   const promises = [];
   resultList.forEach((item, index) => {
+    
     item.created = now.getTime();
-    item.expireAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * period); //period 후 expire
+    const occurrenceTimestamp = item.occurrenceDate.getTime();
+    item.expireAt = new Date(occurrenceTimestamp + 1000 * 60 * 60 * 24 * period); //period 후 expire
+    console.log(item);
     //PAGEVIEW 임시테이블에 기록 period이후 소멸됨
-    promises.push(wapper.save(TB_PAGEVIEW, item));
+    //promises.push(wapper.save(TB_PAGEVIEW_LATEST, item));
+    bulk.find({_id: item._id}).upsert().updateOne(item);
     //DOCUMENT 테이블에 기록
-    promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview, latestPageviewUpdated:now.getTime() }}));
+    //promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview, latestPageviewUpdated:now.getTime() }}));
   });
-
-  const result = await Promise.all(promises);
+  const result = await wapper.execute(bulk);
+  //const result = await Promise.all(promises);
   console.log("complete", result);
   wapper.close();
 
@@ -69,22 +76,25 @@ function getQueryPipeline(startTimestamp){
         cid: "$cid",
         sid: "$sid"
       },
-      pageview: {$sum: 1}
+      pageview: {$sum: 1},
+      timestamp: {$max: "$t"}
     }
   }, {
     $group: {
-      _id: {
-        id: "$_id.id"
-      },
-      totalPageview: {$sum: "$pageview"}
+      _id: "$_id.id",
+      totalPageview: {$sum: "$pageview"},
+      timestamp: {$max: "$timestamp"}
     }
-  },
-  {
+  }, {
     $addFields: {
-      documentId: "$_id.id"
+      occurrenceDate: {$add: [new Date(0), "$timestamp"]}
     }
-  }
-  ] 
+  }, {
+    $project: {
+      occurrenceDate: 1,
+      totalPageview: 1,
+    }
+  }] 
 
   return queryPipeline;
 }
