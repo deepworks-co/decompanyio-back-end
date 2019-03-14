@@ -4,6 +4,7 @@
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
         "VOTE": "DEV-CA-DOCUMENT-VOTE",
         "TRACKING": "DOCUMENT-TRACKING",
         "TRACKING_USER": "DOCUMENT-TRACKING-USER",

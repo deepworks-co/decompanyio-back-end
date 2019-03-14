@@ -5,6 +5,7 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
 const TB_TRACKING = tables.TRACKING;
 const TB_PAGEVIEW_LATEST = tables.PAGEVIEW_LATEST;
 const TB_DOCUMENT = tables.DOCUMENT;
+const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
 
 const period = 7; //days
 
@@ -23,14 +24,7 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("pageview aggregation success count ", resultList.length);
   const bulk = wapper.getUnorderedBulkOp(TB_PAGEVIEW_LATEST);
-
-  // 모든 문서의latestPageview를 0으로 초기화 시킨다.
-  /*
-  const r = await wapper.update(TB_DOCUMENT, {}, {$set: { latestPageview: 0 }}, {multi: true});
-  console.log(r);
-  */
-
-  const promises = [];
+  
   resultList.forEach((item, index) => {
     
     item.created = now.getTime();
@@ -38,14 +32,17 @@ module.exports.handler = async (event, context, callback) => {
     item.expireAt = new Date(occurrenceTimestamp + 1000 * 60 * 60 * 24 * period); //period 후 expire
     console.log(item);
     //PAGEVIEW 임시테이블에 기록 period이후 소멸됨
-    //promises.push(wapper.save(TB_PAGEVIEW_LATEST, item));
     bulk.find({_id: item._id}).upsert().updateOne(item);
-    //DOCUMENT 테이블에 기록
-    //promises.push(wapper.update(TB_DOCUMENT, { _id: item.documentId }, {$set: { latestPageview: item.totalPageview, latestPageviewUpdated:now.getTime() }}));
+   
   });
   const result = await wapper.execute(bulk);
   //const result = await Promise.all(promises);
-  console.log("complete", result);
+  console.log("bulk complete", result);
+
+  const popularResult = await wapper.aggregate(TB_DOCUMENT, makePopularPipeline(), { allowDiskUse: true });
+
+  console.log("make DOCUMENT-POPULAR collection success", popularResult);
+
   wapper.close();
 
  
@@ -97,4 +94,29 @@ function getQueryPipeline(startTimestamp){
   }] 
 
   return queryPipeline;
+}
+
+function makePopularPipeline(){
+
+  const pipeline = [   
+  {
+    $match: {
+        state: "CONVERT_COMPLETE"
+    }
+  }, {
+    $lookup: {
+        from: "PAGEVIEW-LATEST",
+        foreignField: "_id",
+        localField: "_id",
+        as: "latestPageviewAs"
+    }
+  }, {
+    $project: {title: 1, created: 1, latestPageview: { $arrayElemAt: [ "$latestPageviewAs", 0 ] }}
+  }, {
+    $project: {title: 1, created: 1, latestPageview: {$ifNull: ["$latestPageview.totalPageview", 0]}}
+  }, {
+    $out: TB_DOCUMENT_POPULAR
+  }]
+
+  return pipeline;
 }
