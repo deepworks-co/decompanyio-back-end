@@ -34,6 +34,7 @@ module.exports.handler = async (event, context, callback) => {
     //console.log("put sqs", item);
     promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
     promises.push(sendMessageReadVote(item.documentId));
+    promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
   })
 
   const resultPromise = await Promise.all(promises);
@@ -169,6 +170,22 @@ function sendMessageReadVote(documentId){
   });
   console.info("sendMessageReadVote", messageBody);
   const queueUrl = sqsConfig.queueUrls.LATEST_VOTE_READ_FROM_ONCHAIN;
+  
+  return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
+}
+
+/**
+ * @param  {} documentId
+ * @param  {} blockchainTimestamp
+ */
+function sendMessageReadCreatorReward(documentId, blockchainTimestamp){
+  
+  const messageBody = JSON.stringify({
+    documentId: documentId,
+    blockchainTimestamp: blockchainTimestamp
+  });
+  console.info("sendMessageReadVote", messageBody);
+  const queueUrl = sqsConfig.queueUrls.LATEST_CREATOR_REWARD_FROM_ONCHAIN;
   
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }

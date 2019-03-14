@@ -22,7 +22,7 @@ module.exports.handler = async (event, context, callback) => {
     
       const body = JSON.parse(record.body); 
       const {documentId} = body;
-      const voteAmount = await contractWapper.getCuratorDepositOnDocument(documentId, blockchainTimestamp);
+      const voteAmount = JSON.parse(await contractWapper.getCuratorDepositOnDocument(documentId, blockchainTimestamp));
       bulk.find({_id: documentId}).update({$set: {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()}})
       return {documentId, voteAmount};
     });

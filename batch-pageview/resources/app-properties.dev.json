@@ -18,7 +18,8 @@
         "region": "us-west-1",
         "queueUrls":{
             "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN"
+            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
+            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
         }
     },
     "ethereum": {

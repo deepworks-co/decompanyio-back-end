@@ -24,13 +24,13 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("pageview aggregation success count ", resultList.length);
   const bulk = wapper.getUnorderedBulkOp(TB_PAGEVIEW_LATEST);
-  
+  const promises = [];
   resultList.forEach((item, index) => {
     
     item.created = now.getTime();
     const occurrenceTimestamp = item.occurrenceDate.getTime();
     item.expireAt = new Date(occurrenceTimestamp + 1000 * 60 * 60 * 24 * period); //period 후 expire
-    console.log(item);
+    //console.log(item);
     //PAGEVIEW 임시테이블에 기록 period이후 소멸됨
     bulk.find({_id: item._id}).upsert().updateOne(item);
    
@@ -111,12 +111,13 @@ function makePopularPipeline(){
         as: "latestPageviewAs"
     }
   }, {
-    $project: {title: 1, created: 1, latestPageview: { $arrayElemAt: [ "$latestPageviewAs", 0 ] }}
+    $project: {title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: { $arrayElemAt: [ "$latestPageviewAs", 0 ] }}
   }, {
-    $project: {title: 1, created: 1, latestPageview: {$ifNull: ["$latestPageview.totalPageview", 0]}}
+    $project: {title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: {$ifNull: ["$latestPageview.totalPageview", 0]}}
   }, {
     $out: TB_DOCUMENT_POPULAR
   }]
 
   return pipeline;
 }
+
