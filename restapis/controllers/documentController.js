@@ -127,7 +127,7 @@ module.exports.list = async (event, context, callback) => {
     const accountId = params.accountId;
     const tag = params.tag;
     const path = params.path;
-
+    const skip = ((pageNo - 1) * pageSize);
     const date = utils.getBlockchainTimestamp(new Date());//today
     const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
     
@@ -136,9 +136,10 @@ module.exports.list = async (event, context, callback) => {
       accountId: accountId,
       tag: tag,
       path: path,
-      pageSize: pageSize
+      pageSize: pageSize,
+      skip: skip
     });
-
+    console.log(resultList);
     return callback(null, {
       statusCode: 200,
       headers: {

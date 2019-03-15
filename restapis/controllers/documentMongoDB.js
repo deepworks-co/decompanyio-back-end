@@ -128,17 +128,21 @@ async function queryDocumentList (params) {
 
 async function queryDocumentListByLatest (params) {
   console.log("queryDocumentListByLatest", params);
-  let {tag, accountId, path, pageSize, pageNo} = params;
+  let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
+
+
 
   const wapper = new MongoWapper(connectionString);
 
   try{
-    let pipeline = [];
-    pipeline.push({
+    let pipeline = [{
+      $match: { state: "CONVERT_COMPLETE"}
+    },{
       $sort:{ created: -1}
-    });
+    }];
+    
     
     if(tag || accountId){
       const q = {}
@@ -153,9 +157,9 @@ async function queryDocumentListByLatest (params) {
     } 
   
     pipeline = pipeline.concat([{
-      $limit: pageSize
+      $skip: skip
     }, {
-      $skip: pageNo - 1
+      $limit: pageSize
     }, {
       $lookup: {
         from: tables.DOCUMENT_POPULAR,
@@ -177,7 +181,7 @@ async function queryDocumentListByLatest (params) {
     }]);
 
 
-    //console.log("pipeline", pipeline);
+    console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT, pipeline);
    
   } catch(err) {
@@ -190,7 +194,7 @@ async function queryDocumentListByLatest (params) {
 
 async function queryDocumentListByPopular (params) {
   console.log("queryDocumentListByPopular", params);
-  let {tag, accountId, path, pageSize, pageNo} = params;
+  let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
@@ -215,9 +219,9 @@ async function queryDocumentListByPopular (params) {
     } 
   
     pipeline = pipeline.concat([{
-      $limit: pageSize
+      $skip: skip
     }, {
-      $skip: pageNo - 1
+      $limit: pageSize
     }, {
       $lookup: {
         from: tables.DOCUMENT,
