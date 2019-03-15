@@ -2,9 +2,6 @@
 const {utils, MongoWapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig } = require('../../resources/config.js').APP_PROPERTIES();
 
-const TB_TRACKING = tables.TRACKING;
-const TB_PAGEVIEW_TOTALCOUNT = tables.PAGEVIEW_TOTALCOUNT;
-
 const wapper = new MongoWapper(mongodb.endpoint);
 
 /**
@@ -16,20 +13,28 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
+  
   const now = new Date();
-  const yesterday = new Date(now - 1000 * 60 * 60 * 24);
+  //const yesterday = new Date(now - 1000 * 60 * 60 * 24);
+  const yesterday = new Date(now - 1000 * 60 * 60 * 24 * 365);
   const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
   const currentBlockchainTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("blockchainTimestamp", blockchainTimestamp, "~", currentBlockchainTimestamp);
+  console.log("blockchainTimestamp", new Date(blockchainTimestamp), "~", new Date(currentBlockchainTimestamp));
 
-  const result = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
-  console.log("aggregatePageviewTotalCount", result);
+  const totalPageviewResult = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
+  console.log("aggregatePageviewTotalCount", totalPageviewResult);
 
-  const promises = [];
+  
   const resultList = await aggregatePageview(blockchainTimestamp, currentBlockchainTimestamp);
-  console.log("aggregatePageview Count", resultList?resultList.length:0);
-  console.log("aggregatePageview", resultList)
+  console.log("Daily", new Date(blockchainTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
+  console.log("aggregatePageview", resultList);
+
+  const updateResult = await updateStatPageviewDaily(resultList);
+  console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
+  
+  const promises = [];
+
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
     promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
@@ -37,8 +42,8 @@ module.exports.handler = async (event, context, callback) => {
     promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
   })
 
-  const resultPromise = await Promise.all(promises);
-  //console.log(resultPromise);
+  const sqsResult = await Promise.all(promises);
+  //console.log("SQS Send Result", sqsResult);
   return (null, "success");
 
 }
@@ -53,9 +58,15 @@ module.exports.handler = async (event, context, callback) => {
 function getQueryPipeline(startTimestamp, endTimestamp){
   const queryPipeline = [{
     $match: {
-      $and: [{t: {$gte: startTimestamp, $lt: endTimestamp}},
-             {n: {$gt: 1}
-            }]}
+      $and: [
+        {t: {$gte: startTimestamp, $lt: endTimestamp}},
+        {n: {$gt: 1}
+      }]
+    }
+  }, {
+    $sort: {
+      t: 1
+    }
   }, {
     $group: {
       _id: {
@@ -65,8 +76,7 @@ function getQueryPipeline(startTimestamp, endTimestamp){
         id: "$id",
         cid: "$cid",
         sid: "$sid"
-      },
-      count: {$sum: 1}
+      }
     }
   }, {
     $group: {
@@ -74,10 +84,16 @@ function getQueryPipeline(startTimestamp, endTimestamp){
         year: "$_id.year", 
         month: "$_id.month", 
         dayOfMonth: "$_id.dayOfMonth",
-        id: "$_id.id"
+        id: "$_id.id",
       },
-      documentId: {$first: "$_id.id"},
-      pageview: {$sum: "$count"},
+      pageview: {$sum: 1},
+    }
+  }, {
+    $addFields: {
+      year:"$_id.year",
+      month:"$_id.month",
+      dayOfMonth:"$_id.dayOfMonth",
+      documentId:"$_id.id",
     }
   }] 
 
@@ -101,15 +117,14 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
       count: {$sum: 1}
     }
   });
-  console.log("queryPipeline", queryPipeline);
-  const resultList = await wapper.aggregate(TB_TRACKING, queryPipeline, {
+  //console.log("queryPipeline", queryPipeline);
+  const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
     allowDiskUse: true
   });
   
   const result = resultList[0]?resultList[0]:{totalPageviewSquare:0, totalPageview:0, count:0};
-  console.log(result);
 
-  const result2 = await wapper.save(TB_PAGEVIEW_TOTALCOUNT, {
+  const saveResult = await wapper.save(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
     _id: Number(blockchainTimestamp),
     date: Number(blockchainTimestamp),
     totalViewCountSquare: result.totalPageviewSquare,
@@ -118,9 +133,9 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
     created: Date.now()
   });
   
-  console.log(result2);
+  //console.log(result2);
   
-  return result;
+  return saveResult;
 }
 
 /**
@@ -132,7 +147,7 @@ async function aggregatePageview(blockchainTimestamp, endTimestamp){
     
   const queryPipeline = getQueryPipeline(blockchainTimestamp, endTimestamp);
 
-  const resultList = await wapper.aggregate(TB_TRACKING, queryPipeline, {
+  const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
     allowDiskUse: true
   });
 
@@ -184,8 +199,38 @@ function sendMessageReadCreatorReward(documentId, blockchainTimestamp){
     documentId: documentId,
     blockchainTimestamp: blockchainTimestamp
   });
-  console.info("sendMessageReadVote", messageBody);
+  console.info("sendMessageReadCreatorReward", messageBody);
   const queueUrl = sqsConfig.queueUrls.LATEST_CREATOR_REWARD_FROM_ONCHAIN;
   
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
+}
+/**
+ * @param  {} resultList
+ * [
+ *   { _id: 
+ *    { year: 2019,
+ *      month: 2,
+ *      dayOfMonth: 15,
+ *      id: '49dac043231045829ccca088eadd1f85' },
+ *   pageview: 1,
+ *   year: 2019,
+ *   month: 2,
+ *   dayOfMonth: 15,
+ *   documentId: '49dac043231045829ccca088eadd1f85',
+ *   created: 1552620678519,
+ *   statDate: 2019-02-15T00:00:00.000Z },
+ *   ....
+ * ]
+ */
+async function updateStatPageviewDaily(resultList){
+  const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
+  resultList.forEach((item, index)=>{
+    const statDate = new Date(Date.UTC(item.year, item.month-1, item.dayOfMonth));
+    item.created = Date.now();
+    item.statDate = statDate;
+    console.log("bulk index", index, JSON.stringify(item));
+    bulk.find({_id: item._id}).upsert().replaceOne(item);
+  });
+  console.log("bulk ops", bulk.tojson());
+  return await wapper.execute(bulk);
 }

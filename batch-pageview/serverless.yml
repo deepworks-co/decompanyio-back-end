@@ -49,12 +49,6 @@ provider:
 
 functions:
 
-  audienceAnalytics:
-    handler: functions/cron/audienceAnalytics.handler
-    timeout: 300
-    events:
-      - schedule: cron(15 0 * * ? *) # 00 hour, 15 min, 00 sec daily
-
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
@@ -80,9 +74,17 @@ functions:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN	
 #          batchSize: 10   # default 10
+  
+  audienceAnalytics:
+    handler: functions/cron/audienceAnalytics.handler
+    timeout: 300
+    events:
+      - schedule:
+          rate: cron(15 0 * * ? *) # daily 00:15:00
+          enable: false
 
-  pageviewRequestWritePageview:
-    handler: functions/cron/requestWritePageview.handler
+  dailyPageview:
+    handler: functions/cron/dailyPageview.handler
     timeout: 300
     events:
       - schedule: cron(10 0 * * ? *) # daily 00:10:00

@@ -16,7 +16,8 @@ module.exports.handler = async (event, context, callback) => {
 
   const queryPipeline = [{
     $match: {
-      t: {$gte: startTimestamp}
+      t: {$gte: startTimestamp},
+      n: {$gt: 1}
     }
   }, {
     $sort: {
@@ -41,7 +42,7 @@ module.exports.handler = async (event, context, callback) => {
         dayOfMonth: "$_id.dayOfMonth",
         id: "$_id.id",
       },
-      count: {$sum: 1},
+      pageview: {$sum: 1},
     }
   }, {
     $addFields: {
