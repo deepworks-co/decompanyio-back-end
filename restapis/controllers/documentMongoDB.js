@@ -2,10 +2,10 @@
 const { mongodb, tables } = require('../resources/config.js').APP_PROPERTIES();
 const { MongoWapper, utils } = require('decompany-common-utils');
 
-const TABLE_NAME = tables.DOCUMENT;
+const TB_DOCUMENT = tables.DOCUMENT;
 const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
-const TABLE_NAME_VOTE = tables.VOTE;
-const TABLE_NAME_TOTALVIEWCOUNT = tables.DAILY_TOTALPAGEVIEW;
+const TB_VOTE = tables.VOTE;
+const TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY = tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY;
 const TB_TRACKING = tables.TRACKING;
 const TB_TRACKING_USER = tables.TRACKING_USER;
 const TB_USER = tables.USER;
@@ -40,7 +40,7 @@ module.exports = {
   const wapper = new MongoWapper(connectionString);
   
   try{
-    let result = await wapper.findOne(TABLE_NAME, {_id: documentId});
+    let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
     return result;
   } catch (err){
     throw err;
@@ -54,7 +54,7 @@ module.exports = {
   */
  async function getDocumentBySeoTitle(seoTitle) {
   const wapper = new MongoWapper(connectionString);
-  let document = await wapper.findOne(TABLE_NAME, {seoTitle: seoTitle});
+  let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
   try{
     if(!document){
       document = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
@@ -84,13 +84,12 @@ async function getUser(userid) {
 /**
  * @param  {} args
  */
-async function queryDocumentList (args) {
+async function queryDocumentList (params) {
   
-  const pageSize = 50;
-  const tag = args.tag;
-  const accountId = args.accountId;
+  let {tag, accountId, path, pageSize, pageNo} = params;
 
-  const pageNo = isNaN(args.pageNo)?1:Number(args.pageNo);
+  pageSize = isNaN(pageSize)?10:Number(pageSize); 
+  pageNo = isNaN(pageNo)?1:Number(pageNo);
   
   let query = {
     state: "CONVERT_COMPLETE"
@@ -106,24 +105,143 @@ async function queryDocumentList (args) {
  
   let sort = {};      
 
-  if(args.path && args.path.lastIndexOf("popular")>0){
-    sort = {confirmAuthorReward: -1};
-  } else if(args.path && args.path.lastIndexOf("featured")>0){
+  if(path && path.lastIndexOf("popular")>0){
+    return await queryDocumentListByPopular(params);
+  } else if(path && path.lastIndexOf("featured")>0){
     sort = {confirmVoteAmount: -1};
   } else {
-    sort = {created: -1};
+    return await queryDocumentListByLatest(params);
   };
 
   const wapper = new MongoWapper(connectionString);
 
   try{
     console.log("query options query :", query, "sort :", sort, "pageNo :", pageNo, "pageSize :", pageSize);
-    const resultList = await wapper.find(TABLE_NAME, query, pageNo, pageSize, sort);
+    return await wapper.find(TB_DOCUMENT, query, pageNo, pageSize, sort);
+  } catch(err) {
+    throw err;
+  } finally {
+    wapper.close();
+  }
+  
+}
 
-    return {
-      resultList: resultList,
-      pageNo : pageNo
-    };
+async function queryDocumentListByLatest (params) {
+  
+  let {tag, accountId, path, pageSize, pageNo} = params;
+  pageSize = isNaN(pageSize)?10:Number(pageSize); 
+  pageNo = isNaN(pageNo)?1:Number(pageNo);
+
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    let pipeline = [];
+    pipeline.push({
+      $sort:{ created: -1}
+    });
+    
+    if(tag || accountId){
+      const q = {}
+      if(tag){
+        q.tags = tag;
+      }
+      if(accountId){
+        q.accountId = accountId;
+      }
+
+      pipeline.push({ $match: q });
+    } 
+  
+    pipeline = pipeline.concat([{
+      $limit: pageSize
+    }, {
+      $skip: pageNo - 1
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT_POPULAR,
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accoundId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
+    },{
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: "$document.latestPageview", latestReward: "$document.latestReward", nickname: "$user.nickname", picture: "$user.picture"}
+    }]);
+
+
+    //console.log("pipeline", pipeline);
+    return await wapper.aggregate(tables.DOCUMENT, pipeline);
+   
+  } catch(err) {
+    throw err;
+  } finally {
+    wapper.close();
+  }
+  
+}
+
+async function queryDocumentListByPopular (params) {
+  
+  let {tag, accountId, path, pageSize, pageNo} = params;
+  pageSize = isNaN(pageSize)?10:Number(pageSize); 
+  pageNo = isNaN(pageNo)?1:Number(pageNo);
+
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    let pipeline = [];
+    pipeline.push({
+      $sort:{ latestPageview:-1, created: -1}
+    });
+    
+    if(tag || accountId){
+      const q = {}
+      if(tag){
+        q.tags = tag;
+      }
+      if(accountId){
+        q.accountId = accountId;
+      }
+
+      pipeline.push({ $match: q });
+    } 
+  
+    pipeline = pipeline.concat([{
+      $limit: pageSize
+    }, {
+      $skip: pageNo - 1
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT,
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accoundId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
+    },{
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, "seoTitle": "$document.seoTitle", documentId: "$document.documentId", nickname: "$user.nickname", picture: "$user.picture"}
+    }]);
+
+
+    //console.log("pipeline", pipeline);
+    return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+   
   } catch(err) {
     throw err;
   } finally {
@@ -158,7 +276,7 @@ async function putDocument (item) {
     console.log("Save New Item", params);
 
     
-    const newDoc = await wapper.insert(TABLE_NAME, params);
+    const newDoc = await wapper.insert(TB_DOCUMENT, params);
 
     await wapper.insert(TB_SEO_FRIENDLY, {
       _id: item.seoTitle,
@@ -201,7 +319,7 @@ async function queryVotedDocumentByCurator(args) {
   },
   {
     $lookup: {
-      from: TABLE_NAME,
+      from: TB_DOCUMENT,
       localField: "documentId",
       foreignField: "documentId",
       as: "documentInfo"
@@ -222,7 +340,7 @@ async function queryVotedDocumentByCurator(args) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-    const resultList = await wapper.aggregate(TABLE_NAME_VOTE, queryPipeline);
+    const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return {
       resultList: resultList,
@@ -239,13 +357,17 @@ async function queryVotedDocumentByCurator(args) {
  * @param  {} date
  */
 async function queryTotalViewCountByToday (date) {
-  const query = {
-    date: date
-  }
   const wapper = new MongoWapper(connectionString);
-  const result = await wapper.findOne(TABLE_NAME_TOTALVIEWCOUNT, query);
-  console.log("queryTotalViewCountByToday", query, result);
-  return result;
+  try{
+    return await wapper.findOne(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
+      blockchainTimestamp: date
+    });
+  }catch(e){
+    throw e;
+  } finally{
+    wapper.close();
+  }
+  
 
 }
 /**
@@ -279,7 +401,7 @@ async function putVote (item) {
     }
     console.log("new vote", newItem);
     const wapper = new MongoWapper(connectionString);
-    return await wapper.insert(TABLE_NAME_VOTE, newItem);
+    return await wapper.insert(TB_VOTE, newItem);
     //return docClient.put(params).promise();
 }
 /**
@@ -325,7 +447,7 @@ async function getFeaturedDocuments (args) {
 
   let wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.find(TABLE_NAME, params, 1, 10);
+    return await wapper.find(TB_DOCUMENT, params, 1, 10);
   } catch (err){
     throw err;
   } finally {

@@ -28,7 +28,7 @@ module.exports.handler = async (event, context, callback) => {
       resultList = await documentService.getAnalyticsListByUserId(userid, startDate, endDate, isWeekly);
     
     } else {
-      documentIds.push(documentId);
+      
       resultList = await documentService.getAnalyticsListDaily([documentId], startDate, endDate);
     }
     console.log(resultList);

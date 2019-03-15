@@ -70,20 +70,12 @@ module.exports.regist = async (event, context, callback) => {
         _id: documentId,
         accountId: accountId,
         documentId: documentId,
-        nickname: nickname,
-        username: username,
-        sub: sub,
         documentName: documentName,
         documentSize: documentSize,
         ethAccount: ethAccount,
         title: title,
         desc: desc,
         tags: tags,
-        category: category,
-        confirmViewCount: 0,
-        confirmVoteAmount: 0,
-        totalViewCount: 0,
-        viewCount: 0,
         seoTitle: seoTitle
       }
 
@@ -125,35 +117,29 @@ module.exports.regist = async (event, context, callback) => {
 };
 
 
-module.exports.list = (event, context, callback) => {
+module.exports.list = async (event, context, callback) => {
   console.log("event.body", event.body);
-  const params = event.body?JSON.parse(event.body):{};
-  
-  const pageNo = (isNaN(params.pageNo) || params.pageNo<1)?1:Number(params.pageNo);
-  const accountId = params.accountId;
-  const tag = params.tag;
-  const path = params.path;
 
-  const promise1 = documentService.queryDocumentList({
-    pageNo: pageNo,
-    accountId: accountId,
-    tag: tag,
-    path: path
+  try{
+    const params = event.body?JSON.parse(event.body):{};
+    const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
+    const pageSize = isNaN(params.pageSize)?1:Number(params.pageSize);
+    const accountId = params.accountId;
+    const tag = params.tag;
+    const path = params.path;
 
-  });
+    const date = utils.getBlockchainTimestamp(new Date());//today
+    const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
+    
+    const resultList = await documentService.queryDocumentList({
+      pageNo: pageNo,
+      accountId: accountId,
+      tag: tag,
+      path: path,
+      pageSize: pageSize
+    });
 
-  const date = utils.getBlockchainTimestamp(new Date());//today
-  const promise2 = documentService.queryTotalViewCountByToday(date);
-
-
-  Promise.all([promise1, promise2]).then((results) => {
-    const result = results[0];
-    const result2 = results[1];
-    const resultList = result.resultList?result.resultList:[];
-    const pageNo = isNaN(result.pageNo)?1:Number(result.pageNo);
-    const totalViewCountInfo = result2;
-
-    callback(null, {
+    return callback(null, {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -161,7 +147,6 @@ module.exports.list = (event, context, callback) => {
       },
       body: JSON.stringify({
         success: true,
-        message: 'SUCCESS',
         resultList: resultList,
         pageNo: pageNo,
         count: resultList.length,
@@ -169,22 +154,23 @@ module.exports.list = (event, context, callback) => {
       }),
     });
 
-  }).catch((err) => {
-
-    console.error("Exception queryDocumentList.", err);
-    callback(null, {
-      statusCode: 500,
+  } catch(e) {
+    console.error("Error queryDocumentList.", e);
+    return callback(e, {
+      statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify({
         success: false,
-        error: err,
-        message: 'FAIL',
+        error: e.message
       })
     });
-  });
+  }
+  
+
+
 };
 
 /**
