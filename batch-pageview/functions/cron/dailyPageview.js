@@ -13,7 +13,7 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
-  
+  console.log(event);
   const now = new Date();
   //const yesterday = new Date(now - 1000 * 60 * 60 * 24);
   const yesterday = new Date(now - 1000 * 60 * 60 * 24 * 365);
@@ -23,25 +23,23 @@ module.exports.handler = async (event, context, callback) => {
   console.log("blockchainTimestamp", new Date(blockchainTimestamp), "~", new Date(currentBlockchainTimestamp));
 
   const totalPageviewResult = await aggregatePageviewTotalCount(blockchainTimestamp, currentBlockchainTimestamp);
-  console.log("aggregatePageviewTotalCount", totalPageviewResult);
-
-  
+    
   const resultList = await aggregatePageview(blockchainTimestamp, currentBlockchainTimestamp);
   console.log("Daily", new Date(blockchainTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
-  console.log("aggregatePageview", resultList);
+  console.log("aggregatePageview resultList", JSON.stringify(resultList));
 
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
   
   const promises = [];
-
+  /*
   resultList.forEach((item)=>{
     //console.log("put sqs", item);
     promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
     promises.push(sendMessageReadVote(item.documentId));
     promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
   })
-
+  */
   const sqsResult = await Promise.all(promises);
   //console.log("SQS Send Result", sqsResult);
   return (null, "success");
@@ -122,20 +120,18 @@ async function aggregatePageviewTotalCount(blockchainTimestamp, endTimestamp) {
     allowDiskUse: true
   });
   
-  const result = resultList[0]?resultList[0]:{totalPageviewSquare:0, totalPageview:0, count:0};
-
-  const saveResult = await wapper.save(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
-    _id: Number(blockchainTimestamp),
-    date: Number(blockchainTimestamp),
-    totalViewCountSquare: result.totalPageviewSquare,
-    totalViewCount: result.totalPageview,
-    count: result.count,
-    created: Date.now()
+  const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
+  resultList.forEach((item, index)=>{
+    const blockchainDate = new Date(Date.UTC(item._id.year, item._id.month-1, item._id.dayOfMonth));
+    item.blockchainTimestamp = utils.getBlockchainTimestamp(blockchainDate);
+    item.blockchainDate = blockchainDate;
+    item.created = Date.now();
+    bulk.find({_id: item._id}).upsert().replaceOne(item);
   });
-  
-  //console.log(result2);
-  
-  return saveResult;
+  console.log("bulk ops", bulk.tojson());
+  const bulkResult = await wapper.execute(bulk); 
+  console.log(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, "bulk result", JSON.stringify(bulkResult));
+  return bulkResult;
 }
 
 /**
