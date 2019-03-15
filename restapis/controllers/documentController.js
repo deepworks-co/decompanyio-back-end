@@ -123,7 +123,7 @@ module.exports.list = async (event, context, callback) => {
   try{
     const params = event.body?JSON.parse(event.body):{};
     const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
-    const pageSize = isNaN(params.pageSize)?1:Number(params.pageSize);
+    const pageSize = isNaN(params.pageSize)?10:Number(params.pageSize);
     const accountId = params.accountId;
     const tag = params.tag;
     const path = params.path;

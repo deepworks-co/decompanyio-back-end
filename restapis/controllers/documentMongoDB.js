@@ -88,7 +88,7 @@ async function queryDocumentList (params) {
   
   let {tag, accountId, path, pageSize, pageNo} = params;
 
-  pageSize = isNaN(pageSize)?10:Number(pageSize); 
+  pageSize = isNaN(pageSize)?20:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
   
   let query = {
@@ -127,7 +127,7 @@ async function queryDocumentList (params) {
 }
 
 async function queryDocumentListByLatest (params) {
-  
+  console.log("queryDocumentListByLatest", params);
   let {tag, accountId, path, pageSize, pageNo} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
@@ -171,9 +171,9 @@ async function queryDocumentListByLatest (params) {
         as: "userAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
     },{
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: "$document.latestPageview", latestReward: "$document.latestReward", nickname: "$user.nickname", picture: "$user.picture"}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: "$document.latestPageview", latestReward: "$document.latestReward", nickname: "$user.nickname", picture: "$user.picture"}
     }]);
 
 
@@ -189,7 +189,7 @@ async function queryDocumentListByLatest (params) {
 }
 
 async function queryDocumentListByPopular (params) {
-  
+  console.log("queryDocumentListByPopular", params);
   let {tag, accountId, path, pageSize, pageNo} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
@@ -235,11 +235,11 @@ async function queryDocumentListByPopular (params) {
     }, {
       $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
     },{
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, "seoTitle": "$document.seoTitle", documentId: "$document.documentId", nickname: "$user.nickname", picture: "$user.picture"}
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, "seoTitle": "$document.seoTitle", documentId: "$document.documentId", documentName: "$document.documentName", nickname: "$user.nickname", picture: "$user.picture"}
     }]);
 
 
-    //console.log("pipeline", pipeline);
+    console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
    
   } catch(err) {
