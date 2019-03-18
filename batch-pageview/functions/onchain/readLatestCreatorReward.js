@@ -12,10 +12,10 @@ module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
 
   try{
-    
+    console.log("sqs receive count : ", event.Records.length, " data :", event.Records); 
     const bulk = wapper.getUnorderedBulkOp(tables.DOCUMENT_POPULAR);
     const contractWapper = new ContractWapper();
-      
+    
     const promises = await event.Records.map(async (record, index) => {
       
       const body = JSON.parse(record.body); 
@@ -26,7 +26,7 @@ module.exports.handler = async (event, context, callback) => {
       const isExist = JSON.parse(await contractWapper.isExistsDocument(documentId));
       const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId});
       if(!isExist || !doc){
-        return callback(null, {error: `a document is not exists on-chain ${documentId}`, documentId: documentId});
+        return {error: `a document is not exists on-chain ${documentId}`, documentId: documentId};
       }
 
 
