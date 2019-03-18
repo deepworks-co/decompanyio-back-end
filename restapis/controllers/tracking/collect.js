@@ -16,7 +16,9 @@ module.exports.handler = async (event, context, callback) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
-      body: "no collecting"
+      body: JSON.stringify({
+        message: "no collecting"
+      })
     })
   }
 
@@ -55,7 +57,10 @@ module.exports.handler = async (event, context, callback) => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: "ok" 
+    body: JSON.stringify({
+      success: true,
+      message: "ok"
+    }) 
   };
   //console.log("success", body);
   return (null, response);
