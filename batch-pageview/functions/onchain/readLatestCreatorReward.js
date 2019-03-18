@@ -17,18 +17,19 @@ module.exports.handler = async (event, context, callback) => {
     const contractWapper = new ContractWapper();
       
     const promises = await event.Records.map(async (record, index) => {
-    
+      
       const body = JSON.parse(record.body); 
+      console.log("sqs parameter", body);
 
       const {documentId, blockchainTimestamp} = body;
 
       const isExist = JSON.parse(await contractWapper.isExistsDocument(documentId));
-
-      if(!isExist){
-        return {error: `a document is not exists on-chain ${documentId}`, documentId: documentId}
+      const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId});
+      if(!isExist || !doc){
+        return callback(null, {error: `a document is not exists on-chain ${documentId}`, documentId: documentId});
       }
 
-      const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId});
+
       const ethAccount = doc.ethAccount;
 
       if(!documentId || isNaN(blockchainTimestamp) || !ethAccount){
