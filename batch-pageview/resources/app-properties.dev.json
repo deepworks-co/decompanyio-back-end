@@ -1,10 +1,11 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.31.101:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.47.117:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
         "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
         "VOTE": "DEV-CA-DOCUMENT-VOTE",
         "TRACKING": "TRACKING",
         "TRACKING_USER": "TRACKING-USER",
