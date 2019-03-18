@@ -189,23 +189,35 @@ functions:
       - http: get /api/oraclize/viewcount
 
   documentRegist:
-    handler: controllers/documentController.regist
+    handler: controllers/document/documentController.regist
     events:
       - http:
           path: api/document/regist
           method: post
           cors: true
+          authorizer: accountAuth
 
   documentList:
-    handler: controllers/documentController.list
+    handler: controllers/document/documentController.list
     events:
       - http:
           path: api/document/list
           method: post
           cors: true
+          integration: lambda
+          request:
+            passThrough: NEVER
+            application/json: '{ "httpMethod" : "$context.httpMethod" }'
+          response:
+            headers:
+              Content-Type: "application/json"
+              Cache-Control: "'max-age=120'"
+              Access-Control-Allow-Origin': '*'
+              Access-Control-Allow-Credentials': 'true'
+            template: $input.path('$.body')
 
   curatorDocumentCuratingList:
-    handler: controllers/documentController.listCuratorDocument
+    handler: controllers/document/documentController.listCuratorDocument
     events:
       - http:
           path: api/curator/document/list
@@ -213,12 +225,61 @@ functions:
           cors: true
 
   ListTodayVotedDocumentByCurator:
-    handler: controllers/documentController.listTodayVotedDocumentByCurator
+    handler: controllers/document/documentController.listTodayVotedDocumentByCurator
     events:
       - http:
           path: api/curator/document/today
           method: post
           cors: true
+
+  documentInfo:
+    handler: controllers/document/documentController.info
+    events:
+      - http:
+          path: api/document/info/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                id: true
+
+  documentText:
+    handler: controllers/document/documentController.text
+    events:
+      - http:
+          path: api/document/text/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  documentVote:
+    handler: controllers/document/documentController.vote
+    events:
+      - http:
+          path: api/document/vote/{documentId}
+          method: post
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+            
+
+  documentDownload:
+    handler: controllers/document/documentController.downloadFile
+    events:
+      - http:
+          path: api/document/download/{accountId}/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -307,57 +368,6 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponse"
 
-              
-
-  documentInfo:
-    handler: controllers/documentController.info
-    events:
-      - http:
-          path: api/document/info/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-              paths:
-                id: true
-
-  documentText:
-    handler: controllers/documentController.text
-    events:
-      - http:
-          path: api/document/text/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-
-  documentVote:
-    handler: controllers/documentController.vote
-    events:
-      - http:
-          path: api/document/vote/{documentId}
-          method: post
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-            
-
-  documentDownload:
-    handler: controllers/documentController.downloadFile
-    events:
-      - http:
-          path: api/document/download/{accountId}/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
@@ -370,6 +380,8 @@ resources:
       Properties:
         RetentionInDays: "3"
         LogGroupName: LogGroup-${self:provider.stage}-${self:service}
+
+
 #    DocumentBucket:
 #      Type: AWS::S3::Bucket
 #      Properties:

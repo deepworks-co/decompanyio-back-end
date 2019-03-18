@@ -1,5 +1,5 @@
 'use strict';
-const documentService = require('../documentMongoDB');
+const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
 const {kinesis} = require('decompany-common-utils');
 

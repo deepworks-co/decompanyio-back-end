@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -90,40 +90,15 @@ async function queryDocumentList (params) {
 
   pageSize = isNaN(pageSize)?20:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
-  
-  let query = {
-    state: "CONVERT_COMPLETE"
-  }
-
-  if(tag){
-    query.tags = tag;
-  }
-  
-  if(accountId){
-    query.accountId = accountId;
-  }
- 
-  let sort = {};      
 
   if(path && path.lastIndexOf("popular")>0){
     return await queryDocumentListByPopular(params);
   } else if(path && path.lastIndexOf("featured")>0){
-    sort = {confirmVoteAmount: -1};
+    return await queryDocumentListByFeatured(params);
   } else {
     return await queryDocumentListByLatest(params);
-  };
-
-  const wapper = new MongoWapper(connectionString);
-
-  try{
-    console.log("query options query :", query, "sort :", sort, "pageNo :", pageNo, "pageSize :", pageSize);
-    return await wapper.find(TB_DOCUMENT, query, pageNo, pageSize, sort);
-  } catch(err) {
-    throw err;
-  } finally {
-    wapper.close();
   }
-  
+
 }
 
 async function queryDocumentListByLatest (params) {
@@ -245,6 +220,89 @@ async function queryDocumentListByPopular (params) {
 
     console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+   
+  } catch(err) {
+    throw err;
+  } finally {
+    wapper.close();
+  }
+  
+}
+
+async function queryDocumentListByFeatured (params) {
+  console.log("queryDocumentListByFeatured", params);
+  let {tag, accountId, path, pageSize, pageNo, skip} = params;
+  pageSize = isNaN(pageSize)?10:Number(pageSize); 
+  pageNo = isNaN(pageNo)?1:Number(pageNo);
+
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    let pipeline = [];
+    pipeline.push({
+      $sort:{ latestVoteAmount:-1, created: -1}
+    });
+    
+    if(tag || accountId){
+      const q = {}
+      if(tag){
+        q.tags = tag;
+      }
+      if(accountId){
+        q.accountId = accountId;
+      }
+
+      pipeline.push({ $match: q });
+    } 
+  
+    pipeline = pipeline.concat([{
+      $skip: skip
+    }, {
+      $limit: pageSize
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT,
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT_POPULAR,
+        localField: "_id",
+        foreignField: "_id",
+        as: "pageviewAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accoundId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+      $addFields: {
+          user: { $arrayElemAt: [ "$userAs", 0 ] },
+          document: { $arrayElemAt: [ "$documentAs", 0 ] },
+          pageview: { $arrayElemAt: [ "$pageviewAs", 0 ] }
+      }
+  }, {
+      $addFields: {
+        documentId: "$_id",
+        documentName: "$document.documentName",
+        latestPageview: "$pageview.latestPageview",
+        userid: "$user._id",
+        email: "$user.email",
+        name: "$user.name",
+        picture: "$user.picture",
+      }
+  }, {
+      $project: {documentAs: 0, userAs: 0, pageviewAs: 0, document: 0, user: 0, pageview: 0}
+  }]);
+
+
+    console.log("pipeline", pipeline);
+    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
    
   } catch(err) {
     throw err;

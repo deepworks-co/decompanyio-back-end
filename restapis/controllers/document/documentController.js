@@ -38,7 +38,6 @@ module.exports.regist = async (event, context, callback) => {
     const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
     const title = parameter.title;
     const desc = parameter.desc;
-    const category = parameter.category;
     const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
     
     let seoTitle;
@@ -118,10 +117,14 @@ module.exports.regist = async (event, context, callback) => {
 
 
 module.exports.list = async (event, context, callback) => {
-  console.log("event.body", event.body);
+  console.log("event", event);
 
   try{
-    const params = event.body?JSON.parse(event.body):{};
+    let params = event.body;
+    if(typeof(event.body)==='string'){
+      params = body?JSON.parse(body):{};
+    } 
+    
     const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
     const pageSize = isNaN(params.pageSize)?10:Number(params.pageSize);
     const accountId = params.accountId;
@@ -139,8 +142,8 @@ module.exports.list = async (event, context, callback) => {
       pageSize: pageSize,
       skip: skip
     });
-    console.log(resultList);
-    return callback(null, {
+    
+    return (null, {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -157,7 +160,7 @@ module.exports.list = async (event, context, callback) => {
 
   } catch(e) {
     console.error("Error queryDocumentList.", e);
-    return callback(e, {
+    return (e, {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -369,8 +372,6 @@ module.exports.text = async (event, context, callback) => {
   };
 
   return (null, response);
-
-
 };
 
 module.exports.vote = (event, context, callback) => {

@@ -1,5 +1,5 @@
 'use strict';
-const documentService = require('../documentMongoDB');
+const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
