@@ -51,6 +51,17 @@ db["DOCUMENT-TRACKING-USER"].createIndex({id: 1, cid: 1})
 db.createCollection("TOP-TAG");
 db["TOP-TAG"].createIndex({value: -1})
 
+## PAGEVIEW-LATEST
+
+db.createCollection("PAGEVIEW-LATEST");
+db["PAGEVIEW-LATEST"].createIndex( { "expireAt": 1 }, { expireAfterSeconds: 0 } )
+
+
+## DOCUMENT-POPULAR
+
+db.createCollection("DOCUMENT-POPULAR");
+db["DOCUMENT-POPULAR"].createIndex( { latestPageview: -1, created: -1 })
+
 ## query collection's index
 
 ```javascript

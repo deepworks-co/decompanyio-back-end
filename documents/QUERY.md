@@ -131,3 +131,73 @@ db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].find().forEach( function (x) {
 
 
 db.DOCUMENT.update({}, {$unset: {confirmViewCountHist: 1}} , {multi: true});
+
+### popular document list query
+
+```javascript
+db["DOCUMENT"].aggregate(
+    [   
+        {
+            $match: {
+                state: "CONVERT_COMPLETE"
+            }
+        }, {
+            $lookup: {
+                from: "PAGEVIEW-LATEST",
+                foreignField: "_id",
+                localField: "_id",
+                as: "latestPageviewAs"
+            }
+        }, {
+            $project: {title: 1, created: 1, latestPageview: { $arrayElemAt: [ "$latestPageviewAs", 0 ] }}
+        }, {
+            $project: {title: 1, created: 1, latestPageview: {$ifNull: ["$latestPageview.totalPageview", NumberInt(0)]}}
+        }, {
+            $out: "DOCUMENT-POPULAR"
+        }
+    ]
+)
+```
+
+```javascript
+
+db["DOCUMENT"].aggregate([
+    {
+        $match:{ state: "CONVERT_COMPLETE"}
+    },
+    { 
+        $sort: { created: -1 }
+    }, {
+        $limit: 10
+    }, {
+        $skip: 10
+    }, { 
+        $lookup: { 
+            from: 'DOCUMENT-POPULAR',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'documentAs' 
+        } 
+    }, { 
+        $lookup: { 
+            from: 'USER',
+            localField: 'accoundId',
+            foreignField: '_id',
+            as: 'userAs' 
+        } 
+    }]
+)
+```
+
+db["DOCUMENT"].aggregate([
+    {
+        $match:{ state: "CONVERT_COMPLETE"}
+    },
+    { 
+        $sort: { created: -1 }
+    }, {
+        $skip: 10
+    }, {
+        $limit: 10
+    } ]
+)

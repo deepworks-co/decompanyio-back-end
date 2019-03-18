@@ -21,49 +21,13 @@ describe('readLatestVoteAmount', () => {
             documentId: "67338527a4f945b2b2038066bfebd327"
           })
         },
-        /*
         {
           body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
+            documentId: "0e807ad9018649d3ab0301079f9f4121"
           })
         },
+        
 
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        },
-
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        },
-
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        },
-
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        },
-
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        },
-
-        {
-          body: JSON.stringify({
-            documentId: "28aa48c287a141868243360dffcda4a3"
-          })
-        }
-        */
       ]
     }
     return wrapped.run(event).then((response) => {

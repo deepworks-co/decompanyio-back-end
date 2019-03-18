@@ -8,12 +8,17 @@ const TB_DOCUMENT = tables.DOCUMENT;
 const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
 
 const period = 7; //days
-
+/**
+ * @description 
+ * PAGEVIEW-LATEST를 1시간 마다 갱신함
+ * PAGEVIEW-LATEST, DOCUMENT를 이용하여 DOCUMENT-POPULAR를 갱신함
+ * DOCUMENT-POPULAR은 popular정렬 조건에 사용됨
+ */
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
   const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
   
-  console.log("QUERY TIME", beforeDays, "(include) between (exclude)", now);
+  console.log("Query period", beforeDays, "(include) between (exclude)", now);
 
   const queryPipeline = getQueryPipeline(beforeDays.getTime());
 

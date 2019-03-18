@@ -22,13 +22,13 @@ describe('readLatestCreatorReward', () => {
             blockchainTimestamp: 1552435200000
           })
         },
-        /*
+        
         {
           body: JSON.stringify({
             documentId: "28aa48c287a141868243360dffcda4a3"
           })
         },
-
+        /*
         {
           body: JSON.stringify({
             documentId: "28aa48c287a141868243360dffcda4a3"

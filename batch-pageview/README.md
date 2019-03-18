@@ -30,7 +30,7 @@ sls create function -f generateTopTag --handler functions/cron/generateTopTag.ha
 sls create function -f voteRequestWriteOnchain --handler functions/cron/requestWriteVote.handler
 sls create function -f readLatestVoteAmount --handler functions/onchain/readLatestVoteAmount.handler
 sls create function -f readLatestCreatorReward --handler functions/onchain/readLatestCreatorReward.handler
-sls create function -f audienceAnalytics --handler functions/cron/audienceAnalytics.handler
+sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
 
 # Test
 

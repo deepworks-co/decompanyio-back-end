@@ -5,15 +5,19 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 /*
-* @description 문서에 현재까지(어제 기준) Vote된 Deck
+* @description 
 */
+/**
+ * @description
+ *  - 문서의 Vote Amount를 'DOCUMENT-FEATURE' 에 저장한다.
+ */
 module.exports.handler = async (event, context, callback) => {
   
   const wapper = new MongoWapper(mongodb.endpoint);
 
   try{
 
-    const bulk = wapper.getUnorderedBulkOp(tables.DOCUMENT);
+    const bulk = wapper.getUnorderedBulkOp(tables.DOCUMENT_FEATURED);
     const contractWapper = new ContractWapper();
     const now = new Date();
     const blockchainTimestamp = utils.getBlockchainTimestamp(now); //today
@@ -22,9 +26,25 @@ module.exports.handler = async (event, context, callback) => {
     
       const body = JSON.parse(record.body); 
       const {documentId} = body;
+      const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId});
+      console.log("find doc", index, JSON.stringify(doc));
       const voteAmount = JSON.parse(await contractWapper.getCuratorDepositOnDocument(documentId, blockchainTimestamp));
-      bulk.find({_id: documentId}).update({$set: {confirmVoteAmount: voteAmount, confirmVoteAmountUpdated: Date.now()}})
-      return {documentId, voteAmount};
+      const newDoc = {
+        _id: doc._id,
+        accountId: doc.accountId,
+        tags: doc.tags,
+        created: doc.created,
+        title: doc.title,
+        seoTitle: doc.seoTitle,
+        desc: doc.desc,
+        latestVoteAmount: Number(voteAmount),
+        latestVoteAmountUpdated : now.getTime(),
+        latestVoteAmountDate: now
+      }
+
+      console.log(doc._id, doc.latestVoteAmount, doc.latestVoteAmountDate);
+      bulk.find({_id: doc._id}).upsert().replaceOne(newDoc);
+      return {documentId, voteAmount, index};
     });
     
     const results = await Promise.all(promises);
