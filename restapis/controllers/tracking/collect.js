@@ -7,12 +7,15 @@ module.exports.handler = async (event, context, callback) => {
   //console.log(JSON.stringify(event));
   const headers = event.headers?event.headers:{}
   const body = event.queryStringParameters?event.queryStringParameters:{};
-  
 
-  if(!body.id || !body.cid || !body.sid || !body.t){
-    console.log("tracking error", "parameter is invalid")
+  if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
+    console.error("tracking error", "parameter is invalid", body);
     return (null, {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       body: "no collecting"
     })
   }
@@ -48,6 +51,10 @@ module.exports.handler = async (event, context, callback) => {
   console.log("tracking save", result);
   const response = {
     statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
     body: "ok" 
   };
   //console.log("success", body);
