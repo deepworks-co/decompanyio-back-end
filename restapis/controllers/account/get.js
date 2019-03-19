@@ -33,5 +33,5 @@ module.exports.handler = async (event, context, callback) => {
   return JSON.stringify({
     success: user?true:false,
     user: user
-  });;
+  });
 };
