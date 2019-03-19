@@ -70,7 +70,22 @@ exclude:
   - .gitignore
   - .env
 
-functions:  
+functions: 
+   
+  zapierEmail:
+    handler: controllers/zapier/email.handler
+    events:
+      - http:  
+          path: /api/zapier/email
+          method: get
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
   analyticsList:
     handler: controllers/analytics/list.handler
     events:
@@ -403,25 +418,26 @@ resources:
       Properties:
         RetentionInDays: "3"
         LogGroupName: LogGroup-${self:provider.stage}-${self:service}
-    GatewayResponse:
+    GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
         ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        ResponseType: EXPIRED_TOKEN
+        ResponseType: DEFAULT_4XX
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
-
-#    DocumentBucket:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: dev-ca-document
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+        StatusCode: '4XX'
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '5XX'
 
 custom:
   serverless-offline:

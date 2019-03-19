@@ -27,11 +27,7 @@ module.exports.regist = async (event, context, callback) => {
       throw new Error("parameter is invalid");
     } 
 
-    const accountId = parameter.accountId;
-    const sub = parameter.sub;
-    const nickname = parameter.nickname;
-    const username = parameter.username;
-    
+    const accountId = parameter.accountId;    
     const documentName = parameter.filename;
     const documentSize = parameter.size;
     const tags = parameter.tags?parameter.tags:[];//document tags

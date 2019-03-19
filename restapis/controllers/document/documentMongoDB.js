@@ -582,14 +582,14 @@ async function getTrackingList(documentId) {
       _id: {cid: "$cid", sid: "$sid" },
       cid: {$first: "$cid"},
       sid: {$first: "$sid"},
-      viewTimestamp: {$max: "$t"}
+      viewTimestamp: {$min: "$t"}
     }
   },{
     $group: {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
       count: {$sum: 1},
-      viewTimestamp: {$min: "$viewTimestamp"},
+      viewTimestamp: {$max: "$viewTimestamp"},
       sidList: { $push: "$_id.sid" },
     }
   }, {
