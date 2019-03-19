@@ -1,21 +1,23 @@
 'use strict';
+const AccountService = require('./AccountService');
 
 module.exports.handler = async (event, context, callback) => {
-  const data = JSON.parse(event.body);
-
-  if(!data){
-    return {
-      success: false,
-      message: "parameter is null"
-    }
+  console.log("event", event.query);
+  let data = event.query;
+  if(typeof(data.query)==='string'){
+    data = JSON.parse(event.query);
   }
 
+  if(!data.id){
+    throw new Error("parameters are invalid!");
+  }
   const accountService = new AccountService();
-  let user = null
+  let user = null;
   if(data.id){
     user = await accountService.getUserInfo({
       id: data.id
     });
+
   } else if(data.email){
     user = await accountService.getUserInfo({
       email: data.email
@@ -24,17 +26,15 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("Not enough query parameters");
   }
 
-
-  const response = {
-    statusCode:200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      success: true,
-      user: user
-    })
+  if(!user){
+    console.error("user is not exists... ", data);
+    throw new Error("user is not exists... " + JSON.stringify(data));
   }
+
+  const response = JSON.stringify({
+    success: user?true:false,
+    user: user
+  });
+  
   return response;
 };

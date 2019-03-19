@@ -298,9 +298,9 @@ module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
 
 module.exports.info = async (event, context, callback) => {
 
-  console.log("event : ", event.pathParameters);
+  console.log("event : ", event.path);
   //console.log("context : ", context);
-  let documentId = event.pathParameters.documentId;
+  let documentId = event.path.documentId;
 
   if(!documentId){
     throw new Error("parameter is invaild!!");

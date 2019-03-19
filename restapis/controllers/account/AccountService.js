@@ -1,7 +1,7 @@
 'use strict';
-const { mongodb } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {MongoWapper} = require('decompany-common-utils');
-const USER_TALBE = "USER";
+const USER_TALBE = tables.USER;
 const connectionString = mongodb.endpoint;
 
 module.exports = class AccountService {
@@ -14,7 +14,7 @@ module.exports = class AccountService {
 			});
 	
 			if(queriedUser){
-				console.log("exist user", queriedUser);
+				console.log("user is exists", queriedUser);
 				queriedUser.connected = Date.now();
 				console.log("update connected time", queriedUser);
 				const result = await mongo.save(USER_TALBE, queriedUser);
@@ -46,12 +46,14 @@ module.exports = class AccountService {
 			} else if(user.email) {
 				query = {emali: user.emaill};
 			} else {
-				throw new Error("getUserInfo Not enough query parameters")
+				throw new Error("getUserInfo Not enough query parameters" + JSON.stringify(user));
 			}
-				
-			const user = await mongo.findOne(USER_TALBE, query);
+			
+			const result = await mongo.findOne(USER_TALBE, query);
 
-			return user;
+			console.log(result, USER_TALBE, query);
+
+			return result;
 		} catch(e) {
 			throw e;
 		} finally{

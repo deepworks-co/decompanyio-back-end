@@ -154,13 +154,22 @@ functions:
           authorizer: accountAuth
 
   accountGet:
-    handler: controllers/account/gethandler
+    handler: controllers/account/get.handler
     events:
       - http:
           path: /api/account/get
           method: get
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
 
   accountUpdate:
     handler: controllers/account/update.handler
@@ -197,25 +206,6 @@ functions:
           cors: true
           authorizer: accountAuth
 
-  documentList:
-    handler: controllers/document/documentController.list
-    events:
-      - http:
-          path: api/document/list
-          method: post
-          cors: true
-          integration: lambda
-          request:
-            passThrough: NEVER
-            application/json: '{ "httpMethod" : "$context.httpMethod" }'
-          response:
-            headers:
-              Content-Type: "application/json"
-              Cache-Control: "'max-age=120'"
-              Access-Control-Allow-Origin: '*'
-              Access-Control-Allow-Credentials: 'true'
-            template: $input.path('$.body')
-
   curatorDocumentCuratingList:
     handler: controllers/document/documentController.listCuratorDocument
     events:
@@ -232,6 +222,22 @@ functions:
           method: post
           cors: true
 
+  documentList:
+    handler: controllers/document/documentController.list
+    events:
+      - http:
+          path: api/document/list
+          method: post
+          cors: true
+          integration: lambda
+          request:
+            application/json: '{ "httpMethod" : "$context.httpMethod" }'
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$.body')
+
   documentInfo:
     handler: controllers/document/documentController.info
     events:
@@ -239,10 +245,12 @@ functions:
           path: api/document/info/{documentId}
           method: get
           cors: true
-          request:
-            parameters:
-              paths:
-                id: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$.body')
 
   documentText:
     handler: controllers/document/documentController.text
