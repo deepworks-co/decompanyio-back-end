@@ -177,9 +177,6 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            statusCode:
-              500:
-                template: $input.path('$.errorMessage')
 
 
   accountUpdate:
@@ -195,9 +192,6 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            statusCode:
-              500:
-                template: $input.path('$.errorMessage')
     
   accountSync:
     handler: controllers/account/sync.handler
@@ -212,9 +206,6 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            statusCode:
-              500:
-                template: $input.path('$.errorMessage')
 
   oraclizeController:
     handler: controllers/oraclizeController/index.handler

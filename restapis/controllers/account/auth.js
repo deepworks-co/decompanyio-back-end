@@ -10,7 +10,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log("event", event);
   console.log("authorizationToken", event.authorizationToken);
   if (!event.authorizationToken) {
-    throw new Error('Unauthorized');
+    throw new Error('401 Unauthorized');
   }
 
   const tokenParts = event.authorizationToken.split(' ');
@@ -18,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
 
   if (!(tokenParts[0].toLowerCase() === 'bearer' && tokenValue)) {
     // no auth token!
-    throw new Error('Unauthorized');
+    throw new Error('401 Unauthorized');
   }
   const options = {
     audience: AUTH0_CLIENT_ID,
@@ -30,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
         console.log('verifyError', verifyError);
         // 401 Unauthorized
         console.log(`Token invalid. ${verifyError}`);
-        throw new Error('Unauthorized');
+        throw new Error('401 Unauthorized');
       }
       // is custom authorizer function
       console.log('valid from customAuthorizer', decoded);
@@ -39,8 +39,8 @@ module.exports.handler = async (event, context, callback) => {
       return callback(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
     });
   } catch (err) {
-    console.log('catch error. Invalid token', err);
-    return callback('Unauthorized');
+    console.error('catch error. Invalid token', err);
+    return callback('401 Unauthorized');
   }
 };
 
@@ -49,7 +49,6 @@ module.exports.handler = async (event, context, callback) => {
 const generatePolicy = (principalId, effect, resource) => {
   const authResponse = {};
   authResponse.principalId = principalId;
-  authResponse.claims = {principalId}
   if (effect && resource) {
     const policyDocument = {};
     policyDocument.Version = '2012-10-17';
