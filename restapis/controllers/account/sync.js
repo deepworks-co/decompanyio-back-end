@@ -2,22 +2,16 @@
 const jwt = require('jsonwebtoken');
 const AccountService = require('./AccountService');
 
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
   const authorizer = event.requestContext.authorizer;
   const parameters = JSON.parse(event.body);
-  console.log("authorizer", authorizer, parameters);
+  console.log("authorizer", authorizer);
+  console.log("parameters", parameters);
   if(!authorizer || !parameters || !authorizer.principalId){
-    return callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        message: 'authorizer, principalId or parameters is null'
-      })
-    });
+    return new Error(JSON.stringify({
+      success: false,
+      message: 'authorizer, principalId or parameters is null'
+    }));
   }
   const claims = parameters;
   const principalId = authorizer.principalId;
@@ -33,35 +27,11 @@ module.exports.handler = (event, context, callback) => {
     sub: claims.sub,
     provider: provider
   }
-  accountService.syncUserInfo(user).then((result)=>{
-    return callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: true,
-        result: result
-      })
-    });
-  }).catch((err)=>{
-    return callback(err, {
-      statusCode: 200,
-      headers: {
-          /* Required for CORS support to work */
-        'Access-Control-Allow-Origin': '*',
-          /* Required for cookies, authorization headers with HTTPS */
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        error: err
-      })
-    });
-  });
-
+  const result = await accountService.syncUserInfo(user);
   
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
+  return JSON.stringify({
+    success: true,
+    result: result
+  });
+  
 }

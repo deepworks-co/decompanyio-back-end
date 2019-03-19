@@ -153,6 +153,9 @@ functions:
           cors: true
           authorizer: accountAuth
 
+  accountAuth:
+    handler: controllers/account/auth.handler
+
   accountGet:
     handler: controllers/account/get.handler
     events:
@@ -180,8 +183,6 @@ functions:
           cors: true
           authorizer: accountAuth
 
-  accountAuth:
-    handler: controllers/account/auth.handler
     
   accountSync:
     handler: controllers/account/sync.handler
@@ -191,6 +192,14 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
 
   oraclizeController:
     handler: controllers/oraclizeController/index.handler

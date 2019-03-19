@@ -12,23 +12,21 @@ module.exports = class AccountService {
 			const queriedUser = await mongo.findOne(USER_TALBE, {
 				_id: userInfo.sub
 			});
-	
+			let result;
 			if(queriedUser){
 				console.log("user is exists", queriedUser);
 				queriedUser.connected = Date.now();
 				console.log("update connected time", queriedUser);
-				const result = await mongo.save(USER_TALBE, queriedUser);
+				result = await mongo.save(USER_TALBE, queriedUser);
 			} else {
 				const user = Object.assign({
 					_id: userInfo.sub, 
 					connected: Date.now()
 				}, userInfo);
-				const result = await mongo.save(USER_TALBE, user);
+				result = await mongo.save(USER_TALBE, user);
 				console.log("new user", user, result);
 			}
-			
-			
-			return user;
+			return result;
 		}catch(err){
 			throw err;
 		} finally {
