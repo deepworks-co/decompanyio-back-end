@@ -10,7 +10,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log("event", event);
   console.log("authorizationToken", event.authorizationToken);
   if (!event.authorizationToken) {
-    throw new Error('401 Unauthorized');
+    throw new Error('[401] Unauthorized');
   }
 
   const tokenParts = event.authorizationToken.split(' ');
@@ -18,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
 
   if (!(tokenParts[0].toLowerCase() === 'bearer' && tokenValue)) {
     // no auth token!
-    throw new Error('401 Unauthorized');
+    throw new Error('[401] Unauthorized');
   }
   const options = {
     audience: AUTH0_CLIENT_ID,
@@ -30,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
         console.log('verifyError', verifyError);
         // 401 Unauthorized
         console.log(`Token invalid. ${verifyError}`);
-        throw new Error('401 Unauthorized');
+        throw new Error('[401] Unauthorized');
       }
       // is custom authorizer function
       console.log('valid from customAuthorizer', decoded);
@@ -40,7 +40,7 @@ module.exports.handler = async (event, context, callback) => {
     });
   } catch (err) {
     console.error('catch error. Invalid token', err);
-    throw new Error('401 Unauthorized');
+    throw new Error('[401] Unauthorized');
   }
 };
 
