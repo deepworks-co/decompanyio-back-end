@@ -3,18 +3,18 @@ const jwt = require('jsonwebtoken');
 const AccountService = require('./AccountService');
 
 module.exports.handler = async (event, context, callback) => {
-  const authorizer = event.requestContext.authorizer;
-  const parameters = JSON.parse(event.body);
-  console.log("authorizer", authorizer);
-  console.log("parameters", parameters);
-  if(!authorizer || !parameters || !authorizer.principalId){
+  console.log(event);
+  const {principalId, body} = event;
+  console.log("principalId", principalId);
+  console.log("parameters", body);
+  if(!principalId || !body ){
     return new Error(JSON.stringify({
       success: false,
-      message: 'authorizer, principalId or parameters is null'
+      message: 'principalId or parameters is invalid!'
     }));
   }
-  const claims = parameters;
-  const principalId = authorizer.principalId;
+
+  const claims = body;
   const accountService = new AccountService();
   const provider = claims.sub?claims.sub.split("|")[0]:null;
   const user = {
