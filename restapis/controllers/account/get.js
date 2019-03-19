@@ -2,20 +2,20 @@
 const AccountService = require('./AccountService');
 
 module.exports.handler = async (event, context, callback) => {
-  console.log("event", event.query);
-  let data = event.query;
-  if(typeof(data.query)==='string'){
-    data = JSON.parse(event.query);
-  }
+  console.log(JSON.stringify(event));
+  
+  const {query} = event;
 
-  if(!data.id){
-    throw new Error("parameters are invalid!");
+  const {id, email} = query;
+
+  if(!id || !email){
+    throw new Error("user id or email is invalid!");
   }
   const accountService = new AccountService();
   let user = null;
   if(data.id){
     user = await accountService.getUserInfo({
-      id: data.id
+      id: id
     });
 
   } else if(data.email){
@@ -27,14 +27,11 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   if(!user){
-    console.error("user is not exists... ", data);
-    throw new Error("user is not exists... " + JSON.stringify(data));
+    throw new Error("user is not exists... " + JSON.stringify(query));
   }
-
-  const response = JSON.stringify({
+  
+  return JSON.stringify({
     success: user?true:false,
     user: user
-  });
-  
-  return response;
+  });;
 };

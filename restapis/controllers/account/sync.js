@@ -5,8 +5,6 @@ const AccountService = require('./AccountService');
 module.exports.handler = async (event, context, callback) => {
   console.log(event);
   const {principalId, body} = event;
-  console.log("principalId", principalId);
-  console.log("parameters", body);
   if(!principalId || !body ){
     return new Error(JSON.stringify({
       success: false,
