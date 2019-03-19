@@ -40,7 +40,7 @@ module.exports.handler = async (event, context, callback) => {
     });
   } catch (err) {
     console.error('catch error. Invalid token', err);
-    return callback('401 Unauthorized');
+    throw new Error('401 Unauthorized');
   }
 };
 
