@@ -203,6 +203,22 @@ module.exports = class MongoWapper {
     });
   }
 
+  distinct(collection, field, query) {
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).distinct(field, query, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        
+      });
+
+    });
+  }
+
 
   mapReduce(collection, map, reduce, opts) {
     return new Promise((resolve, reject) => {
