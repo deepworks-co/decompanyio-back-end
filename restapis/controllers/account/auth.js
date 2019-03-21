@@ -57,6 +57,6 @@ const generatePolicy = (principalId, effect, resource) => {
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
   }
-  console.log("authResponse", authResponse);
+  console.log("authResponse", JSONauthResponse);
   return authResponse;
 };

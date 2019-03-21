@@ -315,9 +315,9 @@ module.exports.info = async (event, context, callback) => {
   if(!document){
     throw new Error("document is not exist!");
   }
-  //console.log("query : ", document);
+  console.log("document : ", document);
   
-  let textList = await s3.getDocumentTextById(document.documentId);
+  let textList = await s3.getDocumentTextById(document._id);
 
   //console.log(textList);
   
