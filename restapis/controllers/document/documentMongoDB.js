@@ -234,7 +234,7 @@ async function queryDocumentListByPopular (params) {
       $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
     }, {
       $addFields: {
-        documentId: "$._id",
+        documentId: "$_id",
         author: "$author",
         latestVoteAmount: "$featured.latestVoteAmount",
         totalPages: "$document.totalPageview",
