@@ -437,7 +437,7 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
-        StatusCode: '4XX'
+
     GatewayResponse5xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
@@ -447,7 +447,7 @@ resources:
         ResponseType: DEFAULT_5XX
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
-        StatusCode: '5XX'
+
 
 custom:
   serverless-offline:
