@@ -31,6 +31,7 @@ sls create function -f voteRequestWriteOnchain --handler functions/cron/requestW
 sls create function -f readLatestVoteAmount --handler functions/onchain/readLatestVoteAmount.handler
 sls create function -f readLatestCreatorReward --handler functions/onchain/readLatestCreatorReward.handler
 sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
+sls create function -f voteCollector --handler functions/cron/voteCollector.handler
 
 # Test
 
