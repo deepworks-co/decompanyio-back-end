@@ -139,19 +139,32 @@ async function queryDocumentListByLatest (params) {
         from: tables.DOCUMENT_POPULAR,
         localField: "_id",
         foreignField: "_id",
-        as: "documentAs"
+        as: "popularAs"
       }
     }, {
       $lookup: {
         from: tables.USER,
-        localField: "accoundId",
+        localField: "accountId",
         foreignField: "_id",
         as: "userAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
-    },{
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: "$document.latestPageview", latestReward: "$document.latestReward", nickname: "$user.nickname", picture: "$user.picture"}
+      $lookup: {
+        from: tables.DOCUMENT_FEATURED,
+        localField: "_id",
+        foreignField: "_id",
+        as: "featuredAs"
+      }
+    }, {
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+    }, {
+      $addFields: {
+        latestVoteAmount: "$featured.latestVoteAmount",
+        latestPageview: "$popular.latestPageview"
+
+      }
+    }, {
+      $project: {featured: 0, popular: 0}
     }]);
 
 
@@ -205,19 +218,33 @@ async function queryDocumentListByPopular (params) {
       }
     }, {
       $lookup: {
-        from: tables.USER,
-        localField: "accoundId",
+        from: tables.DOCUMENT_FEATURED,
+        localField: "_id",
         foreignField: "_id",
-        as: "userAs"
+        as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, user: { $arrayElemAt: [ "$userAs", 0 ] }}
-    },{
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, "seoTitle": "$document.seoTitle", documentId: "$document.documentId", documentName: "$document.documentName", nickname: "$user.nickname", picture: "$user.picture"}
+      $lookup: {
+        from: tables.USER,
+        localField: "accountId",
+        foreignField: "_id",
+        as: "authorAs"
+      }
+    }, {
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
+    }, {
+      $addFields: {
+        author: "$author",
+        latestVoteAmount: "$featured.latestVoteAmount",
+        totalPages: "$document.totalPageview",
+        ethAccount: "$document.ethAccount",
+        documentName: "$document.documentName",
+        documentSize: "$document.documentSize",
+      }
+    }, {
+      $project: {featured: 0, document: 0}
     }]);
 
-
-    console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
    
   } catch(err) {
@@ -270,37 +297,34 @@ async function queryDocumentListByFeatured (params) {
         from: tables.DOCUMENT_POPULAR,
         localField: "_id",
         foreignField: "_id",
-        as: "pageviewAs"
+        as: "popularAs"
       }
     }, {
       $lookup: {
         from: tables.USER,
-        localField: "accoundId",
+        localField: "accountId",
         foreignField: "_id",
         as: "userAs"
       }
     }, {
       $addFields: {
-          user: { $arrayElemAt: [ "$userAs", 0 ] },
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
           document: { $arrayElemAt: [ "$documentAs", 0 ] },
-          pageview: { $arrayElemAt: [ "$pageviewAs", 0 ] }
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
       }
-  }, {
+    }, {
       $addFields: {
         documentId: "$_id",
         documentName: "$document.documentName",
-        latestPageview: "$pageview.latestPageview",
-        userid: "$user._id",
-        email: "$user.email",
-        name: "$user.name",
-        picture: "$user.picture",
+        documentSize: "$document.documentSize",
+        totalPageview: "$document.totalPageview",
+        ethAccount: "$document.ethAccount",
+        latestPageview: "$popular.latestPageview",
       }
-  }, {
-      $project: {documentAs: 0, userAs: 0, pageviewAs: 0, document: 0, user: 0, pageview: 0}
-  }]);
+    }, {
+      $project: {documentAs: 0, popularAs: 0, userAs: 0}
+    }]);
 
-
-    console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
    
   } catch(err) {
@@ -386,7 +410,7 @@ async function queryVotedDocumentByCurator(args) {
     $lookup: {
       from: TB_DOCUMENT,
       localField: "documentId",
-      foreignField: "documentId",
+      foreignField: "_id",
       as: "documentInfo"
     }
   },
