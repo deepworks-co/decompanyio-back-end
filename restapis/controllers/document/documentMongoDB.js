@@ -234,6 +234,7 @@ async function queryDocumentListByPopular (params) {
       $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
     }, {
       $addFields: {
+        documentId: "$._id",
         author: "$author",
         latestVoteAmount: "$featured.latestVoteAmount",
         totalPages: "$document.totalPageview",
@@ -322,7 +323,7 @@ async function queryDocumentListByFeatured (params) {
         latestPageview: "$popular.latestPageview",
       }
     }, {
-      $project: {documentAs: 0, popularAs: 0, userAs: 0}
+      $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
     }]);
 
     return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
