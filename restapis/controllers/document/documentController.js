@@ -18,10 +18,11 @@ const defaultHeaders = {
 }
 
 module.exports.regist = async (event, context, callback) => {
-  console.log("event", event.body);
-
+  console.log("event", JSON.stringify(event));
+  const {principalId} = event;
   try{
     const parameter = JSON.parse(event.body);
+    
     console.log("parameter", parameter);
     if(!parameter || !parameter.accountId || !parameter.title) {
       throw new Error("parameter is invalid");
@@ -38,8 +39,7 @@ module.exports.regist = async (event, context, callback) => {
     
     let seoTitle;
     let documentId;
-    let document, friendUrl;
-
+    let document;
 
     const user = await documentService.getUser(accountId);
     if(!user.email || !user.sub){
@@ -51,10 +51,11 @@ module.exports.regist = async (event, context, callback) => {
       document = await documentService.getDocumentById(documentId);
     } while(document)
     
+    let friendlyUrl;
     do {
       seoTitle = utils.toSeoFriendly(title);
-      friendUrl = await documentService.getFriendlyUrl(seoTitle);
-    } while(friendUrl)
+      friendlyUrl = await documentService.getFriendlyUrl(seoTitle);
+    } while(friendlyUrl)
 
     if(!documentId || !seoTitle){
       throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
@@ -171,124 +172,6 @@ module.exports.list = async (event, context, callback) => {
   
 
 
-};
-
-/**
- * @description voted documets
- * @url : /api/curator/document/list
- */
-module.exports.listCuratorDocument = (event, context, callback) => {
-
-  const body = JSON.parse(event.body);
-
-  const pageNo = (isNaN(body.pageNo) || body.pageNo<1)?1:Number(body.pageNo);
-  const accountId = body.accountId;
-  const tag = body.tag;
-  const path = body.path;
-
-
-  const promise1 = documentService.queryVotedDocumentByCurator({
-    pageNo: pageNo,
-    accountId: accountId,
-    tag: tag
-  })
-
-  const date = utils.getBlockchainTimestamp(new Date());//today
-  const promise2 = documentService.queryTotalViewCountByToday(date);
-
-  Promise.all([promise1, promise2]).then((results) => {
-    console.log("listCuratorDocument succeeded.", JSON.stringify(results));
-    const result = results[0];
-    const resultList = result.resultList?result.resultList:[];
-    const totalViewCountInfo = results[1]
-
-
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: true,
-        message: 'SUCCESS',
-        resultList: resultList,
-        pageKey: result.pageKey,
-        count: resultList.length,
-        totalViewCountInfo: totalViewCountInfo
-      }),
-    });
-
-  }).catch((err) => {
-
-    console.error("Unable to listCuratorDocument. Error:", err);
-    callback(null, {
-      success: false,
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        error: err,
-      })
-    });
-  });
-};
-
-module.exports.listTodayVotedDocumentByCurator = (event, context, callback) => {
-
-  const body = JSON.parse(event.body);
-  const accountId = body.params.accountId;
-  const tag = body.params.tag;
-  const path = body.params.path;
-
-  console.log(body.params);
-
-  const promise1 = documentService.queryTodayVotedDocumentByCurator({
-    accountId: accountId,
-  });
-
-  const today = new Date();
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-
-  const promise2 = documentService.queryTotalViewCountByToday(blockchainTimestamp);
-
-  Promise.all([promise1, promise2]).then((results) => {
-
-    console.log("listTodayVotedDocumentByCurator succeeded.", results);
-    const data = results[0];
-    const data2 = results[1];
-
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: 'SUCCESS',
-        todayVotedDocuments: data.Items?data.Items:[],
-        totalViewCount: data2.Items?data2.Items:[]
-      }),
-    });
-
-  }).catch((err) => {
-
-    console.error("Unable to listCuratorDocument. Error:", JSON.stringify(err, null, 2));
-    callback(null, {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: 'FAIL',
-        err: err
-      })
-    });
-  });
 };
 
 

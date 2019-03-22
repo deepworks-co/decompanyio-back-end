@@ -71,7 +71,33 @@ exclude:
   - .env
 
 functions: 
-   
+
+  curatorDocumentList:
+    handler: controllers/curator/curatorDocumentList.handler
+    events:
+      - http:
+          path: /api/curator/document/list
+          method: post
+          cors: true      
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            
+  curatorTodayDocumentList:
+    handler: controllers/curator/curatorTodayDocumentList.handler
+    events:
+      - http:
+          path: /api/curator/document/today
+          method: post
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
   zapierEmail:
     handler: controllers/zapier/email.handler
     events:
@@ -235,22 +261,6 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
-
-  curatorDocumentCuratingList:
-    handler: controllers/document/documentController.listCuratorDocument
-    events:
-      - http:
-          path: api/curator/document/list
-          method: post
-          cors: true
-
-  ListTodayVotedDocumentByCurator:
-    handler: controllers/document/documentController.listTodayVotedDocumentByCurator
-    events:
-      - http:
-          path: api/curator/document/today
-          method: post
-          cors: true
 
   documentList:
     handler: controllers/document/documentController.list

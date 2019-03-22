@@ -21,7 +21,6 @@ module.exports = {
   putDocument,
   queryVotedDocumentByCurator,
   queryTotalViewCountByToday,
-  queryTodayVotedDocumentByCurator,
   getFeaturedDocuments,
   putTrackingInfo,
   putTrackingUser,
@@ -363,19 +362,23 @@ async function putDocument (item) {
 async function queryVotedDocumentByCurator(args) {
 
   const pageNo = args.pageNo;
-  const pageSize = 50;
-  const accountId = args.accountId;
+  const applicant = args.applicant;
+  const startTimestamp = args.startTimestamp?args.startTimestamp:1;
 
   const queryPipeline = [{
     $match: {
-      id: accountId
+      applicant: applicant,
+      created: {$gt: startTimestamp}
     }
-  },
-  {
+  }, {
+    $sort: {
+        created: -1
+    }
+  }, {
     $group:
     {
         _id: {documentId: "$documentId"},
-        voteAmount: {$sum: "$voteAmount"},
+        deposit: {$sum: "$deposit"},
         documentId : { $first: '$documentId' }
     }
   },
@@ -402,6 +405,7 @@ async function queryVotedDocumentByCurator(args) {
   const wapper = new MongoWapper(connectionString);
 
   try{
+    console.log(TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return {
@@ -415,15 +419,22 @@ async function queryVotedDocumentByCurator(args) {
   }
   
 }
+
+
 /**
  * @param  {} date
  */
 async function queryTotalViewCountByToday (date) {
   const wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.findOne(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
+    let result = await wapper.findOne(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
       blockchainTimestamp: date
     });
+    console.log("queryTotalViewCountByToday", result);
+    if(!result) {
+      result = {totalPageviewSquare: 0, totalPageview: 0, blockchainTimestamp: date}
+    }
+    return result;
   }catch(e){
     throw e;
   } finally{
@@ -466,30 +477,7 @@ async function putVote (item) {
     return await wapper.insert(TB_VOTE, newItem);
     //return docClient.put(params).promise();
 }
-/**
- * @param  {} args
- */
-async function queryTodayVotedDocumentByCurator (args) {
-  let key = null;
-  if(args.nextPageKey){
-      key = args.nextPageKey;
-  }
-  const accountId = args.accountId;
-  const today = new Date();
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
 
-
-  const query = {
-    curatorId: accountId,
-    created: {$gte: blockchainTimestamp}
-    
-  }
-  console.log("mongo queryTodayVotedDocumentByCurator qeury", qeury);
-
-  const wapper = new MongoWapper(connectionString);
-  const result = await wapper.findAll("DEV-CA-VOTE-HIST", query);
-
-}
 
 /**
  * @param  {} args
