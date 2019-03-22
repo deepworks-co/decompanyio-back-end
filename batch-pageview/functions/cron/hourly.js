@@ -78,13 +78,12 @@ function getQueryPipeline(startTimestamp){
         cid: "$cid",
         sid: "$sid"
       },
-      pageview: {$sum: 1},
       timestamp: {$max: "$t"}
     }
   }, {
     $group: {
       _id: "$_id.id",
-      totalPageview: {$sum: "$pageview"},
+      totalPageview: {$sum: 1},
       timestamp: {$max: "$timestamp"}
     }
   }, {
