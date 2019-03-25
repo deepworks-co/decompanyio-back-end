@@ -201,3 +201,132 @@ db["DOCUMENT"].aggregate([
         $limit: 10
     } ]
 )
+
+
+
+```javascript
+
+    
+db["DOCUMENT-FEATURED"].aggregate(
+    [{
+        $sort:{ latestPageview:-1, created: -1}
+    }, {
+      $lookup: {
+        from: "DOCUMENT",
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: "DOCUMENT-POPULAR",
+        localField: "_id",
+        foreignField: "_id",
+        as: "pageviewAs"
+      }
+    }, {
+      $lookup: {
+        from: "USER",
+        localField: "accoundId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+        $addFields: {
+            user: { $arrayElemAt: [ "$userAs", 0 ] },
+            document: { $arrayElemAt: [ "$documentAs", 0 ] },
+            pageview: { $arrayElemAt: [ "$pageviewAs", 0 ] }
+        }
+    }, {
+        $addFields: {
+            documentId: "$_id",
+            latestPageview: "$pageview.latestPageview",
+            userid: "$user._id",
+            email: "$user.email",
+            name: "$user.name",
+            picture: "$user.picture",
+        }
+    }, {
+        $project: {documentAs: 0, userAs: 0, pageviewAs: 0, document: 0, user: 0, pageview: 0}
+    }]
+).pretty()
+```
+
+## hourly latest pageview
+```javascript
+db["TRACKING"].aggregate(
+    [{
+    $match: {
+      t: {$gte: 1552614531},
+      n: {$gt: 1},
+      id: "c4754f829e8f48d7a737e9e5ac592885"
+    }
+  }, {
+    $group: {
+      _id: {
+        year: {$year: {$add: [new Date(0), "$t"]}}, 
+        month: {$month: {$add: [new Date(0), "$t"]}}, 
+        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}},
+        id: "$id",
+        cid: "$cid",
+        sid: "$sid"
+      },
+      timestamp: {$max: "$t"}
+    }
+  }, {
+    $group: {
+      _id: "$_id.id",
+      totalPageview: {$sum: 1},
+      timestamp: {$max: "$timestamp"}
+    }
+  }, {
+    $addFields: {
+      occurrenceDate: {$add: [new Date(0), "$timestamp"]}
+    }
+  }, {
+    $project: {
+      occurrenceDate: 1,
+      totalPageview: 1,
+    }
+  }]
+).pretty()
+```
+
+
+```javascript
+db.VOTE.aggregate([{
+        $match: {
+            "applicant":"0xf319E1a032338183c4fDC024F3e3845497dB3152"
+        }
+    }, {
+        $sort: {
+            created: -1
+        }
+    }, {
+        $group: {
+            "_id": {documentId: "$documentId"},
+            "deposit":{$sum:"$deposit"},
+            "documentId": {$first:"$documentId"}
+        }
+    },
+    {
+        $lookup: {
+            from: "DOCUMENT",
+            localField: "documentId",
+            foreignField:"documentId",
+            as: "documentInfo"
+        }
+    }, {
+        $unwind: {
+            path:"$documentInfo",
+            preserveNullAndEmptyArrays: true
+        }
+    }, {
+        $match: {
+            "documentInfo": {"$exists":true,"$ne":null}
+        }
+    }], {
+        explain: true
+    }
+).pretty()
+```

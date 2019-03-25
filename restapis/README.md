@@ -60,13 +60,13 @@ sls create function -f accountSync --handler controllers/account/sync.handler --
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
 sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
 sls create function -f accountPicture --handler controllers/account/picture.handler --httpEvent "post /api/account/picture"
-
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
-
-
-
 sls create function -f tagList --handler controllers/tag/list.handler --httpEvent "get /api/tags"
-
 sls create function -f analyticsList --handler controllers/analytics/list.handler --httpEvent "get /api/analytics/list"
+
+sls create function -f zapierEmail --handler controllers/zapier/email.handler --httpEvent "post /api/zapier/email"
+
+sls create function -f curatorDocumentList --handler controllers/curator/curatorDocumentList.handler --httpEvent "post /api/curator/document/list"
+sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
