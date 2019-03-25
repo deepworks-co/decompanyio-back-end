@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables, s3 } = require('../../resources/config.js').APP_PROPERTIES();
 const {MongoWapper} = require('decompany-common-utils');
 
 var AWS = require("aws-sdk");
@@ -28,7 +28,7 @@ exports.handler = (event, context) => {
 async function run(event){
   let i=0;
   let promises = [];
-  await event.Records.forEach((record) =>  {
+  const promises = await event.Records.map((record) =>  {
     const key = record.s3.object.key;
     const bucket = record.s3.bucket.name;
     
@@ -36,17 +36,16 @@ async function run(event){
     const prefix = keys[0];
     const documentId = keys[1];
     const filename = keys[2];
+    
     console.log("convertComplete start", key, prefix, documentId, filename);
     if("result.txt" == filename){       
-      const promise = runConvertComplete(bucket, key, documentId);
-      promises.push(promise);
-    } else if("document.txt" == filename) {
+      return runConvertComplete(bucket, key, documentId);
+    } else if("text.json" == filename) {
         //아무것도 안함
     } else {
       //프리뷰이미지 metadata content-type : image/png
-      const promise = changeImageMetadata(bucket, key);
-      promises.push(promise);
-        
+      convertJpeg({fromBucket: bucket, prefix: key}, {toBucket: s3.thumbnail, prefix: key})
+      return changeImageMetadata(bucket, key);  
     }
     i++;
   });
@@ -144,6 +143,10 @@ async function updateConvertCompleteDocument(documentId, totalPages){
     console.log("document not found", document);
   }
 
-  
-  
+}
+
+
+async function convertJpeg(from, to){
+  const {fromBucket, fromPrefix} = from;
+  const {toBucket, toPrefix} = to;
 }

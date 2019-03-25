@@ -70,3 +70,6 @@ sls create function -f zapierEmail --handler controllers/zapier/email.handler --
 
 sls create function -f curatorDocumentList --handler controllers/curator/curatorDocumentList.handler --httpEvent "post /api/curator/document/list"
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
+
+
+sls create function -f documentUpdate --handler controllers/document/documentUpdate.handler --httpEvent "post /api/document/update"

@@ -126,7 +126,7 @@ functions:
             template: $input.path('$')
           documentation:
             summary: "analytics list"
-            description: "api /api/analytics/list"
+            description: "/api/analytics/list"
             queryParams:
               - name: userid
                 type: string
@@ -313,7 +313,19 @@ functions:
             parameters:
                 paths:
                   id: true
-
+  documentUpdate:
+    handler: controllers/document/documentUpdate.handler
+    events:
+      - http:
+          path: /api/document/update
+          method: post
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            
   documentVote:
     handler: controllers/document/documentController.vote
     events:
@@ -348,7 +360,7 @@ functions:
           cors: true
           documentation:
             summary: "tracking list"
-            description: tracking list
+            description: "/api/tracking/list"
             queryParams:
               - name: documentid
                 description: document id
@@ -367,12 +379,12 @@ functions:
     handler: controllers/tracking/info.handler
     events:
       - http: 
-          path: api/tracking/info
+          path: /api/tracking/info
           method: get
           cors: true
           documentation:
             summary: "tracking detail"
-            description: tracking detail
+            description: "/api/tracking/info"
             queryParams:
               - name: documentid
                 type: string
@@ -399,7 +411,7 @@ functions:
           cors: true
           documentation:
             summary: "tracking collector"
-            description: "collector for user's event tracking"
+            description: "api/tracking/collect"
             queryParams:
               - name: cid
                 description: client id
@@ -426,10 +438,6 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponse"
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
 # you can add CloudFormation resource templates here
 resources:
   Resources:
@@ -437,7 +445,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         AccessControl: PublicRead
-        BucketName: ${self:provider.stage}.thumbnail.decompany.io
+        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3.thumbnail}
         WebsiteConfiguration:
           ErrorDocument: index.html
           IndexDocument: index.html

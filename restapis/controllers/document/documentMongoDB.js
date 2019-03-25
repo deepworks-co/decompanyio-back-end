@@ -20,6 +20,7 @@ module.exports = {
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
+  saveDocument,
   queryVotedDocumentByCurator,
   queryTotalViewCountByToday,
   getFeaturedDocuments,
@@ -359,6 +360,7 @@ async function getFriendlyUrl (seoTitle) {
   const wapper = new MongoWapper(connectionString);
   return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
 }
+
 /**
  * @param  {} item
  */
@@ -394,6 +396,41 @@ async function putDocument (item) {
   }
     
 }
+
+
+/**
+ * @param  {} item
+ */
+async function saveDocument (newDoc) {
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    const timestamp = Date.now();
+    const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
+
+    const mergedItem = Object.assign(oldDoc, newDoc);
+
+    console.log("olddocument", oldDoc, "newdocument", mergedItem);
+    
+    const result = await wapper.save(TB_DOCUMENT, mergedItem);
+
+    await wapper.insert(TB_SEO_FRIENDLY, {
+      _id: mergedItem.seoTitle,
+      type: "DOCUMENT",
+      id: mergedItem._id,
+      created: Number(timestamp)
+    });
+
+    return result;
+
+  } catch(err){
+    throw err;
+  } finally{
+    wapper.close();
+  }
+    
+}
+
 
 
 /**

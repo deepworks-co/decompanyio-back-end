@@ -1,11 +1,11 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.47.117:27017/alpha-decompany"
     },
     "s3":{
-        "document": "dev-ca-document",
-        "thumbnail": "dev-ca-thumbnail.decompany.io",
-        "profile": "dev-ca-profile.decompany.io"
+        "document": "alpha-ca-document.decompany.io",
+        "thumbnail": "alpha-ca-thumbnail.decompany.io",
+        "profile": "alpha-ca-profile.decompany.io"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
@@ -21,7 +21,7 @@
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
     },
     "applicationLogAppender": {
-        "enable": false,
+        "enable": true,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
     }
