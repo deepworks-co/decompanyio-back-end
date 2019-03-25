@@ -16,6 +16,7 @@ module.exports = {
   getDocumentById,
   getDocumentBySeoTitle,
   getUser,
+  updateUserEthAccount,
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
