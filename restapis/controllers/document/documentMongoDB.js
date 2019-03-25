@@ -80,6 +80,18 @@ async function getUser(userid) {
     wapper.close();
   }
 }
+
+async function updateUserEthAccount(userid, ethAccount) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    return await wapper.update(TB_USER, {_id: userid}, {$set:{ethAccount: ethAccount}});
+  } catch (e) {
+    throw e
+  } finally {
+    wapper.close();
+  }
+}
+
 /**
  * @param  {} args
  */
@@ -156,7 +168,7 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",

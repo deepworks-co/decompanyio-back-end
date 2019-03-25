@@ -261,6 +261,11 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
 
   documentList:
     handler: controllers/document/documentController.list
