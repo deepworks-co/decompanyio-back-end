@@ -50,7 +50,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const response =  JSON.stringify({
     success: true,
-    document: document
+    result: result
   });
 
   return callback(null, response);
