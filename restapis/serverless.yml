@@ -119,9 +119,14 @@ functions:
           path: /api/analytics/list
           method: get
           cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
           documentation:
             summary: "analytics list"
-            description: analytics list
+            description: "api /api/analytics/list"
             queryParams:
               - name: userid
                 type: string
@@ -155,7 +160,7 @@ functions:
           cors: true
           documentation:
             summary: "top tag list"
-            description: get top tag list
+            description: "api /api/tags"
             methodResponses:
               -
                 statusCode: "200"
@@ -428,6 +433,14 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
+    ThumbnailS3:
+      Type: S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        BucketName: ${self:provider.stage}-document-thumbnail
+        WebsiteConfiguration:
+
+
     RestApiLogGroup: #AccessLog Log Group
       Type: AWS::Logs::LogGroup 
       Properties:

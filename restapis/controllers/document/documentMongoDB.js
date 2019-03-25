@@ -713,7 +713,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
     }, {
       $group: {
         _id: {year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
-        totalCount: {$sum: "$count"}
+        totalCount: {$sum: "$pageview"}
       }
     }, {
       $sort:{_id:1}
@@ -727,6 +727,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
 
       }
     }]
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
@@ -749,7 +750,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
     }, {
       $group: {
         _id: {$isoWeek: "$statDate"},
-        totalCount: {$sum: "$count"},
+        totalCount: {$sum: "$pageview"},
         start: {$min: "$statDate"},
         end: {$max: "$statDate"},
       }
@@ -765,6 +766,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
 
       }
     }]
+    
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
