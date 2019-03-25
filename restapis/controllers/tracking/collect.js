@@ -1,5 +1,5 @@
 'use strict';
-const documentService = require('../documentMongoDB');
+const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
 const {kinesis} = require('decompany-common-utils');
 
@@ -7,13 +7,18 @@ module.exports.handler = async (event, context, callback) => {
   //console.log(JSON.stringify(event));
   const headers = event.headers?event.headers:{}
   const body = event.queryStringParameters?event.queryStringParameters:{};
-  
 
-  if(!body.id || !body.cid || !body.sid || !body.t){
-    console.log("tracking error", "parameter is invalid")
+  if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
+    console.error("tracking error", "parameter is invalid", body);
     return (null, {
       statusCode: 200,
-      body: "no collecting"
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: "no collecting"
+      })
     })
   }
 
@@ -29,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
   body.t = Number(body.t);
   body.n = Number(body.n);
   body.referer = headers.Referer;
-  body.useragnet = headers["User-Agent"];
+  body.useragent = headers["User-Agent"];
   body.xforwardedfor = ips;
   body.headers = headers;
   //console.log("tracking body", body);
@@ -48,7 +53,14 @@ module.exports.handler = async (event, context, callback) => {
   console.log("tracking save", result);
   const response = {
     statusCode: 200,
-    body: "ok" 
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    body: JSON.stringify({
+      success: true,
+      message: "ok"
+    }) 
   };
   //console.log("success", body);
   return (null, response);

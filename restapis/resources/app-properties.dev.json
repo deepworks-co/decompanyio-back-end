@@ -1,16 +1,19 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.31.101:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.47.117:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
-        "TRACKING": "DOCUMENT-TRACKING",
-        "TRACKING_USER": "DOCUMENT-TRACKING-USER",
-        "VOTE": "DEV-CA-DOCUMENT-VOTE",
-        "DAILY_TOTALPAGEVIEW": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
+        "VOTE": "VOTE",
         "USER": "USER",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
-        "TOP_TAG": "TOP-TAG"
+        "TOP_TAG": "TOP-TAG",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
     },
     "applicationLogAppender": {
         "enable": true,

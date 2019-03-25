@@ -64,13 +64,88 @@ provider:
 #    - exclude-me-dir/**
 
 package:
-   individually: true
+  individually: true
 
 exclude:
   - .gitignore
   - .env
 
-functions:  
+functions: 
+
+  curatorDocumentList:
+    handler: controllers/curator/curatorDocumentList.handler
+    events:
+      - http:
+          path: /api/curator/document/list
+          method: post
+          cors: true      
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            
+  curatorTodayDocumentList:
+    handler: controllers/curator/curatorTodayDocumentList.handler
+    events:
+      - http:
+          path: /api/curator/document/today
+          method: post
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
+  zapierEmail:
+    handler: controllers/zapier/email.handler
+    events:
+      - http:  
+          path: /api/zapier/email
+          method: get
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
+  analyticsList:
+    handler: controllers/analytics/list.handler
+    events:
+      - http:
+          path: /api/analytics/list
+          method: get
+          cors: true
+          documentation:
+            summary: "analytics list"
+            description: analytics list
+            queryParams:
+              - name: userid
+                type: string
+                description: userid
+                required: true
+              - name: documentId
+                description: document id
+                type: string
+                required: true
+              - name: week
+                description: 4 week(1 month), 8 week (2month)
+                type: integer
+              - name: csv
+                description: csv(true or false ) default false
+                type: boolean
+   
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
+
   tagList:
     handler: controllers/tag/list.handler
     events:
@@ -118,15 +193,32 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  accountAuth:
+    handler: controllers/account/auth.handler
 
   accountGet:
-    handler: controllers/account/gethandler
+    handler: controllers/account/get.handler
     events:
       - http:
           path: /api/account/get
           method: get
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
 
   accountUpdate:
     handler: controllers/account/update.handler
@@ -136,9 +228,11 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
-
-  accountAuth:
-    handler: controllers/account/auth.handler
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
     
   accountSync:
     handler: controllers/account/sync.handler
@@ -148,6 +242,11 @@ functions:
           method: post
           cors: true
           authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
 
   oraclizeController:
     handler: controllers/oraclizeController/index.handler
@@ -155,36 +254,80 @@ functions:
       - http: get /api/oraclize/viewcount
 
   documentRegist:
-    handler: controllers/documentController.regist
+    handler: controllers/document/documentController.regist
     events:
       - http:
           path: api/document/regist
           method: post
           cors: true
+          authorizer: accountAuth
 
   documentList:
-    handler: controllers/documentController.list
+    handler: controllers/document/documentController.list
     events:
       - http:
           path: api/document/list
           method: post
           cors: true
+          integration: lambda
+          request:
+            application/json: '{ "httpMethod" : "$context.httpMethod" }'
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$.body')
 
-  curatorDocumentCuratingList:
-    handler: controllers/documentController.listCuratorDocument
+  documentInfo:
+    handler: controllers/document/documentController.info
     events:
       - http:
-          path: api/curator/document/list
-          method: post
+          path: api/document/info/{documentId}
+          method: get
           cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$.body')
 
-  ListTodayVotedDocumentByCurator:
-    handler: controllers/documentController.listTodayVotedDocumentByCurator
+  documentText:
+    handler: controllers/document/documentController.text
     events:
       - http:
-          path: api/curator/document/today
+          path: api/document/text/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+
+  documentVote:
+    handler: controllers/document/documentController.vote
+    events:
+      - http:
+          path: api/document/vote/{documentId}
           method: post
           cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
+            
+
+  documentDownload:
+    handler: controllers/document/documentController.downloadFile
+    events:
+      - http:
+          path: api/document/download/{accountId}/{documentId}
+          method: get
+          cors: true
+          request:
+            parameters:
+                paths:
+                  id: true
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -273,57 +416,6 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponse"
 
-              
-
-  documentInfo:
-    handler: controllers/documentController.info
-    events:
-      - http:
-          path: api/document/info/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-              paths:
-                id: true
-
-  documentText:
-    handler: controllers/documentController.text
-    events:
-      - http:
-          path: api/document/text/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-
-  documentVote:
-    handler: controllers/documentController.vote
-    events:
-      - http:
-          path: api/document/vote/{documentId}
-          method: post
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-            
-
-  documentDownload:
-    handler: controllers/documentController.downloadFile
-    events:
-      - http:
-          path: api/document/download/{accountId}/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
@@ -336,14 +428,26 @@ resources:
       Properties:
         RetentionInDays: "3"
         LogGroupName: LogGroup-${self:provider.stage}-${self:service}
-#    DocumentBucket:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: dev-ca-document
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
 
 custom:
   serverless-offline:

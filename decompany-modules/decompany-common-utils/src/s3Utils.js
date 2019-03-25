@@ -22,3 +22,35 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
 
     return url;
  }
+
+ exports.signedDownloadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => {
+
+    AWS.config.update({
+        region: regions?regions:"us-west-1"
+    });
+    
+    var s3 = new AWS.S3();
+    
+    const url = s3.getSignedUrl('getObject', {
+        Bucket: bucketname,
+        Key: key,
+        Expires: signedUrlExpireSeconds?signedUrlExpireSeconds:(60 * 5)
+    });
+
+    return url;
+ }
+
+ exports.putObject = (bucket, key, text, contentType, regions) =>{
+    AWS.config.update({
+        region: regions?regions:"us-west-1"
+    });
+    
+    var s3 = new AWS.S3();
+    
+    return s3.putObject({
+        Bucket: bucket,
+        Key: key,
+        ContentType: contentType,
+        Body: Buffer.from(text, 'binary')
+    }).promise();
+ }

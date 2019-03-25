@@ -29,6 +29,9 @@ sls create function -f onchainWritePageviewTotalCount --handler functions/onchai
 sls create function -f generateTopTag --handler functions/cron/generateTopTag.handler
 sls create function -f voteRequestWriteOnchain --handler functions/cron/requestWriteVote.handler
 sls create function -f readLatestVoteAmount --handler functions/onchain/readLatestVoteAmount.handler
+sls create function -f readLatestCreatorReward --handler functions/onchain/readLatestCreatorReward.handler
+sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
+sls create function -f voteCollector --handler functions/cron/voteCollector.handler
 
 # Test
 

@@ -1,5 +1,5 @@
 'use strict';
-const {utils} = require('decompany-common-utils');
+const {utils, s3} = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
   
   const data = JSON.parse(event.body);
@@ -8,7 +8,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("parameter is invalid");
   }
   const key = data.id + "/" + filename;
-  const signedUploadUrl = utils.s3.signedUploadUrl("us-west-1", "DC-ACCOUNT-PICTURE", key);
+  const signedUploadUrl = s3.signedUploadUrl("us-west-1", "DEV-PROFILE-PICTURE", key);
   const response = {
     statusCode:200,
     headers: {

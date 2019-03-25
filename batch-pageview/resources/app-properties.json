@@ -1,23 +1,26 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@54.183.186.198:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
-        "VOTE": "DEV-CA-DOCUMENT-VOTE",
-        "TRACKING": "DOCUMENT-TRACKING",
-        "TRACKING_USER": "DOCUMENT-TRACKING-USER",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "VOTE": "VOTE",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
         "USER": "USER",
-        "PAGEVIEW_DAILY": "PAGEVIEW_DAILY",
-        "PAGEVIEW": "PAGEVIEW",
-        "PAGEVIEW_TOTALCOUNT": "DEV-CA-CRONHIST-TOTALVIEWCOUNT",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "PAGEVIEW_LATEST": "PAGEVIEW-LATEST",
         "TOP_TAG": "TOP-TAG"
     },
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls":{
             "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN"
+            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
+            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
         }
     },
     "ethereum": {

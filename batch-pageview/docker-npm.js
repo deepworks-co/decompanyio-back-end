@@ -10,19 +10,22 @@ Usage:
   node docker-npm.js rebuild
 */
 const childProcess = require('child_process')
-
+const path = require('path');
 const nodejsImage = 'node:8.10'
 const innerWorkingDir = '/src'
+const parentDir = path.parse(process.cwd()).dir;
+const projectname = path.parse(process.cwd()).name;
+const commonmodulesname = 'decompany-modules';
 const dockerArgs = [
   'run', '-i',
-  '-v', `${process.cwd()}/batch-pageview:${innerWorkingDir}/function`,
-  '-v', `${process.cwd()}/decompany-modules:${innerWorkingDir}/decompany-modules`,
-  '-w', `${innerWorkingDir}/function`,
+  '-v', `${parentDir}/${projectname}:${innerWorkingDir}/${projectname}`,
+  '-v', `${parentDir}/${commonmodulesname}:${innerWorkingDir}/${commonmodulesname}`,
+  '-w', `${innerWorkingDir}/${projectname}`,
   nodejsImage, 'npm'
 ]
+
+console.log({parentDir, projectname, commonmodulesname});
 const npmArgs = process.argv.slice(2)
-console.log(npmArgs);
-console.log(dockerArgs.concat(npmArgs));
 
 const cp = childProcess.execFile(
   'docker',

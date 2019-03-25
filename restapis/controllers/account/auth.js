@@ -7,9 +7,10 @@ const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
 
 module.exports.handler = async (event, context, callback) => {
-  console.log("accountAuth", event.authorizationToken);
+  console.log("event", event);
+  console.log("authorizationToken", event.authorizationToken);
   if (!event.authorizationToken) {
-    return callback('Unauthorized');
+    return callback("Unauthorized");
   }
 
   const tokenParts = event.authorizationToken.split(' ');
@@ -17,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
 
   if (!(tokenParts[0].toLowerCase() === 'bearer' && tokenValue)) {
     // no auth token!
-    return callback('Unauthorized');
+    return callback("Unauthorized");
   }
   const options = {
     audience: AUTH0_CLIENT_ID,
@@ -26,20 +27,17 @@ module.exports.handler = async (event, context, callback) => {
   try {
     jwt.verify(tokenValue, AUTH0_CLIENT_PUBLIC_KEY, options, (verifyError, decoded) => {
       if (verifyError) {
-        console.log('verifyError', verifyError);
         // 401 Unauthorized
         console.log(`Token invalid. ${verifyError}`);
-        return callback('Unauthorized');
+        return callback("Unauthorized");
       }
       // is custom authorizer function
       console.log('valid from customAuthorizer', decoded);
- 
-
       return callback(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
     });
   } catch (err) {
-    console.log('catch error. Invalid token', err);
-    return callback('Unauthorized');
+    console.error('catch error. Invalid token', err);
+    return callback("Unauthorized");
   }
 };
 
@@ -59,6 +57,6 @@ const generatePolicy = (principalId, effect, resource) => {
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
   }
-  console.log(authResponse);
+  
   return authResponse;
 };
