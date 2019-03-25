@@ -434,7 +434,7 @@ functions:
 resources:
   Resources:
     ThumbnailS3:
-      Type: S3::Bucket
+      Type: AWS::S3::Bucket
       Properties:
         AccessControl: PublicRead
         BucketName: ${self:provider.stage}.thumbnail.decompany.io
