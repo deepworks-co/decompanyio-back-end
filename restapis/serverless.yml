@@ -437,9 +437,10 @@ resources:
       Type: S3::Bucket
       Properties:
         AccessControl: PublicRead
-        BucketName: ${self:provider.stage}-document-thumbnail
+        BucketName: ${self:provider.stage}.thumbnail.decompany.io
         WebsiteConfiguration:
-
+          ErrorDocument: index.html
+          IndexDocument: index.html
 
     RestApiLogGroup: #AccessLog Log Group
       Type: AWS::Logs::LogGroup 
