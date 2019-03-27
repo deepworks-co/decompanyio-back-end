@@ -72,7 +72,11 @@ exclude:
 
 functions: 
   documentMigration:
-    handler: migration/documentMigration.handler
+    handler: migration/documentMigration.handler 
+     events:
+      - http:
+          path: /api/migration/document
+          method: post
 
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
