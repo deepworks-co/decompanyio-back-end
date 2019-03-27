@@ -9,7 +9,6 @@ module.exports.handler = async (event, context, callback) => {
   const accountService = new AccountService();
   let user = null;
 
-
   user = await accountService.getUserInfo({
     id: principalId
   });

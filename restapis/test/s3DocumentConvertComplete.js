@@ -11,25 +11,36 @@ describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
+  it('implement tests here', () => {
 
-  const event = {
-    "Records": [
-      {
-        "s3": {
-          "bucket": {
-            "name": "dev-ca-document",
-          },
-          "object": {
-            "key": "THUMBNAIL/b2177c45fa0e4f0c95ccdc59ac03ea9d/result.txt"
+    const event = {
+      "Records": [
+        /*
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/e3aa558435ca4d568deba7474f36ad44/result.txt"
+            }
+          }
+        },*/
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/e3aa558435ca4d568deba7474f36ad44/300X300/1"
+            }
           }
         }
-      }
-    ]
-  }
+      ]
+    }
 
-  it('implement tests here', () => {
     return wrapped.run(event).then((response) => {
-      console.log("test result", response);
+      //console.log("test result", response);
       expect(response).to.not.be.empty;
     });
   });

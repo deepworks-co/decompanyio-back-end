@@ -35,21 +35,21 @@ module.exports = class AccountService {
 
 	}
 
-	async getUserInfo(user){
+	async getUserInfo(user, projection){
 		const mongo = new MongoWapper(connectionString);
 		try{
 			let query = {};
 			if(user.id){
 				query = {_id: user.id};
 			} else if(user.email) {
-				query = {emali: user.emaill};
+				query = {email: {"$eq": user.email}};
 			} else {
 				throw new Error("getUserInfo Not enough query parameters" + JSON.stringify(user));
 			}
-			
-			const result = await mongo.findOne(USER_TALBE, query);
+			console.log("query", query);
+			const result = await mongo.findOne(USER_TALBE, query, projection);
 
-			console.log(result, USER_TALBE, query);
+			console.log("get user", result);
 
 			return result;
 		} catch(e) {

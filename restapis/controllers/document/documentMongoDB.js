@@ -16,9 +16,11 @@ module.exports = {
   getDocumentById,
   getDocumentBySeoTitle,
   getUser,
+  updateUserEthAccount,
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
+  saveDocument,
   queryVotedDocumentByCurator,
   queryTotalViewCountByToday,
   getFeaturedDocuments,
@@ -80,6 +82,18 @@ async function getUser(userid) {
     wapper.close();
   }
 }
+
+async function updateUserEthAccount(userid, ethAccount) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    return await wapper.update(TB_USER, {_id: userid}, {$set:{ethAccount: ethAccount}});
+  } catch (e) {
+    throw e
+  } finally {
+    wapper.close();
+  }
+}
+
 /**
  * @param  {} args
  */
@@ -156,7 +170,7 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
@@ -346,6 +360,7 @@ async function getFriendlyUrl (seoTitle) {
   const wapper = new MongoWapper(connectionString);
   return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
 }
+
 /**
  * @param  {} item
  */
@@ -381,6 +396,41 @@ async function putDocument (item) {
   }
     
 }
+
+
+/**
+ * @param  {} item
+ */
+async function saveDocument (newDoc) {
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    const timestamp = Date.now();
+    const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
+
+    const mergedItem = Object.assign(oldDoc, newDoc);
+
+    console.log("olddocument", oldDoc, "newdocument", mergedItem);
+    
+    const result = await wapper.save(TB_DOCUMENT, mergedItem);
+
+    await wapper.insert(TB_SEO_FRIENDLY, {
+      _id: mergedItem.seoTitle,
+      type: "DOCUMENT",
+      id: mergedItem._id,
+      created: Number(timestamp)
+    });
+
+    return result;
+
+  } catch(err){
+    throw err;
+  } finally{
+    wapper.close();
+  }
+    
+}
+
 
 
 /**
@@ -700,7 +750,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
     }, {
       $group: {
         _id: {year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
-        totalCount: {$sum: "$count"}
+        totalCount: {$sum: "$pageview"}
       }
     }, {
       $sort:{_id:1}
@@ -714,6 +764,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
 
       }
     }]
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
@@ -736,7 +787,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
     }, {
       $group: {
         _id: {$isoWeek: "$statDate"},
-        totalCount: {$sum: "$count"},
+        totalCount: {$sum: "$pageview"},
         start: {$min: "$statDate"},
         end: {$max: "$statDate"},
       }
@@ -752,6 +803,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
 
       }
     }]
+    
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;

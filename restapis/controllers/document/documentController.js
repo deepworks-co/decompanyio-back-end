@@ -19,96 +19,91 @@ const defaultHeaders = {
 
 module.exports.regist = async (event, context, callback) => {
   console.log("event", JSON.stringify(event));
-  const {principalId} = event;
-  try{
-    const parameter = JSON.parse(event.body);
-    
-    console.log("parameter", parameter);
-    if(!parameter || !parameter.accountId || !parameter.title) {
-      throw new Error("parameter is invalid");
-    } 
+  const {principalId, body} = event;
 
-    const accountId = parameter.accountId;    
-    const documentName = parameter.filename;
-    const documentSize = parameter.size;
-    const tags = parameter.tags?parameter.tags:[];//document tags
-    const ethAccount = parameter.ethAccount?parameter.ethAccount:null;//ethereum user account
-    const title = parameter.title;
-    const desc = parameter.desc;
-    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-    
-    let seoTitle;
-    let documentId;
-    let document;
+     
+  if(!body || !body.title || !body.tags) {
+    throw new Error("parameter is invalid");
+  } 
 
-    const user = await documentService.getUser(accountId);
-    if(!user.email || !user.sub){
-      throw new Error("user is not exist : " + accountId);
+  if(!principalId){
+    throw new Error("authorized user is invalid!!")
+  }
+
+  const accountId = principalId;    
+  const documentName = body.filename;
+  const documentSize = body.size;
+  const tags = body.tags?body.tags:[];//document tags
+  const ethAccount = body.ethAccount?body.ethAccount:null;//ethereum user account
+  const title = body.title;
+  const desc = body.desc;
+  const useTracking = body.useTracking?body.useTracking:false
+  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  
+  
+  let seoTitle;
+  let documentId;
+  let document;
+
+  const user = await documentService.getUser(accountId);
+  if(!user){
+    throw new Error(`user(${accountId}) is not exists`);
+  }
+
+  if(user.ethAccount && user.ethAccount !== ethAccount){ //이미 유저의 소셜 계정과 맵핑된 ethereum account가 있지만 문서 등록시 전달 받은 정보가 상이 할 경우
+    throw new Error("It is not a registered ethereum account.");
+  } else if(!user.ethAccount && ethAccount) { //최초 등록된 ethereum account가 없고 전달받은 ethAccount가 있을경우...
+    documentService.updateUserEthAccount(accountId, ethAccount);
+  }
+
+  do {
+    documentId = uuidv4().replace(/-/gi, "");
+    document = await documentService.getDocumentById(documentId);
+  } while(document)
+  
+  let friendlyUrl;
+  do {
+    seoTitle = utils.toSeoFriendly(title);
+    friendlyUrl = await documentService.getFriendlyUrl(seoTitle);
+  } while(friendlyUrl)
+
+  if(!documentId || !seoTitle){
+    throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
+  } else {
+    console.log("The new Document ID", documentId);
+
+    const putItem = {
+      _id: documentId,
+      accountId: accountId,
+      documentId: documentId,
+      documentName: documentName,
+      documentSize: documentSize,
+      ethAccount: ethAccount,
+      title: title,
+      desc: desc,
+      tags: tags,
+      seoTitle: seoTitle,
+      useTracking: useTracking
     }
 
-    do {
-      documentId = uuidv4().replace(/-/gi, "");
-      document = await documentService.getDocumentById(documentId);
-    } while(document)
+    const result = await documentService.putDocument(putItem);
     
-    let friendlyUrl;
-    do {
-      seoTitle = utils.toSeoFriendly(title);
-      friendlyUrl = await documentService.getFriendlyUrl(seoTitle);
-    } while(friendlyUrl)
-
-    if(!documentId || !seoTitle){
-      throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
-    } else {
-      console.log("The new Document ID", documentId);
-
-      const putItem = {
-        _id: documentId,
-        accountId: accountId,
+    if(result){
+      console.log("PutItem succeeded:", result);
+      const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
+      const payload = {
+        success: true,
         documentId: documentId,
-        documentName: documentName,
-        documentSize: documentSize,
-        ethAccount: ethAccount,
-        title: title,
-        desc: desc,
-        tags: tags,
-        seoTitle: seoTitle
-      }
-
-      const result = await documentService.putDocument(putItem);
-      
-      if(result){
-        console.log("PutItem succeeded:", result);
-        const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
-        const payload = {
-          success: true,
-          documentId: documentId,
-          accountId: accountId,
-          message: "SUCCESS",
-          signedUrl: signedUrl
-        };
-        return (null, {
-          statusCode: 200,
-          headers: defaultHeaders,
-          body: JSON.stringify(payload)
-        });
-      } else {
-        throw new Error("PutItme Fail " + JSON.stringify(putItem));
-      }
-
+        accountId: accountId,
+        signedUrl: signedUrl
+      };
+      return callback(null, JSON.stringify(payload));
+    } else {
+      throw new Error("registration document fail");
     }
-  } catch (e){
-    console.error(e);
-
-    return (e, {
-      statusCode: 200,
-      headers: defaultHeaders,
-      body: JSON.stringify({
-        error:e.message
-      })
-    });
 
   }
+
 
 };
 
