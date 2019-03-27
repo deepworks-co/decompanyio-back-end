@@ -71,6 +71,8 @@ exclude:
   - .env
 
 functions: 
+  documentMigration:
+    handler: migration/documentMigration.handler
 
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
@@ -207,6 +209,33 @@ functions:
               500:
                 template: $input.path('$.errorMessage')
 
+  profileGet:
+    handler: controllers/profile/getProfile.handler
+    events:
+      - http:
+          path: /api/profile/get
+          method: get
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "get profile user"
+            description: "/api/profile/get by no auth"
+            queryParams:
+              - name: email
+                description: email
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
   accountAuth:
     handler: controllers/account/auth.handler
 
@@ -325,7 +354,7 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            
+
   documentVote:
     handler: controllers/document/documentController.vote
     events:
@@ -445,7 +474,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         AccessControl: PublicRead
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3.thumbnail}
+        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.thumbnail}
         WebsiteConfiguration:
           ErrorDocument: index.html
           IndexDocument: index.html

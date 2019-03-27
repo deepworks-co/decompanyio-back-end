@@ -2,7 +2,7 @@
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
     },
-    "s3":{
+    "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
         "profile": "dev-ca-profile.decompany.io"
@@ -19,6 +19,15 @@
         "TOP_TAG": "TOP-TAG",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
+    },
+    "sqsConfig": {
+        "region": "us-west-1",
+        "queueUrls":{
+            "CONVERT-IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
+            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
+            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
+        }
     },
     "applicationLogAppender": {
         "enable": false,

@@ -2,6 +2,25 @@
 
 Serverless Project
 
+## Serverless에서 지원하지 않는 기능은 따로 설정함
+
+1) Api gateway accesslog 설정
+2) S3 WebHosting을 위한 BucketPolicy 설정
+```javascripy
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::{bucket}/*"
+        }
+    ]
+}
+```
+
 # install serverless framework plugin
 
 npm install --save-dev serverless-mocha-plugin
@@ -70,6 +89,6 @@ sls create function -f zapierEmail --handler controllers/zapier/email.handler --
 
 sls create function -f curatorDocumentList --handler controllers/curator/curatorDocumentList.handler --httpEvent "post /api/curator/document/list"
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
-
-
+sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"
 sls create function -f documentUpdate --handler controllers/document/documentUpdate.handler --httpEvent "post /api/document/update"
+sls create function -f documentMigration --handler migration/documentMigration.handler
