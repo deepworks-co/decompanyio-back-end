@@ -21,25 +21,15 @@ Serverless Project
 }
 ```
 
-# install serverless framework plugin
-
-npm install --save-dev serverless-mocha-plugin
-npm install --save-dev serverless-offline
-npm install serverless-plugin-existing-s3
-npm install serverless-aws-documentation --save-dev
-
-# Install Ethereum lib Dependencies
-
-npm install web3
-npm install ethereumjs-tx
-
-# Install Local Dependencies
+## Install dependence
 
 npm install ../decompany-modules/decompany-common-utils/
-
-# https://github.com/mafintosh/mongojs
-
+npm install serverless-mocha-plugin
+npm install serverless-offline
+npm install serverless-plugin-existing-s3
+npm install serverless-aws-documentation
 npm install mongojs
+npm install sharp
 
 # Running Offline
 

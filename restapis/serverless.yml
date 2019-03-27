@@ -73,7 +73,7 @@ exclude:
 functions: 
   documentMigration:
     handler: migration/documentMigration.handler 
-     events:
+    events:
       - http:
           path: /api/migration/document
           method: post
@@ -352,6 +352,7 @@ functions:
       - http:
           path: /api/document/update
           method: post
+          cors: true
           authorizer: accountAuth
           integration: lambda
           response:
