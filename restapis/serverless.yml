@@ -148,7 +148,6 @@ functions:
               - name: csv
                 description: csv(true or false ) default false
                 type: boolean
-   
             methodResponses:
               -
                 statusCode: "200"
@@ -183,7 +182,6 @@ functions:
               - name: year
                 description: 12 month
                 type: integer
-                 
             methodResponses:
               -
                 statusCode: "200"
@@ -258,7 +256,7 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponse"
-                  
+
   accountEthereumSync:
     handler: controllers/account/accountEthereumSync.handler
     events:

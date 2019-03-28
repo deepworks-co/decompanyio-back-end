@@ -10,6 +10,11 @@ const TB_DOCUMENT = tables.DOCUMENT;
  * 
  */
 module.exports.handler = async (event, context, callback) => {
+
+  if("local" !== process.env.stage){
+    throw new Error("nonononononoonono");
+  }
+  
   
   const wapper = new MongoWapper(mongodb.endpoint);
   const resultList = await wapper.findAll(TB_DOCUMENT, {state: "CONVERT_COMPLETE"});
