@@ -70,14 +70,7 @@ exclude:
   - .gitignore
   - .env
 
-functions: 
-  documentMigration:
-    handler: migration/documentMigration.handler 
-    events:
-      - http:
-          path: /api/migration/document
-          method: post
-
+functions:
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -125,19 +118,16 @@ functions:
           path: /api/analytics/list
           method: get
           cors: true
+          authorizer: accountAuth
           integration: lambda
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "analytics list"
+            summary: "/api/analytics/list"
             description: "/api/analytics/list"
             queryParams:
-              - name: userid
-                type: string
-                description: userid
-                required: true
               - name: documentId
                 description: document id
                 type: string
@@ -145,10 +135,46 @@ functions:
               - name: week
                 description: 4 week(1 month), 8 week (2month)
                 type: integer
+              - name: month
+                description: 12 (1 year)
+                type: integer
               - name: csv
                 description: csv(true or false ) default false
                 type: boolean
-   
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
+  analyticsExport:
+    handler: controllers/analytics/export.handler
+    events:
+      - http:
+          method: get
+          path: /api/analytics/export
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/analytics/export"
+            description: "/api/analytics/export"
+            queryParams:
+              - name: documentId
+                description: document id
+                type: string
+                required: true
+              - name: week
+                description: 4 week(1 month), 8 week (2month)
+                type: integer
+              - name: year
+                description: 12 month
+                type: integer
             methodResponses:
               -
                 statusCode: "200"
@@ -165,8 +191,8 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: "top tag list"
-            description: "api /api/tags"
+            summary: "/api/tags"
+            description: "/api/tags"
             methodResponses:
               -
                 statusCode: "200"
@@ -212,6 +238,48 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/api/account/picture"
+            description: "/api/account/picture"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
+
+  accountEthereumSync:
+    handler: controllers/account/accountEthereumSync.handler
+    events:
+      - http: 
+          method: post
+          path: /api/account/ethereumSync
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/api/account/ethereumSync"
+            description: "/api/account/ethereumSync"
+            queryParams:
+              - name: ethAccount
+                description: ethereum account
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
 
   profileGet:
     handler: controllers/profile/getProfile.handler
@@ -226,7 +294,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "get profile user"
+            summary: "/api/profile/get by no auth"
             description: "/api/profile/get by no auth"
             queryParams:
               - name: email
@@ -256,7 +324,6 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-
 
   accountUpdate:
     handler: controllers/account/update.handler
@@ -335,17 +402,6 @@ functions:
               Cache-Control: "'max-age=120'"
             template: $input.path('$.body')
 
-  documentText:
-    handler: controllers/document/documentController.text
-    events:
-      - http:
-          path: api/document/text/{documentId}
-          method: get
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
   documentUpdate:
     handler: controllers/document/documentUpdate.handler
     events:
@@ -392,6 +448,12 @@ functions:
           path: /api/tracking/list
           method: get
           cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
           documentation:
             summary: "tracking list"
             description: "/api/tracking/list"
@@ -416,6 +478,12 @@ functions:
           path: /api/tracking/info
           method: get
           cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
           documentation:
             summary: "tracking detail"
             description: "/api/tracking/info"
@@ -471,6 +539,34 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponse"
+  trackingExport:
+    handler: controllers/tracking/trackingExport.handler
+    events:
+      - http: 
+          method: get
+          path: /api/tracking/export
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/tracking/export"
+            description: "/api/tracking/export"
+            queryParams:
+              - name: documentId
+                description: document id
+                type: string
+                required: true   
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
 
 # you can add CloudFormation resource templates here
 resources:
@@ -483,7 +579,14 @@ resources:
         WebsiteConfiguration:
           ErrorDocument: index.html
           IndexDocument: index.html
-
+    ProfileS3:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.profile}
+        WebsiteConfiguration:
+          ErrorDocument: index.html
+          IndexDocument: index.html
     RestApiLogGroup: #AccessLog Log Group
       Type: AWS::Logs::LogGroup 
       Properties:

@@ -97,4 +97,16 @@ module.exports = class AccountService {
 			mongo.close();
 		}
 	}
+
+
+	async updateUserEthAccount(userid, ethAccount) {
+		const wapper = new MongoWapper(connectionString);
+		try{
+			return await wapper.update(TB_USER, {_id: userid}, {$set:{ethAccount: ethAccount}});
+		} catch (e) {
+			throw e
+		} finally {
+			wapper.close();
+		}
+	}
 }
