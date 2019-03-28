@@ -50,11 +50,7 @@ module.exports.regist = async (event, context, callback) => {
     throw new Error(`user(${accountId}) is not exists`);
   }
 
-  if(user.ethAccount && user.ethAccount !== ethAccount){ //이미 유저의 소셜 계정과 맵핑된 ethereum account가 있지만 문서 등록시 전달 받은 정보가 상이 할 경우
-    throw new Error("It is not a registered ethereum account.");
-  } else if(!user.ethAccount && ethAccount) { //최초 등록된 ethereum account가 없고 전달받은 ethAccount가 있을경우...
-    documentService.updateUserEthAccount(accountId, ethAccount);
-  }
+
 
   do {
     documentId = uuidv4().replace(/-/gi, "");
