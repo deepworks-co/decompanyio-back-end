@@ -2,35 +2,31 @@
 const documentService = require('../document/documentMongoDB');
 
 module.exports.handler = async (event, context, callback) => {
+  const {principalId, query} = event;
 
-  const body = event.queryStringParameters?event.queryStringParameters:{};
-  //console.log("parameter", body);
-  if(!body.documentId || !body.cid){
+  if(!query || !query.documentId || !query.cid){
     throw new Error("parameter is invalid");
+  }  
+  const {documentId, cid} = query;
+    
+  const doc = await documentService.getDocumentById(documentId);
+  if(!doc){
+    throw new Error("document is invalid! " + documentId);
+  }
+  if(principalId !== doc.accountId){
+    throw new Error("Unauthorized");
   }
 
-  try{
-    const documentId = body.documentId;
-    const cid = body.cid;
-    const resultList = await documentService.getTrackingInfo(documentId, cid);
-    //console.log("query result", resultList);
-    //const r = resultList[0]?resultList[0].resultList:resultList;
+  const resultList = await documentService.getTrackingInfo(documentId, cid);
+  //console.log("query result", resultList);
+  //const r = resultList[0]?resultList[0].resultList:resultList;
 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: true,
-        resultList: resultList
-      })
-    };
+  const response = JSON.stringify({
+    success: true,
+    resultList: resultList
+  });
 
-    return (null, response);
-  } catch(e){
-    return (e, e.message);
-  }
+  return (null, response);
+
   
 };

@@ -31,7 +31,8 @@ module.exports = {
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
-  getAnalyticsListByUserId
+  getAnalyticsListMonthly,
+  getDocumentIdsByUserId
 }
 
  /**
@@ -749,17 +750,18 @@ async function getAnalyticsListDaily(documentIds, start, end) {
       }
     }, {
       $group: {
-        _id: {year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
+        _id: {documentId: "$documentId", year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
         totalCount: {$sum: "$pageview"}
       }
     }, {
-      $sort:{_id:1}
+      $sort:{_id:1 }
     },{ 
       $project: {
         "_id": 0,
         year: "$_id.year",
         month: "$_id.month",
         dayOfMonth: "$_id.dayOfMonth",
+        documentId: "$_id.documentId",
         count: "$totalCount"
 
       }
@@ -773,6 +775,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
   }
 }
 /**
+ * getAnalyticsListWeekly
  * @param  {} documentIds
  * @param  {} start
  * @param  {} end
@@ -786,7 +789,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
       }
     }, {
       $group: {
-        _id: {$isoWeek: "$statDate"},
+        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$statDate"}},
         totalCount: {$sum: "$pageview"},
         start: {$min: "$statDate"},
         end: {$max: "$statDate"},
@@ -796,7 +799,8 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
     },{ 
       $project: {
         "_id": 0,
-        week: "$_id",
+        week: "$_id.isoWeek",
+        documentId: "$_id.documentId",
         count: "$totalCount",
         start: 1,
         end:1
@@ -812,21 +816,53 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
   }
 }
 
+/**
+ * getAnalyticsListMonthly
+ * @param  {} documentIds
+ * @param  {} start
+ * @param  {} end
+ */
+async function getAnalyticsListMonthly(documentIds, start, end) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const queryPipeline = [{
+      $match: {
+        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+      }
+    }, {
+      $group: {
+        _id: {documentId: "$documentId", year: "$_id.year", month: "$_id.month"},
+        totalCount: {$sum: "$pageview"}
+      }
+    }, {
+      $sort:{_id:1 }
+    },{ 
+      $project: {
+        "_id": 0,
+        year: "$_id.year",
+        month: "$_id.month",
+        documentId: "$_id.documentId",
+        count: "$totalCount"
 
-async function getAnalyticsListByUserId(userid, start, end, isWeekly) {
+      }
+    }]
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
+    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+
+async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-
     const doclist = await wapper.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
-    
-    const documentIds = doclist.map((doc)=>{return doc.documentId});
-    //console.log(documentIds);
-    if(isWeekly){
-      return await getAnalyticsListWeekly(documentIds, start, end);
-    } else {
-      return await getAnalyticsListDaily(documentIds, start, end);
-    }
+    return doclist.map((doc)=>{return doc.documentId});
+   
     
   } catch(err){
     throw err;

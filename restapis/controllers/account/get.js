@@ -3,8 +3,7 @@ const AccountService = require('./AccountService');
 
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event));
-  const {principalId, body} = event;
-  const {query} = event;
+  const {principalId, query} = event;
 
   const accountService = new AccountService();
   let user = null;

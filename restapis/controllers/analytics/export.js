@@ -2,7 +2,7 @@
 const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
-
+const crypto = require('crypto');
 
 module.exports.handler = async (event, context, callback) => {
 
@@ -56,12 +56,36 @@ module.exports.handler = async (event, context, callback) => {
     }
   } else {
     resultList = await documentService.getAnalyticsListMonthly(documentIds, startDate, endDate);
-  }   
+  }  
+ 
+  let csvDownloadUrl;
+
+  const downloadName = documentId?documentId:"analytics" + "_" + Date.now();
+  const csvString = await json2csv(resultList);
+  const csvKey = "temp/csv/analytics/" + downloadName + ".csv";
+  const bucket = "dev-ca-document";
+  const region = "us-west-1";
+  const expried = new Date(now + 1000 * 60); //1min
+  const r = await s3.putObjectAndExpries(bucket, csvKey, csvString, "text/csv", region, expried);
+  console.log(r);
+  csvDownloadUrl = await s3.signedDownloadUrl(region, bucket, csvKey, 60);
 
   const response = JSON.stringify({
     success: true,
-    resultList: resultList?resultList:[]
+    csvDownloadUrl: csvDownloadUrl
   });
 
   return (null, response);
 };
+
+
+async function json2csv(jsonList){
+  return new Promise((resolve, reject)=>{
+    
+    converter.json2csv(jsonList, (err, csv)=>{    
+      if(err) reject(err);
+      else resolve(csv);
+    });
+
+  });
+}
