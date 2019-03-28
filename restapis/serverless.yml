@@ -190,7 +190,6 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponse"
 
-
   tagList:
     handler: controllers/tag/list.handler
     events:
@@ -277,7 +276,7 @@ functions:
             summary: "/api/account/ethereumSync"
             description: "/api/account/ethereumSync"
             queryParams:
-              - name: account
+              - name: ethAccount
                 description: ethereum account
                 type: string
                 required: true

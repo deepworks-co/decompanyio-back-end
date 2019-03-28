@@ -16,7 +16,6 @@ module.exports = {
   getDocumentById,
   getDocumentBySeoTitle,
   getUser,
-  updateUserEthAccount,
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
@@ -84,16 +83,7 @@ async function getUser(userid) {
   }
 }
 
-async function updateUserEthAccount(userid, ethAccount) {
-  const wapper = new MongoWapper(connectionString);
-  try{
-    return await wapper.update(TB_USER, {_id: userid}, {$set:{ethAccount: ethAccount}});
-  } catch (e) {
-    throw e
-  } finally {
-    wapper.close();
-  }
-}
+
 
 /**
  * @param  {} args
