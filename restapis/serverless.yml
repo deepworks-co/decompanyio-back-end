@@ -338,6 +338,26 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
+          documentation:
+            summary: "/api/profile/get by no auth"
+            description: "/api/profile/get by no auth"
+            queryParams:
+              - name: nickname
+                description: nickname
+                type: string
+              - name: username
+                description: username
+                type: string
+              - name: picture
+                description: picture path
+                type: string
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
     
   accountSync:
     handler: controllers/account/sync.handler
