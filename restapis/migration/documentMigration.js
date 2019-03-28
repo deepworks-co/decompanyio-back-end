@@ -46,9 +46,9 @@ function sendMessageConvertDoc(doc){
     "ext": exts,
     "owner": doc.accountId
   });
-  console.info("sendMessageConvertDoc", messageBody);
-  const queueUrl = sqsConfig.queueUrls.CONVERT_IMAGE;
   
-  //return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
+  const queueUrl = sqsConfig.queueUrls.CONVERT_IMAGE;
+  console.info(queueUrl, messageBody);
+  return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }
 

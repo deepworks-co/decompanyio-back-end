@@ -32,7 +32,6 @@ const cp = childProcess.execFile(
   dockerArgs.concat(npmArgs),
   {},
   (err, stdout, stderr) => {}
-  
 )
 
 cp.stderr.on('data', (data) => console.error(data))

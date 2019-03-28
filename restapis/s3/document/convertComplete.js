@@ -40,12 +40,12 @@ async function run(event){
       return runConvertComplete(bucket, key, documentId);
     } else if("text.json" == filename) {
         //아무것도 안함
-    } else {
+    } else if("1200X1200" === filename){
       //프리뷰이미지 metadata content-type : image/png
-      const type = keys[0];
-      const documentId = keys[1];
-      const size = keys[2];
-      const imagename = keys[3];
+      const type = keys[0]; //THUMBNAIL
+      const documentId = keys[1]; // ${documentId}
+      const sizeType = keys[2]; //1200X1200, 300X300
+      const imagename = keys[3];  // 1, 2, 3
       const sizes = [1024, 640, 320];
       const promises = sizes.map((size)=>{
         const toProfix = documentId + "/" + size + "/" + imagename;
