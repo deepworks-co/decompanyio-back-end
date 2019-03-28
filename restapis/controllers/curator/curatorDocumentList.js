@@ -16,12 +16,12 @@ module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event));
   const {body} = event;
   const pageNo = (isNaN(body.pageNo) || body.pageNo<1)?1:Number(body.pageNo);
-  const accountId = body.accountId;
+  const ethAccount = body.ethAccount;
   const tag = body.tag;
 
   const promise1 = documentService.queryVotedDocumentByCurator({
     pageNo: pageNo,
-    applicant: accountId,
+    applicant: ethAccount,
     tag: tag
   })
 
