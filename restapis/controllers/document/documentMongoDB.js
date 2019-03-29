@@ -274,7 +274,7 @@ async function queryDocumentListByFeatured (params) {
   let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
-
+  skip = isNaN(skip)?0:Number(skip);
   const wapper = new MongoWapper(connectionString);
 
   try{
@@ -559,26 +559,17 @@ async function putVote (item) {
  */
 async function getFeaturedDocuments (args) {
 
-  let params = null;
-  let pageNo = 1;
-  if(args && args.q){
-      params = args.q;
-  } else {
-    params = {
-      state: "CONVERT_COMPLETE",
-      "documentId": {$ne : args.documentId }
-    }
+  const {documentId, tags} = args;
+  const params = {
+    pageNo: 1,
+    pageSize: 10,
+    tag: tags
   }
+  const resultList = await queryDocumentListByFeatured(params); 
 
-  let wapper = new MongoWapper(connectionString);
-  try{
-    return await wapper.find(TB_DOCUMENT, params, 1, 10);
-  } catch (err){
-    throw err;
-  } finally {
-    wapper.close();
-  }
-  
+  return resultList.filter((doc)=>{
+    return doc.documentId !== documentId;
+  });
 }
 /**
  * @param  {} body
