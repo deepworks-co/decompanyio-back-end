@@ -117,18 +117,23 @@ module.exports.list = async (event, context, callback) => {
   const pageSize = isNaN(params.pageSize)?10:Number(params.pageSize);
   let accountId = params.accountId?decodeURI(params.accountId):null;
   const email = params.email?decodeURI(params.email):null;
+  const username = params.username?decodeURI(params.username):null;
   const tag = params.tag;
   const path = params.path;
   const skip = ((pageNo - 1) * pageSize);
   const date = utils.getBlockchainTimestamp(new Date());//today
   const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
 
-  if(email){
+  if(!accountId && email){
     const user = await documentService.getUser({email:email});
-    console.log(user);
+    console.log("by email", user);
+    accountId = user._id;
+  } else if(!accountId && username) {
+    const user = await documentService.getUser({username:username});
+    console.log("by username", user);
     accountId = user._id;
   }
-  
+
   const resultList = await documentService.queryDocumentList({
     pageNo: pageNo,
     accountId: accountId,
