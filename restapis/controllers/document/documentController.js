@@ -38,6 +38,7 @@ module.exports.regist = async (event, context, callback) => {
   const title = body.title;
   const desc = body.desc;
   const useTracking = body.useTracking?body.useTracking:false
+  const forceTracking = body.forceTracking?body.forceTracking:false
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
   
   
@@ -79,7 +80,8 @@ module.exports.regist = async (event, context, callback) => {
       desc: desc,
       tags: tags,
       seoTitle: seoTitle,
-      useTracking: useTracking
+      useTracking: useTracking,
+      forceTracking: forceTracking
     }
 
     const result = await documentService.putDocument(putItem);
@@ -105,62 +107,44 @@ module.exports.regist = async (event, context, callback) => {
 
 
 module.exports.list = async (event, context, callback) => {
-  console.log("event", event);
+  console.log("event", JSON.stringify(event));
 
-  try{
-    let params = event.body;
-    if(typeof(event.body)==='string'){
-      params = body?JSON.parse(body):{};
-    } 
-    
-    const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
-    const pageSize = isNaN(params.pageSize)?10:Number(params.pageSize);
-    const accountId = params.accountId;
-    const tag = params.tag;
-    const path = params.path;
-    const skip = ((pageNo - 1) * pageSize);
-    const date = utils.getBlockchainTimestamp(new Date());//today
-    const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
-    
-    const resultList = await documentService.queryDocumentList({
-      pageNo: pageNo,
-      accountId: accountId,
-      tag: tag,
-      path: path,
-      pageSize: pageSize,
-      skip: skip
-    });
-    
-    return (null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: true,
-        resultList: resultList,
-        pageNo: pageNo,
-        count: resultList.length,
-        totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
-      }),
-    });
+  const params = event.method === "POST"?event.body:event.query;
 
-  } catch(e) {
-    console.error("Error queryDocumentList.", e);
-    return (e, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        error: e.message
-      })
-    });
+  console.log("parameters", params);
+  
+  const pageNo = isNaN(params.pageNo)?1:Number(params.pageNo);
+  const pageSize = isNaN(params.pageSize)?10:Number(params.pageSize);
+  let accountId = params.accountId?decodeURI(params.accountId):null;
+  const email = params.email?decodeURI(params.email):null;
+  const tag = params.tag;
+  const path = params.path;
+  const skip = ((pageNo - 1) * pageSize);
+  const date = utils.getBlockchainTimestamp(new Date());//today
+  const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
+
+  if(email){
+    const user = await documentService.getUser({email:email});
+    console.log(user);
+    accountId = user._id;
   }
   
+  const resultList = await documentService.queryDocumentList({
+    pageNo: pageNo,
+    accountId: accountId,
+    tag: tag,
+    path: path,
+    pageSize: pageSize,
+    skip: skip
+  });
+  
+  return (null, JSON.stringify({
+    success: true,
+    resultList: resultList,
+    pageNo: pageNo,
+    count: resultList.length,
+    totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
+  }));
 
 
 };
@@ -169,80 +153,57 @@ module.exports.list = async (event, context, callback) => {
 module.exports.info = async (event, context, callback) => {
 
   console.log("event : ", event.path);
-  //console.log("context : ", context);
-  let documentId = event.path.documentId;
+  try{
+    //console.log("context : ", context);
+    let documentId = event.path.documentId;
 
-  if(!documentId){
-    throw new Error("parameter is invaild!!");
-  }
+    if(!documentId){
+      throw new Error("parameter is invaild!!");
+    }
 
-  let document = null;
+    let document = null;
 
-  if(!document){
-    document = await documentService.getDocumentBySeoTitle(documentId);  
-  }
+    if(!document){
+      document = await documentService.getDocumentBySeoTitle(documentId);
+      console.log("get document by seo title", document);
+    }
+    
+    if(!document){
+      document = await documentService.getDocumentById(documentId);
+      console.log("get document by id", document);
+    }  
+
+    if(!document){
+      throw new Error("document is not exist!");
+    }
   
-  if(!document){
-    document = await documentService.getDocumentById(documentId);  
-  }  
+    const author = await documentService.getUser(document.accountId);
+    console.log("author", author);
+    
+    let textList = await s3.getDocumentTextById(document._id);
 
-  if(!document){
-    throw new Error("document is not exist!");
-  }
-  console.log("document : ", document);
-  
-  let textList = await s3.getDocumentTextById(document._id);
-
-  //console.log(textList);
-  
-  const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+    //console.log(textList);
+    
+    const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
 
 
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify(
-      {
+    const response = JSON.stringify({
         success: document? true:false,
         message: document? "SUCCESS":"Document is not exist",
         document: document,
         text: textList,
-        featuredList: featuredList
+        featuredList: featuredList,
+        author:author
       }
-    )
-  };
+    );
 
-  return (null, response);
+    return (null, response);
+  } catch(e) {
+    console.error(e);
+    throw e
+  }
+  
 }
-
-module.exports.text = async (event, context, callback) => {
-
-  //console.log(event);
-  const documentId = event.pathParameters.documentId;
-
-  if(!documentId) return;
-
-  let text = await s3.getDocumentTextById(documentId);
-
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify(
-      {
-        success: true,
-        text: text
-      }
-    )
-  };
-
-  return (null, response);
-};
 
 module.exports.vote = (event, context, callback) => {
 

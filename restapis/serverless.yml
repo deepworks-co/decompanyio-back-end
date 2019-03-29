@@ -406,7 +406,19 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
-            template: $input.path('$.body')
+            template: $input.path('$')
+      - http:
+          path: api/document/list
+          method: get
+          cors: true
+          integration: lambda
+          request:
+            application/json: '{ "httpMethod" : "$context.httpMethod" }'
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$')
 
   documentInfo:
     handler: controllers/document/documentController.info
@@ -420,7 +432,7 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
-            template: $input.path('$.body')
+            template: $input.path('$')
 
   documentUpdate:
     handler: controllers/document/documentUpdate.handler

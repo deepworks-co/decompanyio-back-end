@@ -57,16 +57,6 @@ async function getDocumentText(documentId, pageNo){
 
 async function getDocumentTextById(documentId){
   let resultText;
-  try{
-    const textBuffer = await s3.getObject({
-      Bucket: bucketName,
-      Key: 'THUMBNAIL/' + documentId + '/document.txt'
-    }).promise();
-    resultText = textBuffer.Body.toString("utf-8").substring(0, 3000);
-   
-  } catch(e){
-    console.error(e);
-  }
   
   if(!resultText){
     const textBuffer = await s3.getObject({
@@ -75,7 +65,6 @@ async function getDocumentTextById(documentId){
     }).promise();
     resultText = JSON.parse(textBuffer.Body.toString("utf-8"));
   }
-  console.log(resultText[0]);
   return resultText;
 }
 

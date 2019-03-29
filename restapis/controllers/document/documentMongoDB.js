@@ -58,10 +58,10 @@ module.exports = {
   let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
   try{
     if(!document){
-      document = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
-      console.log(TB_SEO_FRIENDLY, document);
-      if(document) {
-        document = await getDocumentById(document.id);
+      const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
+      console.log(TB_SEO_FRIENDLY, seoFriendly);
+      if(seoFriendly) {
+        document = await getDocumentById(seoFriendly.id);
       }
     }
     return document;
@@ -72,16 +72,23 @@ module.exports = {
   }      
 }
 
-async function getUser(userid) {
+async function getUser(params) {
   const wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.findOne(TB_USER, {_id: userid});
+    if(typeof params === 'string') {
+      return await wapper.findOne(TB_USER, {_id: params});
+    } else {
+      return await wapper.findOne(TB_USER, params);
+    }
+    
   } catch (e) {
     throw e
   } finally {
     wapper.close();
   }
 }
+
+
 
 
 
@@ -173,7 +180,7 @@ async function queryDocumentListByLatest (params) {
     }]);
 
 
-    console.log("pipeline", pipeline);
+    //console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT, pipeline);
    
   } catch(err) {
