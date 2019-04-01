@@ -12,7 +12,7 @@ module.exports.handler = async (event, context, callback) => {
   const response = JSON.stringify({
     success: true,
     signedUploadUrl: signedUploadUrl,
-    pitcure: key
+    picture: key
   })
   return callback(null, response);
 
