@@ -49,7 +49,7 @@ module.exports.handler = async (event, context, callback) => {
   let resultList;
   if(isWeekly){
 
-    if(w>0){
+    if(w>4){
       resultList = await documentService.getAnalyticsListWeekly(documentIds, startDate, endDate);
     } else {
       resultList = await documentService.getAnalyticsListDaily(documentIds, startDate, endDate);
