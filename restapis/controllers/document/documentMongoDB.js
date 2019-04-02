@@ -101,10 +101,10 @@ async function queryDocumentList (params) {
 
   pageSize = isNaN(pageSize)?20:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
-
-  if(path && path.lastIndexOf("popular")>0){
+  console.log("path", path, path.lastIndexOf("featured"));
+  if(path && path.lastIndexOf("popular")>-1){
     return await queryDocumentListByPopular(params);
-  } else if(path && path.lastIndexOf("featured")>0){
+  } else if(path && path.lastIndexOf("featured")>-1){
     return await queryDocumentListByFeatured(params);
   } else {
     return await queryDocumentListByLatest(params);
