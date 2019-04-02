@@ -89,7 +89,7 @@ functions:
     handler: functions/cron/hourlyReadVote.handler
     timeout: 300
     events:
-      - schedule: rate(5 minites) # hourly
+      - schedule: rate(5 minutes) # hourly
 
   generateTopTag:
     handler: functions/cron/generateTopTag.handler
