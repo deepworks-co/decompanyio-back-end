@@ -37,7 +37,7 @@ module.exports.handler = async (event, context, callback) => {
     //console.log("put sqs", item);
     const blockchainTimestamp = Date.UTC(item.year, item.month-1, item.dayOfMonth);
     promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
-    promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
+    //promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
   })
 
   const sqsResult = await Promise.all(promises);
