@@ -130,7 +130,11 @@ db["DEV-CA-CRONHIST-TOTALVIEWCOUNT"].find().forEach( function (x) {
 });
 
 
+### Field 삭제하기
+
+```javascript
 db.DOCUMENT.update({}, {$unset: {confirmViewCountHist: 1}} , {multi: true});
+```
 
 ### popular document list query
 
@@ -204,8 +208,8 @@ db["DOCUMENT"].aggregate([
 
 
 
+### Featured list
 ```javascript
-
     
 db["DOCUMENT-FEATURED"].aggregate(
     [{
@@ -293,6 +297,7 @@ db["TRACKING"].aggregate(
 ```
 
 
+applicant의 VOTE문서 가져오기
 ```javascript
 db.VOTE.aggregate([{
         $match: {
@@ -325,8 +330,72 @@ db.VOTE.aggregate([{
         $match: {
             "documentInfo": {"$exists":true,"$ne":null}
         }
-    }], {
-        explain: true
-    }
+    }]
 ).pretty()
+```
+
+최근 30일간의 문서별 Vote정보 가져오기
+```javascript
+db.VOTE.aggregate([{
+        $match: {
+            "created": {$gt: 0}
+        }
+    }, {
+        $group: {
+            "_id": "$documentId",
+            "latestVoteAmount":{$sum:"$deposit"},
+            "documentId": {$first:"$documentId"},
+            "latestVoteAmountUpdated": {$max:"$created"}
+        }
+    },
+    {
+        $lookup: {
+            from: "DOCUMENT",
+            localField: "documentId",
+            foreignField:"documentId",
+            as: "documentInfo"
+        }
+    }, {
+        $unwind: {
+            path:"$documentInfo",
+            preserveNullAndEmptyArrays: true
+        }
+    }, {
+        $match: {
+            "documentInfo": {"$exists":true,"$ne":null}
+        }
+    }, {
+        $addFields: {
+            tags: "$documentInfo.tags",
+            desc: "$documentInfo.desc",
+            seoTitle: "$documentInfo.seoTitle",
+            title: "$documentInfo.title",
+            accountId: "$documentInfo.accountId",
+            created: "$documentInfo.created",
+        }
+    }]
+).pretty()
+```
+
+```javascript
+db["STAT-PAGEVIEW-DAILY"].aggregate(
+    [
+        {
+            "$match": {
+                "$and":[
+                    {"documentId":{"$in":["6e1e0b4e86824eba81e9350a0fd1ff82"]}},{"statDate":{"$gte":"2019-03-04T00:00:00.000Z"}},{"statDate":{"$lt":"2019-03-25T06:27:35.801Z"}}]
+            }
+        },
+        {
+            "$group":{"_id":{"year":"$_id.year","month":"$_id.month","dayOfMonth":"$_id.dayOfMonth"},"totalCount":{"$sum":"$pageview"}}
+        },
+        {
+            "$sort":{"_id":1}
+        },
+        {
+            "$project": {"_id":0,"year":"$_id.year","month":"$_id.month","dayOfMonth":"$_id.dayOfMonth","count":"$totalCount"}
+        }
+    ]
+)
+
 ```

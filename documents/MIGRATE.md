@@ -16,12 +16,12 @@ db["DEV-CA-DOCUMENT-VOTE"].update({}, {$unset: {documentInfo: ""}}, {multi: true
 #login admin
 use admin
 db.createUser({
-  user: "root",
-  pwd: "1234",
+  user: "admin",
+  pwd: "infra1122!",
   roles: [ { role: "root", db: "admin" } ]
 })
 
-db.auth("root", "1234")
+db.auth("admin", "infra1122!")
 
 #create database and create user
 use decompany
