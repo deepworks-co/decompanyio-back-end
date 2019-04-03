@@ -32,7 +32,7 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/e3aa558435ca4d568deba7474f36ad44/300X300/1"
+              "key": "THUMBNAIL/0ff00d5d17474b8fae6089c2aaa7abab/1200X1200/1"
             }
           }
         }
@@ -43,5 +43,5 @@ describe('s3DocumentConvertComplete', () => {
       //console.log("test result", response);
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(300000);
 });
