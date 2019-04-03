@@ -167,13 +167,13 @@ async function convertJpeg(from, to, size){
     fit: sharp.fit.inside,
     withoutEnlargement: true
   })
-  .webp({
+  .jpeg({
     quality: 80
   })
   .toBuffer();
 
 
-  return await putS3Object(toBucket, toPrefix, output, "image/webp");
+  return await putS3Object(toBucket, toPrefix, output, "image/jpeg");
 }
 
 
