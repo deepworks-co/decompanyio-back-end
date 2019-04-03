@@ -12,7 +12,7 @@ module.exports.handler = async (event, context, callback) => {
   if(email){
     params.email = email;
   } else if(username) {
-    params.username = username;
+    params.username = decodeURI(username);
   } else {
     throw new Error("parameter is invalid!!")
   }
