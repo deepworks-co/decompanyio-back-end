@@ -70,3 +70,16 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
         Body: Buffer.from(text, 'binary')
     }).promise();
  }
+
+ exports.getObject = (bucket, key, region) =>{
+    AWS.config.update({
+        region: region?region:"us-west-1"
+    });
+    
+    const s3 = new AWS.S3();
+    
+    return s3.getObject({
+        Bucket: bucket,
+        Key: key
+    }).promise();
+ }
