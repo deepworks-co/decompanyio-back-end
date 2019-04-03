@@ -20,7 +20,10 @@ module.exports.handler = async (event, context, callback) => {
   const user = await accountService.getUserInfo(params, {email: 1, name: 1, username:1, picture: 1, nickname: 1, family_name:1 });
   
   if(!user){
-    throw new Error("user is not exists... " + JSON.stringify(query));
+    return JSON.stringify({
+      success: true,
+      message: "user is not exists... " + JSON.stringify(query)
+    });
   }
   
   return JSON.stringify({
