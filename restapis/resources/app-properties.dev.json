@@ -24,9 +24,7 @@
         "region": "us-west-1",
         "queueUrls":{
             "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
-            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
-            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT"
         }
     },
     "applicationLogAppender": {

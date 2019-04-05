@@ -1,11 +1,11 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.47.117:27017/alpha-decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.33.37:27017/decompany"
     },
     "s3Config":{
-        "document": "alpha-ca-document.decompany.io",
-        "thumbnail": "alpha-ca-thumbnail.decompany.io",
-        "profile": "alpha-ca-profile.decompany.io"
+        "document": "alpha-ca-document",
+        "thumbnail": "alpha-ca-thumbnail",
+        "profile": "alpha-ca-profile"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
@@ -23,10 +23,8 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls": {
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
-            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
-            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
+            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image",
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-sc-pageview"
         }
     },
     "applicationLogAppender": {
