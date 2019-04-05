@@ -179,7 +179,11 @@ module.exports.info = async (event, context, callback) => {
     }  
 
     if(!document){
-      throw new Error("document is not exist!");
+      //throw new Error("document is not exists!");
+      return JSON.stringify({
+        success: true,
+        message: "document is not exists!",
+      });
     }
   
     const author = await documentService.getUser(document.accountId);
@@ -191,10 +195,8 @@ module.exports.info = async (event, context, callback) => {
     
     const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
 
-
     const response = JSON.stringify({
-        success: document? true:false,
-        message: document? "SUCCESS":"Document is not exist",
+        success: true,
         document: document,
         text: textList,
         featuredList: featuredList,
