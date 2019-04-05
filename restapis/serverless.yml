@@ -206,7 +206,7 @@ functions:
     handler: s3/document/uploadComplete.handler
     events:
       - existingS3: 
-        bucket: dev-ca-document
+        bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
         events:
           - s3:ObjectCreated:Put
         rules:
@@ -216,7 +216,7 @@ functions:
     handler: s3/document/convertComplete.handler
     events:
       - existingS3: 
-        bucket: dev-ca-document
+        bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
         events: 
           - s3:ObjectCreated:Put
         rules:
@@ -603,6 +603,10 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
+    DocumentS3:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
     ThumbnailS3:
       Type: AWS::S3::Bucket
       Properties:
