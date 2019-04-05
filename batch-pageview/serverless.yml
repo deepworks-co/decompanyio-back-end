@@ -95,7 +95,7 @@ functions:
     handler: functions/cron/generateTopTag.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     events:
-      - schedule: rate(1 hour) # 10min, hourly
+      - schedule: rate(5 minutes) # 10min, hourly
 
   voteCollector:
     handler: functions/cron/voteCollector.handler
