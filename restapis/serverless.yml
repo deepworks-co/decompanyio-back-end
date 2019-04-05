@@ -69,6 +69,8 @@ package:
 exclude:
   - .gitignore
   - .env
+  - package.json
+  - install.sh
 
 functions:
   curatorDocumentList:
