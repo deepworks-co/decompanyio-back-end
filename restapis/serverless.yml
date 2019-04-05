@@ -206,20 +206,18 @@ functions:
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
     events:
-      - existingS3: 
+      - s3: 
         bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
-        events:
-          - s3:ObjectCreated:Put
+        event: s3:ObjectCreated:Put
         rules:
           - prefix: FILE/
 
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
     events:
-      - existingS3: 
+      - s3: 
         bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
-        events: 
-          - s3:ObjectCreated:Put
+        event: s3:ObjectCreated:Put
         rules:
           - prefix: THUMBNAIL/
 
@@ -604,31 +602,6 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    DocumentS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
-    ThumbnailS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        AccessControl: PublicRead
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.thumbnail}
-        WebsiteConfiguration:
-          ErrorDocument: index.html
-          IndexDocument: index.html
-    ProfileS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        AccessControl: PublicRead
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.profile}
-        WebsiteConfiguration:
-          ErrorDocument: index.html
-          IndexDocument: index.html
-    RestApiLogGroup: #AccessLog Log Group
-      Type: AWS::Logs::LogGroup 
-      Properties:
-        RetentionInDays: "3"
-        LogGroupName: LogGroup-${self:provider.stage}-${self:service}
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
