@@ -604,6 +604,10 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
+    DocumentS3:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
     ThumbnailS3:
       Type: AWS::S3::Bucket
       Properties:
