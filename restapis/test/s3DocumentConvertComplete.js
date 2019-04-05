@@ -32,14 +32,28 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/0ff00d5d17474b8fae6089c2aaa7abab/1200X1200/1"
+              "key": "THUMBNAIL/c656e50750784cc8a0f62ebe62d19623/1200X1200/1"
             }
           }
-        }
+        },
+        
       ]
     }
-
-    return wrapped.run(event).then((response) => {
+    const Records = [];
+    for(let i=0;i<34;i++){
+      Records.push({
+        "s3": {
+          "bucket": {
+            "name": "dev-ca-document",
+          },
+          "object": {
+            "key": "THUMBNAIL/21d3dd761bf948f7b4876d568f6e27c2/1200X1200/" + (i+1)
+          }
+        }
+      });
+    }
+    
+    return wrapped.run({Records}).then((response) => {
       //console.log("test result", response);
       expect(response).to.not.be.empty;
     });

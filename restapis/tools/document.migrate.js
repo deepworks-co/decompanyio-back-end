@@ -1,7 +1,12 @@
 'use strict';
+var AWS = require('aws-sdk');
+
 var mongojs = require('mongojs')
 var fs = require('fs');
 var util = require('util');
+
+const s3 = new AWS.S3();
+
 const {utils, sqs} = require('decompany-common-utils');
 const connectionString = "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
 const TB_DOCUMENT = "DOCUMENT";
@@ -12,22 +17,37 @@ db.on('error', function (err) {
 })
 
 db.on('connect', function () {
-    console.log('database connected');
-    
+    console.log('database connected'); 
 });
+const npmArgs = process.argv.slice(2);
+exec(npmArgs);
 
-exec();
-
-async function exec(){
+async function exec(args){
     try{
+        
         const docs = await getList();
-        console.log(utils, sqs);
-        console.log(docs.length);
-        const promises = docs.map((doc)=>{
-            return sendMessageConvertDoc(doc);
+        
+        console.log("totlal search count : ", docs.length);
+        const promises = await docs.map((doc, index)=>{
+            return isPrefixExists(doc);               
+            
         })
+        const resultList = await Promise.all(promises);
+        const nonExistsKey = resultList.filter((item)=>{
+            return item.exists === false
+        }).map(item=>{
+            if('migration' === args[0]){
+                return sendMessageConvertDoc(item.doc);
+            } else {
+                return makeSQSMessageBody(item.doc);
+            }            
+        });
+        
+        
+        const result = await Promise.all(nonExistsKey);
+        console.log("migration result", result);
+        console.log("migration result", result.length);
 
-        console.log(await Promise.all(promises));
     } catch(e){
         console.log(e);
     } finally{
@@ -38,12 +58,32 @@ async function exec(){
 
 async function getList(){
     return new Promise((resolve, reject)=>{
-        db.collection(TB_DOCUMENT).find({state: "CONVERT_COMPLETE"}).sort({created: -1}).limit(1000).skip(407, function (err, docs){
+        db.collection(TB_DOCUMENT).find({state: "CONVERT_COMPLETE"}).sort({created: -1}).toArray(function (err, docs){
             if(err) reject(err);
             else resolve(docs);
         })
     })
     
+}
+
+async function isPrefixExists(doc){
+    
+    return new Promise((resolve, reject)=>{
+        var params = {
+            Bucket: "dev-ca-thumbnail.decompany.io",
+            Key: doc._id + "/1024/1"
+           };
+        
+        s3.headObject(params, function(err, data){
+            if(err) resolve({doc: doc, exists:false});
+            else {
+                //console.log(data);
+                resolve({doc: doc, exists:true});
+            }
+        })
+    })
+   
+
 }
 
 async function sendMessageConvertDoc(doc){
@@ -67,4 +107,19 @@ async function sendMessageConvertDoc(doc){
     const queueUrl = "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE"
     console.info(queueUrl, messageBody);
     return await sqs.sendMessage("us-west-1", queueUrl, messageBody);
+  }
+
+  function makeSQSMessageBody(doc){
+    const exts = doc.documentName.substring(doc.documentName.lastIndexOf(".") + 1);
+      return JSON.stringify({
+        command: "image",
+        filePath: "dev-ca-document/FILE/" + doc.accountId + "/" + doc._id +"."+ exts,
+        storagePath: "dev-ca-document/THUMBNAIL/" + doc._id,
+        "resolutionX":1200,
+        "resolutionY":1200,
+        "startPage":1,
+        "endPage":10,
+        "ext": exts,
+        "owner": doc.accountId
+      });
   }
