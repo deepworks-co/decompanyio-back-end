@@ -65,12 +65,11 @@ provider:
 
 package:
   individually: true
-
-exclude:
-  - .gitignore
-  - .env
-  - package.json
-  - install.sh
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
 
 functions:
   curatorDocumentList:
