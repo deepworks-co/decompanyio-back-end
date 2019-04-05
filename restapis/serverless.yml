@@ -207,21 +207,21 @@ functions:
     handler: s3/document/uploadComplete.handler
     events:
       - existingS3: 
-        bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
-        events:
-          - s3:ObjectCreated:Put
-        rules:
-          - prefix: FILE/
+          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          events:
+            - s3:ObjectCreated:Put
+          rules:
+            - prefix: FILE/
 
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
     events:
       - existingS3: 
-        bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
-        events: 
-          - s3:ObjectCreated:Put
-        rules:
-          - prefix: THUMBNAIL/
+          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          events: 
+            - s3:ObjectCreated:Put
+          rules:
+            - prefix: THUMBNAIL/
 
   accountPicture:
     handler: controllers/account/picture.handler
