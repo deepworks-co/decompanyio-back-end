@@ -5,9 +5,11 @@ const {utils} = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
 
   const {principalId, body} = event;
-  const {documentId, desc, title, tags, useTracking} = body;
+  const {documentId, desc, title, tags, useTracking, forceTracking} = body;
 
-  if(!documentId && !desc && !title && !tags && !useTracking){
+  console.log(body);
+
+  if(!documentId && !desc && !title && !tags && !useTracking && !forceTracking){
     throw new Error("parameter is invalid!!");
   }
 
@@ -41,9 +43,14 @@ module.exports.handler = async (event, context, callback) => {
     document.tags = tags;
   }
 
-  if(useTracking){
+  if(useTracking !== 'undefined'){
     document.useTracking = useTracking;
   }
+
+  if(forceTracking !== 'undefined'){
+    document.forceTracking = forceTracking;
+  }
+
   document.updated = Date.now();
   const result = await documentService.saveDocument(document);
   console.log("save document", result);

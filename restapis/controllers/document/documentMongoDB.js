@@ -405,10 +405,10 @@ async function saveDocument (newDoc) {
   try{
     const timestamp = Date.now();
     const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
-
-    const mergedItem = Object.assign(oldDoc, newDoc);
-
-    console.log("olddocument", oldDoc, "newdocument", mergedItem);
+    console.log("old document", oldDoc);
+    console.log("new document", newDoc);
+    const mergedItem = Object.assign(oldDoc, newDoc);    
+    console.log("merged document", mergedItem);
     
     const result = await wapper.save(TB_DOCUMENT, mergedItem);
 
