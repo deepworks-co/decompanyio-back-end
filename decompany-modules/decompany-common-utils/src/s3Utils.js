@@ -78,8 +78,13 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     
     const s3 = new AWS.S3();
     
-    return s3.getObject({
-        Bucket: bucket,
-        Key: key
-    }).promise();
+    return new Promise((resolve, reject) => {
+        s3.getObject({
+            Bucket: bucket,
+            Key: key
+        }, (err, data)=>{
+            if(err) reject(err);
+            else resolve(data);
+        })
+    });
  }

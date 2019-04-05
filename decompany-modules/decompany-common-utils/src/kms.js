@@ -1,9 +1,10 @@
 const AWS = require("aws-sdk");
-const kms = new AWS.KMS();
-exports.decrypt = (cipherText) => {
+
+exports.decrypt = (region, cipherText) => {
+    const kms = new AWS.KMS({region: region});
     return new Promise((resolve, reject) => {
         const params = {
-            CiphertextBlob: ""
+            CiphertextBlob: cipherText
         }
 
         kms.decrypt(params, function(err, data) {
