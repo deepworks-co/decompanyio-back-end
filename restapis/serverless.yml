@@ -604,22 +604,7 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-
-    ThumbnailS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.thumbnail}
-
-    ProfileS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.profile}
-
-    RestApiLogGroup: #AccessLog Log Group
-      Type: AWS::Logs::LogGroup 
-      Properties:
-        RetentionInDays: "3"
-        LogGroupName: LogGroup-${self:provider.stage}-${self:service}
+  
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
