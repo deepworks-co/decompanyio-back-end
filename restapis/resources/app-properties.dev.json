@@ -2,6 +2,7 @@
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@172.31.47.117:27017/decompany"
     },
+    "region": "us-west-1",
     "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
