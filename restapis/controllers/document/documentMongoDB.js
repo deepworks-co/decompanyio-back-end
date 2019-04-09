@@ -439,6 +439,8 @@ async function queryVotedDocumentByCurator(args) {
   const pageNo = args.pageNo;
   const applicant = args.applicant;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
+  const pageSize = args.pageSize?args.pageSize: 20
+  const skip = ((pageNo - 1) * pageSize);
 
   const queryPipeline = [{
     $match: {
@@ -475,6 +477,10 @@ async function queryVotedDocumentByCurator(args) {
     "$match": {
       "documentInfo": { "$exists": true, "$ne": null }
     }
+  }, {
+    $skip: skip
+  }, {
+    $limit: pageSize
   }]
   
   const wapper = new MongoWapper(connectionString);
@@ -748,6 +754,7 @@ async function getTopTag() {
  * @param  {} end
  */
 async function getAnalyticsListDaily(documentIds, start, end) {
+  console.log("getAnalyticsListDaily", documentIds, start, end);
   const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
@@ -787,6 +794,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
  * @param  {} end
  */
 async function getAnalyticsListWeekly(documentIds, start, end) {
+  console.log("getAnalyticsListWeekly", documentIds, start, end);
   const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
@@ -829,6 +837,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
  * @param  {} end
  */
 async function getAnalyticsListMonthly(documentIds, start, end) {
+  console.log("getAnalyticsListMonthly", documentIds, start, end);
   const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{

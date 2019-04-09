@@ -77,14 +77,34 @@ functions:
     events:
       - http:
           path: /api/curator/document/list
-          method: post
+          method: get
           cors: true      
           integration: lambda
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            
+          documentation:
+            summary: "/api/curator/document/list"
+            description: "/api/curator/document/list"
+            queryParams:
+              - name: ethAccount
+                description: ethAccount
+                type: string
+                required: true
+              - name: pageNo
+                description: pageNo (default 1)
+                type: integer
+              - name: pageSize
+                description: pageSize (default 20)
+                type: integer
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
   curatorTodayDocumentList:
     handler: controllers/curator/curatorTodayDocumentList.handler
     events:
