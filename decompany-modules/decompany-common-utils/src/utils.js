@@ -41,3 +41,7 @@ exports.toSeoFriendly = (str) => {
   const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
   return friendlyUrl(str).concat("-", id);
 }
+
+exports.isLocal = () => {
+  return process.env.stage === 'local'
+}
