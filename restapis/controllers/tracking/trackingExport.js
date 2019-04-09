@@ -2,7 +2,7 @@
 const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
-const { s3Config } = require('../../resources/config.js').APP_PROPERTIES();
+const { s3Config, region } = require('../../resources/config.js').APP_PROPERTIES();
 
 module.exports.handler = async (event, context, callback) => {
 
@@ -28,7 +28,6 @@ module.exports.handler = async (event, context, callback) => {
   const csvString = await json2csv(resultList);
   const csvKey = "temp/csv/tracking/" + downloadName + ".csv";
   const bucket = s3Config.document;
-  const region = "us-west-1";
   const expried = new Date(timestamp + 1000 * 60); //1min
   const r = await s3.putObjectAndExpries(bucket, csvKey, csvString, "text/csv", region, expried);
 

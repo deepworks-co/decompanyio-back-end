@@ -657,6 +657,13 @@ async function getTrackingList(documentId) {
     $sort: {
       viewTimestamp: -1
     }
+  }, {
+    $project: {
+      cid: 1,
+      count: 1,
+      viewTimestamp: 1,
+      sidList: 1
+    }
   }]
 
 const wapper = new MongoWapper(connectionString);
