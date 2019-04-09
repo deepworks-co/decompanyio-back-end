@@ -518,7 +518,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "tracking detail"
+            summary: "/api/tracking/info"
             description: "/api/tracking/info"
             queryParams:
               - name: documentid
@@ -529,6 +529,9 @@ functions:
                 description: client id
                 type: string
                 required: true
+              - name: include
+                description: include 1 page only (true or false), default false
+                type: boolean
             methodResponses:
               -
                 statusCode: "200"

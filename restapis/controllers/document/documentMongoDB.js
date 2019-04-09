@@ -674,7 +674,7 @@ const wapper = new MongoWapper(connectionString);
  * @param  {} cid
  * @param  {} sid
  */
-async function getTrackingInfo(documentId, cid, sid) {
+async function getTrackingInfo(documentId, cid, sid, include) {
   if(!documentId || !cid ){
     throw new Error("document id or cid is invalid");
   }
@@ -693,11 +693,22 @@ async function getTrackingInfo(documentId, cid, sid) {
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
       viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+      viewTrackingCount: {$sum: 1}
     }
-  },
-  {
+  }, {
     $sort: {"viewTimestamp": -1}
   }]
+
+  if(!include){
+    console.log("excluding 1 page view");
+    queryPipeline.push({
+      $match: {
+        viewTrackingCount: {$gt: 2}
+      }
+    })
+  } else {
+    console.log("include 1 page view");
+  }
 
   const wapper = new MongoWapper(connectionString);
   try{
