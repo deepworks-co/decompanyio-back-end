@@ -20,6 +20,10 @@ module.exports.handler = async (event, context, callback) => {
   const tag = query.tag;
   const pageSize = query.pageSize?query.pageSize:20;
 
+  if(!ethAccount){
+    throw new Error(`parameter is invalid!! ${JSON.stringify(query)}`);
+  }
+
   const promise1 = documentService.queryVotedDocumentByCurator({
     pageNo: pageNo,
     pageSize: pageSize,
