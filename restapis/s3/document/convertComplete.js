@@ -200,6 +200,9 @@ function putS3Object(bucket, key, body, contentType){
       Body: body, 
       Bucket: bucket, 
       Key: key, 
+      Metadata: {
+        "Cache-Control": "max-age=31536000" 
+      },
       ContentType: contentType
      }, function(err, data) {
        if (err) {
