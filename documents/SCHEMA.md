@@ -71,6 +71,8 @@ db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
 ```javascript
 db.createCollection("TRACKING-USER");
 db["TRACKING-USER"].createIndex({id: 1})
+db["TRACKING-USER"].createIndex({cid: 1})
+db["TRACKING-USER"].createIndex({e: 1})
 db["TRACKING-USER"].createIndex({id: 1, cid: 1})
 ```
 
