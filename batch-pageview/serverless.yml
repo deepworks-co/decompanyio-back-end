@@ -48,6 +48,8 @@ provider:
     - .env
 
 functions:
+  pageviewCollector:
+    handler: functions/cron/pageviewCollector.handler
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
     timeout: 300 # optional, in seconds, default is 6, 5min

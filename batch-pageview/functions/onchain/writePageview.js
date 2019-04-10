@@ -38,10 +38,7 @@ module.exports.handler = async (event, context, callback) => {
     console.log("Document was exists in on-chain!", documentId);
   }
 
-  console.log("Transaction Request Start", documentIdByte32, documentId);
-
-  /*const transactionResult = await contractWapper.sendTransaction(gasPrice, gasLimit, nonce, 
-    contractWapper.confirmPageViewContract(documentIdByte32, date, confirmPageview).encodeABI());*/
+  console.log("Transaction Request Start", {documentIdByte32, documentId, confirmPageview, date});
 
   const transactionResult = await contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
  

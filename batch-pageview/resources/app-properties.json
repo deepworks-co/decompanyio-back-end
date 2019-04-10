@@ -14,7 +14,8 @@
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
         "PAGEVIEW_LATEST": "PAGEVIEW-LATEST",
-        "TOP_TAG": "TOP-TAG"
+        "TOP_TAG": "TOP-TAG",
+        "WRITEPAGEVIEW": "WRITEPAGEVIEW"
     },
     "sqsConfig": {
         "region": "us-west-1",
