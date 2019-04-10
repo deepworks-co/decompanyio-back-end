@@ -9,21 +9,18 @@ const { s3, kms } = require('decompany-common-utils');
 module.exports = class ContractWapper {
 
   constructor() {
-    
-    
+    const providerUrl = ethereum.providerUrl;
+    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
+    this.myAddress = ethereum.account;
+    const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
+    this.contractABI = contract.abi;
   }
 
 
   async init(){
     console.log("init");
-    const providerUrl = ethereum.providerUrl;
-    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
-    this.myAddress = ethereum.account;
-
-    const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
-    this.contractABI = contract.abi;
     //contract abi is the array that you can get from the ethereum wallet or etherscan
+    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
     this.contractAddress = contract.networks[ethereum.index].address;
     this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
       from: this.myAddress
