@@ -5,9 +5,9 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('hourlyReadVote', '/functions/cron/hourlyReadVote.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('generateFeatured', '/functions/cron/generateFeatured.js', 'handler');
 
-describe('hourlyReadVote', () => {
+describe('generateFeatured', () => {
   before((done) => {
     done();
   });

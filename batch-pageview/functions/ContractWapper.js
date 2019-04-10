@@ -2,30 +2,52 @@
 const fs = require('fs');
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx');
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
-const { ethereum } = require('../resources/config.js').APP_PROPERTIES();
+
+const { region, ethereum } = require('../resources/config.js').APP_PROPERTIES();
+const { s3, kms } = require('decompany-common-utils');
 
 module.exports = class ContractWapper {
 
   constructor() {
-    const contract= JSON.parse(fs.readFileSync(jsonFile));  
-    const providerUrl = ethereum.providerUrl;
-    const account = ethereum.account;
-    const privateKey = ethereum.privateKey;
     
-    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-    this.contractABI = contract.abi;
+    
+  }
 
-    this.myAddress = account;
-    this.privateKey = Buffer.from(privateKey, 'hex');
+
+  async init(){
+    console.log("init");
+    const providerUrl = ethereum.providerUrl;
+    this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
+    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
+    this.myAddress = ethereum.account;
+
+    const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
+    this.contractABI = contract.abi;
     //contract abi is the array that you can get from the ethereum wallet or etherscan
     this.contractAddress = contract.networks[ethereum.index].address;
-    //creating contract object
     this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
       from: this.myAddress
     });
-        
-    this.confirmPageViewContract = this.DocumentReg.methods.confirmPageView;
+  }
+
+  async getPrivateKey(privateKey){
+    
+    if(typeof(privateKey)==="object"){
+      const {bucket, key} = privateKey;
+      const cipherText = await s3.getObject(bucket, key, region);
+      const decrypt = await kms.decrypt(region, cipherText.Body);
+      //const privateKeyBase64 = decrypt.Plaintext.toString("utf-8");
+      return Buffer.from(decrypt.Plaintext, 'hex');
+    } else if(typeof(privateKey) === "string"){
+      return Buffer.from(privateKey, 'hex');
+    } else {
+      console.error("privateKey is not object or string", privateKey);
+      throw new Error("privateKey is not object or string");
+    }
+
+    
+
+    
   }
  
   updateSignature(logging){
@@ -70,22 +92,58 @@ module.exports = class ContractWapper {
     });
 
   }
+  
   /**
-   * @param  {} docId
+   * @description write pageview on-chain for demo day
+   * @param  {} documentId
    * @param  {} date
-   * @param  {} registYesterdayViewCount
-   * @return {} Promise<number> The gas amount estimated.
+   * @param  {} confirmPageview
    */
-  getConfirmPageViewEstimateGas(docId, date, registYesterdayViewCount) {
-    return this.DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).estimateGas({
+  async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
+    const documentIdByte32 = this.asciiToHex(documentId);
+    const values = await this.getPrepareTransaction();
+
+    const recentlyBlockNumber = values.blockNumber;
+    const nonce = values.nonce;
+    const gasPrice = values.gasPrice;
+
+    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
       from: this.myAddress
     });
+
+    const gasLimit = Math.round(estimateGas);
+
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
   }
 
+  /**
+   * @description write pageview on-chain for alpha
+   * @param  {} documentId
+   * @param  {} date
+   * @param  {} confirmPageview
+   */
+  async sendTransactionUpdatePageview(documentId, date, confirmPageview) {
+    const documentIdByte32 = this.asciiToHex(documentId);
+    const values = await this.getPrepareTransaction();
 
-  sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
-    
+    const recentlyBlockNumber = values.blockNumber;
+    const nonce = values.nonce;
+    const gasPrice = values.gasPrice;
+
+    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
+      from: this.myAddress
+    });
+
+    const gasLimit = Math.round(estimateGas);
+
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
+  }
+
+  async sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
+
     return new Promise((resolve, reject) => {
+      
+
       //creating raw tranaction
       const rawTransaction = {
           "from": this.myAddress,
@@ -122,7 +180,8 @@ module.exports = class ContractWapper {
   }
 
 
-  isExistsDocument(documentId) {
+  async isExistsDocument(documentId) {
+    
     return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 

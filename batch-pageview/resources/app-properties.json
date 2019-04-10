@@ -1,4 +1,5 @@
 {
+    "region": "us-west-1",
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
     },
@@ -18,17 +19,15 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls":{
-            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
-            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT"
         }
     },
     "ethereum": {
+        "abi": ["./contracts-rinkeby/DocumentReg.json"],
         "network": "rinkeby", 
         "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
         "account": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
         "privateKey": "E8760C95C5B615D791DFC1FAB3C4B736217845D5E818CA2472BD2D8E34C8CAB6",
         "index": "4"
     }
-
 }

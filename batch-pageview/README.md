@@ -1,22 +1,14 @@
 # APIs
 
-## install serverless framework plugin
+## install dependence
 
 npm install --save-dev serverless-mocha-plugin
-
-## Intall Dependences
-
+npm install ../decompany-modules/decompany-common-utils/
 npm install mongojs
 npm install aws-sdk
-
-## Install Ethereum lib Dependencies
-
 npm install web3
 npm install ethereumjs-tx
 
-## Install Local Dependencies
-
-npm install ../decompany-modules/decompany-common-utils/
 
 
 
