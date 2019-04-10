@@ -24,7 +24,6 @@ module.exports = {
   queryTotalViewCountByToday,
   getFeaturedDocuments,
   putTrackingInfo,
-  putTrackingUser,
   getTrackingInfo,
   getTrackingList,
   getTopTag,
@@ -584,13 +583,20 @@ async function putTrackingInfo (body) {
   let wapper = new MongoWapper(connectionString);
   try{
 
-    if(body.cid && body.e){
+    if(body.cid && body.e && utils.validateEmail(body.e)){
+
       const r = await wapper.save(TB_TRACKING_USER, {
-        _id: body.cid,
+        _id: {
+          cid: body.cid,
+          e: body.e
+        },
+        cid: body.cid,
         e: body.e,
+        id: body.id,
+        sid: body.sid,
         created: Date.now()
       });
-      console.log("tracking target user", r);
+      console.log("tracking target user save", r);
     }
     
     return await wapper.save(TB_TRACKING, body);
@@ -602,26 +608,6 @@ async function putTrackingInfo (body) {
   
 }
 
-
-/**
- * @param  {} body
- * @property cid
- * @property sid
- * @property e
- * @property created
- */
-async function putTrackingUser (body) {
-  let wapper = new MongoWapper(connectionString);
-
-  try{
-    return await wapper.save(TB_TRACKING_USER, body);
-  } catch(err) {
-    throw err;
-  } finally{
-    wapper.close();
-  }
-
-}
 /**
  * 
  * @param  {} documentId
@@ -644,7 +630,7 @@ async function getTrackingList(documentId) {
       sid: {$first: "$sid"},
       viewTimestamp: {$min: "$t"}
     }
-  },{
+  }, {
     $group: {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
@@ -656,7 +642,7 @@ async function getTrackingList(documentId) {
     $lookup: {
       from: TB_TRACKING_USER,
       localField: "cid",
-      foreignField: "_id",
+      foreignField: "cid",
       as: "user"
     }
   }, {
@@ -668,7 +654,8 @@ async function getTrackingList(documentId) {
       cid: 1,
       count: 1,
       viewTimestamp: 1,
-      sidList: 1
+      sidList: 1,
+      userKey: 1
     }
   }]
 
