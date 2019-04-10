@@ -260,57 +260,29 @@ module.exports.vote = (event, context, callback) => {
 }
 
 module.exports.downloadFile = async (event, context, callback) => {
-  try{
-    //console.log(event);
-    const documentId = event.pathParameters.documentId;
-    const accountId = event.pathParameters.accountId;
 
-    if(!documentId || !accountId) {
-      callback(null, {
-          statusCode: 500,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-          },
-          body: JSON.stringify({
-            message: "parameter is invaild"
-          }),
-        });
+  const {query} = event;
+  const {documentId} = query;
 
-      return;
-    }
-  
-    const document = await documentService.getDocumentById(documentId);
-    console.log("GetItem", document);
-    const documentName = document.documentName;
-    const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-    const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
-    callback(null, {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          success: true,
-          downloadUrl: signedUrl,
-          document: document
-        }),
-    });
-
-  } catch(e) {
-    console.error(e);
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        success: false,
-        error: e
-      }),
-    });
+  if(!documentId ) {
+    throw new Error("parameter is invalid!!!");
   }
+
+  const document = await documentService.getDocumentById(documentId);
+  console.log("document", document);
+
+  if(!document){
+    throw new Error("document is not exists!!!");
+  }
+
+  const documentName = document.documentName;
+  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
+  
+  return JSON.stringify({
+    success: true,
+    downloadUrl: signedUrl,
+    document: document
+  });
 
 }

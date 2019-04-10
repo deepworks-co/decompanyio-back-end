@@ -486,13 +486,29 @@ functions:
     handler: controllers/document/documentController.downloadFile
     events:
       - http:
-          path: api/document/download/{accountId}/{documentId}
+          path: /api/document/download
           method: get
           cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/document/download"
+            description: "/api/document/download"
+            queryParams:
+              - name: documentid
+                description: document id
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -508,14 +524,13 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "tracking list"
+            summary: "/api/tracking/list"
             description: "/api/tracking/list"
             queryParams:
               - name: documentid
                 description: document id
                 type: string
                 required: true
-              
             methodResponses:
               -
                 statusCode: "200"
