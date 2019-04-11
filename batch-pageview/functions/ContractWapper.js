@@ -242,12 +242,13 @@ module.exports = class ContractWapper {
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
       address: this.contractAddress,
-      topics: [ signature/*"0x0c75c6a0cc6b6403ea7acee71d8aa1556e09a34e8560c6f9ab5b6152bfcd8ef1"*/, null, null]
+      topics: [ signature, null, null]
     });
     const promises = await pastLogs.map(async (log, index)=>{
       const block = await this.getBlock(log.blockNumber);
       //console.log("pastLogs", index, log);
       //return await this.getVoteTransactionReceipt(transaction, block)
+      //console.log(selectedAbi.inputs);
       const decoded = await this.getDecodedLog(log, selectedAbi.inputs);
 
       return {
@@ -305,7 +306,7 @@ module.exports = class ContractWapper {
   }
 
   async getDecodedLog(log, inputs){
-  
+    console.log(log, inputs);
     const decoded = this.web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(1));
     
     return decoded;
