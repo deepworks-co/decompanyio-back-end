@@ -584,10 +584,11 @@ async function putTrackingInfo (body) {
   try{
 
     if(body.cid && body.e && utils.validateEmail(body.e)){
-
-      const r = await wapper.save(TB_TRACKING_USER, {
+      const item = {
         _id: {
+          id: body.id,
           cid: body.cid,
+          sid: body.sid,
           e: body.e
         },
         cid: body.cid,
@@ -595,7 +596,8 @@ async function putTrackingInfo (body) {
         id: body.id,
         sid: body.sid,
         created: Date.now()
-      });
+      }
+      const r = await wapper.save(TB_TRACKING_USER, item);
       console.log("tracking target user save", r);
     }
     
@@ -643,11 +645,15 @@ async function getTrackingList(documentId) {
       from: TB_TRACKING_USER,
       localField: "cid",
       foreignField: "cid",
-      as: "user"
+      as: "userAs"
     }
   }, {
     $sort: {
       viewTimestamp: -1
+    }
+  }, {
+    $addFields: {
+      user: {$arrayElemAt: [ "$userAs", 0 ]}
     }
   }, {
     $project: {
@@ -655,13 +661,13 @@ async function getTrackingList(documentId) {
       count: 1,
       viewTimestamp: 1,
       sidList: 1,
-      userKey: 1
+      user: 1
     }
   }]
 
 const wapper = new MongoWapper(connectionString);
   try{
-    //console.log(queryPipeline);
+    console.log(JSON.stringify(queryPipeline));
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
   }catch(err){
     throw err;
