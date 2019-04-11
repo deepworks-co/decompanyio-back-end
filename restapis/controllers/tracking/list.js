@@ -4,19 +4,13 @@ const documentService = require('../document/documentMongoDB');
 module.exports.handler = async (event, context, callback) => {
 
   const {principalId, query} = event;
+  const {documentId, anonymous, include} = query;
+  console.log("query", query);
 
-  console.log("principalId", principalId);
-
-  if(!principalId){
-    throw new Error("Unauthorized");
-  }
-  
-  if(!query.documentId){
+  if(!documentId){
     throw new Error("parameter is invalid");
   }
-
-  const documentId = query.documentId;
-  const resultList = await documentService.getTrackingList(documentId);
+  const resultList = await documentService.getTrackingList(documentId, anonymous?JSON.parse(anonymous):false, include?JSON.parse(include):false);
   const response = JSON.stringify({
     success: true,
     resultList: resultList

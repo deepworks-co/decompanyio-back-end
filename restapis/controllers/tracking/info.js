@@ -9,14 +9,6 @@ module.exports.handler = async (event, context, callback) => {
   }  
   console.log("query", query);
   let {documentId, cid, include} = query;
- 
-  if(include){
-    include = JSON.parse(include);
-  } else {
-    include = false;
-  }
-  
-  console.log("parameter", {documentId, cid, include})
 
   const doc = await documentService.getDocumentById(documentId);
   
@@ -28,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("Unauthorized");
   }
 
-  const resultList = await documentService.getTrackingInfo(documentId, cid, null, include);
+  const resultList = await documentService.getTrackingInfo(documentId, cid, null, include?JSON.parse(include):false);
   //console.log("query result", resultList);
   //const r = resultList[0]?resultList[0].resultList:resultList;
 

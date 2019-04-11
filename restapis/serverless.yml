@@ -531,6 +531,12 @@ functions:
                 description: document id
                 type: string
                 required: true
+              - name: anonymous
+                description: include anonymous 
+                type: boolean
+              - name: include
+                description: include 1 page view 
+                type: boolean
             methodResponses:
               -
                 statusCode: "200"

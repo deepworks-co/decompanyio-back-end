@@ -614,7 +614,7 @@ async function putTrackingInfo (body) {
  * 
  * @param  {} documentId
  */
-async function getTrackingList(documentId) {
+async function getTrackingList(documentId, anonymous, include) {
   if(!documentId){
     throw new Error("document id is invalid");
   }
@@ -630,9 +630,20 @@ async function getTrackingList(documentId) {
       _id: {cid: "$cid", sid: "$sid" },
       cid: {$first: "$cid"},
       sid: {$first: "$sid"},
-      viewTimestamp: {$min: "$t"}
+      viewTimestamp: {$min: "$t"},
+      maxPageNo: {$max: "$n"}
     }
-  }, {
+  }]
+  
+  if(!include){
+    queryPipeline.push({
+      $match: {
+        maxPageNo: {$gt: 1}
+      }
+    })
+  }
+  
+  queryPipeline.push({
     $group: {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
@@ -640,22 +651,30 @@ async function getTrackingList(documentId) {
       viewTimestamp: {$max: "$viewTimestamp"},
       sidList: { $push: "$_id.sid" },
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $lookup: {
       from: TB_TRACKING_USER,
       localField: "cid",
       foreignField: "cid",
       as: "userAs"
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $sort: {
       viewTimestamp: -1
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $addFields: {
       user: {$arrayElemAt: [ "$userAs", 0 ]}
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $project: {
       cid: 1,
       count: 1,
@@ -663,9 +682,16 @@ async function getTrackingList(documentId) {
       sidList: 1,
       user: 1
     }
-  }]
+  });
 
-const wapper = new MongoWapper(connectionString);
+  if(!anonymous){
+    queryPipeline.push({
+      $match: {user: {$exists: true}}
+    })
+  }
+
+
+  const wapper = new MongoWapper(connectionString);
   try{
     console.log(JSON.stringify(queryPipeline));
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
@@ -699,12 +725,21 @@ async function getTrackingInfo(documentId, cid, sid, include) {
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
       viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
-      viewTrackingCount: {$sum: 1}
+      viewTrackingCount: {$sum: 1},
+      maxPageNo: {$max: "$n"}
     }
   }, {
     $sort: {"viewTimestamp": -1}
   }]
 
+  if(!include){
+    queryPipeline.push({
+      $match: {
+        maxPageNo: {$gt: 1}
+      }
+    })
+  }
+/*
   if(!include){
     console.log("excluding 1 page view");
     queryPipeline.push({
@@ -715,10 +750,10 @@ async function getTrackingInfo(documentId, cid, sid, include) {
   } else {
     console.log("include 1 page view");
   }
-
+*/
   const wapper = new MongoWapper(connectionString);
   try{
-    //console.log(queryPipeline);
+    console.log(JSON.stringify(queryPipeline));
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
   } catch(err){
     throw err;
