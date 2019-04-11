@@ -33,7 +33,7 @@ module.exports.regist = async (event, context, callback) => {
   const accountId = principalId;    
   const documentName = body.filename;
   const documentSize = body.size;
-  const tags = body.tags?body.tags:[];//document tags
+  const tags = body.tags?body.tags.map((tag)=>tag.toLowerCase()):[];//document tags
   const ethAccount = body.ethAccount?body.ethAccount:null;//ethereum user account
   const title = body.title;
   const desc = body.desc;
