@@ -41,6 +41,21 @@ module.exports = {
   
   try{
     let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
+    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
+    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+
+    if(featured){
+      result.latestVoteAmount = featured.latestVoteAmount;
+    } else {
+      result.latestVoteAmount = 0;
+    }
+
+    if(popular){
+      result.latestPageview = popular.latestPageview;
+    } else {
+      result.latestPageview = 0;
+    }
+
     return result;
   } catch (err){
     throw err;

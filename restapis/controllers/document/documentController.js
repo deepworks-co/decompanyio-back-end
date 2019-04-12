@@ -179,7 +179,7 @@ module.exports.info = async (event, context, callback) => {
     }  
 
     if(!document){
-      //throw new Error("document is not exists!");
+      //throw new Error("[404] document is not exists!");
       return JSON.stringify({
         success: true,
         message: "document is not exists!",
