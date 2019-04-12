@@ -6,6 +6,7 @@ const {utils, MongoWapper} = require('decompany-common-utils');
 
 /*
 * @description 
+* 사용안함!!!
 */
 /**
  * @description

@@ -6,6 +6,7 @@ const {utils, MongoWapper} = require('decompany-common-utils');
 
 /*
 * @description 문서에 현재까지(어제 기준) Vote된 Deck
+* 사용안함!!!
 */
 module.exports.handler = async (event, context, callback) => {
   
