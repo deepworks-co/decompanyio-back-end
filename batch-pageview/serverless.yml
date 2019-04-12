@@ -85,14 +85,12 @@ functions:
   voteCollector:
     handler: functions/cron/voteCollector.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
-    reservedConcurrency: 1
     events:
       - schedule: rate(1 minute) # 10min, hourly
       
   pageviewCollector:
     handler: functions/cron/pageviewCollector.handler
     timeout: 300
-    reservedConcurrency: 1
     events:
       - schedule: rate(1 minute) # 10min, hourly
 
