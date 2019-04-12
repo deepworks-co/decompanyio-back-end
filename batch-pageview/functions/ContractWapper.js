@@ -18,17 +18,18 @@ module.exports = class ContractWapper {
     const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
     this.contractAddress = contract.networks[ethereum.index].address;
     this.contractABI = contract.abi;
+    this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
+      from: this.myAddress
+    });
   }
 
 
   async init(){
-    console.log("init");
+    
     //contract abi is the array that you can get from the ethereum wallet or etherscan
     this.privateKey = await this.getPrivateKey(ethereum.privateKey);
     
-    this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
-      from: this.myAddress
-    });
+    
   }
 
   async getPrivateKey(privateKey){
@@ -234,16 +235,22 @@ module.exports = class ContractWapper {
     if(!selectedAbi){
       throw new Error(`${eventName} is not exists in abi`)
     }
+
     const signature = selectedAbi.signature;//this.web3.eth.abi.encodeEventSignature(selectedAbi);
 
-    //console.log(eventName, signature, selectedAbi);
-
+    if(!signature){
+      throw new Error(`signature is invaild!!! signature : ${signature}`);
+    } else {
+      console.log(latestCollectedBlockNumber, eventName, signature, this.contractAddress);
+    }
+ 
     const pastLogs = await this.web3.eth.getPastLogs({
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
       address: this.contractAddress,
       topics: [ signature, null, null]
     });
+    console.log(pastLogs);
     const promises = await pastLogs.map(async (log, index)=>{
       const block = await this.getBlock(log.blockNumber);
       //console.log("pastLogs", index, log);
@@ -259,7 +266,7 @@ module.exports = class ContractWapper {
       }
     });
     const resultList = await Promise.all(promises);
-    console.log(resultList);
+    //console.log(resultList);
     return resultList;
   }
 
@@ -274,39 +281,8 @@ module.exports = class ContractWapper {
     });
   }
 
-  async getVoteEvents(receipt, block){
-    
-    //console.log(`receipt ${JSON.stringify(receipt)}, blockNumber : ${receipt.blockNumber}, timestamp : ${new Date(blockTimestamp)}`)    
-    const promises = await receipt.logs.filter((log)=> {
-
-      return this.contractSignatureAbi.find((abi)=>{
-        return abi.signature === log.topics[0]
-      });
-
-    }).map((log, idx)=>{
-      console.log("map", idx, log);
-      const selecedAbi = this.contractSignatureAbi.find((abi)=>{
-        return abi.signature === log.topics[0]
-      });
-
-      const decoded = this.web3.eth.abi.decodeLog(selecedAbi.inputs, log.data, log.topics.splice(1));
-      
-      //console.log("decoded", new Date(blockTimestamp), selecedAbi.name, decoded);
-      const event = {
-        abi: selecedAbi,
-        decoded: decoded,
-        created: block.timestamp * 1000,
-        receipt
-      }
-      return event;
-    });
-    const events = await Promise.all(promises);
-    
-    return events;
-  }
-
   async getDecodedLog(log, inputs){
-    console.log(log, inputs);
+    console.log({log, inputs});
     const decoded = this.web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(1));
     
     return decoded;
