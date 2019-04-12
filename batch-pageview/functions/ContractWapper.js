@@ -222,7 +222,7 @@ module.exports = class ContractWapper {
   }
 
 
-  async getEventLogs(latestCollectedBlockNumber, eventName) {
+  async getEventLogs(eventName, latestCollectedBlockNumber) {
 
     if(!eventName){
       throw new Error(`event is not invalid!! ${eventName}`);
@@ -240,31 +240,32 @@ module.exports = class ContractWapper {
 
     if(!signature){
       throw new Error(`signature is invaild!!! signature : ${signature}`);
-    } else {
-      console.log(latestCollectedBlockNumber, eventName, signature, this.contractAddress);
-    }
- 
-    const pastLogs = await this.web3.eth.getPastLogs({
+    } 
+    
+    console.log({latestCollectedBlockNumber, eventName, signature, contract: this.contractAddress, selectedAbi});
+    const options = {
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
       address: this.contractAddress,
-      topics: [ signature, null, null]
-    });
-    console.log(pastLogs);
-    const promises = await pastLogs.map(async (log, index)=>{
-      const block = await this.getBlock(log.blockNumber);
-      //console.log("pastLogs", index, log);
-      //return await this.getVoteTransactionReceipt(transaction, block)
-      //console.log(selectedAbi.inputs);
-      const decoded = await this.getDecodedLog(log, selectedAbi.inputs);
+      topics: [ signature ]
+    }
+    //console.log("getPastLogs options", options);
+    const pastLogs = await this.web3.eth.getPastLogs(options);
 
+    console.log("getPastLogs count", pastLogs.length);
+    const promises = await pastLogs.map(async (log, index)=>{
+      //console.log(`${index+1} getDecodedLog start`);
+      const decoded = await this.getDecodedLog(log, selectedAbi.inputs);
+      //const block = await this.getBlock(log.blockNumber);  
+      
       return {
         abi: selectedAbi,
         decoded: decoded,
-        created: block.timestamp * 1000,
+        //created: block.timestamp * 1000,
         log: log
       }
     });
+
     const resultList = await Promise.all(promises);
     //console.log(resultList);
     return resultList;
@@ -282,7 +283,7 @@ module.exports = class ContractWapper {
   }
 
   async getDecodedLog(log, inputs){
-    console.log({log, inputs});
+    
     const decoded = this.web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(1));
     
     return decoded;

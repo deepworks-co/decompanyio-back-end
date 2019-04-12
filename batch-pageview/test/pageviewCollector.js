@@ -14,6 +14,7 @@ describe('pageviewCollector', () => {
 
   it('implement tests here', () => {
     return wrapped.run({}).then((response) => {
+      console.log("test case response", response)
       expect(response).to.not.be.empty;
     });
   }).timeout(300000);

@@ -3,6 +3,7 @@ const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
+
 const eventName = "_ConfirmPageView";
 
 module.exports.handler = async (event, context, callback) => {
@@ -10,7 +11,7 @@ module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
   
   try{
-    const maxOne = await wapper.aggregate(tables.WRITEPAGEVIEW, [
+    const maxOne = await wapper.aggregate(eventName, [
       {
         $group: {
           _id: null,
@@ -18,19 +19,21 @@ module.exports.handler = async (event, context, callback) => {
         }
       }
     ]);
-    
-    let startBlockNumber = 1;
+     // contract write block number 3251154
+    let startBlockNumber = 3251154;
     if(maxOne && maxOne.length>0){
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
     }
-    console.log(`start blockNumber ${startBlockNumber}`);
+    
+    console.log(`start blockNumber ${startBlockNumber} ~ latest`);
 
     const contractWapper = new ContractWapper();
-    const resultList = await contractWapper.getEventLogs(startBlockNumber, eventName);
+    
+    const resultList = await contractWapper.getEventLogs(eventName, startBlockNumber);
     console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
     
-    const bulk = wapper.getUnorderedBulkOp(tables.WRITEPAGEVIEW);
+    const bulk = wapper.getUnorderedBulkOp(eventName);
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;
@@ -47,19 +50,19 @@ module.exports.handler = async (event, context, callback) => {
         blockNumber: log.blockNumber,
         documentId: documentId,
         docId: decoded.docId,
-        applicant: decoded.applicant,
-        deposit: Number(decoded.deposit),
-        created: created,
+        pageView: Number(decoded.pageView),
+        blockchainTimestamp: Number(decoded.timestamp),
+        blockchainDate: new Date(Number(decoded.timestamp)),
         log: log
       }
-      console.log("new item", item);
-      //bulk.find({_id: item._id }).upsert().updateOne(item);
+      //console.log("new item", item);
+      bulk.find({_id: item._id }).upsert().updateOne(item);
     })
     const executeResult = await wapper.execute(bulk);
     
     console.log("bulk complete", executeResult);
     
-    return callback(null, executeResult);
+    return "success"
   } catch(e){
     console.error(e);
   } finally{

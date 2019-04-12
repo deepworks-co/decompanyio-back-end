@@ -24,6 +24,7 @@ sls create function -f readLatestVoteAmount --handler functions/onchain/readLate
 sls create function -f readLatestCreatorReward --handler functions/onchain/readLatestCreatorReward.handler
 sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
 sls create function -f voteCollector --handler functions/cron/voteCollector.handler
+sls create function -f pageviewCollector --handler functions/cron/pageviewCollector.handler
 
 # Test
 
