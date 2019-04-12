@@ -102,9 +102,10 @@ module.exports = class ContractWapper {
    * @param  {} confirmPageview
    */
   async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
+    console.log("sendTransactionConfirmPageView");
     const documentIdByte32 = this.asciiToHex(documentId);
     const values = await this.getPrepareTransaction();
-
+    console.log(values);
     const recentlyBlockNumber = values.blockNumber;
     const nonce = values.nonce;
     const gasPrice = values.gasPrice;
@@ -112,7 +113,7 @@ module.exports = class ContractWapper {
     const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
       from: this.myAddress
     });
-
+    console.log("estimateGas", estimateGas);
     const gasLimit = Math.round(estimateGas);
 
     return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());

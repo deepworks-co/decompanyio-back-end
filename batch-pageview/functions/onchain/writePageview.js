@@ -43,8 +43,8 @@ module.exports.handler = async (event, context, callback) => {
     //const transactionResult = await contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
     //console.log("Transaction Request Result", {documentIdByte32, documentId, date, confirmPageview, transactionResult});
   
-    const promise = contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
-    console.log("Transaction Request End", {documentIdByte32, documentId, confirmPageview, date});
+    const result = await contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
+    console.log("Transaction Request End", {documentIdByte32, documentId, confirmPageview, date, result});
   } catch(error){
     console.log({documentIdByte32, documentId, confirmPageview, date, error});
   }
