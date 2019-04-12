@@ -56,6 +56,8 @@ module.exports = {
       result.latestPageview = 0;
     }
 
+    console.log("result", result);
+
     return result;
   } catch (err){
     throw err;
@@ -78,6 +80,22 @@ module.exports = {
         document = await getDocumentById(seoFriendly.id);
       }
     }
+    const documentId = document._id;
+    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
+    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+
+    if(featured){
+      document.latestVoteAmount = featured.latestVoteAmount;
+    } else {
+      document.latestVoteAmount = 0;
+    }
+
+    if(popular){
+      document.latestPageview = popular.latestPageview;
+    } else {
+      document.latestPageview = 0;
+    }
+
     return document;
   } catch (err) {
     throw err;
