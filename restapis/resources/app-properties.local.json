@@ -1,6 +1,6 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.224.2:27017/decompany"
     },
     "region": "us-west-1",
     "s3Config":{
