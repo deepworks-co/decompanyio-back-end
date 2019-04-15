@@ -71,117 +71,73 @@ module.exports = class ContractWapper {
     })
   }
 
-  getPrepareTransaction() {
-    return new Promise((resolve, reject) => {
-      const blocknumber = this.web3.eth.getBlockNumber();
-      const promiseGasPrice = this.web3.eth.getGasPrice();
-
-      Promise.all([blocknumber, promiseGasPrice]).then((values) => {
-          const blockNumber = values[0];
-          const gasPrice = values[1];
-          this.web3.eth.getTransactionCount(this.myAddress, blockNumber).then((nonce)=>{
-            resolve({
-              blockNumber: blockNumber,
-              gasPrice: gasPrice,
-              nonce: nonce
-            })
-          }).catch((err) => {
-            reject(err);
-          });
-      }).catch((err) => {
-        reject(err);
-      });
-    });
-
-  }
-
-
-  /**
-   * @description estimateTransactionConfirmPageView
-   * @param  {} documentId
-   * @param  {} date
-   * @param  {} confirmPageview
-   */
-  async estimateTransactionConfirmPageView(documentId, date, confirmPageview) {
-    console.log("sendTransactionConfirmPageView");
-    const documentIdByte32 = this.asciiToHex(documentId);
-    const values = await this.getPrepareTransaction();
-    console.log(values);
-    const recentlyBlockNumber = values.blockNumber;
-    const nonce = values.nonce;
-    const gasPrice = values.gasPrice;
-
-    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
-      from: this.myAddress
-    });
-    console.log("estimateGas", estimateGas);
-
-    return {recentlyBlockNumber, nonce, gasPrice, estimateGas};
-  }
   /**
    * @description write pageview on-chain for demo day
    * @param  {} documentId
    * @param  {} date
    * @param  {} confirmPageview
    */
-  async sendTransactionConfirmPageView(documentId, date, confirmPageview, estimate) {
-    const {recentlyBlockNumber, nonce, gasPrice, estimateGas} = estimate;
-    const gasLimit = Math.round(estimateGas);
+  async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
     const documentIdByte32 = this.asciiToHex(documentId);
-    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
+    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
+      from: this.myAddress
+    });
+    const gasLimit = Math.round(estimateGas);
 
+    const gasPrice = await this.web3.eth.getGasPrice();
+
+    const nonce = await this.web3.eth.getTransactionCount(this.myAddress);
+
+    console.log("sendTransactionConfirmPageView", {gasLimit, gasPrice, nonce})
+    
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
   }
 
   /**
-   * @description write pageview on-chain for alpha
+   * @description transaction을 설정된 privatekey를 통하여 서명한뒤 infura로 보낸다.
+   *              내부 node를 이용할경우 web3.eth.sendTransaction 이용 가능
+   *              현재 상태에서는 transactionHash를 리턴하면 종료된다. (첫 응답)
    * @param  {} documentId
    * @param  {} date
    * @param  {} confirmPageview
    */
-  async sendTransactionUpdatePageview(documentId, date, confirmPageview) {
-    const documentIdByte32 = this.asciiToHex(documentId);
-    const values = await this.getPrepareTransaction();
-
-    const recentlyBlockNumber = values.blockNumber;
-    const nonce = values.nonce;
-    const gasPrice = values.gasPrice;
-
-    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
-      from: this.myAddress
-    });
-
-    const gasLimit = Math.round(estimateGas);
-
-    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
-  }
-
-  async sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
-
-    return new Promise((resolve, reject) => {
-      
-
-      //creating raw tranaction
+  sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
+    return new Promise((resolve, reject)=>{
+        //creating raw tranaction
       const rawTransaction = {
-          "from": this.myAddress,
-          "gasPrice": this.web3.utils.toHex(gasPrice),
-          "gasLimit": this.web3.utils.toHex(gasLimit),
-          "to": this.contractAddress,
-          "value":"0x0",
-          "data": contractABI ,
-          "nonce": this.web3.utils.toHex(nonce)
+        "from": this.myAddress,
+        "gasPrice": this.web3.utils.toHex(gasPrice),
+        "gasLimit": this.web3.utils.toHex(gasLimit),
+        "to": this.contractAddress,
+        "value":"0x0",      //ether!!
+        "data": contractABI ,
+        "nonce": this.web3.utils.toHex(nonce)
       }
-      console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
+      console.log("sendTransactionConfirmPageView", {rawTransaction});
       //creating tranaction via ethereumjs-tx
       const transaction = new Tx(rawTransaction);
       //signing transaction with private key
       transaction.sign(this.privateKey);
       //sending transacton via web3js module
-      this.web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).then((transaction)=>{
-        resolve(transaction);
-      }).catch((err) => {
-        reject(err);
+      this.web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).once('transactionHash', function(hash){
+        console.log("transactionHash", hash);
+        resolve(hash);
+      }).once('receipt', function(receipt){
+        console.log("receipt", receipt);
+        resolve(receipt);
+      }).on('confirmation', function(confNumber, receipt){
+        console.log("confirmation", {confNumber, receipt});
+        resolve({confNumber, receipt});
+      }).on('error', function(error){
+        console.log("error", error);
+        reject(error);
+      }).then(function(receipt){
+        // will be fired once the receipt is mined
+        console.log("receipt", receipt);
+        resolve(receipt);
       });
     });
+    
 
   }
 

@@ -37,7 +37,7 @@ module.exports.handler = async (event, context, callback) => {
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;
-      console.log(result);
+      console.log("Get Event Logs", result);
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
