@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
     const isExist = JSON.parse(await contractWapper.isExistsDocument(documentId));
     console.log(`checking document ${documentId}, ${documentIdByte32} in blockchain : ${isExist}`);
     if(isExist === false){
-      throw new Error(`${JSON.stringify(body)} (${documentIdByte32}) Document was not exists in on-chain!`);
+      return `${JSON.stringify(body)} (${documentIdByte32}) Document was not exists in on-chain!`;
     } else {
       console.log("Document was exists in on-chain!", documentId);
     }
