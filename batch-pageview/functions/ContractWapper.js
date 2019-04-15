@@ -94,14 +94,15 @@ module.exports = class ContractWapper {
     });
 
   }
-  
+
+
   /**
-   * @description write pageview on-chain for demo day
+   * @description estimateTransactionConfirmPageView
    * @param  {} documentId
    * @param  {} date
    * @param  {} confirmPageview
    */
-  async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
+  async estimateTransactionConfirmPageView(documentId, date, confirmPageview) {
     console.log("sendTransactionConfirmPageView");
     const documentIdByte32 = this.asciiToHex(documentId);
     const values = await this.getPrepareTransaction();
@@ -114,9 +115,21 @@ module.exports = class ContractWapper {
       from: this.myAddress
     });
     console.log("estimateGas", estimateGas);
-    const gasLimit = Math.round(estimateGas);
 
+    return {recentlyBlockNumber, nonce, gasPrice, estimateGas};
+  }
+  /**
+   * @description write pageview on-chain for demo day
+   * @param  {} documentId
+   * @param  {} date
+   * @param  {} confirmPageview
+   */
+  async sendTransactionConfirmPageView(documentId, date, confirmPageview, estimate) {
+    const {recentlyBlockNumber, nonce, gasPrice, estimateGas} = estimate;
+    const gasLimit = Math.round(estimateGas);
+    const documentIdByte32 = this.asciiToHex(documentId);
     return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
+
   }
 
   /**
@@ -157,7 +170,7 @@ module.exports = class ContractWapper {
           "data": contractABI ,
           "nonce": this.web3.utils.toHex(nonce)
       }
-      //console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
+      console.log({message:"Raw Transcation", rawTransaction: rawTransaction});
       //creating tranaction via ethereumjs-tx
       const transaction = new Tx(rawTransaction);
       //signing transaction with private key
