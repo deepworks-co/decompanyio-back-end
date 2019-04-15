@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
     const isExist = JSON.parse(await contractWapper.isExistsDocument(documentId));
     console.log(`checking document ${documentId}, ${documentIdByte32} in blockchain : ${isExist}`);
     if(isExist === false){
-      throw new Error(`${documentId} Document was not exists in on-chain!`);
+      throw new Error(`${JSON.stringify(body)} (${documentIdByte32}) Document was not exists in on-chain!`);
     } else {
       console.log("Document was exists in on-chain!", documentId);
     }
@@ -46,7 +46,7 @@ module.exports.handler = async (event, context, callback) => {
 
     console.log("Transaction Request End", {documentIdByte32, documentId, confirmPageview, date, result});
   } catch(error){
-    console.log({documentIdByte32, documentId, confirmPageview, date, error});
+    console.log(error);
   }
   
 
