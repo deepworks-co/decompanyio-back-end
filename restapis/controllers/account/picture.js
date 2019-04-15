@@ -11,7 +11,8 @@ module.exports.handler = async (event, context, callback) => {
   const signedUploadUrl = s3.signedUploadUrl("us-west-1", s3Config.profile, key);
   const response = JSON.stringify({
     success: true,
-    signedUploadUrl: signedUploadUrl
+    signedUploadUrl: signedUploadUrl,
+    picture: key
   })
   return callback(null, response);
 

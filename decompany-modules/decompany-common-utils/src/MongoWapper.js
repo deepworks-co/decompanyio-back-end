@@ -34,7 +34,6 @@ module.exports = class MongoWapper {
 
     return new Promise((resolve, reject) => {
       this.db.collection(collection).findOne(query, projection, (err, doc)=>{
-        console.log(err);
         if(err){
           reject(err);
         } else {

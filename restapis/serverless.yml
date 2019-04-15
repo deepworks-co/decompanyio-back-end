@@ -65,10 +65,11 @@ provider:
 
 package:
   individually: true
-
-exclude:
-  - .gitignore
-  - .env
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
 
 functions:
   curatorDocumentList:
@@ -76,14 +77,34 @@ functions:
     events:
       - http:
           path: /api/curator/document/list
-          method: post
+          method: get
           cors: true      
           integration: lambda
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            
+          documentation:
+            summary: "/api/curator/document/list"
+            description: "/api/curator/document/list"
+            queryParams:
+              - name: ethAccount
+                description: ethAccount
+                type: string
+                required: true
+              - name: pageNo
+                description: pageNo (default 1)
+                type: integer
+              - name: pageSize
+                description: pageSize (default 20)
+                type: integer
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
   curatorTodayDocumentList:
     handler: controllers/curator/curatorTodayDocumentList.handler
     events:
@@ -206,21 +227,21 @@ functions:
     handler: s3/document/uploadComplete.handler
     events:
       - existingS3: 
-        bucket: dev-ca-document
-        events:
-          - s3:ObjectCreated:Put
-        rules:
-          - prefix: FILE/
+          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          events:
+            - s3:ObjectCreated:Put
+          rules:
+            - prefix: FILE/
 
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
     events:
       - existingS3: 
-        bucket: dev-ca-document
-        events: 
-          - s3:ObjectCreated:Put
-        rules:
-          - prefix: THUMBNAIL/
+          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          events: 
+            - s3:ObjectCreated:Put
+          rules:
+            - prefix: THUMBNAIL/
 
   accountPicture:
     handler: controllers/account/picture.handler
@@ -338,6 +359,26 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
+          documentation:
+            summary: "/api/profile/get by no auth"
+            description: "/api/profile/get by no auth"
+            queryParams:
+              - name: nickname
+                description: nickname
+                type: string
+              - name: username
+                description: username
+                type: string
+              - name: picture
+                description: picture path
+                type: string
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
     
   accountSync:
     handler: controllers/account/sync.handler
@@ -386,7 +427,19 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
-            template: $input.path('$.body')
+            template: $input.path('$')
+      - http:
+          path: api/document/list
+          method: get
+          cors: true
+          integration: lambda
+          request:
+            application/json: '{ "httpMethod" : "$context.httpMethod" }'
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$')
 
   documentInfo:
     handler: controllers/document/documentController.info
@@ -400,7 +453,7 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
-            template: $input.path('$.body')
+            template: $input.path('$')
 
   documentUpdate:
     handler: controllers/document/documentUpdate.handler
@@ -433,13 +486,29 @@ functions:
     handler: controllers/document/documentController.downloadFile
     events:
       - http:
-          path: api/document/download/{accountId}/{documentId}
+          path: /api/document/download
           method: get
           cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/document/download"
+            description: "/api/document/download"
+            queryParams:
+              - name: documentid
+                description: document id
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -455,14 +524,19 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "tracking list"
+            summary: "/api/tracking/list"
             description: "/api/tracking/list"
             queryParams:
               - name: documentid
                 description: document id
                 type: string
                 required: true
-              
+              - name: anonymous
+                description: include anonymous 
+                type: boolean
+              - name: include
+                description: include 1 page view 
+                type: boolean
             methodResponses:
               -
                 statusCode: "200"
@@ -485,7 +559,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
           documentation:
-            summary: "tracking detail"
+            summary: "/api/tracking/info"
             description: "/api/tracking/info"
             queryParams:
               - name: documentid
@@ -496,6 +570,9 @@ functions:
                 description: client id
                 type: string
                 required: true
+              - name: include
+                description: include 1 page only (true or false), default false
+                type: boolean
             methodResponses:
               -
                 statusCode: "200"
@@ -571,27 +648,7 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    ThumbnailS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        AccessControl: PublicRead
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.thumbnail}
-        WebsiteConfiguration:
-          ErrorDocument: index.html
-          IndexDocument: index.html
-    ProfileS3:
-      Type: AWS::S3::Bucket
-      Properties:
-        AccessControl: PublicRead
-        BucketName: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.profile}
-        WebsiteConfiguration:
-          ErrorDocument: index.html
-          IndexDocument: index.html
-    RestApiLogGroup: #AccessLog Log Group
-      Type: AWS::Logs::LogGroup 
-      Properties:
-        RetentionInDays: "3"
-        LogGroupName: LogGroup-${self:provider.stage}-${self:service}
+  
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:

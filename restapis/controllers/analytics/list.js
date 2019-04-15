@@ -16,7 +16,7 @@ module.exports.handler = async (event, context, callback) => {
   const y = year?Number(year):-1;
 
   if(w<0 && y<0){
-    throw new Error("parameter is invalid!");
+    throw new Error(`parameter is invalid! w : ${w}, y : ${y}`);
   }
 
   const now = new Date();
@@ -40,16 +40,16 @@ module.exports.handler = async (event, context, callback) => {
     if(!doc){
       throw new Error("document is invalid! " + documentId);
     }
-    if(principalId !== doc.accountId){
+    if(!utils.isLocal() && principalId !== doc.accountId){
       throw new Error("Unauthorized");
     }
     documentIds.push(documentId);
   }
-  console.log("documentIds", documentIds);
+  console.log("documentIds", documentIds, startDate, endDate);
   let resultList;
   if(isWeekly){
 
-    if(w>0){
+    if(w>4){
       resultList = await documentService.getAnalyticsListWeekly(documentIds, startDate, endDate);
     } else {
       resultList = await documentService.getAnalyticsListDaily(documentIds, startDate, endDate);
@@ -57,7 +57,7 @@ module.exports.handler = async (event, context, callback) => {
   } else {
     resultList = await documentService.getAnalyticsListMonthly(documentIds, startDate, endDate);
   }   
-
+  console.log("resultList", resultList);
   const response = JSON.stringify({
     success: true,
     resultList: resultList?resultList:[]

@@ -2,30 +2,54 @@
 const fs = require('fs');
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx');
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
-const { ethereum } = require('../resources/config.js').APP_PROPERTIES();
+
+const { region, ethereum } = require('../resources/config.js').APP_PROPERTIES();
+const { s3, kms } = require('decompany-common-utils');
 
 module.exports = class ContractWapper {
 
   constructor() {
-    const contract= JSON.parse(fs.readFileSync(jsonFile));  
+    // websocket url example "wss://rinkeby.infura.io/ws/v3/43132d938aaa4d96a453fd1c708b7f6c"
     const providerUrl = ethereum.providerUrl;
-    const account = ethereum.account;
-    const privateKey = ethereum.privateKey;
-    
+    console.log(providerUrl);
     this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-    this.contractABI = contract.abi;
-
-    this.myAddress = account;
-    this.privateKey = Buffer.from(privateKey, 'hex');
-    //contract abi is the array that you can get from the ethereum wallet or etherscan
+    //this.web3 = new Web3(new Web3.providers.WebsocketProvider(providerUrl));
+    this.myAddress = ethereum.account;
+    const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
     this.contractAddress = contract.networks[ethereum.index].address;
-    //creating contract object
+    this.contractABI = contract.abi;
     this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
       from: this.myAddress
     });
-        
-    this.confirmPageViewContract = this.DocumentReg.methods.confirmPageView;
+  }
+
+
+  async init(){
+    
+    //contract abi is the array that you can get from the ethereum wallet or etherscan
+    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
+    
+    
+  }
+
+  async getPrivateKey(privateKey){
+    
+    if(typeof(privateKey)==="object"){
+      const {bucket, key} = privateKey;
+      const cipherText = await s3.getObject(bucket, key, region);
+      const decrypt = await kms.decrypt(region, cipherText.Body);
+      //const privateKeyBase64 = decrypt.Plaintext.toString("utf-8");
+      return Buffer.from(decrypt.Plaintext, 'hex');
+    } else if(typeof(privateKey) === "string"){
+      return Buffer.from(privateKey, 'hex');
+    } else {
+      console.error("privateKey is not object or string", privateKey);
+      throw new Error("privateKey is not object or string");
+    }
+
+    
+
+    
   }
  
   updateSignature(logging){
@@ -70,22 +94,59 @@ module.exports = class ContractWapper {
     });
 
   }
+  
   /**
-   * @param  {} docId
+   * @description write pageview on-chain for demo day
+   * @param  {} documentId
    * @param  {} date
-   * @param  {} registYesterdayViewCount
-   * @return {} Promise<number> The gas amount estimated.
+   * @param  {} confirmPageview
    */
-  getConfirmPageViewEstimateGas(docId, date, registYesterdayViewCount) {
-    return this.DocumentReg.methods.confirmPageView(docId, date, registYesterdayViewCount).estimateGas({
+  async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
+    console.log("sendTransactionConfirmPageView");
+    const documentIdByte32 = this.asciiToHex(documentId);
+    const values = await this.getPrepareTransaction();
+    console.log(values);
+    const recentlyBlockNumber = values.blockNumber;
+    const nonce = values.nonce;
+    const gasPrice = values.gasPrice;
+
+    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
       from: this.myAddress
     });
+    console.log("estimateGas", estimateGas);
+    const gasLimit = Math.round(estimateGas);
+
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
   }
 
+  /**
+   * @description write pageview on-chain for alpha
+   * @param  {} documentId
+   * @param  {} date
+   * @param  {} confirmPageview
+   */
+  async sendTransactionUpdatePageview(documentId, date, confirmPageview) {
+    const documentIdByte32 = this.asciiToHex(documentId);
+    const values = await this.getPrepareTransaction();
 
-  sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
-    
+    const recentlyBlockNumber = values.blockNumber;
+    const nonce = values.nonce;
+    const gasPrice = values.gasPrice;
+
+    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
+      from: this.myAddress
+    });
+
+    const gasLimit = Math.round(estimateGas);
+
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
+  }
+
+  async sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
+
     return new Promise((resolve, reject) => {
+      
+
       //creating raw tranaction
       const rawTransaction = {
           "from": this.myAddress,
@@ -122,7 +183,8 @@ module.exports = class ContractWapper {
   }
 
 
-  isExistsDocument(documentId) {
+  async isExistsDocument(documentId) {
+    
     return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
@@ -161,7 +223,7 @@ module.exports = class ContractWapper {
   }
 
 
-  async getEventLogs(latestCollectedBlockNumber, eventName) {
+  async getEventLogs(eventName, latestCollectedBlockNumber) {
 
     if(!eventName){
       throw new Error(`event is not invalid!! ${eventName}`);
@@ -174,31 +236,39 @@ module.exports = class ContractWapper {
     if(!selectedAbi){
       throw new Error(`${eventName} is not exists in abi`)
     }
+
     const signature = selectedAbi.signature;//this.web3.eth.abi.encodeEventSignature(selectedAbi);
 
-    //console.log(eventName, signature, selectedAbi);
-
-    const pastLogs = await this.web3.eth.getPastLogs({
+    if(!signature){
+      throw new Error(`signature is invaild!!! signature : ${signature}`);
+    } 
+    
+    console.log({latestCollectedBlockNumber, eventName, signature, contract: this.contractAddress, selectedAbi});
+    const options = {
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
       address: this.contractAddress,
-      topics: [ signature/*"0x0c75c6a0cc6b6403ea7acee71d8aa1556e09a34e8560c6f9ab5b6152bfcd8ef1"*/, null, null]
-    });
-    const promises = await pastLogs.map(async (log, index)=>{
-      const block = await this.getBlock(log.blockNumber);
-      //console.log("pastLogs", index, log);
-      //return await this.getVoteTransactionReceipt(transaction, block)
-      const decoded = await this.getDecodedLog(log, selectedAbi.inputs);
+      topics: [ signature ]
+    }
+    //console.log("getPastLogs options", options);
+    const pastLogs = await this.web3.eth.getPastLogs(options);
 
+    console.log("getPastLogs count", pastLogs.length);
+    const promises = await pastLogs.map(async (log, index)=>{
+      //console.log(`${index+1} getDecodedLog start`);
+      const decoded = await this.getDecodedLog(log, selectedAbi.inputs);
+      //const block = await this.getBlock(log.blockNumber);  
+      
       return {
         abi: selectedAbi,
         decoded: decoded,
-        created: block.timestamp * 1000,
+        //created: block.timestamp * 1000,
         log: log
       }
     });
+
     const resultList = await Promise.all(promises);
-    console.log(resultList);
+    //console.log(resultList);
     return resultList;
   }
 
@@ -213,39 +283,8 @@ module.exports = class ContractWapper {
     });
   }
 
-  async getVoteEvents(receipt, block){
-    
-    //console.log(`receipt ${JSON.stringify(receipt)}, blockNumber : ${receipt.blockNumber}, timestamp : ${new Date(blockTimestamp)}`)    
-    const promises = await receipt.logs.filter((log)=> {
-
-      return this.contractSignatureAbi.find((abi)=>{
-        return abi.signature === log.topics[0]
-      });
-
-    }).map((log, idx)=>{
-      console.log("map", idx, log);
-      const selecedAbi = this.contractSignatureAbi.find((abi)=>{
-        return abi.signature === log.topics[0]
-      });
-
-      const decoded = this.web3.eth.abi.decodeLog(selecedAbi.inputs, log.data, log.topics.splice(1));
-      
-      //console.log("decoded", new Date(blockTimestamp), selecedAbi.name, decoded);
-      const event = {
-        abi: selecedAbi,
-        decoded: decoded,
-        created: block.timestamp * 1000,
-        receipt
-      }
-      return event;
-    });
-    const events = await Promise.all(promises);
-    
-    return events;
-  }
-
   async getDecodedLog(log, inputs){
-  
+    
     const decoded = this.web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(1));
     
     return decoded;

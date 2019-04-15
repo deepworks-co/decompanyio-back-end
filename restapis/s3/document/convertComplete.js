@@ -149,7 +149,7 @@ async function updateConvertCompleteDocument(documentId, totalPages){
 
     return await wapper.save(TABLE_NAME, document);
   } else {
-    console.log("document not found", document);
+    console.log("document doesn't found", document);
   }
 
 }
@@ -161,22 +161,24 @@ async function convertJpeg(from, to, size){
   console.log({from, to});
 
   const input = await getS3ObjectBody(fromBucket, fromPrefix);
-  console.log(input);
+  //console.log(input);
   const output = await sharp(input)
   .resize(size, size, {
     fit: sharp.fit.inside,
     withoutEnlargement: true
   })
-  .toFormat('jpeg')
+  .jpeg({
+    quality: 80
+  })
   .toBuffer();
 
-  console.log("output", output);
-  return await putS3Object(toBucket, toPrefix, output);
+
+  return await putS3Object(toBucket, toPrefix, output, "image/jpeg");
 }
 
 
 function getS3ObjectBody(bucket, key){
-  console.log("getS3ObjectBody", bucket, key);
+  
   return new Promise((resolve, reject)=>{
     s3.getObject({
       Bucket: bucket, 
@@ -184,7 +186,6 @@ function getS3ObjectBody(bucket, key){
      }, function(err, data) {
        if (err) reject(err); // an error occurred
        else {
-         console.log("data", data);
          resolve(data.Body);           // successful response
        }
   
@@ -193,16 +194,24 @@ function getS3ObjectBody(bucket, key){
   
 }
 
-function putS3Object(bucket, key, body){
+function putS3Object(bucket, key, body, contentType){
   return new Promise((resolve, reject)=>{
     s3.putObject({
       Body: body, 
       Bucket: bucket, 
       Key: key, 
-      ContentType: "image/jpeg"
+      Metadata: {
+        "Cache-Control": "max-age=31536000" 
+      },
+      ContentType: contentType
      }, function(err, data) {
-       if (err) reject(err); // an error occurred
-       else     resolve(data.body);           // successful response
+       if (err) {
+         
+         reject(err); // an error occurred
+       } else {
+          console.log("putS3Object success", bucket, key);
+          resolve(data.body);           // successful response
+       }
   
      });
   })

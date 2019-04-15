@@ -13,14 +13,20 @@ AWS.config.update({
  * @url : /api/curator/document/list
  */
 module.exports.handler = async (event, context, callback) => {
-  console.log(JSON.stringify(event));
-  const {body} = event;
-  const pageNo = (isNaN(body.pageNo) || body.pageNo<1)?1:Number(body.pageNo);
-  const ethAccount = body.ethAccount;
-  const tag = body.tag;
+  
+  const {query} = event;
+  const pageNo = (isNaN(query.pageNo) || query.pageNo<1)?1:Number(query.pageNo);
+  const ethAccount = query.ethAccount;
+  const tag = query.tag;
+  const pageSize = query.pageSize?query.pageSize:20;
+
+  if(!ethAccount){
+    throw new Error(`parameter is invalid!! ${JSON.stringify(query)}`);
+  }
 
   const promise1 = documentService.queryVotedDocumentByCurator({
     pageNo: pageNo,
+    pageSize: pageSize,
     applicant: ethAccount,
     tag: tag
   })
@@ -37,12 +43,13 @@ module.exports.handler = async (event, context, callback) => {
   const totalViewCountInfo = results[1]
 
 
-  return callback(null, JSON.stringify({
+  return JSON.stringify({
     success: true,
     resultList: resultList,
     count: resultList.length,
+    pageNo: pageNo,
     totalViewCountInfo: totalViewCountInfo
-  }));
+  });
   
   
   

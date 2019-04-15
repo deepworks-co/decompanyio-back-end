@@ -1,7 +1,8 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@54.183.187.54:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.224.2:27017/decompany"
     },
+    "region": "us-west-1",
     "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
@@ -24,14 +25,10 @@
         "region": "us-west-1",
         "queueUrls":{
             "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
-            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT",
-            "LATEST_VOTE_READ_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN",
-            "LATEST_CREATOR_REWARD_FROM_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN"
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT"
         }
     },
     "applicationLogAppender": {
-        "enable": false,
-        "region": "us-west-1",
-        "streamName": "TrackingDataStream"
+        "enable": false
     }
 }

@@ -1,7 +1,7 @@
 {
     "region": "us-west-1",
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.33.37:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.45.123:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
@@ -24,11 +24,15 @@
         }
     },
     "ethereum": {
-        "abi": ["./contracts-rinkeby/DocumentReg.json"],
+        "abi": ["./contracts-rinkeby-alpha/DocumentRegistry.json"],
         "network": "rinkeby", 
         "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
-        "account": "0xa4dA09DF8E5D0E05775c2C26ABCdFB97f3e84e15",
-        "privateKey": "E8760C95C5B615D791DFC1FAB3C4B736217845D5E818CA2472BD2D8E34C8CAB6",
+        "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+        "privateKey": {
+            "region": "us-west-1",
+            "bucket": "dev-ca-env",
+            "key": "alpha_enc_prikey"
+        },
         "index": "4"
     }
 

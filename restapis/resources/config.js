@@ -5,7 +5,7 @@ module.exports.APP_PROPERTIES = (serverless) => {
         const stage = process.env.stage?process.env.stage:"local";
         let json;
         if(stage == "local") {
-            json = require('./app-properties.json');    
+            json = require('./app-properties.local.json');    
         } else {
             json = require(stage?'./app-properties.'+ stage + '.json':'./app-properties.json');
         }

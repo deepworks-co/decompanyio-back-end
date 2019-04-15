@@ -2,7 +2,8 @@
 const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
-const crypto = require('crypto');
+const { s3Config } = require("../../resources/config").APP_PROPERTIES();
+
 
 module.exports.handler = async (event, context, callback) => {
 
@@ -49,7 +50,7 @@ module.exports.handler = async (event, context, callback) => {
   let resultList;
   if(isWeekly){
 
-    if(w>0){
+    if(w>4){
       resultList = await documentService.getAnalyticsListWeekly(documentIds, startDate, endDate);
     } else {
       resultList = await documentService.getAnalyticsListDaily(documentIds, startDate, endDate);
@@ -63,7 +64,7 @@ module.exports.handler = async (event, context, callback) => {
   const downloadName = documentId?documentId:"analytics" + "_" + Date.now();
   const csvString = await json2csv(resultList);
   const csvKey = "temp/csv/analytics/" + downloadName + ".csv";
-  const bucket = "dev-ca-document";
+  const bucket = s3Config.document;
   const region = "us-west-1";
   const expried = new Date(now + 1000 * 60); //1min
   const r = await s3.putObjectAndExpries(bucket, csvKey, csvString, "text/csv", region, expried);

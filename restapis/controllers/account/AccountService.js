@@ -43,6 +43,8 @@ module.exports = class AccountService {
 				query = {_id: user.id};
 			} else if(user.email) {
 				query = {email: {"$eq": user.email}};
+			} else if(user.username) { 
+				query = {username: {"$eq": user.username}};
 			} else {
 				throw new Error("getUserInfo Not enough query parameters" + JSON.stringify(user));
 			}

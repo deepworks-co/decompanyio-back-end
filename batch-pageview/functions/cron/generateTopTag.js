@@ -19,9 +19,8 @@ module.exports.handler = async (event, context, callback) => {
 
 
 function map() {
-  print("map" + JSON.stringify(this));
-  this.tags.forEach(function (key){
-    emit(key, 1);
+  this.tags.forEach(function (tag){
+    emit(tag, 1);
   })
   
 }
