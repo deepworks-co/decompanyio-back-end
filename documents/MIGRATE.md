@@ -83,6 +83,7 @@ db.DOCUMENT.find({accountId:"jay@decompany.io", state:"CONVERT_COMPLETE"}).forEa
 ```
 
 ## Tag를 소문자로 저장하기
+
 ```javascript
 db.DOCUMENT.find({}).forEach(function(x){
   const newTags = x.tags.map((tag)=>tag.toLowerCase());
