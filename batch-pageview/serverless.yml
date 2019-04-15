@@ -51,7 +51,7 @@ functions:
 
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
+    timeout: 30
     reservedConcurrency: 1
     events:
       - sqs:
