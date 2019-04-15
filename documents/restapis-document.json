@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "Decompany Rest Api",
-    "version": "2019-04-10T02:48:56Z",
+    "version": "2019-04-11T07:37:48Z",
     "title": "dev-backend-restapis",
     "termsOfService": "https://www.google.com",
     "contact": {
@@ -3020,10 +3020,24 @@
         ],
         "parameters": [
           {
+            "name": "anonymous",
+            "in": "query",
+            "description": "include anonymous",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "documentid",
             "in": "query",
             "description": "document id",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "include 1 page view",
+            "required": false,
             "type": "string"
           }
         ],
