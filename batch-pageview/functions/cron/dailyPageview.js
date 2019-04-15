@@ -7,7 +7,6 @@ const wapper = new MongoWapper(mongodb.endpoint);
 /**
  * @description 전날 하루동안의 pageview를 집계 및 추가 작업
  *  - 전날 pageview 블록체인이 입력하기용 큐 발생
- *  - 전날 pageview 가 있는 문서의 voteAmount를 블록체인에서 읽어오기 큐 발생
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
  * @function
  * @cron 
@@ -37,7 +36,7 @@ module.exports.handler = async (event, context, callback) => {
     //console.log("put sqs", item);
     const blockchainTimestamp = Date.UTC(item.year, item.month-1, item.dayOfMonth);
     promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
-    promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
+    //promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
   })
 
   const sqsResult = await Promise.all(promises);

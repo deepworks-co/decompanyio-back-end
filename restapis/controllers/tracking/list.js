@@ -3,25 +3,18 @@ const documentService = require('../document/documentMongoDB');
 
 module.exports.handler = async (event, context, callback) => {
 
-  const body = event.queryStringParameters?event.queryStringParameters:{};
-  console.log("parameter", body);
-  if(!body.documentId){
-    callback ("parameter is null");
-  }
+  const {principalId, query} = event;
+  const {documentId, anonymous, include} = query;
+  console.log("query", query);
 
-  const documentId = body.documentId;
-  const resultList = await documentService.getTrackingList(documentId);
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      success: true,
-      resultList: resultList
-    })
-  };
+  if(!documentId){
+    throw new Error("parameter is invalid");
+  }
+  const resultList = await documentService.getTrackingList(documentId, anonymous?JSON.parse(anonymous):false, include?JSON.parse(include):false);
+  const response = JSON.stringify({
+    success: true,
+    resultList: resultList
+  });
 
   return (null, response);
 };

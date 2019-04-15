@@ -1,46 +1,16 @@
 var AWS = require("aws-sdk");
-
+const { s3Config } = require('../../resources/config.js').APP_PROPERTIES();
 const endpoint = new AWS.Endpoint("s3.us-west-1.amazonaws.com");
 var s3 = new AWS.S3({endpoint: endpoint});
 
-const  bucketName = "dev-ca-document";
+const  bucketName = s3Config.document;
 
 module.exports = {
   getDocumentTextById,
   getDocumentText,
   generateSignedUrl
 }
-/*
-function getDocumentText(documentId, totalPageNo){
 
-  console.log(documentId, totalPageNo);
-  const promises = [];
-  const resultTexts = []; 
-
-  for(let i=0;i<totalPageNo;i++){
-    resultTexts[i] = i+1;
-  }
-  
-  resultTexts.forEach((item, index)=>{
-    const params = {
-      Bucket: bucketName,
-      Key: 'THUMBNAIL/' + documentId + '/text/'
-    }
-    console.log(params);
-    promises.push(s3.getObject(params).promise());
-  })
-  
-  return new Promise((resolve, reject) => {
-    Promise.all(promises).then((data)=>{
-      resolve(data);
-    }).catch((err)=>{
-      console.log(err);
-      reject(err);
-    })
-  }); 
-
-}
-*/
 async function getDocumentText(documentId, pageNo){
 
   console.log(documentId, pageNo);
@@ -57,16 +27,6 @@ async function getDocumentText(documentId, pageNo){
 
 async function getDocumentTextById(documentId){
   let resultText;
-  try{
-    const textBuffer = await s3.getObject({
-      Bucket: bucketName,
-      Key: 'THUMBNAIL/' + documentId + '/document.txt'
-    }).promise();
-    resultText = textBuffer.Body.toString("utf-8").substring(0, 3000);
-   
-  } catch(e){
-    console.error(e);
-  }
   
   if(!resultText){
     const textBuffer = await s3.getObject({
@@ -75,7 +35,6 @@ async function getDocumentTextById(documentId){
     }).promise();
     resultText = JSON.parse(textBuffer.Body.toString("utf-8"));
   }
-  console.log(resultText[0]);
   return resultText;
 }
 

@@ -19,17 +19,18 @@ module.exports = {
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
+  saveDocument,
   queryVotedDocumentByCurator,
   queryTotalViewCountByToday,
   getFeaturedDocuments,
   putTrackingInfo,
-  putTrackingUser,
   getTrackingInfo,
   getTrackingList,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
-  getAnalyticsListByUserId
+  getAnalyticsListMonthly,
+  getDocumentIdsByUserId
 }
 
  /**
@@ -40,6 +41,23 @@ module.exports = {
   
   try{
     let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
+    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
+    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+
+    if(featured){
+      result.latestVoteAmount = featured.latestVoteAmount;
+    } else {
+      result.latestVoteAmount = 0;
+    }
+
+    if(popular){
+      result.latestPageview = popular.latestPageview;
+    } else {
+      result.latestPageview = 0;
+    }
+
+    console.log("result", result);
+
     return result;
   } catch (err){
     throw err;
@@ -56,12 +74,28 @@ module.exports = {
   let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
   try{
     if(!document){
-      document = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
-      console.log(TB_SEO_FRIENDLY, document);
-      if(document) {
-        document = await getDocumentById(document.id);
+      const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
+      console.log(TB_SEO_FRIENDLY, seoFriendly);
+      if(seoFriendly) {
+        document = await getDocumentById(seoFriendly.id);
       }
     }
+    const documentId = document._id;
+    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
+    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+
+    if(featured){
+      document.latestVoteAmount = featured.latestVoteAmount;
+    } else {
+      document.latestVoteAmount = 0;
+    }
+
+    if(popular){
+      document.latestPageview = popular.latestPageview;
+    } else {
+      document.latestPageview = 0;
+    }
+
     return document;
   } catch (err) {
     throw err;
@@ -70,16 +104,26 @@ module.exports = {
   }      
 }
 
-async function getUser(userid) {
+async function getUser(params) {
   const wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.findOne(TB_USER, {_id: userid});
+    if(typeof params === 'string') {
+      return await wapper.findOne(TB_USER, {_id: params});
+    } else {
+      return await wapper.findOne(TB_USER, params);
+    }
+    
   } catch (e) {
     throw e
   } finally {
     wapper.close();
   }
 }
+
+
+
+
+
 /**
  * @param  {} args
  */
@@ -89,10 +133,10 @@ async function queryDocumentList (params) {
 
   pageSize = isNaN(pageSize)?20:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
-
-  if(path && path.lastIndexOf("popular")>0){
+  
+  if(path && path.lastIndexOf("popular")>-1){
     return await queryDocumentListByPopular(params);
-  } else if(path && path.lastIndexOf("featured")>0){
+  } else if(path && path.lastIndexOf("featured")>-1){
     return await queryDocumentListByFeatured(params);
   } else {
     return await queryDocumentListByLatest(params);
@@ -156,7 +200,7 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
@@ -168,7 +212,7 @@ async function queryDocumentListByLatest (params) {
     }]);
 
 
-    console.log("pipeline", pipeline);
+    //console.log("pipeline", pipeline);
     return await wapper.aggregate(tables.DOCUMENT, pipeline);
    
   } catch(err) {
@@ -262,7 +306,7 @@ async function queryDocumentListByFeatured (params) {
   let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
-
+  skip = isNaN(skip)?0:Number(skip);
   const wapper = new MongoWapper(connectionString);
 
   try{
@@ -346,6 +390,7 @@ async function getFriendlyUrl (seoTitle) {
   const wapper = new MongoWapper(connectionString);
   return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
 }
+
 /**
  * @param  {} item
  */
@@ -384,6 +429,41 @@ async function putDocument (item) {
 
 
 /**
+ * @param  {} item
+ */
+async function saveDocument (newDoc) {
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    const timestamp = Date.now();
+    const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
+    console.log("old document", oldDoc);
+    console.log("new document", newDoc);
+    const mergedItem = Object.assign(oldDoc, newDoc);    
+    console.log("merged document", mergedItem);
+    
+    const result = await wapper.save(TB_DOCUMENT, mergedItem);
+
+    await wapper.insert(TB_SEO_FRIENDLY, {
+      _id: mergedItem.seoTitle,
+      type: "DOCUMENT",
+      id: mergedItem._id,
+      created: Number(timestamp)
+    });
+
+    return result;
+
+  } catch(err){
+    throw err;
+  } finally{
+    wapper.close();
+  }
+    
+}
+
+
+
+/**
  * @param  {} args
  */
 async function queryVotedDocumentByCurator(args) {
@@ -391,6 +471,8 @@ async function queryVotedDocumentByCurator(args) {
   const pageNo = args.pageNo;
   const applicant = args.applicant;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
+  const pageSize = args.pageSize?args.pageSize: 20
+  const skip = ((pageNo - 1) * pageSize);
 
   const queryPipeline = [{
     $match: {
@@ -427,6 +509,10 @@ async function queryVotedDocumentByCurator(args) {
     "$match": {
       "documentInfo": { "$exists": true, "$ne": null }
     }
+  }, {
+    $skip: skip
+  }, {
+    $limit: pageSize
   }]
   
   const wapper = new MongoWapper(connectionString);
@@ -511,26 +597,17 @@ async function putVote (item) {
  */
 async function getFeaturedDocuments (args) {
 
-  let params = null;
-  let pageNo = 1;
-  if(args && args.q){
-      params = args.q;
-  } else {
-    params = {
-      state: "CONVERT_COMPLETE",
-      "documentId": {$ne : args.documentId }
-    }
+  const {documentId, tags} = args;
+  const params = {
+    pageNo: 1,
+    pageSize: 10,
+    tag: tags
   }
+  const resultList = await queryDocumentListByFeatured(params); 
 
-  let wapper = new MongoWapper(connectionString);
-  try{
-    return await wapper.find(TB_DOCUMENT, params, 1, 10);
-  } catch (err){
-    throw err;
-  } finally {
-    wapper.close();
-  }
-  
+  return resultList.filter((doc)=>{
+    return doc.documentId !== documentId;
+  });
 }
 /**
  * @param  {} body
@@ -539,13 +616,22 @@ async function putTrackingInfo (body) {
   let wapper = new MongoWapper(connectionString);
   try{
 
-    if(body.cid && body.e){
-      const r = await wapper.save(TB_TRACKING_USER, {
-        _id: body.cid,
+    if(body.cid && body.e && utils.validateEmail(body.e)){
+      const item = {
+        _id: {
+          id: body.id,
+          cid: body.cid,
+          sid: body.sid,
+          e: body.e
+        },
+        cid: body.cid,
         e: body.e,
+        id: body.id,
+        sid: body.sid,
         created: Date.now()
-      });
-      console.log("tracking target user", r);
+      }
+      const r = await wapper.save(TB_TRACKING_USER, item);
+      console.log("tracking target user save", r);
     }
     
     return await wapper.save(TB_TRACKING, body);
@@ -557,31 +643,11 @@ async function putTrackingInfo (body) {
   
 }
 
-
-/**
- * @param  {} body
- * @property cid
- * @property sid
- * @property e
- * @property created
- */
-async function putTrackingUser (body) {
-  let wapper = new MongoWapper(connectionString);
-
-  try{
-    return await wapper.save(TB_TRACKING_USER, body);
-  } catch(err) {
-    throw err;
-  } finally{
-    wapper.close();
-  }
-
-}
 /**
  * 
  * @param  {} documentId
  */
-async function getTrackingList(documentId) {
+async function getTrackingList(documentId, anonymous, include) {
   if(!documentId){
     throw new Error("document id is invalid");
   }
@@ -597,9 +663,20 @@ async function getTrackingList(documentId) {
       _id: {cid: "$cid", sid: "$sid" },
       cid: {$first: "$cid"},
       sid: {$first: "$sid"},
-      viewTimestamp: {$min: "$t"}
+      viewTimestamp: {$min: "$t"},
+      maxPageNo: {$max: "$n"}
     }
-  },{
+  }]
+  
+  if(!include){
+    queryPipeline.push({
+      $match: {
+        maxPageNo: {$gt: 1}
+      }
+    })
+  }
+  
+  queryPipeline.push({
     $group: {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
@@ -607,22 +684,49 @@ async function getTrackingList(documentId) {
       viewTimestamp: {$max: "$viewTimestamp"},
       sidList: { $push: "$_id.sid" },
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $lookup: {
       from: TB_TRACKING_USER,
       localField: "cid",
-      foreignField: "_id",
-      as: "user"
+      foreignField: "cid",
+      as: "userAs"
     }
-  }, {
+  });
+
+  queryPipeline.push({
     $sort: {
       viewTimestamp: -1
     }
-  }]
+  });
 
-const wapper = new MongoWapper(connectionString);
+  queryPipeline.push({
+    $addFields: {
+      user: {$arrayElemAt: [ "$userAs", 0 ]}
+    }
+  });
+
+  queryPipeline.push({
+    $project: {
+      cid: 1,
+      count: 1,
+      viewTimestamp: 1,
+      sidList: 1,
+      user: 1
+    }
+  });
+
+  if(!anonymous){
+    queryPipeline.push({
+      $match: {user: {$exists: true}}
+    })
+  }
+
+
+  const wapper = new MongoWapper(connectionString);
   try{
-    //console.log(queryPipeline);
+    console.log(JSON.stringify(queryPipeline));
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
   }catch(err){
     throw err;
@@ -635,7 +739,7 @@ const wapper = new MongoWapper(connectionString);
  * @param  {} cid
  * @param  {} sid
  */
-async function getTrackingInfo(documentId, cid, sid) {
+async function getTrackingInfo(documentId, cid, sid, include) {
   if(!documentId || !cid ){
     throw new Error("document id or cid is invalid");
   }
@@ -654,15 +758,35 @@ async function getTrackingInfo(documentId, cid, sid) {
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
       viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+      viewTrackingCount: {$sum: 1},
+      maxPageNo: {$max: "$n"}
     }
-  },
-  {
+  }, {
     $sort: {"viewTimestamp": -1}
   }]
 
+  if(!include){
+    queryPipeline.push({
+      $match: {
+        maxPageNo: {$gt: 1}
+      }
+    })
+  }
+/*
+  if(!include){
+    console.log("excluding 1 page view");
+    queryPipeline.push({
+      $match: {
+        viewTrackingCount: {$gt: 2}
+      }
+    })
+  } else {
+    console.log("include 1 page view");
+  }
+*/
   const wapper = new MongoWapper(connectionString);
   try{
-    //console.log(queryPipeline);
+    console.log(JSON.stringify(queryPipeline));
     return await wapper.aggregate(TB_TRACKING, queryPipeline);
   } catch(err){
     throw err;
@@ -691,6 +815,7 @@ async function getTopTag() {
  * @param  {} end
  */
 async function getAnalyticsListDaily(documentIds, start, end) {
+  console.log("getAnalyticsListDaily", documentIds, start, end);
   const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
@@ -699,21 +824,23 @@ async function getAnalyticsListDaily(documentIds, start, end) {
       }
     }, {
       $group: {
-        _id: {year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
-        totalCount: {$sum: "$count"}
+        _id: {documentId: "$documentId", year: "$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth"},
+        totalCount: {$sum: "$pageview"}
       }
     }, {
-      $sort:{_id:1}
+      $sort:{_id:1 }
     },{ 
       $project: {
         "_id": 0,
         year: "$_id.year",
         month: "$_id.month",
         dayOfMonth: "$_id.dayOfMonth",
+        documentId: "$_id.documentId",
         count: "$totalCount"
 
       }
     }]
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
@@ -722,11 +849,13 @@ async function getAnalyticsListDaily(documentIds, start, end) {
   }
 }
 /**
+ * getAnalyticsListWeekly
  * @param  {} documentIds
  * @param  {} start
  * @param  {} end
  */
 async function getAnalyticsListWeekly(documentIds, start, end) {
+  console.log("getAnalyticsListWeekly", documentIds, start, end);
   const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
@@ -735,8 +864,8 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
       }
     }, {
       $group: {
-        _id: {$isoWeek: "$statDate"},
-        totalCount: {$sum: "$count"},
+        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$statDate"}},
+        totalCount: {$sum: "$pageview"},
         start: {$min: "$statDate"},
         end: {$max: "$statDate"},
       }
@@ -745,13 +874,55 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
     },{ 
       $project: {
         "_id": 0,
-        week: "$_id",
+        week: "$_id.isoWeek",
+        documentId: "$_id.documentId",
         count: "$totalCount",
         start: 1,
         end:1
 
       }
     }]
+    
+    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+/**
+ * getAnalyticsListMonthly
+ * @param  {} documentIds
+ * @param  {} start
+ * @param  {} end
+ */
+async function getAnalyticsListMonthly(documentIds, start, end) {
+  console.log("getAnalyticsListMonthly", documentIds, start, end);
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const queryPipeline = [{
+      $match: {
+        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+      }
+    }, {
+      $group: {
+        _id: {documentId: "$documentId", year: "$_id.year", month: "$_id.month"},
+        totalCount: {$sum: "$pageview"}
+      }
+    }, {
+      $sort:{_id:1 }
+    },{ 
+      $project: {
+        "_id": 0,
+        year: "$_id.year",
+        month: "$_id.month",
+        documentId: "$_id.documentId",
+        count: "$totalCount"
+
+      }
+    }]
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
@@ -761,20 +932,13 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
 }
 
 
-async function getAnalyticsListByUserId(userid, start, end, isWeekly) {
+async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-
     const doclist = await wapper.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
-    
-    const documentIds = doclist.map((doc)=>{return doc.documentId});
-    //console.log(documentIds);
-    if(isWeekly){
-      return await getAnalyticsListWeekly(documentIds, start, end);
-    } else {
-      return await getAnalyticsListDaily(documentIds, start, end);
-    }
+    return doclist.map((doc)=>{return doc.documentId});
+   
     
   } catch(err){
     throw err;

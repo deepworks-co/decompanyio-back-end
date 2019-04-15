@@ -1,22 +1,15 @@
 # APIs
 
-## install serverless framework plugin
+## install dependence
 
 npm install --save-dev serverless-mocha-plugin
-
-## Intall Dependences
-
+npm install ../decompany-modules/decompany-common-utils/
 npm install mongojs
 npm install aws-sdk
-
-## Install Ethereum lib Dependencies
-
 npm install web3
+npm install rxjs
 npm install ethereumjs-tx
 
-## Install Local Dependencies
-
-npm install ../decompany-modules/decompany-common-utils/
 
 
 
@@ -32,6 +25,7 @@ sls create function -f readLatestVoteAmount --handler functions/onchain/readLate
 sls create function -f readLatestCreatorReward --handler functions/onchain/readLatestCreatorReward.handler
 sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
 sls create function -f voteCollector --handler functions/cron/voteCollector.handler
+sls create function -f pageviewCollector --handler functions/cron/pageviewCollector.handler
 
 # Test
 

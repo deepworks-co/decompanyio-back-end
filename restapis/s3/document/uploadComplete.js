@@ -1,8 +1,9 @@
 'use strict';
 var AWS = require('aws-sdk');
+const { s3Config, sqsConfig } = require('../../resources/config.js').APP_PROPERTIES();
 AWS.config.update({region: "us-west-1"});
 var sqs = new AWS.SQS();
-var QUEUE_URL = 'https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE';
+var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
 
 /**
  * @description S3 event trigger
@@ -81,13 +82,12 @@ function sendMessage(message) {
 }
 
 const generateMessageBody = function(param){
-  /*{"command": "image", "filePath":"dev-ca-document/FILE/doc/1", "storagePath":"dev-ca-document/THUMBNAIL/doc", "resolutionX":1200, "resolutionY":1200,
-  "startPage":1, "endPage":10, "ext":"hwp"}*/
-  //console.log("param", param);
+
+  const bucket = s3Config.document;
   var messageBody = new Object();
   messageBody.command="image";
-  messageBody.filePath = "dev-ca-document/FILE/"+ param.fileindex +"/" + param.fileid + "." + param.ext;
-  messageBody.storagePath = "dev-ca-document/THUMBNAIL/" + param.fileid;
+  messageBody.filePath = bucket + "/FILE/"+ param.fileindex +"/" + param.fileid + "." + param.ext;
+  messageBody.storagePath = bucket + "/THUMBNAIL/" + param.fileid;
   messageBody.resolutionX = 1200;
   messageBody.resolutionY = 1200;
   messageBody.startPage = 1;

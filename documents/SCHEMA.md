@@ -49,7 +49,7 @@ db.createCollection("SEO-FRIENDLY")
 db["SEO-FRIENDLY"].createIndex({{created: -1}})
 ```
 
-## DOCUMENT-VOTE (cur DEV-CA-DOCUMENT-VOTE)
+## VOTE (cur DEV-CA-DOCUMENT-VOTE)
 
 ```javascript
 db.createCollection("VOTE");
@@ -71,6 +71,8 @@ db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
 ```javascript
 db.createCollection("TRACKING-USER");
 db["TRACKING-USER"].createIndex({id: 1})
+db["TRACKING-USER"].createIndex({cid: 1})
+db["TRACKING-USER"].createIndex({e: 1})
 db["TRACKING-USER"].createIndex({id: 1, cid: 1})
 ```
 
@@ -91,9 +93,9 @@ db["PAGEVIEW-LATEST"].createIndex( { "expireAt": 1 }, { expireAfterSeconds: 0 } 
 ## VOTE
 ```javascript
 db.createCollection("VOTE");
-db["VOTE"].createIndex( { "documentId": 1 }, { created: -1 } )
-db["VOTE"].createIndex( { "applicant": 1 }, { created: -1 } )
-db["VOTE"].createIndex( { "applicant": 1 }, { "documentId": 1 }, { created: -1 } )
+db["VOTE"].createIndex( { documentId: 1, created: -1 } )
+db["VOTE"].createIndex( { applicant: 1, created: -1 } )
+db["VOTE"].createIndex( { applicant: 1,documentId: 1,created: -1 } )
 ```
 
 

@@ -54,3 +54,37 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
         Body: Buffer.from(text, 'binary')
     }).promise();
  }
+
+ exports.putObjectAndExpries = (bucket, key, text, contentType, regions, expires) =>{
+    AWS.config.update({
+        region: regions?regions:"us-west-1"
+    });
+    
+    var s3 = new AWS.S3();
+    
+    return s3.putObject({
+        Bucket: bucket,
+        Key: key,
+        ContentType: contentType,
+        Expires: expires,
+        Body: Buffer.from(text, 'binary')
+    }).promise();
+ }
+
+ exports.getObject = (bucket, key, region) =>{
+    AWS.config.update({
+        region: region?region:"us-west-1"
+    });
+    
+    const s3 = new AWS.S3();
+    
+    return new Promise((resolve, reject) => {
+        s3.getObject({
+            Bucket: bucket,
+            Key: key
+        }, (err, data)=>{
+            if(err) reject(err);
+            else resolve(data);
+        })
+    });
+ }

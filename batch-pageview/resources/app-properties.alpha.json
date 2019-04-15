@@ -1,0 +1,39 @@
+{
+    "region": "us-west-1",
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@172.31.45.123:27017/decompany"
+    },
+    "tables":{
+        "DOCUMENT": "DOCUMENT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "VOTE": "VOTE",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
+        "USER": "USER",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "PAGEVIEW_LATEST": "PAGEVIEW-LATEST",
+        "TOP_TAG": "TOP-TAG",
+        "WRITEPAGEVIEW": "WRITEPAGEVIEW"
+    },
+    "sqsConfig": {
+        "region": "us-west-1",
+        "queueUrls":{
+            "PAGEVIEW_TO_ONCHAIN": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-SC-VIEWCOUNT"
+        }
+    },
+    "ethereum": {
+        "abi": ["./contracts-rinkeby-alpha/DocumentRegistry.json"],
+        "network": "rinkeby", 
+        "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
+        "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+        "privateKey": {
+            "region": "us-west-1",
+            "bucket": "dev-ca-env",
+            "key": "alpha_enc_prikey"
+        },
+        "index": "4"
+    }
+
+}

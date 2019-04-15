@@ -16,12 +16,12 @@ db["DEV-CA-DOCUMENT-VOTE"].update({}, {$unset: {documentInfo: ""}}, {multi: true
 #login admin
 use admin
 db.createUser({
-  user: "root",
-  pwd: "1234",
+  user: "admin",
+  pwd: "infra1122!",
   roles: [ { role: "root", db: "admin" } ]
 })
 
-db.auth("root", "1234")
+db.auth("admin", "infra1122!")
 
 #create database and create user
 use decompany
@@ -78,6 +78,16 @@ db["DOCUMENT-TRACKING"].update({}, {$unset: {useragnet: ""}}, {multi: true});
 ```javascript
 db.DOCUMENT.find({accountId:"jay@decompany.io", state:"CONVERT_COMPLETE"}).forEach(function(x){
   x.state="NONE"
+  db.DOCUMENT.save(x);
+})
+```
+
+## Tag를 소문자로 저장하기
+
+```javascript
+db.DOCUMENT.find({}).forEach(function(x){
+  const newTags = x.tags.map((tag)=>tag.toLowerCase());
+  x.tags = newTags;  
   db.DOCUMENT.save(x);
 })
 ```

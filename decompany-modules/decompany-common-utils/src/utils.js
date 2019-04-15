@@ -41,3 +41,13 @@ exports.toSeoFriendly = (str) => {
   const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
   return friendlyUrl(str).concat("-", id);
 }
+
+exports.isLocal = () => {
+  return process.env.stage === 'local'
+}
+
+exports.validateEmail = (email) => {
+  //General Email Regex (RFC 5322 Official Standard)
+  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  return re.test(String(email).toLowerCase());
+}

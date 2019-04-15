@@ -13,7 +13,13 @@ describe('analyticsList', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      query: {
+        documentId: "6e1e0b4e86824eba81e9350a0fd1ff82",
+        week: 32
+      }
+    }
+    return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
   });

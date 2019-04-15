@@ -48,31 +48,15 @@ provider:
     - .env
 
 functions:
+
   onchainWritePageview:
     handler: functions/onchain/writePageview.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
+    timeout: 30
     reservedConcurrency: 1
     events:
       - sqs:
           arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
           batchSize: 1
-#          enabled: true
-
-  readLatestCreatorReward:
-    handler: functions/onchain/readLatestCreatorReward.handler
-    timeout: 60 # optional, in seconds, default is 6, 5min
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-LATEST-CREATOR-REWARD-READ-FROM-ONCHAIN
-#         batchSize: 10   # default 10
-
-  readLatestVoteAmount:
-    handler: functions/onchain/readLatestVoteAmount.handler
-    timeout: 60 # optional, in seconds, default is 6, 5min
-    events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-LATEST-VOTE-READ_FROM_ONCHAIN	
-#          batchSize: 10   # default 10
 
   dailyPageview:
     handler: functions/cron/dailyPageview.handler
@@ -80,28 +64,35 @@ functions:
     events:
       - schedule: cron(10 0 * * ? *) # daily 00:10:00
 
-  pageviewByHourly:
-    handler: functions/cron/hourly.handler
+  generatePopular:
+    handler: functions/cron/generatePopular.handler
     timeout: 300
     events:
-      - schedule: rate(1 hour) # hourly
+      - schedule: rate(5 minutes) # hourly
   
-  hourlyReadVote:
-    handler: functions/cron/hourlyReadVote.handler
+  generateFeatured:
+    handler: functions/cron/generateFeatured.handler
     timeout: 300
     events:
-      - schedule: rate(1 hour) # hourly
+      - schedule: rate(5 minutes) # hourly
 
   generateTopTag:
     handler: functions/cron/generateTopTag.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     events:
-      - schedule: rate(1 hour) # 10min, hourly
+      - schedule: rate(5 minutes) # 10min, hourly
 
   voteCollector:
     handler: functions/cron/voteCollector.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
     events:
       - schedule: rate(1 minute) # 10min, hourly
+      
+  pageviewCollector:
+    handler: functions/cron/pageviewCollector.handler
+    timeout: 300
+    events:
+      - schedule: rate(1 minute) # 10min, hourly
+
 plugins:
   - serverless-mocha-plugin
