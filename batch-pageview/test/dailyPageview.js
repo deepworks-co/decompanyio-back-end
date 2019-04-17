@@ -13,7 +13,8 @@ describe('dailyPageview', () => {
   });
 
   it('implement tests here', () => {
-    const event = {period: 60}
+    let event ={};
+    //evnet = {period: 1}
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });

@@ -48,10 +48,9 @@ provider:
     - .env
 
 functions:
-
-  onchainWritePageview:
-    handler: functions/onchain/writePageview.handler
-    timeout: 30
+  pageviewWriteOnchain:
+    handler: functions/onchain/pageviewWriteOnchain.handler
+    timeout: 300
     reservedConcurrency: 1
     events:
       - sqs:
@@ -94,5 +93,10 @@ functions:
     events:
       - schedule: rate(1 minute) # 10min, hourly
 
+  registryCollector:
+    handler: functions/cron/registryCollector.handler
+    timeout: 300
+    events:
+      - schedule: rate(1 minute) # 10min, hourly
 plugins:
   - serverless-mocha-plugin
