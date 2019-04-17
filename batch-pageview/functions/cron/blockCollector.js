@@ -29,7 +29,7 @@ module.exports.handler = async (event, context, callback) => {
     console.log(`start blockNumber ${startBlockNumber} ~ ${latestBlockNumber}`);
     const bulk = wapper.getUnorderedBulkOp(tableName);
     const contractWapper = new ContractWapper();
-    for(let blockNumber = startBlockNumber;blockNumber<latestBlockNumber;blockNumber++){
+    for(let blockNumber = startBlockNumber ; blockNumber < latestBlockNumber ; blockNumber++){
       const block = await contractWapper.getBlock(blockNumber);
       if(!block){
         throw new Error(`Last Block Number ${blockNumber}`)

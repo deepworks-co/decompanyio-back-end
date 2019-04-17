@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
     const contractWapper = new ContractWapper();
     
     const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
-    console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
+    console.log(`get ${resultList.length} event logs from ${startBlockNumber}`);
     
     const bulk = wapper.getUnorderedBulkOp(tableName);
 

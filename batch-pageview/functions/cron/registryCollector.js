@@ -33,13 +33,13 @@ module.exports.handler = async (event, context, callback) => {
     const contractWapper = new ContractWapper();
     
     const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
-    console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
+    console.log(`get ${resultList.length} event logs from ${startBlockNumber}`);
     
     const bulk = wapper.getUnorderedBulkOp(tableName);
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;
-      console.log(`Get Event Logs ${index} :`, result, );
+      console.log(`Get Event Logs ${index} :`, result);
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
