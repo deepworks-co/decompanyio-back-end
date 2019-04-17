@@ -48,6 +48,8 @@ provider:
     - .env
 
 functions:
+  blockCollector:
+    handler: functions/cron/blockCollector.handler
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
     timeout: 300

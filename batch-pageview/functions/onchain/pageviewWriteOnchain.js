@@ -24,6 +24,10 @@ module.exports.handler = async (event, context, callback) => {
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, index, unit);
     //console.log("getList", resultList);
+    if(resultList.length === 0){
+      return "resultList is zero";
+    }
+
     let documentIds = [];
     let pageviews = [];
     resultList.forEach((doc)=>{
@@ -32,10 +36,12 @@ module.exports.handler = async (event, context, callback) => {
       pageviews.push(doc.pageview)
     });
     console.log("length (resultList, documentIds, pageviews)", resultList.length, documentIds.length, pageviews.length);
-
+    
     if(resultList.length !== documentIds.length || documentIds.length !== pageviews.length){
       throw new Error("result list aggreagation fail...", resultList.length, documentIds.length, pageviews.length);
     }
+
+    
     
     console.log("Transaction Request Start");
     //const result = await contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
@@ -74,6 +80,22 @@ async function getList(blockchainTimestamp, skip, limit){
   try{
     const queryPipeline = [{
       $match: { blockchainTimestamp: blockchainTimestamp }
+    }, {
+      $lookup: {
+        from: tables.EVENT_REGISTRY,
+        localField: "documentId",
+        foreignField: "documentId",
+        as: "RegsitryAs"
+      }
+    }, {
+      $unwind: {
+        path: "$RegsitryAs",
+        "preserveNullAndEmptyArrays": true
+      }
+    }, {
+      "$match": {
+        "RegsitryAs": { "$exists": true, "$ne": null }
+      }
     }, {
       $skip: skip
     }, {

@@ -11,9 +11,9 @@ const eventName = "PutPageView";
 module.exports.handler = async (event, context, callback) => {
  
   const wapper = new MongoWapper(mongodb.endpoint);
-  
+  const tableName = tables.EVENT_WRITEPAGEVIEW;
   try{
-    const maxOne = await wapper.aggregate(eventName, [
+    const maxOne = await wapper.aggregate(tableName, [
       {
         $group: {
           _id: null,
@@ -35,7 +35,7 @@ module.exports.handler = async (event, context, callback) => {
     const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
     console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
     
-    const bulk = wapper.getUnorderedBulkOp(eventName);
+    const bulk = wapper.getUnorderedBulkOp(tableName);
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;

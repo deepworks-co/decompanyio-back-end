@@ -4,14 +4,14 @@ const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
 const contractName = "Curator";
-const eventName = "_VoteOnDocument";
+const eventName = "AddVote";
 module.exports.handler = async (event, context, callback) => {
  
 
   const wapper = new MongoWapper(mongodb.endpoint);
-  
+  const tableName = tables.VOTE;
   try{
-    const maxOne = await wapper.aggregate(tables.VOTE, [
+    const maxOne = await wapper.aggregate(tableName, [
       {
         $group: {
           _id: null,
@@ -30,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
     const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
     console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
     
-    const bulk = wapper.getUnorderedBulkOp(tables.VOTE);
+    const bulk = wapper.getUnorderedBulkOp(tableName);
 
     const promises = resultList.map(async (result, index)=>{
       const {decoded, abi, log} = result;
