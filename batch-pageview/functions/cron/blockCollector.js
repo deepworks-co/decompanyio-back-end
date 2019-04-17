@@ -37,7 +37,7 @@ module.exports.handler = async (event, context, callback) => {
       block.created = block.timestamp * 1000;
       block.createdDate = new Date(block.timestamp * 1000);
       block._id = block.number;     
-      console.log(block._id);
+      //console.log(block._id);
       bulk.find({_id: block._id}).upsert().updateOne(block);
     }
     
