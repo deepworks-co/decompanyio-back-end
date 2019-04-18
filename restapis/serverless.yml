@@ -597,6 +597,11 @@ functions:
           path: api/tracking/collect
           method: get
           cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
