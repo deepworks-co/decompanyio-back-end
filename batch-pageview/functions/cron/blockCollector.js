@@ -32,7 +32,8 @@ module.exports.handler = async (event, context, callback) => {
     for(let blockNumber = startBlockNumber ; blockNumber < latestBlockNumber ; blockNumber++){
       const block = await contractWapper.getBlock(blockNumber);
       if(!block){
-        throw new Error(`Last Block Number ${blockNumber}`)
+        console.log(`Current Last Block Number ${blockNumber}`);
+        break;
       }
       block.created = block.timestamp * 1000;
       block.createdDate = new Date(block.timestamp * 1000);

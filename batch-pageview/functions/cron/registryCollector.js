@@ -45,7 +45,7 @@ module.exports.handler = async (event, context, callback) => {
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
       
       console.log(" ");
-      
+      const now = new Date();
       const item = {
         _id: log.id,
         transactionHash: log.transactionHash,
@@ -54,7 +54,10 @@ module.exports.handler = async (event, context, callback) => {
         docId: decoded.docId,
         contractName: contractName,
         eventName: eventName,
-        log: log
+        updated: now.getTime(),
+        updated: now, 
+        log: log,
+        decoded: decoded
       }
       //console.log("new item", item);
       bulk.find({_id: item._id }).upsert().updateOne(item);

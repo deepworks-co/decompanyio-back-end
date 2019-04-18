@@ -17,7 +17,8 @@ module.exports.handler = async (event, context, callback) => {
       {
         $group: {
           _id: null,
-          blockNumber : { $max: '$blockNumber' }
+          blockNumber : { $max: '$blockNumber' },
+          updated: {$max: '$updated'}
         }
       }
     ]);
@@ -45,19 +46,19 @@ module.exports.handler = async (event, context, callback) => {
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
       
       console.log(" ");
-      
+      const now = new Date();
       const item = {
         _id: log.id,
         transactionHash: log.transactionHash,
         blockNumber: log.blockNumber,
         documentId: documentId,
         docId: decoded.docId,
-        pageView: Number(decoded.pageView),
-        blockchainTimestamp: Number(decoded.timestamp),
-        blockchainDate: new Date(Number(decoded.timestamp)),
+        updated: now.getTime(),
+        updatedDate: now,
         contractName: contractName,
         eventName: eventName,
-        log: log
+        log: log,
+        decoded: decoded
       }
       //console.log("new item", item);
       bulk.find({_id: item._id }).upsert().updateOne(item);
