@@ -55,7 +55,7 @@ module.exports.handler = async (event, context, callback) => {
         contractName: contractName,
         eventName: eventName,
         updated: now.getTime(),
-        updated: now, 
+        updatedDate: now, 
         log: log,
         decoded: decoded
       }
