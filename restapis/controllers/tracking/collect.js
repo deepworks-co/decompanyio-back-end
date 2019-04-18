@@ -2,7 +2,7 @@
 const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
 const {kinesis} = require('decompany-common-utils');
-const geoip = require('geoip-lite');
+//const geoip = require('geoip-lite');
 
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event));
@@ -30,11 +30,11 @@ module.exports.handler = async (event, context, callback) => {
   body.referer = headers.Referer;
   body.useragent = headers["User-Agent"];
   body.xforwardedfor = ips;
+  /*
   if(ips && ips.length>0){
     body.geo = getCountryByIp(ips);
-    
   }
-
+  */
   body.headers = headers;
   console.log("tracking body", JSON.stringify(body));
   if(applicationLogAppender && applicationLogAppender.enable){
@@ -61,8 +61,9 @@ module.exports.handler = async (event, context, callback) => {
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...
-그래서  layer로 분리함 ㅎㅎ
-*/
+그래서  layer로 분리함 ㅎㅎ 
+그래도 큼;;; ㅠㅠ
+
 function getCountryByIp(ips){
   const returnValues = [];
   ips.forEach((ip) => {
@@ -76,3 +77,4 @@ function getCountryByIp(ips){
 
   return returnValues;
 }
+*/

@@ -592,8 +592,6 @@ functions:
 
   trackingCollect:
     handler: controllers/tracking/collect.handler
-    layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
     events:
       - http: 
           path: api/tracking/collect
