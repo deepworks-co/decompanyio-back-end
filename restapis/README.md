@@ -41,6 +41,10 @@ sls offline start
 cd {project_dir}
 sudo node ../docker-npm.js rebuild
 
+# Local에서 layer 사용하기
+
+export NODE_PATH=.:./opt/node_modules
+
 # Deploy
 
 sls deploy

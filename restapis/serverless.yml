@@ -31,6 +31,7 @@ provider:
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+    NODE_PATH: "./:/opt/node_modules"
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
@@ -70,7 +71,13 @@ package:
     - .env
     - package.json
     - install.sh
+    - opt/**
 
+layers:
+  libNodeModule:
+    path: opt
+    description: "additional node_module"
+    
 functions:
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
@@ -235,6 +242,8 @@ functions:
 
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
+    layers:   
+      - {Ref: LibNodeModuleLambdaLayer}
     events:
       - existingS3: 
           bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
@@ -588,6 +597,11 @@ functions:
           path: api/tracking/collect
           method: get
           cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"

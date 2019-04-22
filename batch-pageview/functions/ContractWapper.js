@@ -5,6 +5,7 @@ const Tx = require('ethereumjs-tx');
 
 const { region, ethereum } = require('../resources/config.js').APP_PROPERTIES();
 const { s3, kms } = require('decompany-common-utils');
+const contractName = ["DocumentRegistry", "Creator", "Curator"];
 
 module.exports = class ContractWapper {
 
@@ -15,20 +16,30 @@ module.exports = class ContractWapper {
     this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
     //this.web3 = new Web3(new Web3.providers.WebsocketProvider(providerUrl));
     this.myAddress = ethereum.account;
-    const contract= JSON.parse(fs.readFileSync(ethereum.abi[0]));
-    this.contractAddress = contract.networks[ethereum.index].address;
-    this.contractABI = contract.abi;
-    this.DocumentReg = new this.web3.eth.Contract(this.contractABI, this.contractAddress, {
-      from: this.myAddress
+
+    this.contractMap = {};
+    ethereum.abis.forEach((abi)=>{
+      const {name, path} = abi;
+      const contractJson= JSON.parse(fs.readFileSync(path));
+      const constractAbi = contractJson.abi;
+      const constractAddress = contractJson.networks[ethereum.index].address;
+      const contract = this.web3.eth.Contract(constractAbi, constractAddress, {
+        from: this.myAddress
+      });
+
+      this.contractMap[name] = {
+        abi: constractAbi,
+        address: constractAddress,
+        contract: contract
+      }
+
+      console.log("init contract", abi);
     });
-  }
 
-
-  async init(){
     
-    //contract abi is the array that you can get from the ethereum wallet or etherscan
-    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
-    
+    this.DocumentReg = this.contractMap["DocumentRegistry"].contract;
+    this.Creator = this.contractMap["Creator"].contract;
+    this.Curator = this.contractMap["Curator"].contract;
     
   }
 
@@ -37,9 +48,16 @@ module.exports = class ContractWapper {
     if(typeof(privateKey)==="object"){
       const {bucket, key} = privateKey;
       const cipherText = await s3.getObject(bucket, key, region);
+
       const decrypt = await kms.decrypt(region, cipherText.Body);
-      //const privateKeyBase64 = decrypt.Plaintext.toString("utf-8");
-      return Buffer.from(decrypt.Plaintext, 'hex');
+      const decryptPlainText = decrypt.Plaintext.toString("utf-8")
+      /*
+      if(process.env.stage==="local"){
+        console.log("cipherText in s3", cipherText.Body.toString("utf-8"));
+        console.log("decrypt Plaintext", decryptPlainText);
+      }
+      */
+      return Buffer.from(decryptPlainText, 'hex');
     } else if(typeof(privateKey) === "string"){
       return Buffer.from(privateKey, 'hex');
     } else {
@@ -47,28 +65,6 @@ module.exports = class ContractWapper {
       throw new Error("privateKey is not object or string");
     }
 
-    
-
-    
-  }
- 
-  updateSignature(logging){
-    return this.contractABI.map((item, index)=>{
-      switch(item.type){
-          case "event":
-              item.signature = this.web3.eth.abi.encodeEventSignature(item);
-              if(logging) console.log(`[${index}]`, item.type, item.name, item.signature)
-              
-              break;
-          case "function":
-              item.signature = this.web3.eth.abi.encodeEventSignature(item);
-              if(logging) console.log(`[${index}]`, item.type, item.name, item.signature);
-              
-              break;
-      }
-
-      return item;
-    })
   }
 
   /**
@@ -77,9 +73,18 @@ module.exports = class ContractWapper {
    * @param  {} date
    * @param  {} confirmPageview
    */
-  async sendTransactionConfirmPageView(documentId, date, confirmPageview) {
-    const documentIdByte32 = this.asciiToHex(documentId);
-    const estimateGas = await this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).estimateGas({
+  async sendTransactionConfirmPageView(date, documentIds, pageviews) {
+  
+    const writePageViewMethod = this.DocumentReg.methods.updatePageViews;//this.contractMap["DocumentRegistry"].contract.methods.updatePageViews;
+    const contractAddress = this.contractMap["DocumentRegistry"].address;
+    /*
+    console.log("contract address", this.contractMap["DocumentRegistry"].address);
+    console.log("contract abi", this.contractMap["DocumentRegistry"].abi);
+    console.log("writePageViewMethod", writePageViewMethod);
+    */
+    console.log("foundation address", this.myAddress);
+    console.log("start estimate gas", date, documentIds, pageviews);
+    const estimateGas = await writePageViewMethod(date, documentIds, pageviews).estimateGas({
       from: this.myAddress
     });
     const gasLimit = Math.round(estimateGas);
@@ -88,9 +93,11 @@ module.exports = class ContractWapper {
 
     const nonce = await this.web3.eth.getTransactionCount(this.myAddress);
 
-    console.log("sendTransactionConfirmPageView", {gasLimit, gasPrice, nonce})
+    console.log("sendTransactionConfirmPageView", {gasLimit, gasPrice, nonce});
+
+    this.privateKey = await this.getPrivateKey(ethereum.privateKey);
     
-    return await this.sendTransaction(gasPrice, gasLimit, nonce, this.DocumentReg.methods.confirmPageView(documentIdByte32, date, confirmPageview).encodeABI());
+    return await this.sendTransaction(gasPrice, gasLimit, nonce, writePageViewMethod(date, documentIds, pageviews).encodeABI(), contractAddress);
   }
 
   /**
@@ -101,16 +108,16 @@ module.exports = class ContractWapper {
    * @param  {} date
    * @param  {} confirmPageview
    */
-  sendTransaction(gasPrice, gasLimit, nonce, contractABI) {
+  sendTransaction(gasPrice, gasLimit, nonce, encodeABI, contractAddress) {
     return new Promise((resolve, reject)=>{
         //creating raw tranaction
       const rawTransaction = {
         "from": this.myAddress,
         "gasPrice": this.web3.utils.toHex(gasPrice),
         "gasLimit": this.web3.utils.toHex(gasLimit),
-        "to": this.contractAddress,
+        "to": contractAddress,
         "value":"0x0",      //ether!!
-        "data": contractABI ,
+        "data": encodeABI ,
         "nonce": this.web3.utils.toHex(nonce)
       }
       console.log("sendTransactionConfirmPageView", {rawTransaction});
@@ -121,7 +128,7 @@ module.exports = class ContractWapper {
       //sending transacton via web3js module
       this.web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex')).once('transactionHash', function(hash){
         console.log("transactionHash", hash);
-        resolve(hash);
+        resolve({success: true, transactionHash: hash});
       }).once('receipt', function(receipt){
         console.log("receipt", receipt);
         resolve(receipt);
@@ -129,8 +136,8 @@ module.exports = class ContractWapper {
         console.log("confirmation", {confNumber, receipt});
         resolve({confNumber, receipt});
       }).on('error', function(error){
-        console.log("error", error);
-        reject(error);
+        console.log("sendTransaction error", error);
+        reject({success: false, error: error});
       }).then(function(receipt){
         // will be fired once the receipt is mined
         console.log("receipt", receipt);
@@ -158,47 +165,15 @@ module.exports = class ContractWapper {
   }
 
 
-  getAuthor3DayRewardOnDocument(accountId, documentId, blockchainTimestamp) {
-    //contract getAuthor3DayRewardOnDocument
-    const promise = this.DocumentReg.methods.getAuthor3DayRewardOnDocument(accountId, this.asciiToHex(documentId), blockchainTimestamp).call({
-      from: this.myAddress
-    });
-
-    return promise;
-  }
-
-  /**
-   * @description 문서에 대한 현재로 부터 3일간의  전체 Curator Reward의 총합
-   * @param  {} documentId
-   * @param  {} blockchainTimestamp
-   */
-  getCuratorDepositOnDocument (documentId, blockchainTimestamp) {
-    //function getCuratorDepositOnDocument(bytes32 _docId, uint _dateMillis) public view returns (uint)
-    return this.DocumentReg.methods.getCuratorDepositOnDocument(this.asciiToHex(documentId), blockchainTimestamp).call({from: this.myAddress});
-  }
-    
-  calculateAuthorReward(authorAddress, viewCount, totalViewCount) {
-
-    return this.DocumentReg.methods.calculateAuthorReward(viewCount, totalViewCount).call({
-      from: authorAddress
-    });
-
-  }
-
-  calculateCuratorReward(curatorId, documentId, viewCount, totalViewCount) {
-    //function calculateCuratorReward(address _addr, bytes32 _docId, uint _pv, uint _tpvs) public view returns (uint)
-    console.log(curatorId, documentId, viewCount, totalViewCount);
-    return this.DocumentReg.methods.calculateCuratorReward(curatorId, this.asciiToHex(documentId), viewCount, totalViewCount).call({from: this.myAddress});
-  }
-
-
-  async getEventLogs(eventName, latestCollectedBlockNumber) {
+  async getEventLogs(contractName, eventName, latestCollectedBlockNumber) {
 
     if(!eventName){
       throw new Error(`event is not invalid!! ${eventName}`);
     }
     
-    const selectedAbi = this.contractABI.find((abi, index)=>{
+    const contractABI = this.contractMap[contractName].abi;
+
+    const selectedAbi = contractABI.find((abi, index)=>{
       return abi.name === eventName;
     });
 

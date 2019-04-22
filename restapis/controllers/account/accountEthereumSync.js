@@ -2,9 +2,14 @@
 const AccountService = require('./AccountService');
 module.exports.handler = (event, context, callback) => {
   const {principalId, body} = event;
-  const  {ethAccount} = body;
+  const {ethAccount} = body;
   const accountService = new AccountService();
   const user = await accountService.getUserInfo({id: principalId});
+  
+  if(!ethAccount){
+    throw new Error("parameter is invalid!");
+  }
+
   if(!user){
     throw new Error(`user is not exists`);
   }
