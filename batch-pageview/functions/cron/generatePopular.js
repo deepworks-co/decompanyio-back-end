@@ -2,33 +2,31 @@
 const {utils, MongoWapper} = require('decompany-common-utils');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 
-const TB_TRACKING = tables.TRACKING;
-const TB_PAGEVIEW_LATEST = tables.PAGEVIEW_LATEST;
-const TB_DOCUMENT = tables.DOCUMENT;
+const TB_STAT_PAGEVIEW_DAILY = tables.STAT_PAGEVIEW_DAILY;
 const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
 
 const period = 7; //days
 /**
  * @description 
- * PAGEVIEW-LATEST를 1시간 마다 갱신함
- * PAGEVIEW-LATEST, DOCUMENT를 이용하여 DOCUMENT-POPULAR를 갱신함
- * DOCUMENT-POPULAR은 popular 정렬 조건에 사용됨
+ * 5분 주기로 DOCUMENT-POPULAR 갱신
+ * 현재 + 6일전 (총 7일)의 집계
  */
 module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
     const now = new Date();
-    const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
+    const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * (period - 1));
+    const start = utils.getBlockchainTimestamp(beforeDays);
     console.log("period :", period);
-    console.log("Query period", beforeDays, "(include) between (exclude)", now);
+    console.log("Query period", new Date(start), "(include) between (exclude)", now);
 
-    const queryPipeline = getQueryPipeline(beforeDays.getTime());
+    const queryPipeline = getQueryPipeline(new Date(start));
 
-    const resultList = await wapper.aggregate(TB_TRACKING, queryPipeline, {
+    const resultList = await wapper.aggregate(TB_STAT_PAGEVIEW_DAILY, queryPipeline, {
       allowDiskUse: true
     });
-    console.log(resultList);
-    console.log("pageview aggregation success count ", resultList.length);
+    
+    console.log("success pageview aggregation", resultList);
 
     return "success";
 
@@ -48,29 +46,16 @@ module.exports.handler = async (event, context, callback) => {
  * @param  {} startTimestamp
  * @param  {} endTimestamp
  */
-function getQueryPipeline(startTimestamp){
+function getQueryPipeline(start){
   const queryPipeline = [{
     $match: {
-      t: {$gte: startTimestamp},
-      n: {$gt: 1}
-    }
-  }, {
-    $group: {
-      _id: {
-        year: {$year: {$add: [new Date(0), "$t"]}}, 
-        month: {$month: {$add: [new Date(0), "$t"]}}, 
-        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}},
-        id: "$id",
-        cid: "$cid",
-        sid: "$sid"
-      },
-      timestamp: {$max: "$t"}
+      blockchainDate: {$gte: start}
     }
   }, {
     $group: {
       _id: "$_id.id",
-      latestPageview: {$sum: 1},
-      timestamp: {$max: "$timestamp"}
+      latestPageview: {$sum: "$pageview"},
+      latestPageviewList: {$addToSet: {year:"$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth", pv: "$pageview"}},
     }
   }, {
     $lookup: {
@@ -81,7 +66,6 @@ function getQueryPipeline(startTimestamp){
     }
   }, {
     $addFields: {
-      latestViewDate: {$add: [new Date(0), "$timestamp"]},
       document: { $arrayElemAt: [ "$documentAs", 0 ] },
     }
   }, {

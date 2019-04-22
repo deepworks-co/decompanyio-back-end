@@ -5,53 +5,30 @@ const { mongodb, tables, sqsConfig } = require('../../resources/config.js').APP_
 const wapper = new MongoWapper(mongodb.endpoint);
 
 /**
- * @description 전날 하루동안의 pageview를 집계 및 추가 작업
- *  - 전날 pageview 블록체인이 입력하기용 큐 발생
+ * @description 오늘 (00:00) 현재까지 (최대 24:00) pageview 집계 및 추가 작업
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
- *  - 하루에 한번 UTC+0 00:10분에 동작
+ *  - 5분마다 동작
  * @function
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
-  console.log(event.period);
-  const period = isNaN(event.period)?1:event.period;
+
   const now = new Date();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * period);
-  const startTimestamp = utils.getBlockchainTimestamp(startDate);
-  const endTimestamp = utils.getBlockchainTimestamp(now);
+  const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24);
+  const start = utils.getBlockchainTimestamp(now);
+  const end = utils.getBlockchainTimestamp(tomorrow);
 
-  console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp), "period", period);
+  console.log("query startDate", new Date(start), "~", new Date(end));
 
-  const totalPageviewResult = await aggregatePageviewTotalCount(startTimestamp, endTimestamp);
+  const totalPageviewResult = await aggregatePageviewTotalCountAndSave(start, end);
   console.log("aggregatePageviewTotalCount result", totalPageviewResult);
     
-  const resultList = await aggregatePageview(startTimestamp, endTimestamp);
-  console.log("Daily", new Date(startTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
+  const resultList = await aggregatePageview(start, end);
+  console.log("Daily", new Date(start), "aggregatePageview Count", resultList?resultList.length:0);
   console.log("aggregatePageview resultList count", resultList.length);
 
   const updateResult = await updateStatPageviewDaily(resultList);
-  console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
-
-  const promises = [];
-  const count = resultList.length; // 집계된 문서수 (total count 정보)
-  const unit = 10000;             // write on chain시 한번에 처리할 문서수 (limit 정보)
-  const endIndex = parseInt(count / unit); // 마지막 묶음의 index (+1 묶음 갯수) (skip 정보)
-  /**
-   * write pageview onchain 을 호출하기 위한 SQS를 보낸다.
-   * 집계된 문서의 목록 조회 조건을 보낸다.
-   */
-  for(let index=0 ; index < endIndex + 1 ; index++){
-    const messageBody = JSON.stringify({
-      blockchainTimestamp: startTimestamp,
-      count: count,
-      unit: unit,
-      endIndex: endIndex,
-      index: index
-    });
-    promises.push(sendMessagePageviewOnchain(messageBody));
-  }
-  
-  const sqsSendResult = await Promise.all(promises);
+  console.log("updateStatPageviewRecently(Today) Success", JSON.stringify(updateResult));
 
   return "success";
 }
@@ -111,7 +88,7 @@ function getQueryPipeline(startTimestamp, endTimestamp){
  * @param  {} startTimestamp
  * @param  {} endTimestamp
  */
-async function aggregatePageviewTotalCount(startTimestamp, endTimestamp) {
+async function aggregatePageviewTotalCountAndSave(startTimestamp, endTimestamp) {
   const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp)
   queryPipeline.push({
     $group: {
@@ -129,7 +106,7 @@ async function aggregatePageviewTotalCount(startTimestamp, endTimestamp) {
   const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
     allowDiskUse: true
   });
-  
+  console.log("aggregatePageviewTotalCountAndSave", resultList);
   const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
   resultList.forEach((item, index)=>{
     
@@ -138,10 +115,8 @@ async function aggregatePageviewTotalCount(startTimestamp, endTimestamp) {
     item.created = Date.now();
     bulk.find({_id: item._id}).upsert().replaceOne(item);
   });
-  console.log("aggregatePageviewTotalCount bulk ops", bulk.tojson());
-  const bulkResult = await wapper.execute(bulk); 
-  console.log("aggregatePageviewTotalCount bulk result", tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, JSON.stringify(bulkResult));
-  return bulkResult;
+  
+  return  await wapper.execute(bulk); 
 }
 
 /**
@@ -158,19 +133,6 @@ async function aggregatePageview(startTimestamp, endTimestamp){
   });
 
   return resultList;
-}
-
-/**
- * @param  {} blockchainTimestamp
- * @param  {} documentId
- * @param  {} confirmPageview
- */
-function sendMessagePageviewOnchain(messageBody){
-  
-  console.info("sendMessagePageviewOnchain", messageBody);
-  const queueUrl = sqsConfig.queueUrls.PAGEVIEW_TO_ONCHAIN;
-  
-  return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }
 
 /**

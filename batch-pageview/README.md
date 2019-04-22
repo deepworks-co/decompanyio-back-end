@@ -30,7 +30,9 @@ sls create function -f readLatestCreatorReward --handler functions/onchain/readL
 sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
 sls create function -f voteCollector --handler functions/cron/voteCollector.handler
 sls create function -f pageviewCollector --handler functions/cron/pageviewCollector.handler
-sls create function -f dailyPageviewWriteOnChain --handler functions/cron/dailyPageviewWriteOnChain.handler
+sls create function -f registryCollector --handler functions/cron/registryCollector.handler
+sls create function -f blockCollector --handler functions/cron/blockCollector.handler
+sls create function -f recentlyPageview --handler functions/cron/recentlyPageview.handler
 
 # Test
 
