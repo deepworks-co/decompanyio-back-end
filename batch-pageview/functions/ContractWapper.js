@@ -39,7 +39,7 @@ module.exports = class ContractWapper {
     
     this.DocumentReg = this.contractMap["DocumentRegistry"].contract;
     this.Creator = this.contractMap["Creator"].contract;
-    this.Curator = this.contractMap["Curator"].contract;
+    this.Ballot = this.contractMap["Ballot"].contract;
     
   }
 
