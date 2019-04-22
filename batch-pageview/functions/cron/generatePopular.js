@@ -21,7 +21,7 @@ module.exports.handler = async (event, context, callback) => {
     console.log("Query period", new Date(start), "(include) between (exclude)", now);
 
     const queryPipeline = getQueryPipeline(new Date(start));
-
+    console.log("queryPipeline", JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_STAT_PAGEVIEW_DAILY, queryPipeline, {
       allowDiskUse: true
     });
