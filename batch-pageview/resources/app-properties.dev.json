@@ -28,7 +28,6 @@
     "ethereum": {
         "abis": [
             {"name": "DocumentRegistry", "path": "./contracts-rinkeby-alpha/DocumentRegistry.json"},
-            {"name": "Creator", "path": "./contracts-rinkeby-alpha/Creator.json"},
             {"name": "Ballot", "path": "./contracts-rinkeby-alpha/Ballot.json"}
         ],
         "network": "rinkeby", 
