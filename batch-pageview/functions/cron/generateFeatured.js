@@ -3,7 +3,7 @@ const {utils, MongoWapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig} = require('../../resources/config.js').APP_PROPERTIES();
 
 const TB_DOCUMENT = tables.DOCUMENT;
-const period = 30;
+const period = 3;
 /**
  * @description 
  * 1시간마다 전체 문서의 VoteAmount를 가져오기 위한 SQS생성함
