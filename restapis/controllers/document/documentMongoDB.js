@@ -823,7 +823,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
@@ -863,14 +863,14 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
-        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$statDate"}},
+        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$blockchainDate"}},
         totalCount: {$sum: "$pageview"},
-        start: {$min: "$statDate"},
-        end: {$max: "$statDate"},
+        start: {$min: "$blockchainDate"},
+        end: {$max: "$blockchainDate"},
       }
     }, {
       $sort:{_id:1}
@@ -906,7 +906,7 @@ async function getAnalyticsListMonthly(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
@@ -915,7 +915,7 @@ async function getAnalyticsListMonthly(documentIds, start, end) {
       }
     }, {
       $sort:{_id:1 }
-    },{ 
+    }, { 
       $project: {
         "_id": 0,
         year: "$_id.year",
