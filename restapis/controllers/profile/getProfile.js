@@ -17,7 +17,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("parameter is invalid!!")
   }
 
-  const user = await accountService.getUserInfo(params, {email: 1, name: 1, username:1, picture: 1, nickname: 1, family_name:1 });
+  const user = await accountService.getUserInfo(params, {email: 1, name: 1, username:1, picture: 1, nickname: 1, family_name:1, ethAccount: 1 });
   
   if(!user){
     return JSON.stringify({
