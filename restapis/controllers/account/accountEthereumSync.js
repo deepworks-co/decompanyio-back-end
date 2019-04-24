@@ -1,6 +1,6 @@
 'use strict';
 const AccountService = require('./AccountService');
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
   const {principalId, body} = event;
   const {ethAccount} = body;
   const accountService = new AccountService();
