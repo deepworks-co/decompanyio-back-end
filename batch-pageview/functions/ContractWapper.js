@@ -35,11 +35,6 @@ module.exports = class ContractWapper {
 
       console.log("init contract", abi);
     });
-
-    
-    this.DocumentReg = this.contractMap["DocumentRegistry"].contract;
-    this.Creator = this.contractMap["Creator"].contract;
-    this.Ballot = this.contractMap["Ballot"].contract;
     
   }
 
@@ -74,8 +69,8 @@ module.exports = class ContractWapper {
    * @param  {} confirmPageview
    */
   async sendTransactionConfirmPageView(date, documentIds, pageviews) {
-  
-    const writePageViewMethod = this.DocumentReg.methods.updatePageViews;//this.contractMap["DocumentRegistry"].contract.methods.updatePageViews;
+    const DocumentReg = this.contractMap["DocumentRegistry"].contract;
+    const writePageViewMethod = DocumentReg.methods.updatePageViews;//this.contractMap["DocumentRegistry"].contract.methods.updatePageViews;
     const contractAddress = this.contractMap["DocumentRegistry"].address;
     /*
     console.log("contract address", this.contractMap["DocumentRegistry"].address);
@@ -160,8 +155,8 @@ module.exports = class ContractWapper {
 
 
   async isExistsDocument(documentId) {
-    
-    return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
+    const DocumentReg = this.contractMap["DocumentRegistry"].contract;
+    return DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
 
