@@ -20,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("Unauthorized");
   }
 
-  const resultList = await documentService.getTrackingInfo(documentId, cid, null, include?JSON.parse(include):false);
+  const resultList = await documentService.getTrackingInfo(documentId, cid, include?JSON.parse(include):false);
   //console.log("query result", resultList);
   //const r = resultList[0]?resultList[0].resultList:resultList;
 

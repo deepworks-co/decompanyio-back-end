@@ -841,7 +841,7 @@ async function getTrackingList(documentId, anonymous, include) {
  * @param  {} cid
  * @param  {} sid
  */
-async function getTrackingInfo(documentId, cid, sid, include) {
+async function getTrackingInfo(documentId, cid, include) {
   if(!documentId || !cid ){
     throw new Error("document id or cid is invalid");
   }
@@ -874,18 +874,7 @@ async function getTrackingInfo(documentId, cid, sid, include) {
       }
     })
   }
-/*
-  if(!include){
-    console.log("excluding 1 page view");
-    queryPipeline.push({
-      $match: {
-        viewTrackingCount: {$gt: 2}
-      }
-    })
-  } else {
-    console.log("include 1 page view");
-  }
-*/
+
   const wapper = new MongoWapper(connectionString);
   try{
     console.log(JSON.stringify(queryPipeline));
