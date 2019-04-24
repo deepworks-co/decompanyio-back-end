@@ -167,6 +167,7 @@ module.exports = class ContractWapper {
     }
     
     const contractABI = this.contractMap[contractName].abi;
+    const contractAddress = this.contractMap[contractName].address;
 
     const selectedAbi = contractABI.find((abi, index)=>{
       return abi.name === eventName;
@@ -182,11 +183,11 @@ module.exports = class ContractWapper {
       throw new Error(`signature is invaild!!! signature : ${signature}`);
     } 
     
-    console.log({latestCollectedBlockNumber, eventName, signature, contract: this.contractAddress, selectedAbi});
+    console.log({latestCollectedBlockNumber, eventName, signature, contract: contractAddress, selectedAbi});
     const options = {
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
-      address: this.contractAddress,
+      address: contractAddress,
       topics: [ signature ]
     }
     //console.log("getPastLogs options", options);

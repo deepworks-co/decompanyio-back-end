@@ -26,8 +26,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log("aggregatePageviewTotalCount result", totalPageviewResult);
     
   const resultList = await aggregatePageview(startTimestamp, endTimestamp);
-  console.log("Daily", new Date(startTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
-  console.log("aggregatePageview resultList count", resultList.length);
+  console.log("aggregatePageview", startTimestamp, new Date(startTimestamp), "length", resultList?resultList.length:0);
 
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
@@ -152,7 +151,7 @@ async function aggregatePageviewTotalCount(startTimestamp, endTimestamp) {
 async function aggregatePageview(startTimestamp, endTimestamp){
     
   const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
-
+  console.log("aggregatePageview queryPipeline", JSON.stringify(queryPipeline));
   const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
     allowDiskUse: true
   });

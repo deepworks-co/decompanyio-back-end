@@ -27,19 +27,19 @@ module.exports.handler = async (event, context, callback) => {
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
     }
-    
+
     console.log(`start blockNumber ${startBlockNumber} ~ latest`);
 
     const contractWapper = new ContractWapper();
     
     const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
-    console.log(`get ${resultList.length} event logs from ${startBlockNumber}`);
+    console.log(`get ${resultList.length} event logs from blocknumber #${startBlockNumber}`);
     
     const bulk = wapper.getUnorderedBulkOp(tableName);
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;
-      console.log(`Get Event Logs ${index} :`, result);
+      //console.log(`Get Event Logs ${index} :`, result);
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
@@ -59,7 +59,7 @@ module.exports.handler = async (event, context, callback) => {
         log: log,
         decoded: decoded
       }
-      //console.log("new item", item);
+      //console.log("new item", JSON.stringify(item));
       bulk.find({_id: item._id }).upsert().updateOne(item);
     })
     const executeResult = await wapper.execute(bulk);
