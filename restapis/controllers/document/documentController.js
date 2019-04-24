@@ -102,7 +102,6 @@ module.exports.regist = async (event, context, callback) => {
 
   }
 
-
 };
 
 
@@ -121,8 +120,8 @@ module.exports.list = async (event, context, callback) => {
   const tag = params.tag;
   const path = params.path;
   const skip = ((pageNo - 1) * pageSize);
-  const date = utils.getBlockchainTimestamp(new Date());//today
-  const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
+
+  const totalViewCountInfo = await documentService.getRecentlyPageViewTotalCount();
 
   if(!accountId && email){
     const user = await documentService.getUser({email:email});
@@ -210,53 +209,6 @@ module.exports.info = async (event, context, callback) => {
     throw e
   }
   
-}
-
-module.exports.vote = (event, context, callback) => {
-
-  //console.log(event);
-  const documentId = event.pathParameters.documentId;
-  const params = JSON.parse(event.body);
-
-  console.log("params", params);
-  if(!documentId) return;
-
-  const promise1 = documentService.putVote(params);
-  const promise2 = documentService.updateVoteHist(params);
-
-  Promise.all([promise1, promise2]).then((results) => {
-    //for view count log
-    const data = results[0]; //putVote
-    const result2 = results[1]; //putVoteHist 사용안함
-
-    console.log("Put Vote", data);
-    console.log("Put VoteHist", result2)
-
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: 'SUCCESS',
-        vote: data
-      }),
-    });
-  }).catch((errs) => {
-    console.error("Vote error : ", errs);
-
-    callback(null, {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          message: errs
-        }),
-    });
-  });
 }
 
 module.exports.downloadFile = async (event, context, callback) => {

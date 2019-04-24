@@ -112,19 +112,33 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponse"
-  curatorTodayDocumentList:
-    handler: controllers/curator/curatorTodayDocumentList.handler
+  curatorSummary:
+    handler: controllers/curator/curatorSummary.handler
     events:
       - http:
-          path: /api/curator/document/today
-          method: post
+          path: /api/curator/summary
+          method: get
           cors: true
           integration: lambda
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-
+          documentation:
+            summary: "/api/curator/summary"
+            description: "/api/curator/summary"
+            queryParams:
+              - name: ethAccount
+                description: ethAccount
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponse"
   zapierEmail:
     handler: controllers/zapier/email.handler
     events:
@@ -427,18 +441,6 @@ functions:
     events:
       - http:
           path: api/document/list
-          method: post
-          cors: true
-          integration: lambda
-          request:
-            application/json: '{ "httpMethod" : "$context.httpMethod" }'
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-              Cache-Control: "'max-age=120'"
-            template: $input.path('$')
-      - http:
-          path: api/document/list
           method: get
           cors: true
           integration: lambda
@@ -476,20 +478,7 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-
-  documentVote:
-    handler: controllers/document/documentController.vote
-    events:
-      - http:
-          path: api/document/vote/{documentId}
-          method: post
-          cors: true
-          request:
-            parameters:
-                paths:
-                  id: true
-            
+            template: $input.path('$')            
 
   documentDownload:
     handler: controllers/document/documentController.downloadFile

@@ -3,6 +3,7 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
+const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
 const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
 const TB_VOTE = tables.VOTE;
 const TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY = tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY;
@@ -21,7 +22,8 @@ module.exports = {
   putDocument,
   saveDocument,
   queryVotedDocumentByCurator,
-  queryTotalViewCountByToday,
+  getRecentlyPageViewTotalCount,
+  queryRecentlyVoteList,
   getFeaturedDocuments,
   putTrackingInfo,
   getTrackingInfo,
@@ -207,7 +209,8 @@ async function queryDocumentListByLatest (params) {
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
-        latestPageview: "$popular.latestPageview"
+        latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList"
 
       }
     }, {
@@ -278,7 +281,7 @@ async function queryDocumentListByPopular (params) {
         as: "authorAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, latestPageviewList: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
     }, {
       $addFields: {
         documentId: "$_id",
@@ -369,6 +372,7 @@ async function queryDocumentListByFeatured (params) {
         totalPageview: "$document.totalPageview",
         ethAccount: "$document.ethAccount",
         latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
       }
     }, {
@@ -489,7 +493,7 @@ async function queryVotedDocumentByCurator(args) {
   }, {
     $group:
     {
-        _id: {documentId: "$documentId"},
+        _id: "$documentId",
         deposit: {$sum: "$deposit"},
         documentId : { $first: '$documentId' }
     }
@@ -509,13 +513,54 @@ async function queryVotedDocumentByCurator(args) {
     }
   },
   {
-    "$match": {
+    $match: {
       "documentInfo": { "$exists": true, "$ne": null }
     }
   }, {
     $skip: skip
   }, {
     $limit: pageSize
+  }, {
+    $addFields: {
+      accountId: "$documentInfo.accountId"
+    }
+  }, {
+    $lookup: {
+      from: TB_USER,
+      localField: "accountId",
+      foreignField: "_id",
+      as: "authorAs"
+    }
+  }, {
+    $lookup: {
+      from: TB_DOCUMENT_POPULAR,
+      localField: "_id",
+      foreignField: "_id",
+      as: "popularAs"
+    }
+  }, {
+    $addFields: {
+      author: { $arrayElemAt: [ "$authorAs", 0 ] },
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+    }
+  }, {
+    $addFields: {
+      documentName: "$documentInfo.documentName",
+      title: "$documentInfo.title",
+      seoTitle: "$documentInfo.seoTitle",
+      desc: "$documentInfo.desc",
+      tags: "$documentInfo.tags",
+      seoTitle: "$documentInfo.seoTitle",
+      created: "$documentInfo.created",
+      latestPageview: "$popular.latestPageview",
+    }
+  }, {
+    $project: {
+      documentInfo: 0,
+      authorAs: 0,
+      popularAs: 0,
+      popular: 0
+    }
   }]
   
   const wapper = new MongoWapper(connectionString);
@@ -538,17 +583,71 @@ async function queryVotedDocumentByCurator(args) {
 
 
 /**
+ * 최근 8일간의 vote목록
+ * @param  {} args
+ */
+async function queryRecentlyVoteList(args) {
+
+  const applicant = args.applicant;
+  const startTimestamp = args.startTimestamp?args.startTimestamp:1;
+
+  const queryPipeline = [{
+    $match: {
+      applicant: applicant,
+      created: {$gt: startTimestamp}
+    }
+  }, {
+    $sort: {
+        documentId: 1,
+        created: -1
+    }
+  }, {
+    $group:{
+      _id: {
+        documentId: "$documentId",
+        year: {$year: {$add: [new Date(0), "$created"]}}, 
+        month: {$month: {$add: [new Date(0), "$created"]}}, 
+        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+      },
+      deposit: {$sum: "$deposit"}
+    }
+  }, {
+    $group:{
+      _id: "$_id.documentId",
+      depositList: {$addToSet: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth", deposit: "$deposit"}}
+    }
+  }]
+  
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    console.log(TB_VOTE, "querypipeline", JSON.stringify(queryPipeline));
+    const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
+
+    return resultList;
+  }catch(err){
+    throw err;
+  }finally{
+    wapper.close();
+  }
+  
+}
+
+
+
+/**
  * @param  {} date
  */
-async function queryTotalViewCountByToday (date) {
+async function getRecentlyPageViewTotalCount () {
   const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  const startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 8);
   try{
-    let result = await wapper.findOne(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
-      blockchainTimestamp: date
+    let result = await wapper.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
+      blockchainDate: {$gte: startDate}
     });
-    console.log("queryTotalViewCountByToday", result);
     if(!result) {
-      result = {totalPageviewSquare: 0, totalPageview: 0, blockchainTimestamp: date}
+      result = []
     }
     return result;
   }catch(e){

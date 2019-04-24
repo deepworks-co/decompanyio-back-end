@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const date = utils.getBlockchainTimestamp(new Date());    //utc today
   console.log(date);
-  const promise2 = documentService.queryTotalViewCountByToday(date);
+  const promise2 = documentService.getRecentlyPageViewTotalCount();
 
   const results = await Promise.all([promise1, promise2]);
   
