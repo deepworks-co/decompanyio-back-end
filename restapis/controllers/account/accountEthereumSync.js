@@ -4,7 +4,7 @@ module.exports.handler = async (event, context, callback) => {
   const {principalId, body} = event;
   const {ethAccount} = body;
   const accountService = new AccountService();
-  const user = await accountService.getUserInfo({id: principalId});
+  let user = await accountService.getUserInfo({id: principalId});
   
   if(!ethAccount){
     throw new Error("parameter is invalid!");
@@ -18,12 +18,14 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error(`The ethereum account has already been registered. ${user.ethAccount}`);
   } 
   
-  const result = await accountService.updateUserEthAccount(accountId, ethAccount);
+  const result = await accountService.updateUserEthAccount(principalId, ethAccount);
+
+  user = await accountService.getUserInfo({id: principalId});
 
   
   const response = JSON.stringify({
     success: true,
-    ethAccount: user.ethAccount
+    user: user
   })
 
   return callback(null, response);
