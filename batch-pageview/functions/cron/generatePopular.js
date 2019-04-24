@@ -9,13 +9,13 @@ const period = 7; //days
 /**
  * @description 
  * 5분 주기로 DOCUMENT-POPULAR 갱신
- * 현재 + 6일전 (총 7일)의 집계
+ * 현재 + 이전 7일  집계
  */
 module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
     const now = new Date();
-    const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * (period - 1));
+    const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
     const start = utils.getBlockchainTimestamp(beforeDays);
     console.log("period :", period);
     console.log("Query period", new Date(start), "(include) between (exclude)", now);
