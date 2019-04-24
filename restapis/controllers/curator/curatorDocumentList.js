@@ -18,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
   const pageNo = (isNaN(query.pageNo) || query.pageNo<1)?1:Number(query.pageNo);
   const ethAccount = query.ethAccount;
   const tag = query.tag;
-  const pageSize = query.pageSize?query.pageSize:20;
+  const pageSize = isNaN(query.pageSize)?20:Number(query.pageSize);
 
   if(!ethAccount){
     throw new Error(`parameter is invalid!! ${JSON.stringify(query)}`);
