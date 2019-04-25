@@ -146,7 +146,6 @@ functions:
           path: /api/zapier/email
           method: get
           cors: true
-          authorizer: accountAuth
           integration: lambda
           response:
             headers:
