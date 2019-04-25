@@ -232,6 +232,12 @@ functions:
           path: /api/tags
           method: get
           cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+              Cache-Control: "'max-age=120'"
+            template: $input.path('$')
           documentation:
             summary: "/api/tags"
             description: "/api/tags"
