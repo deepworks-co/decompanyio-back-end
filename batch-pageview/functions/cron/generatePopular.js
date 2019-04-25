@@ -55,7 +55,7 @@ function getQueryPipeline(start){
     $group: {
       _id: "$_id.id",
       latestPageview: {$sum: "$pageview"},
-      latestPageviewList: {$addToSet: {year:"$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth", pv: "$pageview"}},
+      latestPageviewList: {$addToSet: {year:"$_id.year", month: "$_id.month", dayOfMonth:"$_id.dayOfMonth", pv: "$pageview", timestamp: {$toLong:{$dateFromString: {dateString: {$concat:[{$toString: "$_id.year"}, "-", {$toString: "$_id.month"}, "-", {$toString: "$_id.dayOfMonth"}]}}}}}},
     }
   }, {
     $lookup: {
