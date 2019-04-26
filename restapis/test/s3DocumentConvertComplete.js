@@ -39,6 +39,7 @@ describe('s3DocumentConvertComplete', () => {
         
       ]
     }
+    /*
     const Records = [];
     for(let i=0;i<34;i++){
       Records.push({
@@ -52,8 +53,8 @@ describe('s3DocumentConvertComplete', () => {
         }
       });
     }
-    
-    return wrapped.run({Records}).then((response) => {
+    */
+    return wrapped.run(event).then((response) => {
       //console.log("test result", response);
       expect(response).to.not.be.empty;
     });

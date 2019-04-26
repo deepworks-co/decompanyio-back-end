@@ -2,23 +2,17 @@
 const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
 const {kinesis} = require('decompany-common-utils');
+//const geoip = require('geoip-lite');
 
 module.exports.handler = async (event, context, callback) => {
-  //console.log(JSON.stringify(event));
-  const headers = event.headers?event.headers:{}
-  const body = event.queryStringParameters?event.queryStringParameters:{};
+  console.log(JSON.stringify(event));
+  const {headers, query} = event;
+  const body = query
 
   if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
     console.error("tracking error", "parameter is invalid", body);
-    return (null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: "no collecting"
-      })
+    return JSON.stringify({
+      message: "no collecting"
     })
   }
 
@@ -36,8 +30,13 @@ module.exports.handler = async (event, context, callback) => {
   body.referer = headers.Referer;
   body.useragent = headers["User-Agent"];
   body.xforwardedfor = ips;
+  /*
+  if(ips && ips.length>0){
+    body.geo = getCountryByIp(ips);
+  }
+  */
   body.headers = headers;
-  //console.log("tracking body", body);
+  console.log("tracking body", JSON.stringify(body));
   if(applicationLogAppender && applicationLogAppender.enable){
     try{
       const partitionKey = "tracking-" + Date.now();
@@ -51,24 +50,21 @@ module.exports.handler = async (event, context, callback) => {
 
   const result = await documentService.putTrackingInfo(body);
   console.log("tracking save", result);
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      success: true,
-      message: "ok"
-    }) 
-  };
+  const response = JSON.stringify({
+    success: true,
+    message: "ok"
+  });
   //console.log("success", body);
-  return (null, response);
+  return response;
 };
 
-/*
-* geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...
-function getGeoIps(ips){
+
+/* 
+geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...
+그래서  layer로 분리함 ㅎㅎ 
+그래도 큼;;; ㅠㅠ
+
+function getCountryByIp(ips){
   const returnValues = [];
   ips.forEach((ip) => {
     const geo = geoip.lookup(ip.replace(/^\s+|\s+$/g,""));

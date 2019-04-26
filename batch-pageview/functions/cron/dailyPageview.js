@@ -22,27 +22,37 @@ module.exports.handler = async (event, context, callback) => {
   console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp), "period", period);
 
   const totalPageviewResult = await aggregatePageviewTotalCount(startTimestamp, endTimestamp);
+  console.log("aggregatePageviewTotalCount result", totalPageviewResult);
     
   const resultList = await aggregatePageview(startTimestamp, endTimestamp);
   console.log("Daily", new Date(startTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
-  console.log("aggregatePageview resultList", JSON.stringify(resultList));
+  console.log("aggregatePageview resultList count", resultList.length);
 
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
-  
+
   const promises = [];
+  const count = resultList.length; // 집계된 문서수 (total count 정보)
+  const unit = 10000;             // write on chain시 한번에 처리할 문서수 (limit 정보)
+  const endIndex = parseInt(count / unit); // 마지막 묶음의 index (+1 묶음 갯수) (skip 정보)
+  /**
+   * write pageview onchain 을 호출하기 위한 SQS를 보낸다.
+   * 집계된 문서의 목록 조회 조건을 보낸다.
+   */
+  for(let index=0 ; index < endIndex + 1 ; index++){
+    const messageBody = JSON.stringify({
+      blockchainTimestamp: startTimestamp,
+      count: count,
+      unit: unit,
+      endIndex: endIndex,
+      index: index
+    });
+    promises.push(sendMessagePageviewOnchain(messageBody));
+  }
+  
+  const sqsSendResult = await Promise.all(promises);
 
-  resultList.forEach((item)=>{
-    //console.log("put sqs", item);
-    const blockchainTimestamp = Date.UTC(item.year, item.month-1, item.dayOfMonth);
-    promises.push(sendMessagePageviewOnchain(blockchainTimestamp, item.documentId, item.pageview));
-    //promises.push(sendMessageReadCreatorReward(item.documentId, blockchainTimestamp));
-  })
-
-  const sqsResult = await Promise.all(promises);
-  //console.log("SQS Send Result", sqsResult);
-  return (null, "success");
-
+  return "success";
 }
 
 /**
@@ -154,34 +164,14 @@ async function aggregatePageview(startTimestamp, endTimestamp){
  * @param  {} documentId
  * @param  {} confirmPageview
  */
-function sendMessagePageviewOnchain(blockchainTimestamp, documentId, confirmPageview){
+function sendMessagePageviewOnchain(messageBody){
   
-  const messageBody = JSON.stringify({
-    documentId: documentId,
-    confirmPageview: confirmPageview,
-    date: blockchainTimestamp
-  });
   console.info("sendMessagePageviewOnchain", messageBody);
   const queueUrl = sqsConfig.queueUrls.PAGEVIEW_TO_ONCHAIN;
   
   return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
 }
 
-/**
- * @param  {} documentId
- * @param  {} blockchainTimestamp
- */
-function sendMessageReadCreatorReward(documentId, blockchainTimestamp){
-  
-  const messageBody = JSON.stringify({
-    documentId: documentId,
-    blockchainTimestamp: blockchainTimestamp
-  });
-  console.info("sendMessageReadCreatorReward", messageBody);
-  const queueUrl = sqsConfig.queueUrls.LATEST_CREATOR_REWARD_FROM_ONCHAIN;
-  
-  return sqs.sendMessage(sqsConfig.region, queueUrl, messageBody);
-}
 /**
  * @param  {} resultList
  * [
@@ -203,9 +193,10 @@ function sendMessageReadCreatorReward(documentId, blockchainTimestamp){
 async function updateStatPageviewDaily(resultList){
   const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
   resultList.forEach((item, index)=>{
-    const statDate = new Date(Date.UTC(item.year, item.month-1, item.dayOfMonth));
     item.created = Date.now();
-    item.statDate = statDate;
+    const blockchainDate = new Date(Date.UTC(item.year, item.month-1, item.dayOfMonth));
+    item.blockchainDate = blockchainDate;
+    item.blockchainTimestamp = utils.getBlockchainTimestamp(blockchainDate);    
     console.log("updateStatPageviewDaily bulk index", index, JSON.stringify(item));
     bulk.find({_id: item._id}).upsert().replaceOne(item);
   });

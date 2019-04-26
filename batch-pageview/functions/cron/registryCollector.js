@@ -6,19 +6,18 @@ const {utils, MongoWapper} = require('decompany-common-utils');
 
 
 const contractName = "DocumentRegistry"
-const eventName = "PutPageView";
+const eventName = "Register";
 
 module.exports.handler = async (event, context, callback) => {
  
   const wapper = new MongoWapper(mongodb.endpoint);
-  const tableName = tables.EVENT_WRITEPAGEVIEW;
+  const tableName = tables.EVENT_REGISTRY;
   try{
     const maxOne = await wapper.aggregate(tableName, [
       {
         $group: {
           _id: null,
-          blockNumber : { $max: '$blockNumber' },
-          updated: {$max: '$updated'}
+          blockNumber : { $max: '$blockNumber' }
         }
       }
     ]);
@@ -40,7 +39,7 @@ module.exports.handler = async (event, context, callback) => {
 
     resultList.forEach((result, index)=>{
       const {decoded, abi, created, log} = result;
-      console.log(`Get Event Logs ${index} :`, result, );
+      console.log(`Get Event Logs ${index} :`, result);
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
@@ -53,10 +52,10 @@ module.exports.handler = async (event, context, callback) => {
         blockNumber: log.blockNumber,
         documentId: documentId,
         docId: decoded.docId,
-        updated: now.getTime(),
-        updatedDate: now,
         contractName: contractName,
         eventName: eventName,
+        updated: now.getTime(),
+        updatedDate: now, 
         log: log,
         decoded: decoded
       }

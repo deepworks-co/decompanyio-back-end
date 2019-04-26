@@ -48,10 +48,9 @@ provider:
     - .env
 
 functions:
-
-  onchainWritePageview:
-    handler: functions/onchain/writePageview.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
+  pageviewWriteOnchain:
+    handler: functions/onchain/pageviewWriteOnchain.handler
+    timeout: 300
     reservedConcurrency: 1
     events:
       - sqs:
@@ -76,6 +75,12 @@ functions:
     events:
       - schedule: rate(5 minutes) # hourly
 
+  generateTotalPageview:
+    handler: functions/cron/generateTotalPageview.handler
+    timeout: 30
+    events:
+      - schedule: rate(5 minutes) # hourly
+
   generateTopTag:
     handler: functions/cron/generateTopTag.handler
     timeout: 300 # optional, in seconds, default is 6, 5min
@@ -90,6 +95,18 @@ functions:
       
   pageviewCollector:
     handler: functions/cron/pageviewCollector.handler
+    timeout: 300
+    events:
+      - schedule: rate(1 minute) # 10min, hourly
+
+  registryCollector:
+    handler: functions/cron/registryCollector.handler
+    timeout: 300
+    events:
+      - schedule: rate(1 minute) # 10min, hourly
+      
+  blockCollector:
+    handler: functions/cron/blockCollector.handler
     timeout: 300
     events:
       - schedule: rate(1 minute) # 10min, hourly

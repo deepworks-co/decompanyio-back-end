@@ -1,5 +1,9 @@
 # APIs
 
+## Git clone & checkout
+git clone https://github.com/decompanyio/decompanyio-back-end.git {branchName} --branch {branchName}
+sprint-qa-03]$ git clone https://github.com/decompanyio/decompanyio-back-end.git sprint-qa-03 --branch sprint-qa-03
+
 ## install dependence
 
 npm install --save-dev serverless-mocha-plugin
@@ -7,6 +11,7 @@ npm install ../decompany-modules/decompany-common-utils/
 npm install mongojs
 npm install aws-sdk
 npm install web3
+npm install rxjs
 npm install ethereumjs-tx
 
 
@@ -25,6 +30,7 @@ sls create function -f readLatestCreatorReward --handler functions/onchain/readL
 sls create function -f hourlyReadVote --handler functions/cron/hourlyReadVote.handler
 sls create function -f voteCollector --handler functions/cron/voteCollector.handler
 sls create function -f pageviewCollector --handler functions/cron/pageviewCollector.handler
+sls create function -f dailyPageviewWriteOnChain --handler functions/cron/dailyPageviewWriteOnChain.handler
 
 # Test
 

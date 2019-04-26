@@ -5,9 +5,9 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('onchainWritePageview', '/functions/onchain/writePageview.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('pageviewWriteOnchain', '/functions/onchain/pageviewWriteOnchain.js', 'handler');
 
-describe('onchainWritePageview', () => {
+describe('pageviewWriteOnchain', () => {
   before((done) => {
     done();
   });
@@ -15,16 +15,17 @@ describe('onchainWritePageview', () => {
   it('implement tests here', () => {
 
     const event = {
-      Records:[
-        {
-          body: JSON.stringify({
-            documentId: "94410936ec974a9c9590dfee96749acc",
-            date: 1550620800000,
-            confirmPageview: 1
-          })
-        }
-      ]
+      Records:[{
+        body: JSON.stringify({
+          blockchainTimestamp: 1555286400000,
+          count: 14,
+          unit: 10000,
+          endIndex: 0,
+          index: 0
+        })
+      }]
     }
+
     return wrapped.run(event).then((response) => {
       console.log("Test Complete", response)
       expect(response).to.not.be.empty;

@@ -3,14 +3,15 @@ const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
-
+const contractName = "Curator";
+const eventName = "AddVote";
 module.exports.handler = async (event, context, callback) => {
  
 
   const wapper = new MongoWapper(mongodb.endpoint);
-  
+  const tableName = tables.VOTE;
   try{
-    const maxOne = await wapper.aggregate(tables.VOTE, [
+    const maxOne = await wapper.aggregate(tableName, [
       {
         $group: {
           _id: null,
@@ -26,10 +27,10 @@ module.exports.handler = async (event, context, callback) => {
     }
     startBlockNumber = 1;
     const contractWapper = new ContractWapper();
-    const resultList = await contractWapper.getEventLogs("_VoteOnDocument", startBlockNumber);
-    console.log(`start blockNumber ${startBlockNumber} get event logs success!!!! ${resultList.length} count`);
+    const resultList = await contractWapper.getEventLogs(contractName, eventName, startBlockNumber);
+    console.log(`get ${resultList.length} event logs from ${startBlockNumber}`);
     
-    const bulk = wapper.getUnorderedBulkOp(tables.VOTE);
+    const bulk = wapper.getUnorderedBulkOp(tableName);
 
     const promises = resultList.map(async (result, index)=>{
       const {decoded, abi, log} = result;
@@ -49,6 +50,8 @@ module.exports.handler = async (event, context, callback) => {
         applicant: decoded.applicant,
         deposit: Number(decoded.deposit),
         created: block.timestamp * 1000,
+        contractName: contractName,
+        eventName: eventName,
         log: log
       }
       //console.log("new item", item);
