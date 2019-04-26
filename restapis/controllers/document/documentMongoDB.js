@@ -533,6 +533,7 @@ async function queryVotedDocumentByCurator(args) {
     }
   }, {
     $lookup: {
+
       from: TB_DOCUMENT_POPULAR,
       localField: "_id",
       foreignField: "_id",
@@ -553,6 +554,7 @@ async function queryVotedDocumentByCurator(args) {
       seoTitle: "$documentInfo.seoTitle",
       created: "$documentInfo.created",
       latestPageview: "$popular.latestPageview",
+      latestPageviewList: "$popular.latestPageviewList",
     }
   }, {
     $project: {
@@ -583,7 +585,7 @@ async function queryVotedDocumentByCurator(args) {
 
 
 /**
- * 최근 8일간의 vote목록
+ * 최근(8일간)의 vote목록
  * @param  {} args
  */
 async function queryRecentlyVoteList(args) {
@@ -615,6 +617,26 @@ async function queryRecentlyVoteList(args) {
     $group:{
       _id: "$_id.documentId",
       depositList: {$addToSet: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth", deposit: "$deposit"}}
+    }
+  }, {
+    $lookup: {
+      from: TB_DOCUMENT_POPULAR,
+      localField: "_id",
+      foreignField: "_id",
+      as: "popularAs"
+    }
+  }, {
+    $addFields: {
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+    }
+  }, {
+    $addFields: {
+      latestPageview: "$popular.latestPageview",
+      latestPageviewList: "$popular.latestPageviewList",
+    }
+  }, {
+    $project: {
+      popularAs: 0
     }
   }]
   
