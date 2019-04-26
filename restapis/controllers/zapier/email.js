@@ -11,15 +11,13 @@ module.exports.handler = async (event, context, callback) => {
 
   const results = emails.map((e)=>{
     return {
-      email: e,
+      id: e,
       documentId: documentId
     }
   })
   
-  console.log("result", emails);
+  console.log("results", results);
   //const emails = ["jay@decompany.io", "jay.j.lee@infrawareglobal.com"];
 
-  return JSON.stringify({
-    emails: results
-  });
+  return JSON.stringify(results);
 };
