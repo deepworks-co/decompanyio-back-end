@@ -4,6 +4,7 @@ const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
 const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
+const TB_DOCUMENT_FEATURED = tables.DOCUMENT_FEATURED;
 const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
 const TB_VOTE = tables.VOTE;
 const TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY = tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY;
@@ -540,9 +541,17 @@ async function queryVotedDocumentByCurator(args) {
       as: "popularAs"
     }
   }, {
+    $lookup: {
+      from: TB_DOCUMENT_FEATURED,
+      localField: "_id",
+      foreignField: "_id",
+      as: "featuredAs"
+    }
+  }, {
     $addFields: {
       author: { $arrayElemAt: [ "$authorAs", 0 ] },
-      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
     }
   }, {
     $addFields: {
@@ -555,6 +564,7 @@ async function queryVotedDocumentByCurator(args) {
       created: "$documentInfo.created",
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
+      latestVoteAmount: "$featured.latestVoteAmount",
     }
   }, {
     $project: {
