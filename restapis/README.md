@@ -81,6 +81,7 @@ sls create function -f tagList --handler controllers/tag/list.handler --httpEven
 sls create function -f analyticsList --handler controllers/analytics/list.handler --httpEvent "get /api/analytics/list"
 sls create function -f analyticsExport --handler controllers/analytics/export.handler --httpEvent "get /api/analytics/export"
 sls create function -f zapierEmail --handler controllers/zapier/email.handler --httpEvent "post /api/zapier/email"
+sls create function -f zapierAuth --handler controllers/zapier/auth.handler
 sls create function -f curatorDocumentList --handler controllers/curator/curatorDocumentList.handler --httpEvent "post /api/curator/document/list"
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
 sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"

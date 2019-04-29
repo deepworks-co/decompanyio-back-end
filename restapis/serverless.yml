@@ -30,6 +30,7 @@ provider:
     region: ${self:provider.region}
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_ZAPIERCONNECTOR_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_ZAPIERCONNECTOR_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
     NODE_PATH: "./:/opt/node_modules"
   logRetentionInDays: 3
@@ -79,6 +80,7 @@ layers:
     description: "additional node_module"
     
 functions:
+
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -139,13 +141,17 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponse"
+
+  zapierAuth:
+    handler: controllers/zapier/auth.handler
+
   zapierEmail:
     handler: controllers/zapier/email.handler
     events:
       - http:  
           path: /api/zapier/email
           method: get
-          authorizer: accountAuth
+          authorizer: zapierAuth
           cors: true
           integration: lambda
           response:
