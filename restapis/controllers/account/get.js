@@ -13,7 +13,7 @@ module.exports.handler = async (event, context, callback) => {
   });
 
   if(!user){
-    throw new Error("user is not exists... " + JSON.stringify(query));
+    throw new Error("user does not exist... " + JSON.stringify(query));
   }
   
   return JSON.stringify({

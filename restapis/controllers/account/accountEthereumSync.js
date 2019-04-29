@@ -11,7 +11,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   if(!user){
-    throw new Error(`user is not exists`);
+    throw new Error(`user does not exist`);
   }
 
   if(user.ethAccount){

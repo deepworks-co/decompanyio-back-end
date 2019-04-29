@@ -14,7 +14,7 @@ module.exports = class AccountService {
 			});
 			let result;
 			if(queriedUser){
-				console.log("user is exists", queriedUser);
+				console.log("user exists", queriedUser);
 				queriedUser.connected = Date.now();
 				console.log("update connected time", queriedUser);
 				result = await mongo.save(USER_TALBE, queriedUser);

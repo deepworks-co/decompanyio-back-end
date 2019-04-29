@@ -48,7 +48,7 @@ module.exports.regist = async (event, context, callback) => {
 
   const user = await documentService.getUser(accountId);
   if(!user){
-    throw new Error(`user(${accountId}) is not exists`);
+    throw new Error(`user(${accountId}) does not exist`);
   }
 
 
@@ -178,10 +178,10 @@ module.exports.info = async (event, context, callback) => {
     }  
 
     if(!document){
-      //throw new Error("[404] document is not exists!");
+      
       return JSON.stringify({
         success: true,
-        message: "document is not exists!",
+        message: "document does not exist!",
       });
     }
   
@@ -224,7 +224,7 @@ module.exports.downloadFile = async (event, context, callback) => {
   console.log("document", document);
 
   if(!document){
-    throw new Error("document is not exists!!!");
+    throw new Error("document does not exist!!!");
   }
 
   const documentName = document.documentName;

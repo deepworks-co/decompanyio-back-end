@@ -174,7 +174,7 @@ module.exports = class ContractWapper {
     });
 
     if(!selectedAbi){
-      throw new Error(`${eventName} is not exists in abi`)
+      throw new Error(`${eventName} does not exist in abi`)
     }
 
     const signature = selectedAbi.signature;//this.web3.eth.abi.encodeEventSignature(selectedAbi);

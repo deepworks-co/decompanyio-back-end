@@ -22,7 +22,7 @@ module.exports.handler = async (event, context, callback) => {
   if(!user){
     return JSON.stringify({
       success: true,
-      message: "user is not exists... " + JSON.stringify(query)
+      message: "user does not exist... " + JSON.stringify(query)
     });
   }
   
