@@ -39,6 +39,9 @@
             "key": "alpha_enc_prikey"
         },
         "index": "4"
+    },
+    "applicationConfig": {
+        "activeVoteDays": 3
     }
 
 }
