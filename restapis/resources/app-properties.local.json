@@ -30,5 +30,8 @@
     },
     "applicationLogAppender": {
         "enable": false
+    },
+    "applicationConfig": {
+        "activeVoteDays": 3
     }
 }

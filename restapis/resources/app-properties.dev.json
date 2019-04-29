@@ -32,5 +32,8 @@
         "enable": true,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
+    },
+    "applicationConfig": {
+        "activeVoteDays": 3
     }
 }
