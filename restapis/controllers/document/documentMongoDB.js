@@ -23,8 +23,9 @@ module.exports = {
   putDocument,
   saveDocument,
   queryVotedDocumentByCurator,
+  getVotedDocumentForAccountId,
   getRecentlyPageViewTotalCount,
-  queryRecentlyVoteList,
+  queryRecentlyVoteListForApplicant,
   getFeaturedDocuments,
   putTrackingInfo,
   getTrackingInfo,
@@ -391,6 +392,69 @@ async function queryDocumentListByFeatured (params) {
 }
 
 
+async function getVotedDocumentForAccountId (accountId) {
+  
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    const pipeline = [{
+      $match: {accountId: accountId}
+    }, {
+      $sort:{ latestVoteAmount:-1, created: -1}
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT,
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT_POPULAR,
+        localField: "_id",
+        foreignField: "_id",
+        as: "popularAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accountId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+      $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          document: { $arrayElemAt: [ "$documentAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+      }
+    }, {
+      $addFields: {
+        documentId: "$_id",
+        documentName: "$document.documentName",
+        documentSize: "$document.documentSize",
+        totalPageview: "$document.totalPageview",
+        ethAccount: "$document.ethAccount",
+        latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList",
+        seoTitle: "$document.seoTitle",
+      }
+    }, {
+      $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
+    }];
+
+    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+   
+  } catch(err) {
+    throw err;
+  } finally {
+    wapper.close();
+  }
+  
+}
+
+
+
 /**
  * @param  {} seoTitle
  */
@@ -598,7 +662,7 @@ async function queryVotedDocumentByCurator(args) {
  * 최근(8일간)의 vote목록
  * @param  {} args
  */
-async function queryRecentlyVoteList(args) {
+async function queryRecentlyVoteListForApplicant(args) {
 
   const applicant = args.applicant;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
@@ -610,8 +674,8 @@ async function queryRecentlyVoteList(args) {
     }
   }, {
     $sort: {
-        documentId: 1,
-        created: -1
+      documentId: 1,
+      created: -1
     }
   }, {
     $group:{
