@@ -28,7 +28,7 @@ module.exports.handler = async (event, context, callback) => {
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
     }
-    
+    startBlockNumber = 3251154;
     console.log(`start blockNumber ${startBlockNumber} ~ latest`);
 
     const contractWapper = new ContractWapper();
@@ -43,6 +43,8 @@ module.exports.handler = async (event, context, callback) => {
       console.log(`Get Event Logs ${index} :`, result, );
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
+      const blockchainTimestamp = Number(decoded.dateMillis);
+      const pageview = Number(decoded.pv);
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
       
       console.log(" ");
@@ -53,6 +55,8 @@ module.exports.handler = async (event, context, callback) => {
         blockNumber: log.blockNumber,
         documentId: documentId,
         docId: decoded.docId,
+        blockchainTimestamp: blockchainTimestamp,
+        pageview: pageview,
         updated: now.getTime(),
         updatedDate: now,
         contractName: contractName,
@@ -60,8 +64,8 @@ module.exports.handler = async (event, context, callback) => {
         log: log,
         decoded: decoded
       }
-      //console.log("new item", item);
-      bulk.find({_id: item._id }).upsert().updateOne(item);
+      console.log("new item", item);
+      //bulk.find({_id: item._id }).upsert().updateOne(item);
     })
     const executeResult = await wapper.execute(bulk);
     
