@@ -1,0 +1,22 @@
+{
+    "region": "us-west-1",
+    "warmupConfig": {
+        "prefix": "backend-restapis-dev-",
+        "functions": [
+            {"name": "curatorDocumentList", "concurrency": 1}, 
+            {"name": "curatorSummary"},
+            {"name": "analyticsList"},
+            {"name": "tagList"},
+            {"name": "s3DocumentUploadComplete"},
+            {"name": "s3DocumentConvertComplete"},
+            {"name": "accountEthereumSync"},
+            {"name": "profileGet"},
+            {"name": "accountGet"},
+            {"name": "documentList", "concurrency": 5},
+            {"name": "documentInfo"},
+            {"name": "trackingCollect"},
+            {"name": "trackingList"},
+            {"name": "trackingInfo"}
+        ]
+    }
+}
