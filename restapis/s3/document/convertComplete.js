@@ -13,6 +13,12 @@ const TABLE_NAME = tables.DOCUMENT;
 const CONVERT_COMPLETE = "CONVERT_COMPLETE";
 
 exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   //console.log("convertCompete Event", JSON.stringify(event));
 
   //THUMBNAIL/aaaaa/300X300/1

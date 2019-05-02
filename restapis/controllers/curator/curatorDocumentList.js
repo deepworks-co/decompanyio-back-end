@@ -13,6 +13,11 @@ AWS.config.update({
  * @url : /api/curator/document/list
  */
 module.exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
   
   const {query} = event;
   const pageNo = (isNaN(query.pageNo) || query.pageNo<1)?1:Number(query.pageNo);

@@ -5,6 +5,12 @@ const {kinesis} = require('decompany-common-utils');
 //const geoip = require('geoip-lite');
 
 module.exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   console.log(JSON.stringify(event));
   const {headers, query} = event;
   const body = query

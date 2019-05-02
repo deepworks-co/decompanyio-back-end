@@ -18,6 +18,12 @@ const defaultHeaders = {
 }
 
 module.exports.regist = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+
   console.log("event", JSON.stringify(event));
   const {principalId, body} = event;
 
@@ -106,6 +112,13 @@ module.exports.regist = async (event, context, callback) => {
 
 
 module.exports.list = async (event, context, callback) => {
+
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+
   console.log("event", JSON.stringify(event));
 
   const params = event.method === "POST"?event.body:event.query;
@@ -155,6 +168,12 @@ module.exports.list = async (event, context, callback) => {
 
 
 module.exports.info = async (event, context, callback) => {
+
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
 
   console.log("event : ", event.path);
   try{
@@ -213,6 +232,12 @@ module.exports.info = async (event, context, callback) => {
 
 module.exports.downloadFile = async (event, context, callback) => {
 
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   const {query} = event;
   const {documentId} = query;
 

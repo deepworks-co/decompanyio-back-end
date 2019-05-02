@@ -2,6 +2,12 @@
 const documentService = require('../document/documentMongoDB');
 const {utils} = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   const {principalId, query} = event;
 
   if(!query || !query.documentId || !query.cid){

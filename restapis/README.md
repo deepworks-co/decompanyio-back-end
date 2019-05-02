@@ -21,8 +21,9 @@ Serverless Project
 }
 ```
 
-## Install dependence
+## Install dependency
 
+```shell
 npm install ../decompany-modules/decompany-common-utils/
 npm install serverless-mocha-plugin
 npm install serverless-offline
@@ -30,7 +31,13 @@ npm install serverless-plugin-existing-s3
 npm install serverless-aws-documentation
 npm install mongojs
 npm install json-2-csv
-npm install sharp
+```
+
+## Install Layer
+
+```shell
+npm --prefix ./opt install sharp
+```
 
 # Running Offline
 
@@ -89,3 +96,6 @@ sls create function -f documentUpdate --handler controllers/document/documentUpd
 sls create function -f documentMigration --handler migration/documentMigration.handler
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
+
+
+
