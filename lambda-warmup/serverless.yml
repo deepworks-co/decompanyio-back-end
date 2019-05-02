@@ -58,7 +58,9 @@ package:
 functions:
   warmup:
     handler: src/warmup.handler
-
+    timeout: 30
+    events:
+      - schedule: rate(10 minutes)
   
 plugins:
   - serverless-mocha-plugin
