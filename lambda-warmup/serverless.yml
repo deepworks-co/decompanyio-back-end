@@ -29,7 +29,7 @@ provider:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
     servicename: ${self:service.name}
-    warmup: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig:enable}
+    warmup: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig.enable}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
@@ -61,7 +61,7 @@ functions:
   warmup:
     handler: src/warmup.handler
     timeout: 30
-    enable: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig:enable}
+    enable: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig.enable}
     events:
       - schedule: rate(10 minutes)
   
