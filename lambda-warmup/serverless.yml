@@ -29,6 +29,8 @@ provider:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
     servicename: ${self:service.name}
+    warmup: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig:enable}
+    APIG_DEPLOYMENT_ID: ApiGatewayDeployment${sls:instanceId}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
@@ -54,11 +56,13 @@ package:
     - install.sh
     - opt/**
 
-    
+
+
 functions:
   warmup:
     handler: src/warmup.handler
     timeout: 30
+    enable: ${env:warmup}
     events:
       - schedule: rate(10 minutes)
   

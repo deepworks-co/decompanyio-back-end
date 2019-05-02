@@ -1,6 +1,7 @@
 {
     "region": "us-west-1",
     "warmupConfig": {
+        "enable": true,
         "prefix": "backend-restapis-dev-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1}, 
