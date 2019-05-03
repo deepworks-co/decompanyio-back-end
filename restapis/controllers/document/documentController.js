@@ -203,22 +203,36 @@ module.exports.info = async (event, context, callback) => {
         message: "document does not exist!",
       });
     }
-  
-    const author = await documentService.getUser(document.accountId);
-    console.log("author", author);
+    const promises = []
+    //const author = await documentService.getUser(document.accountId);
+    //console.log("author", author);
+    promises.push(documentService.getUser(document.accountId));
     
-    let textList = await s3.getDocumentTextById(document._id);
+    //const textList = await s3.getDocumentTextById(document._id);
+    promises.push(s3.getDocumentTextById(document._id));
 
     //console.log(textList);
+
+    promises.push(documentService.getRecentlyPageViewTotalCount());
     
-    const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+    //const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+    promises.push(documentService.getFeaturedDocuments({documentId: document.documentId}));
+
+    const results = await Promise.all(promises);
+
+    const author = results[0];
+    const textList = results[1];
+    const totalViewCountInfo = results[2];
+    const featuredList = results[3];
+    
 
     const response = JSON.stringify({
         success: true,
         document: document,
         text: textList,
         featuredList: featuredList,
-        author:author
+        author:author,
+        totalViewCountInfo: totalViewCountInfo
       }
     );
 
