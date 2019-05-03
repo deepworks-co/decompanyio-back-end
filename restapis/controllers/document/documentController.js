@@ -216,7 +216,7 @@ module.exports.info = async (event, context, callback) => {
         success: true,
         document: document,
         text: textList,
-        featuredList: featuredList
+        featuredList: featuredList,
         totalViewCountInfo: totalViewCountInfo
       }
     );
