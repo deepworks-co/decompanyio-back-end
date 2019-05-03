@@ -126,11 +126,11 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          featured: "$featured.latestVoteAmount"
+          latestVoteAmount: "$featured.latestVoteAmount"
         }
       }, {
         $project: {
-          userAs: 0, featuredAs: 0, popularAs: 0
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0
         }
       }
     ]
