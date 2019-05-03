@@ -80,31 +80,64 @@ module.exports = {
   const wapper = new MongoWapper(connectionString);
   
   try{
+    
     let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
+    let documentId;
     if(!document){
       const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
-      console.log(TB_SEO_FRIENDLY, seoFriendly);
-      if(seoFriendly) {
-        return await getDocumentById(seoFriendly.id);
+      documentId = seoFriendly.id
+    } else {
+      documentId = document._id;
+    }
+    
+    console.log(`seoTitle ${seoTitle} to documentId ${documentId}`);
+
+    const queryPipeline = [
+      {
+        $match: {_id: documentId}
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_POPULAR,
+          localField: "_id",
+          foreignField: "_id",
+          as: "popularAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.USER,
+          localField: "accountId",
+          foreignField: "_id",
+          as: "userAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_FEATURED,
+          localField: "_id",
+          foreignField: "_id",
+          as: "featuredAs"
+        }
+      }, {
+        $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+        }
+      }, {
+        $addFields: {
+          latestPageview: "$popular.latestPageview",
+          latestPageviewList: "$popular.latestPageviewList",
+          featured: "$featured.latestVoteAmount"
+        }
+      }, {
+        $project: {
+          userAs: 0, featuredAs: 0, popularAs: 0
+        }
       }
-    }
-    const documentId = document._id;
-    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
-    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+    ]
 
-    if(featured){
-      document.latestVoteAmount = featured.latestVoteAmount;
-    } else {
-      document.latestVoteAmount = 0;
-    }
-
-    if(popular){
-      document.latestPageview = popular.latestPageview;
-    } else {
-      document.latestPageview = 0;
-    }
-
-    return document;
+    document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
+    
+    return document[0];
   } catch (err) {
     throw err;
   } finally {

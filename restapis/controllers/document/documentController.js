@@ -184,31 +184,18 @@ module.exports.info = async (event, context, callback) => {
       throw new Error("parameter is invaild!!");
     }
 
-    let document = null;
-
+    let document = await documentService.getDocumentBySeoTitle(documentId);
+    console.log("get document by seo title", document);
     if(!document){
-      document = await documentService.getDocumentBySeoTitle(documentId);
-      console.log("get document by seo title", document);
-    }
-    
-    if(!document){
-      document = await documentService.getDocumentById(documentId);
-      console.log("get document by id", document);
-    }  
-
-    if(!document){
-      
       return JSON.stringify({
         success: true,
         message: "document does not exist!",
       });
     }
     const promises = []
-    //const author = await documentService.getUser(document.accountId);
-    //console.log("author", author);
-    promises.push(documentService.getUser(document.accountId));
-    
+      
     //const textList = await s3.getDocumentTextById(document._id);
+    console.log("documentId", document._id);
     promises.push(s3.getDocumentTextById(document._id));
 
     //console.log(textList);
@@ -220,18 +207,16 @@ module.exports.info = async (event, context, callback) => {
 
     const results = await Promise.all(promises);
 
-    const author = results[0];
-    const textList = results[1];
-    const totalViewCountInfo = results[2];
-    const featuredList = results[3];
+    const textList = results[0];
+    const totalViewCountInfo = results[1];
+    const featuredList = results[2];
     
 
     const response = JSON.stringify({
         success: true,
         document: document,
         text: textList,
-        featuredList: featuredList,
-        author:author,
+        featuredList: featuredList
         totalViewCountInfo: totalViewCountInfo
       }
     );
