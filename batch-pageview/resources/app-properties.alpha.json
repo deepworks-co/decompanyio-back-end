@@ -1,7 +1,7 @@
 {
     "region": "us-west-1",
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.45.123:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@172.31.37.166:27017/decompany"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
