@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
   
   body.t = Number(body.t);
   body.n = Number(body.n);
-  if(!utils.vaildateEmail(body.e)){
+  if(!utils.validateEmail(body.e)){
     delete body.e;
   }
   
