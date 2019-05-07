@@ -4,6 +4,7 @@ const { sesConfig } = require('../../resources/config.js').APP_PROPERTIES();
 const {ses, utils} = require('decompany-common-utils');
 const fs = require("fs");
 const path = require("path");
+const title = "Join Polairs Share";
 
 module.exports.handler = async (event, context, callback) => {
   const { documentId, email, cid, sid } = event.body;
@@ -26,14 +27,17 @@ module.exports.handler = async (event, context, callback) => {
     resolved = path.resolve(__dirname, template)
   }
   console.log("resolved", resolved, __dirname);
-  const html = fs.readFileSync(resolved, 'utf8')
-
+  let html = fs.readFileSync(resolved, 'utf8')
+  
+  
+  html = html.replace("##email##", email);
+  html = html.replace("##title##", title)
   console.log("html", html);
 
   const check = await documentService.checkTrackingConfirmSendMail(documentId, email);
-  console.log("check", check);
+  console.log("checkTrackingConfirmSendMail", check);
   if(check){
-    const result = await ses.sendMail(region, email, sender, "Join Polairs Share", html);
+    const result = await ses.sendMail(region, email, sender, title, html);
     await documentService.putTrackingConfirmSendMail(documentId, email, result);
     console.log("send mail success", result);
   }

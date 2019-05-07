@@ -1219,11 +1219,11 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
 async function putTrackingUser(cid, sid, documentId, email){
 
   const wapper = new MongoWapper(connectionString);
+  
   const now = new Date();
-
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth() + 1;
-  const dayOfMonth = now.getUTCDayOfMonth();
+  const dayOfMonth = now.getUTCDate();
 
   try{
     if(cid && utils.validateEmail(email)){

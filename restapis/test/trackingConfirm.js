@@ -14,8 +14,10 @@ describe('trackingConfirm', () => {
 
   it('implement tests here', () => {
     const event = {body: {
-      documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
-      email: "worn29@gmail.com"
+      documentId: "00065c0b528f415a830f50b1c16c8e66",
+      email: "worn29@gmail.com",
+      cid: "1060212880.1546915423",
+      sid: "XkUaGxvrE"
     }}
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;

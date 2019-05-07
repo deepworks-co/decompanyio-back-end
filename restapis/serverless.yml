@@ -81,11 +81,6 @@ layers:
     
 functions:
 
-  trackingConfirm:
-    handler: controllers/tracking/confirm.handler
-    events:
-      - http: get /api/tracking/confirm
-
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -673,6 +668,34 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponse"
+  trackingConfirm:
+    handler: controllers/tracking/confirm.handler
+    events:
+      - http:
+          method: post
+          path: /api/tracking/confirm
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/tracking/confirm"
+            description: "/api/tracking/confirm"
+            queryParams:
+              - name: documentId
+                description: documentId
+                type: string
+              - name: email
+                description: email
+                type: string
+              - name: cid
+                description: cid
+                type: string
+              - name: sid
+                description: sid
+                type: string
 
 # you can add CloudFormation resource templates here
 resources:
