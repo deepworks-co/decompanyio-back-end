@@ -2,6 +2,12 @@
 const AccountService = require('./AccountService');
 
 module.exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   console.log(JSON.stringify(event));
   const {principalId, query} = event;
 
@@ -13,7 +19,7 @@ module.exports.handler = async (event, context, callback) => {
   });
 
   if(!user){
-    throw new Error("user is not exists... " + JSON.stringify(query));
+    throw new Error("user does not exist... " + JSON.stringify(query));
   }
   
   return JSON.stringify({

@@ -13,7 +13,13 @@ describe('zapierEmail', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      query: {
+        documentId: "00065c0b528f415a830f50b1c16c8e66"
+      }
+    }
+    return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
   });

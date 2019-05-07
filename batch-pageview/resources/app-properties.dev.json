@@ -28,8 +28,7 @@
     "ethereum": {
         "abis": [
             {"name": "DocumentRegistry", "path": "./contracts-rinkeby-alpha/DocumentRegistry.json"},
-            {"name": "Creator", "path": "./contracts-rinkeby-alpha/Creator.json"},
-            {"name": "Curator", "path": "./contracts-rinkeby-alpha/Curator.json"}
+            {"name": "Ballot", "path": "./contracts-rinkeby-alpha/Ballot.json"}
         ],
         "network": "rinkeby", 
         "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
@@ -40,6 +39,9 @@
             "key": "alpha_enc_prikey"
         },
         "index": "4"
+    },
+    "applicationConfig": {
+        "activeVoteDays": 3
     }
 
 }

@@ -48,6 +48,7 @@ provider:
     - .env
 
 functions:
+
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
     timeout: 300
@@ -63,6 +64,12 @@ functions:
     events:
       - schedule: cron(10 0 * * ? *) # daily 00:10:00
 
+  recentlyPageview:
+    handler: functions/cron/recentlyPageview.handler
+    timeout: 30
+    events:
+      - schedule: rate(5 minutes) # hourly
+      
   generatePopular:
     handler: functions/cron/generatePopular.handler
     timeout: 300
@@ -72,12 +79,6 @@ functions:
   generateFeatured:
     handler: functions/cron/generateFeatured.handler
     timeout: 300
-    events:
-      - schedule: rate(5 minutes) # hourly
-
-  generateTotalPageview:
-    handler: functions/cron/generateTotalPageview.handler
-    timeout: 30
     events:
       - schedule: rate(5 minutes) # hourly
 

@@ -8,6 +8,7 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @description 전날 하루동안의 pageview를 집계 및 추가 작업
  *  - 전날 pageview 블록체인이 입력하기용 큐 발생
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
+ *  - 하루에 한번 UTC+0 00:10분에 동작
  * @function
  * @cron 
  */
@@ -25,8 +26,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log("aggregatePageviewTotalCount result", totalPageviewResult);
     
   const resultList = await aggregatePageview(startTimestamp, endTimestamp);
-  console.log("Daily", new Date(startTimestamp), "aggregatePageview Count", resultList?resultList.length:0);
-  console.log("aggregatePageview resultList count", resultList.length);
+  console.log("aggregatePageview", startTimestamp, new Date(startTimestamp), "length", resultList?resultList.length:0);
 
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
@@ -151,7 +151,7 @@ async function aggregatePageviewTotalCount(startTimestamp, endTimestamp) {
 async function aggregatePageview(startTimestamp, endTimestamp){
     
   const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
-
+  console.log("aggregatePageview queryPipeline", JSON.stringify(queryPipeline));
   const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
     allowDiskUse: true
   });

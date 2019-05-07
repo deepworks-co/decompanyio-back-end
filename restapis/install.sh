@@ -6,4 +6,3 @@ npm install serverless-aws-documentation --save-dev
 npm install mongojs
 npm install json-2-csv
 npm --prefix ./opt install sharp
-npm --prefix ./opt install geoip-lite

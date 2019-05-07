@@ -35,11 +35,6 @@ module.exports = class ContractWapper {
 
       console.log("init contract", abi);
     });
-
-    
-    this.DocumentReg = this.contractMap["DocumentRegistry"].contract;
-    this.Creator = this.contractMap["Creator"].contract;
-    this.Curator = this.contractMap["Curator"].contract;
     
   }
 
@@ -74,8 +69,8 @@ module.exports = class ContractWapper {
    * @param  {} confirmPageview
    */
   async sendTransactionConfirmPageView(date, documentIds, pageviews) {
-  
-    const writePageViewMethod = this.DocumentReg.methods.updatePageViews;//this.contractMap["DocumentRegistry"].contract.methods.updatePageViews;
+    const DocumentReg = this.contractMap["DocumentRegistry"].contract;
+    const writePageViewMethod = DocumentReg.methods.updatePageViews;//this.contractMap["DocumentRegistry"].contract.methods.updatePageViews;
     const contractAddress = this.contractMap["DocumentRegistry"].address;
     /*
     console.log("contract address", this.contractMap["DocumentRegistry"].address);
@@ -160,8 +155,8 @@ module.exports = class ContractWapper {
 
 
   async isExistsDocument(documentId) {
-    
-    return this.DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
+    const DocumentReg = this.contractMap["DocumentRegistry"].contract;
+    return DocumentReg.methods.contains(this.asciiToHex(documentId)).call({from: this.myAddress})
   }
 
 
@@ -172,13 +167,14 @@ module.exports = class ContractWapper {
     }
     
     const contractABI = this.contractMap[contractName].abi;
+    const contractAddress = this.contractMap[contractName].address;
 
     const selectedAbi = contractABI.find((abi, index)=>{
       return abi.name === eventName;
     });
 
     if(!selectedAbi){
-      throw new Error(`${eventName} is not exists in abi`)
+      throw new Error(`${eventName} does not exist in abi`)
     }
 
     const signature = selectedAbi.signature;//this.web3.eth.abi.encodeEventSignature(selectedAbi);
@@ -187,11 +183,11 @@ module.exports = class ContractWapper {
       throw new Error(`signature is invaild!!! signature : ${signature}`);
     } 
     
-    console.log({latestCollectedBlockNumber, eventName, signature, contract: this.contractAddress, selectedAbi});
+    console.log({latestCollectedBlockNumber, eventName, signature, contract: contractAddress, selectedAbi});
     const options = {
       fromBlock: latestCollectedBlockNumber,
       toBlock: "latest",
-      address: this.contractAddress,
+      address: contractAddress,
       topics: [ signature ]
     }
     //console.log("getPastLogs options", options);

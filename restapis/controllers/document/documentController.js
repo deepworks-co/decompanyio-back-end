@@ -18,6 +18,12 @@ const defaultHeaders = {
 }
 
 module.exports.regist = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+
   console.log("event", JSON.stringify(event));
   const {principalId, body} = event;
 
@@ -48,7 +54,7 @@ module.exports.regist = async (event, context, callback) => {
 
   const user = await documentService.getUser(accountId);
   if(!user){
-    throw new Error(`user(${accountId}) is not exists`);
+    throw new Error(`user(${accountId}) does not exist`);
   }
 
 
@@ -102,11 +108,17 @@ module.exports.regist = async (event, context, callback) => {
 
   }
 
-
 };
 
 
 module.exports.list = async (event, context, callback) => {
+
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+
   console.log("event", JSON.stringify(event));
 
   const params = event.method === "POST"?event.body:event.query;
@@ -121,8 +133,8 @@ module.exports.list = async (event, context, callback) => {
   const tag = params.tag;
   const path = params.path;
   const skip = ((pageNo - 1) * pageSize);
-  const date = utils.getBlockchainTimestamp(new Date());//today
-  const totalViewCountInfo = await documentService.queryTotalViewCountByToday(date);
+
+  const totalViewCountInfo = await documentService.getRecentlyPageViewTotalCount();
 
   if(!accountId && email){
     const user = await documentService.getUser({email:email});
@@ -157,6 +169,12 @@ module.exports.list = async (event, context, callback) => {
 
 module.exports.info = async (event, context, callback) => {
 
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+
   console.log("event : ", event.path);
   try{
     //console.log("context : ", context);
@@ -166,41 +184,40 @@ module.exports.info = async (event, context, callback) => {
       throw new Error("parameter is invaild!!");
     }
 
-    let document = null;
-
+    let document = await documentService.getDocumentBySeoTitle(documentId);
+    console.log("get document by seo title", document);
     if(!document){
-      document = await documentService.getDocumentBySeoTitle(documentId);
-      console.log("get document by seo title", document);
-    }
-    
-    if(!document){
-      document = await documentService.getDocumentById(documentId);
-      console.log("get document by id", document);
-    }  
-
-    if(!document){
-      //throw new Error("[404] document is not exists!");
       return JSON.stringify({
         success: true,
-        message: "document is not exists!",
+        message: "document does not exist!",
       });
     }
-  
-    const author = await documentService.getUser(document.accountId);
-    console.log("author", author);
-    
-    let textList = await s3.getDocumentTextById(document._id);
+    const promises = []
+      
+    //const textList = await s3.getDocumentTextById(document._id);
+    console.log("documentId", document._id);
+    promises.push(s3.getDocumentTextById(document._id));
 
     //console.log(textList);
+
+    promises.push(documentService.getRecentlyPageViewTotalCount());
     
-    const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+    //const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
+    promises.push(documentService.getFeaturedDocuments({documentId: document.documentId}));
+
+    const results = await Promise.all(promises);
+
+    const textList = results[0];
+    const totalViewCountInfo = results[1];
+    const featuredList = results[2];
+    
 
     const response = JSON.stringify({
         success: true,
         document: document,
         text: textList,
         featuredList: featuredList,
-        author:author
+        totalViewCountInfo: totalViewCountInfo
       }
     );
 
@@ -212,55 +229,14 @@ module.exports.info = async (event, context, callback) => {
   
 }
 
-module.exports.vote = (event, context, callback) => {
-
-  //console.log(event);
-  const documentId = event.pathParameters.documentId;
-  const params = JSON.parse(event.body);
-
-  console.log("params", params);
-  if(!documentId) return;
-
-  const promise1 = documentService.putVote(params);
-  const promise2 = documentService.updateVoteHist(params);
-
-  Promise.all([promise1, promise2]).then((results) => {
-    //for view count log
-    const data = results[0]; //putVote
-    const result2 = results[1]; //putVoteHist 사용안함
-
-    console.log("Put Vote", data);
-    console.log("Put VoteHist", result2)
-
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      body: JSON.stringify({
-        message: 'SUCCESS',
-        vote: data
-      }),
-    });
-  }).catch((errs) => {
-    console.error("Vote error : ", errs);
-
-    callback(null, {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          message: errs
-        }),
-    });
-  });
-}
-
 module.exports.downloadFile = async (event, context, callback) => {
 
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   const {query} = event;
   const {documentId} = query;
 
@@ -272,7 +248,7 @@ module.exports.downloadFile = async (event, context, callback) => {
   console.log("document", document);
 
   if(!document){
-    throw new Error("document is not exists!!!");
+    throw new Error("document does not exist!!!");
   }
 
   const documentName = document.documentName;
