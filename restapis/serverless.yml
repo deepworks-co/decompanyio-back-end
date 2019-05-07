@@ -448,11 +448,6 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
 
-  oraclizeController:
-    handler: controllers/oraclizeController/index.handler
-    events:
-      - http: get /api/oraclize/viewcount
-
   documentRegist:
     handler: controllers/document/documentController.regist
     events:
