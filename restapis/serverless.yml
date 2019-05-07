@@ -81,6 +81,11 @@ layers:
     
 functions:
 
+  trackingConfirm:
+    handler: controllers/tracking/confirm.handler
+    events:
+      - http: get /api/tracking/confirm
+
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -150,6 +155,20 @@ functions:
     events:
       - http:  
           path: /api/zapier/email
+          method: get
+          authorizer: zapierAuth
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            
+  zapierDocument:
+    handler: controllers/zapier/document.handler
+    events:
+      - http:
+          path: /api/zapier/document
           method: get
           authorizer: zapierAuth
           cors: true

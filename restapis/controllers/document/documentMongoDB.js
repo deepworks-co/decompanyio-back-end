@@ -30,11 +30,16 @@ module.exports = {
   putTrackingInfo,
   getTrackingInfo,
   getTrackingList,
+  getTrackingUser,
+  putTrackingUser,
+  putTrackingConfirmSendMail,
+  checkTrackingConfirmSendMail,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
-  getDocumentIdsByUserId
+  getDocumentIdsByUserId,
+  
 }
 
  /**
@@ -848,24 +853,6 @@ async function putTrackingInfo (body) {
   let wapper = new MongoWapper(connectionString);
   try{
 
-    if(body.cid && body.e && utils.validateEmail(body.e)){
-      const item = {
-        _id: {
-          id: body.id,
-          cid: body.cid,
-          sid: body.sid,
-          e: body.e
-        },
-        cid: body.cid,
-        e: body.e,
-        id: body.id,
-        sid: body.sid,
-        created: Date.now()
-      }
-      const r = await wapper.save(TB_TRACKING_USER, item);
-      console.log("tracking target user save", r);
-    }
-    
     return await wapper.save(TB_TRACKING, body);
   } catch(err){
     throw err;
@@ -1016,6 +1003,21 @@ async function getTrackingInfo(documentId, cid, include) {
   }
 
 }
+
+
+async function getTrackingUser(cid) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const users = await wapper.findAll(tables.TRACKING_USER, {cid: cid}, {created: -1}, 1);
+    return users[0];
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+
 /**
  * @description Get Top-Tag
  */
@@ -1166,4 +1168,87 @@ async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
   } finally {
     wapper.close();
   }
+}
+
+async function putTrackingConfirmSendMail(documentId, email, result) {
+  const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  try{
+
+    await wapper.insert(tables.TRACKING_CONFIRM, {
+      email: email,
+      documentId: documentId,
+      sent: now.getTime(),
+      created: now.getTime(),
+      result: result
+    });
+    return true;  
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
+  const wapper = new MongoWapper(connectionString);
+  
+  try{
+    const now = new Date();
+    const latestSent = now.getTime() - (1000 * 60 * 60 * 24); 
+
+    const sentInfo = await wapper.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
+
+    if(sentInfo && sentInfo.length>0){
+      return false;
+    }
+
+    return true; 
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+/**
+ * @param  {} cid
+ * @param  {} email
+ */
+async function putTrackingUser(cid, sid, documentId, email){
+
+  const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const dayOfMonth = now.getUTCDayOfMonth();
+
+  try{
+    if(cid && utils.validateEmail(email)){
+      const item = {
+        _id: {
+          year: year,
+          month: month,
+          dayOfMonth: dayOfMonth,
+          cid: cid
+        },
+        cid: cid,
+        e: email,
+        id: documentId,
+        sid: sid,
+        created: Date.now()
+      }
+      const r = await wapper.save(TB_TRACKING_USER, item);
+      console.log("tracking target user save", r);
+    }
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+
+  
 }

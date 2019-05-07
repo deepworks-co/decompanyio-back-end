@@ -39,41 +39,42 @@ npm install json-2-csv
 npm --prefix ./opt install sharp
 ```
 
-# Running Offline
+## Running Offline
 
 sls offline start
 
-# Build using docker
+## Build using docker
 
 cd {project_dir}
 sudo node ../docker-npm.js rebuild
 
-# Local에서 layer 사용하기
+## Local에서 layer 사용하기
 
 export NODE_PATH=.:./opt/node_modules
 
-# Deploy
+## Deploy
 
 sls deploy
 
-# Deploy by function
+## Deploy function
 
 serverless deploy function -f trackingCollect
 
-# show deploy function list
+## show deploy function list
 
 sls deploy list
 
-# Test
+## Test
 
 sls invoke test -f {FunctionName}
 sls invoke test -f registYesterdayViewCount
 
-# Log
+## Log
+
 sls logs -f {FunctionName}  -t
 sls logs -f registYesterdayViewCount  -t
 
-# serverless-mocha-plugin
+## serverless-mocha-plugin
 
 ## create function history 틀릴수도 있음~
 
@@ -89,6 +90,7 @@ sls create function -f analyticsList --handler controllers/analytics/list.handle
 sls create function -f analyticsExport --handler controllers/analytics/export.handler --httpEvent "get /api/analytics/export"
 sls create function -f zapierEmail --handler controllers/zapier/email.handler --httpEvent "post /api/zapier/email"
 sls create function -f zapierAuth --handler controllers/zapier/auth.handler
+sls create function -f zapierDocument --handler controllers/zapier/document.handler --httpEvent "get /api/zapier/document"
 sls create function -f curatorDocumentList --handler controllers/curator/curatorDocumentList.handler --httpEvent "post /api/curator/document/list"
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
 sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"
@@ -96,6 +98,4 @@ sls create function -f documentUpdate --handler controllers/document/documentUpd
 sls create function -f documentMigration --handler migration/documentMigration.handler
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
-
-
-
+sls create function -f trackingConfirm --handler controllers/tracking/confirm.handler --httpEvent "get /api/tracking/confirm"

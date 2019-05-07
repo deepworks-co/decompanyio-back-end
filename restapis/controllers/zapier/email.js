@@ -10,10 +10,20 @@ module.exports.handler = async (event, context, callback) => {
   
   console.log(JSON.stringify(event));
   const wapper = new MongoWapper(mongodb.endpoint);
+  const {principalId} = event;
   const {documentId} = event.query;
   
+ 
+
+  const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId, accountId: principalId, useTracking: true});
+
+  if(!doc){
+    console.log("document nothing", {_id: documentId, accountId: principalId, useTracking: true})
+    return JSON.stringify([]);
+  }
+  console.log("zapier doc", doc);
   const start = Date.now() - (1000 * 60 * 60 * 24 * 1);
-  const emails = await wapper.distinct(tables.TRACKING, "e", {id: documentId, n: {$gt: 1}, e: {$regex: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/}, t:{$gt: start}});
+  const emails = await wapper.distinct(tables.TRACKING_USER, "e", {id: documentId, e: {$regex: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/}, created:{$gt: start}});
 
   const results = emails.map((e)=>{
     return {

@@ -55,10 +55,13 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const result = await documentService.putTrackingInfo(body);
+
+  const user = await documentService.getTrackingUser(body.cid);
   console.log("tracking save", result);
   const response = JSON.stringify({
     success: true,
-    message: "ok"
+    message: "ok",
+    user: user
   });
   //console.log("success", body);
   return response;
