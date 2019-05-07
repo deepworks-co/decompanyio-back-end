@@ -40,6 +40,6 @@
     "sesConfig": {
         "region": "us-east-1",
         "sender": "jay@decompany.io",
-        "template": "../../template/confirm_email.dev.html"
+        "template": "./template/confirm_email.dev.html"
     }
 }

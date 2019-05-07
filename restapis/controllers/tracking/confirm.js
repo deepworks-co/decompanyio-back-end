@@ -26,14 +26,17 @@ module.exports.handler = async (event, context, callback) => {
   } else {
     resolved = path.resolve(__dirname, template)
   }
-  console.log("resolved", resolved, __dirname);
+  console.log("process.env.LAMBDA_TASK_ROOT", process.env.LAMBDA_TASK_ROOT);
+  console.log("__dirname", __dirname);
+  console.log("template", template);
+  console.log("resolved", resolved);
   let html = fs.readFileSync(resolved, 'utf8')
   
   
   html = html.replace("##email##", email);
   html = html.replace("##title##", title)
   console.log("html", html);
-
+    
   const check = await documentService.checkTrackingConfirmSendMail(documentId, email);
   console.log("checkTrackingConfirmSendMail", check);
   if(check){

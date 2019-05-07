@@ -62,6 +62,9 @@ module.exports.handler = async (event, context, callback) => {
   const result = await documentService.putTrackingInfo(body);
 
   const user = await documentService.getTrackingUser(body.cid);
+  if(user){
+    delete user._id;
+  }
   console.log("tracking save", result);
   const response = JSON.stringify({
     success: true,

@@ -43,6 +43,7 @@ provider:
        - sqs:*
        - kinesis:*
        - kms:*
+       - ses:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
