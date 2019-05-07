@@ -1195,12 +1195,12 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
   const wapper = new MongoWapper(connectionString);
   
   try{
-    const user = await documentService.getUser({email: email});
+    const user = await getUser({email: email});
     if(user){
       //등록된 유저(가입된 유저)이면 가입 메일을 발송하지 않는다.
       return false;
     } 
-    
+
     const now = new Date();
     const latestSent = now.getTime() - (1000 * 60 * 60 * 24); 
 
