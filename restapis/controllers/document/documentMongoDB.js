@@ -1228,12 +1228,6 @@ async function putTrackingUser(cid, sid, documentId, email){
   try{
     if(cid && utils.validateEmail(email)){
       const item = {
-        _id: {
-          year: year,
-          month: month,
-          dayOfMonth: dayOfMonth,
-          cid: cid
-        },
         cid: cid,
         e: email,
         id: documentId,
