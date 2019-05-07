@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "Decompany Rest Api",
-    "version": "2019-04-24T05:30:01Z",
+    "version": "2019-05-07T05:16:46Z",
     "title": "dev-backend-restapis",
     "termsOfService": "https://www.google.com",
     "contact": {
@@ -1305,145 +1305,6 @@
         }
       }
     },
-    "/api/curator/document/today": {
-      "post": {
-        "consumes": [
-          "application/json",
-          "application/x-www-form-urlencoded"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "400": {
-            "description": "400 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "401": {
-            "description": "401 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "403": {
-            "description": "403 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "404": {
-            "description": "404 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "422": {
-            "description": "422 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "500": {
-            "description": "500 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "502": {
-            "description": "502 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "504": {
-            "description": "504 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
-      "options": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Methods": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Credentials": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Headers": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/curator/summary": {
       "get": {
         "summary": "/api/curator/summary",
@@ -2054,143 +1915,6 @@
           }
         }
       },
-      "post": {
-        "consumes": [
-          "application/json",
-          "application/x-www-form-urlencoded"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "400": {
-            "description": "400 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "401": {
-            "description": "401 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "403": {
-            "description": "403 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "404": {
-            "description": "404 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "422": {
-            "description": "422 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "500": {
-            "description": "500 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "502": {
-            "description": "502 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          },
-          "504": {
-            "description": "504 response",
-            "headers": {
-              "Cache-Control": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Content-Type": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
       "options": {
         "consumes": [
           "application/json"
@@ -2507,51 +2231,6 @@
         }
       }
     },
-    "/api/document/vote/{documentId}": {
-      "post": {
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {}
-      },
-      "options": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Methods": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Credentials": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Headers": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/oraclize/viewcount": {
-      "get": {
-        "responses": {}
-      }
-    },
     "/api/profile/get": {
       "get": {
         "summary": "/api/profile/get by no auth",
@@ -2709,6 +2388,10 @@
       "get": {
         "summary": "/api/tags",
         "description": "/api/tags",
+        "consumes": [
+          "application/json",
+          "application/x-www-form-urlencoded"
+        ],
         "produces": [
           "application/json"
         ],
@@ -2717,6 +2400,129 @@
             "description": "200 response",
             "schema": {
               "$ref": "#/definitions/DefaultResponse"
+            },
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "403": {
+            "description": "403 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "404": {
+            "description": "404 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "422": {
+            "description": "422 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "500 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "502": {
+            "description": "502 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "504": {
+            "description": "504 response",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
             }
           }
         }
@@ -2803,6 +2609,180 @@
             "schema": {
               "$ref": "#/definitions/DefaultResponse"
             },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "403": {
+            "description": "403 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "404": {
+            "description": "404 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "422": {
+            "description": "422 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "500 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "502": {
+            "description": "502 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "504": {
+            "description": "504 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Credentials": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracking/confirm": {
+      "get": {
+        "responses": {}
+      },
+      "post": {
+        "summary": "/api/tracking/confirm",
+        "description": "/api/tracking/confirm",
+        "consumes": [
+          "application/json",
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cid",
+            "in": "query",
+            "description": "cid",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sid",
+            "in": "query",
+            "description": "sid",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "email",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "documentId",
+            "in": "query",
+            "description": "documentId",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "type": "string"
@@ -3432,6 +3412,150 @@
         }
       }
     },
+    "/api/zapier/document": {
+      "get": {
+        "consumes": [
+          "application/json",
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "403": {
+            "description": "403 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "404": {
+            "description": "404 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "422": {
+            "description": "422 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "500 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "502": {
+            "description": "502 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          },
+          "504": {
+            "description": "504 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Content-Type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "zapierAuth": []
+          }
+        ]
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Credentials": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/zapier/email": {
       "get": {
         "consumes": [
@@ -3544,7 +3668,7 @@
         },
         "security": [
           {
-            "accountAuth": []
+            "zapierAuth": []
           }
         ]
       },
@@ -3579,6 +3703,12 @@
   },
   "securityDefinitions": {
     "accountAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "x-amazon-apigateway-authtype": "custom"
+    },
+    "zapierAuth": {
       "type": "apiKey",
       "name": "Authorization",
       "in": "header",
