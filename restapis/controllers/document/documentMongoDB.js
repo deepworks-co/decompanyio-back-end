@@ -900,8 +900,13 @@ async function getTrackingList(documentId, anonymous, include) {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
       count: {$sum: 1},
-      viewTimestamp: {$max: "$viewTimestamp"},
-      sidList: { $push: "$_id.sid" },
+      viewTimestamp: {$max: "$viewTimestamp"}
+    }
+  });
+  
+  queryPipeline.push({
+    $sort: {
+      viewTimestamp: -1
     }
   });
 
@@ -915,24 +920,19 @@ async function getTrackingList(documentId, anonymous, include) {
   });
 
   queryPipeline.push({
+    $unwind: "$userAs"
+  });
+
+  queryPipeline.push({
     $sort: {
-      viewTimestamp: -1
+      "userAs.created": -1
     }
   });
 
   queryPipeline.push({
-    $addFields: {
-      user: {$arrayElemAt: [ "$userAs", 0 ]}
-    }
-  });
-
-  queryPipeline.push({
-    $project: {
-      cid: 1,
-      count: 1,
-      viewTimestamp: 1,
-      sidList: 1,
-      user: 1
+    $group: {
+      _id: "$_id",
+      user: {$first: "$userAs"}
     }
   });
 
