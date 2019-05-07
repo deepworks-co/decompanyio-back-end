@@ -903,12 +903,7 @@ async function getTrackingList(documentId, anonymous, include) {
       viewTimestamp: {$max: "$viewTimestamp"}
     }
   });
-  
-  queryPipeline.push({
-    $sort: {
-      viewTimestamp: -1
-    }
-  });
+
 
   queryPipeline.push({
     $lookup: {
@@ -932,10 +927,19 @@ async function getTrackingList(documentId, anonymous, include) {
   queryPipeline.push({
     $group: {
       _id: "$_id",
-      user: {$first: "$userAs"}
+      user: {$first: "$userAs"},
+      cid: {$first: "$cid"},
+      viewTimestamp: {$first: "$viewTimestamp"},
+      count: {$first: "$count"}
     }
   });
 
+  queryPipeline.push({
+    $sort: {
+      viewTimestamp: -1
+    }
+  });
+  
   if(!anonymous){
     queryPipeline.push({
       $match: {user: {$exists: true}}
