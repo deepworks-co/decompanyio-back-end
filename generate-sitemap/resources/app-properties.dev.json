@@ -1,0 +1,23 @@
+{
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@172.31.33.37:27017/decompany"
+    },
+    "region": "us-west-1",
+    "tables":{
+        "DOCUMENT": "DOCUMENT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
+        "VOTE": "VOTE",
+        "USER": "USER",
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
+    },
+    "applicationConfig": {
+        "domain": "https://share.decompany.io"
+    }
+}
