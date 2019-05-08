@@ -45,7 +45,10 @@ module.exports.handler = async (event, context, callback) => {
     console.log("send mail success", result);
   }
   
+  const response = JSON.stringify({
+    success: true
+  })
   
-  return "success";
+  return response;
 
 };
