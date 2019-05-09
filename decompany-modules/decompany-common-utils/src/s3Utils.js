@@ -46,20 +46,22 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     });
     
     const s3 = new AWS.S3();
-    let contentType;
-    let params = {
+
+    
+    let source = {
         Bucket: bucket,
         Key: key,
         Body: Buffer.from(text, 'binary')
     };
+    let sendParams = {}
 
     if(typeof(attr) === 'string'  ){
-        params.contentType = attr;
+        sendParams = Object.assign(source, {ContentType: attr});
     } else if(typeof(attr) === 'object'  ){
-        params = Object.assign(params, attr);
+        sendParams = Object.assign(source, attr);
     }
     
-    return s3.putObject(params).promise();
+    return s3.putObject(sendParams).promise();
  }
 
  exports.putObjectAndExpries = (bucket, key, text, contentType, regions, expires) =>{
