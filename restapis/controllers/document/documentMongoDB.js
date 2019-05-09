@@ -1206,13 +1206,19 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     } 
 
     const now = new Date();
+    //1. 24시간 안에 대상에게 메일을 보냈는가? 
     const latestSent = now.getTime() - (1000 * 60 * 60 * 24); 
-
     const sentInfo = await wapper.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
 
     if(sentInfo && sentInfo.length>0){
       return false;
     }
+
+    //2. 오늘하루동안 50,000개의 메일을 보냈는가?(UTC+0기준)
+
+
+
+    //3 초당 14개의 메일을 보냈는가?
 
     return true; 
     
