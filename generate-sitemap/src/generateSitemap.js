@@ -19,11 +19,13 @@ module.exports.handler = async (event, context, callback) => {
     const r = await generateSitemap(sitemapConfig.limit, start, index);
     console.log("generateSitemap complete", r);
     if(r){
-      const r2 = await generateSitemapIndex(sitemaps.concat(r));
+
+      const newSitemaps = await getSitemap();
+
+      const r2 = await generateSitemapIndex(newSitemaps);
       console.log("generateSitemapIndex complete", r2);
 
-
-      const items = sitemaps.concat(r).map((it)=>{
+      const items = newSitemaps.map((it)=>{
         return `/${it.filename}`;
       })
 
@@ -121,10 +123,13 @@ async function generateSitemap(limit, start, index){
   //console.log("urls", JSON.stringify(urls));
   const xml = await makeSitemapXML({domain, urls});
   //console.log(xml)
+  
+  //xml document의 byte구하기
   const stringByteLength = (function(s,b,i,c){
     for(b=i=0;c=s.charCodeAt(i++);b+=c>>11?3:c>>7?2:1);
     return b
   })(xml);
+  
   const compressedXml = await compress(xml)
   //console.log(compressedXml);
   const uploadResult = await s3.putObject(bucket, filename, compressedXml, {
