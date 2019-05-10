@@ -65,9 +65,10 @@ async function generateSitemapIndex(sitemaps){
   const urls = sitemaps.map((it)=>{
     return `${domain}/${it.filename}`;
   });
-
+  const now = new Date();
   const xml = sitemapGenerater.buildSitemapIndex({
-    urls: urls
+    urls: urls,
+    lastmod: now.toISOString()
   });
   
   console.log("sitemap index", xml);
@@ -182,7 +183,7 @@ function getQueryPipeline(limit, start){
 }
 
 async function getSitemap(){
-  const result = await wapper.find(tables.SITEMAP, {});
+  const result = await wapper.findAll(tables.SITEMAP, {}, {created: 1});
 
   return result;
 }
