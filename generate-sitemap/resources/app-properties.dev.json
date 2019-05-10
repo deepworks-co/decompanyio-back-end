@@ -15,9 +15,15 @@
         "SEO_FRIENDLY": "SEO-FRIENDLY",
         "TOP_TAG": "TOP-TAG",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
-        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "SITEMAP": "SITEMAP"
     },
-    "applicationConfig": {
-        "domain": "https://share.decompany.io"
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://share.decompany.io",
+        "bucket": "share.decompany.io",
+        "documentBucket": "dev-ca-document",
+        "image": "https://thumb.share.decompany.io",
+        "distributionId": "EDFUPNJU9XKGX"
     }
 }

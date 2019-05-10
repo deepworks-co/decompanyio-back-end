@@ -16,5 +16,5 @@ describe('generateSitemap', () => {
     return wrapped.run({}).then((response) => {
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(300000);
 });
