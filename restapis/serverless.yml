@@ -697,12 +697,12 @@ functions:
                 description: sid
                 type: string
 
-  #trackingSendEmail:
-  #  handler: controllers/tracking/sendEmail.handler
-  #  timeout: 30
-  #  events:
-  #    - schedule: rate(1 minute) # hourly
-  - ${file(./serverless-functions-tracking.yml)}
+  trackingSendEmail:
+    handler: controllers/tracking/sendEmail.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute) # hourly
+
     
 # you can add CloudFormation resource templates here
 resources:
@@ -730,6 +730,9 @@ resources:
 
 
 custom:
+  splitStacks:
+    perFunction: false
+    perType: true
   serverless-offline:
     port: 4080
   documentation:
@@ -761,3 +764,4 @@ plugins:
   - serverless-aws-documentation
   - serverless-mocha-plugin
   - serverless-plugin-existing-s3
+  - serverless-plugin-split-stacks

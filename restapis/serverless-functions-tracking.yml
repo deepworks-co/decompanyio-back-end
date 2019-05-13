@@ -1,5 +1,0 @@
-trackingSendEmail:
-  handler: controllers/tracking/sendEmail.handler
-  timeout: 30
-  events:
-    - schedule: rate(1 minute) # hourly
