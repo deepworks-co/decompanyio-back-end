@@ -761,4 +761,3 @@ plugins:
   - serverless-aws-documentation
   - serverless-mocha-plugin
   - serverless-plugin-existing-s3
-  - serverless-nested-stack
