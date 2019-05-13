@@ -34,12 +34,13 @@ module.exports = {
   putTrackingUser,
   putTrackingConfirmSendMail,
   checkTrackingConfirmSendMail,
+  completeTrackingConfirmSendMail,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
-  
+  getUnsendEmail  
 }
 
  /**
@@ -1174,7 +1175,7 @@ async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
   }
 }
 
-async function putTrackingConfirmSendMail(documentId, email, result) {
+async function putTrackingConfirmSendMail(documentId, email) {
   const wapper = new MongoWapper(connectionString);
   const now = new Date();
   try{
@@ -1182,9 +1183,7 @@ async function putTrackingConfirmSendMail(documentId, email, result) {
     await wapper.insert(tables.TRACKING_CONFIRM, {
       email: email,
       documentId: documentId,
-      sent: now.getTime(),
       created: now.getTime(),
-      result: result
     });
     return true;  
     
@@ -1202,6 +1201,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     const user = await getUser({email: email});
     if(user){
       //등록된 유저(가입된 유저)이면 가입 메일을 발송하지 않는다.
+      console.log("check false: Already joined users", email);
       return false;
     } 
 
@@ -1211,14 +1211,20 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     const sentInfo = await wapper.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
 
     if(sentInfo && sentInfo.length>0){
+      console.log("check false : Emails sent within the last 24 hours", email);
       return false;
     }
 
-    //2. 오늘하루동안 50,000개의 메일을 보냈는가?(UTC+0기준)
+    //2. 이미 발송 대상에 있는가??
+    const emailstosend = await wapper.findAll(tables.TRACKING_CONFIRM, {documentId: documentId, email: email}, {created: -1}, 1);
 
-
-
-    //3 초당 14개의 메일을 보냈는가?
+    if(emailstosend && emailstosend.length>0){
+      if(!emailstosend[0].sent){
+        console.log("check false : The email is in the waiting list.", email);
+        return false;
+      }
+    }
+    console.log(emailstosend);
 
     return true; 
     
@@ -1228,6 +1234,26 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     wapper.close();
   }
 }
+
+async function completeTrackingConfirmSendMail(unsend, result) {
+  const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  try{
+    console.log("completeTrackingConfirmSendMail", unsend, result);
+    unsend.sent = now.getTime();
+    unsend.result = result;
+    const r = await wapper.save(tables.TRACKING_CONFIRM, unsend);
+    console.log("check save result", r);
+    return true;  
+    
+  } catch(err){
+    console.log(err);
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
 /**
  * @param  {} cid
  * @param  {} email
@@ -1250,8 +1276,12 @@ async function putTrackingUser(cid, sid, documentId, email){
         sid: sid,
         created: Date.now()
       }
-      const r = await wapper.save(TB_TRACKING_USER, item);
-      console.log("tracking target user save", r);
+      const trackingUser = await wapper.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
+      if(!trackingUser){
+        const r = await wapper.save(TB_TRACKING_USER, item);
+        console.log("tracking target user save", r);
+      }
+      
     }
     
   } catch(err){
@@ -1261,4 +1291,22 @@ async function putTrackingUser(cid, sid, documentId, email){
   }
 
   
+}
+/**
+ * getting unsend email
+ */
+async function getUnsendEmail(limit){
+  const wapper = new MongoWapper(connectionString);
+  
+  
+  try{
+    const unsendemails = await wapper.findAll(tables.TRACKING_CONFIRM, {sent: {$exists: false}}, {created: 1}, limit);
+
+    return unsendemails;
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
 }

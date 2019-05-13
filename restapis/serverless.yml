@@ -81,7 +81,6 @@ layers:
     description: "additional node_module"
     
 functions:
-
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -698,6 +697,12 @@ functions:
                 description: sid
                 type: string
 
+  trackingSendEmail:
+    handler: controllers/tracking/sendEmail.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute) # hourly
+    
 # you can add CloudFormation resource templates here
 resources:
   Resources:

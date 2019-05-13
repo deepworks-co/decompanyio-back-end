@@ -38,6 +38,6 @@
     "sesConfig": {
         "region": "us-east-1",
         "sender": "connect@decompany.io",
-        "template": "./template/confirm_email.dev.html"
+        "template": "../../template/confirm_email.dev.html"
     }
 }
