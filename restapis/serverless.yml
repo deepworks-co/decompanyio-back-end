@@ -113,7 +113,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
   curatorSummary:
     handler: controllers/curator/curatorSummary.handler
     events:
@@ -140,7 +140,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   zapierAuth:
     handler: controllers/zapier/auth.handler
@@ -209,7 +209,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
   analyticsExport:
     handler: controllers/analytics/export.handler
     events:
@@ -243,7 +243,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   tagList:
     handler: controllers/tag/list.handler
@@ -267,7 +267,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
 
   s3DocumentUploadComplete:
@@ -317,7 +317,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   accountEthereumSync:
     handler: controllers/account/accountEthereumSync.handler
@@ -349,7 +349,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   profileGet:
     handler: controllers/profile/getProfile.handler
@@ -377,7 +377,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
   accountAuth:
     handler: controllers/account/auth.handler
 
@@ -427,7 +427,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
     
   accountSync:
     handler: controllers/account/sync.handler
@@ -527,7 +527,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -562,7 +562,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   trackingInfo:
     handler: controllers/tracking/info.handler
@@ -598,7 +598,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
 
   trackingCollect:
     handler: controllers/tracking/collect.handler
@@ -639,7 +639,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
   trackingExport:
     handler: controllers/tracking/trackingExport.handler
     events:
@@ -667,7 +667,7 @@ functions:
                 responseBody:
                   description: "Response body description"
                 responseModels:
-                  "application/json": "DefaultResponse"
+                  "application/json": "DefaultResponseModel"
   trackingConfirm:
     handler: controllers/tracking/confirm.handler
     events:
