@@ -750,12 +750,12 @@ custom:
           url: https://www.decompany.io
     models:
       -
-        name: "ErrorResponse"
+        name: "ErrorResponseModel"
         description: "This is an error"
         contentType: "application/json"
         schema: ${file(models/error.json)}
       -
-        name: "DefaultResponse"
+        name: "DefaultResponseModel"
         description: "default response"
         contentType: "application/json"
         schema: ${file(models/default_response.json)}
