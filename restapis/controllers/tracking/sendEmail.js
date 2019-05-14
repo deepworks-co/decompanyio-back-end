@@ -43,8 +43,8 @@ module.exports.handler = async (event, context, callback) => {
     let html = templateBody.replace("##email##", email);
     html = html.replace("##title##", MAIL_TITLE);
     //console.log("html", html);
-    const result = await ses.sendMail(region, email, sender, title, html);
-    console.log("send mail", {region, email, sender, title, html})
+    const result = await ses.sendMail(region, email, sender, MAIL_TITLE, html);
+    console.log("send mail", {region, email, sender, MAIL_TITLE, html})
     return await documentService.completeTrackingConfirmSendMail(it, result);
   });
   
