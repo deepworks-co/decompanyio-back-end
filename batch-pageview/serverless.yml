@@ -52,11 +52,8 @@ functions:
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
     timeout: 300
-    reservedConcurrency: 1
     events:
-      - sqs:
-          arn: arn:aws:sqs:us-west-1:197966029048:DEV-CA-SC-VIEWCOUNT
-          batchSize: 1
+      - schedule: rate(5 minutes)
 
   dailyPageview:
     handler: functions/cron/dailyPageview.handler

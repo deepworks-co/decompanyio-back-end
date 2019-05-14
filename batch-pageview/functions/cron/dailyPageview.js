@@ -31,26 +31,7 @@ module.exports.handler = async (event, context, callback) => {
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
 
-  const promises = [];
-  const count = resultList.length; // 집계된 문서수 (total count 정보)
-  const unit = 10000;             // write on chain시 한번에 처리할 문서수 (limit 정보)
-  const endIndex = parseInt(count / unit); // 마지막 묶음의 index (+1 묶음 갯수) (skip 정보)
-  /**
-   * write pageview onchain 을 호출하기 위한 SQS를 보낸다.
-   * 집계된 문서의 목록 조회 조건을 보낸다.
-   */
-  for(let index=0 ; index < endIndex + 1 ; index++){
-    const messageBody = JSON.stringify({
-      blockchainTimestamp: startTimestamp,
-      count: count,
-      unit: unit,
-      endIndex: endIndex,
-      index: index
-    });
-    promises.push(sendMessagePageviewOnchain(messageBody));
-  }
-  
-  const sqsSendResult = await Promise.all(promises);
+
 
   return "success";
 }
@@ -67,8 +48,9 @@ function getQueryPipeline(startTimestamp, endTimestamp){
     $match: {
       $and: [
         {t: {$gte: startTimestamp, $lt: endTimestamp}},
-        {n: {$gt: 1}
-      }]
+        {n: {$gt: 1}}, 
+        {referer: {$ne: null}}
+      ]
     }
   }, {
     $sort: {

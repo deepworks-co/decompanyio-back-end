@@ -34,6 +34,9 @@ sls create function -f registryCollector --handler functions/cron/registryCollec
 sls create function -f blockCollector --handler functions/cron/blockCollector.handler
 sls create function -f recentlyPageview --handler functions/cron/recentlyPageview.handler
 
+
+sls create function -f pageviewWriteOnChainTrigger --handler functions/onchain/pageviewWriteOnChainTrigger.handler
+
 # Test
 
 sls invoke test -f {FunctionName}
