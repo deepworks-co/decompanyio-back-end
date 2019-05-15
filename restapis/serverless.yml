@@ -261,6 +261,10 @@ functions:
           documentation:
             summary: "/api/tags"
             description: "/api/tags"
+            queryParams:
+              - name: t
+                description: type 'featured' or 'popular' default null(latest)
+                type: string
             methodResponses:
               -
                 statusCode: "200"

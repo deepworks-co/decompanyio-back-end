@@ -7,8 +7,10 @@ module.exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
   }
+
+  const {t} = event.query;
   
-  const resultList = await documentService.getTopTag();
+  const resultList = await documentService.getTopTag(t);
 
   const response = JSON.stringify({
     success: true,

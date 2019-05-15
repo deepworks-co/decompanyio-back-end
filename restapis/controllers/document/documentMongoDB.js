@@ -1026,10 +1026,18 @@ async function getTrackingUser(cid) {
 /**
  * @description Get Top-Tag
  */
-async function getTopTag() {
+async function getTopTag(t) {
   const wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.findAll(tables.TOP_TAG, {}, {value: -1}, 1000);
+    let tableName = tables.TOP_TAG;
+    if(t==="featured"){
+      tableName = tables.TOP_TAG_FEATURED;
+    } else if(t === "popular") {
+      tableName = tables.TOP_TAG_POPULAR;
+    } else {
+      tableName = tables.TOP_TAG;
+    }
+    return await wapper.findAll(tableName, {}, {value: -1}, 1000);
   } catch(err){
     throw err;
   } finally {
