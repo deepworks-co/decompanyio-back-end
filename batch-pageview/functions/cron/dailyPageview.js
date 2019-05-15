@@ -13,10 +13,10 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
-  console.log(event.period);
-  const period = isNaN(event.period)?1:event.period;
+  console.log(event);
+  //const period = isNaN(event.period)?1:event.period;
   const now = new Date();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * period);
+  const startDate = new Date(now - 1000 * 60 * 60 * 24 * 1);
   const startTimestamp = utils.getBlockchainTimestamp(startDate);
   const endTimestamp = utils.getBlockchainTimestamp(now);
 
@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
 
 
 
-  return "success";
+  return {remains: resultList?resultList.length:0};
 }
 
 /**

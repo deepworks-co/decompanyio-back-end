@@ -19,12 +19,13 @@ module.exports.handler = async (event, context, callback) => {
     
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, LIMIT);
-    //console.log("getList", resultList);
-    if(resultList.length === 0){
-      return "resultList is nothing";
-    } else {
-      console.log("getList", resultList.length);
-    }
+    const remains = resultList.length === 'undefined'? 0:resultList.length
+    console.log("getList", remains);
+    if(remains === 0){
+      return {
+        remains: 0
+      };
+    } 
 
     let documentIds = [];
     let pageviews = [];
@@ -56,12 +57,18 @@ module.exports.handler = async (event, context, callback) => {
 
  
     console.log("Transaction Request End");
+
+    const remainsList = await getList(blockchainTimestamp, LIMIT);
+    console.log("remainsList", remainsList.length);
+    return {
+      remains: remainsList.length
+    };
+
   } catch(error){
     console.error(error);
     throw new Error("document pageview write on chain fail...");
   }
 
-  return "complete";
 };
 
 
@@ -81,7 +88,7 @@ async function getList(blockchainTimestamp, limit){
     const queryPipeline = [{
       $match: { 
         blockchainTimestamp: blockchainTimestamp, 
-        transactionHash: {$exists: false}
+        "transactionHash.success": {$ne: true}
 
       }
     }, {
