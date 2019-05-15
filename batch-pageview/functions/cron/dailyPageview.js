@@ -20,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
   const startTimestamp = utils.getBlockchainTimestamp(startDate);
   const endTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp), "period", period);
+  console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp));
 
   const totalPageviewResult = await aggregatePageviewTotalCount(startTimestamp, endTimestamp);
   console.log("aggregatePageviewTotalCount result", totalPageviewResult);
