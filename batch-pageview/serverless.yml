@@ -52,14 +52,14 @@ functions:
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
     timeout: 300
-    events:
-      - schedule: rate(5 minutes)
+    #events:
+    #  - schedule: rate(5 minutes)
 
   dailyPageview:
     handler: functions/cron/dailyPageview.handler
     timeout: 300
-    events:
-      - schedule: cron(10 0 * * ? *) # daily 00:10:00
+    #events:
+    #  - schedule: cron(10 0 * * ? *) # daily 00:10:00
 
   recentlyPageview:
     handler: functions/cron/recentlyPageview.handler
