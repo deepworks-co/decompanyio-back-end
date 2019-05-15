@@ -29,6 +29,7 @@ npm install serverless-mocha-plugin
 npm install serverless-offline
 npm install serverless-plugin-existing-s3
 npm install serverless-aws-documentation
+npm install serverless-plugin-split-stacks
 npm install mongojs
 npm install json-2-csv
 ```
@@ -71,13 +72,16 @@ sls invoke test -f registYesterdayViewCount
 
 ## Log
 
+```shell
 sls logs -f {FunctionName}  -t
 sls logs -f registYesterdayViewCount  -t
+```
 
 ## serverless-mocha-plugin
 
 ## create function history 틀릴수도 있음~
 
+```shell
 sls create function -f accountSync --handler controllers/account/sync.handler --httpEvent "get /api/account/sync"
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
 sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
@@ -99,3 +103,12 @@ sls create function -f documentMigration --handler migration/documentMigration.h
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
 sls create function -f trackingConfirm --handler controllers/tracking/confirm.handler --httpEvent "get /api/tracking/confirm"
+sls create function -f trackingSendEmail --handler controllers/tracking/sendEmail.handler
+```
+
+
+## get resources count
+
+```shell
+aws cloudformation describe-stack-resources --stack-name backend-restapis-dev --query "StackResources[].ResourceType" --output text | tr "\t" "\n" | sort | uniq -c | sort -r
+```
