@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "Decompany Rest Api",
-    "version": "2019-05-07T05:16:46Z",
+    "version": "2019-05-15T07:03:30Z",
     "title": "dev-backend-restapis",
     "termsOfService": "https://www.google.com",
     "contact": {
@@ -44,7 +44,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -337,7 +337,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -653,7 +653,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -825,7 +825,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -1004,7 +1004,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -1176,7 +1176,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -1329,7 +1329,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -1482,7 +1482,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -2255,7 +2255,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -2395,11 +2395,20 @@
         "produces": [
           "application/json"
         ],
+        "parameters": [
+          {
+            "name": "t",
+            "in": "query",
+            "description": "type 'featured' or 'popular' default null(latest)",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Cache-Control": {
@@ -2607,7 +2616,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -2737,9 +2746,6 @@
       }
     },
     "/api/tracking/confirm": {
-      "get": {
-        "responses": {}
-      },
       "post": {
         "summary": "/api/tracking/confirm",
         "description": "/api/tracking/confirm",
@@ -2934,7 +2940,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -3106,7 +3112,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -3278,7 +3284,7 @@
           "200": {
             "description": "200 response",
             "schema": {
-              "$ref": "#/definitions/DefaultResponse"
+              "$ref": "#/definitions/DefaultResponseModel"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -3716,7 +3722,7 @@
     }
   },
   "definitions": {
-    "DefaultResponse": {
+    "DefaultResponseModel": {
       "type": "object",
       "properties": {
         "success": {
