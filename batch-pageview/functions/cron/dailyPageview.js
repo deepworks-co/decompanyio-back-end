@@ -13,14 +13,14 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
-  console.log(event.period);
-  const period = isNaN(event.period)?1:event.period;
+  console.log(event);
+  //const period = isNaN(event.period)?1:event.period;
   const now = new Date();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * period);
+  const startDate = new Date(now - 1000 * 60 * 60 * 24 * 1);
   const startTimestamp = utils.getBlockchainTimestamp(startDate);
   const endTimestamp = utils.getBlockchainTimestamp(now);
 
-  console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp), "period", period);
+  console.log("query startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp));
 
   const totalPageviewResult = await aggregatePageviewTotalCount(startTimestamp, endTimestamp);
   console.log("aggregatePageviewTotalCount result", totalPageviewResult);
@@ -31,28 +31,9 @@ module.exports.handler = async (event, context, callback) => {
   const updateResult = await updateStatPageviewDaily(resultList);
   console.log("updateStatPageviewDaily Success", JSON.stringify(updateResult));
 
-  const promises = [];
-  const count = resultList.length; // 집계된 문서수 (total count 정보)
-  const unit = 10000;             // write on chain시 한번에 처리할 문서수 (limit 정보)
-  const endIndex = parseInt(count / unit); // 마지막 묶음의 index (+1 묶음 갯수) (skip 정보)
-  /**
-   * write pageview onchain 을 호출하기 위한 SQS를 보낸다.
-   * 집계된 문서의 목록 조회 조건을 보낸다.
-   */
-  for(let index=0 ; index < endIndex + 1 ; index++){
-    const messageBody = JSON.stringify({
-      blockchainTimestamp: startTimestamp,
-      count: count,
-      unit: unit,
-      endIndex: endIndex,
-      index: index
-    });
-    promises.push(sendMessagePageviewOnchain(messageBody));
-  }
-  
-  const sqsSendResult = await Promise.all(promises);
 
-  return "success";
+
+  return {remains: resultList?resultList.length:0};
 }
 
 /**
@@ -67,8 +48,9 @@ function getQueryPipeline(startTimestamp, endTimestamp){
     $match: {
       $and: [
         {t: {$gte: startTimestamp, $lt: endTimestamp}},
-        {n: {$gt: 1}
-      }]
+        {n: {$gt: 1}}, 
+        {referer: {$ne: null}}
+      ]
     }
   }, {
     $sort: {

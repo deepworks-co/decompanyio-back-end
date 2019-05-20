@@ -23,10 +23,17 @@ module.exports.handler = async (event, context, callback) => {
     };
 
     try {
-      await Promise.all(Array(func.concurrency).fill(0)
+      let concurrentcy = isNaN(func.concurrency)?1:func.concurrency;
+
+      //concurrentcy = concurrentcy -1;
+      if(concurrentcy < 0){
+        concurrentcy = 0
+      }
+           
+      await Promise.all(Array(concurrentcy).fill(0)
         .map(async _ => await lambda.invoke(params).promise()));
 
-      console.log(`${functionName} concurrency ${isNaN(func.concurrency)?1:func.concurrency} lambda warm up!`);
+      console.log(`${functionName} concurrency ${concurrentcy} lambda warm up!`);
       return true;
     } catch (e) {
       console.log(`Warm Up Invoke Error: ${func.name}`, e);
@@ -35,7 +42,8 @@ module.exports.handler = async (event, context, callback) => {
    
   }));
   
+  await Promise.all(invokes);
   console.log(`Warm Up Finished with ${invokes.filter(r => !r).length} invoke errors`);
 
-  return callback(null, "warm up lambda!");
+  return "warm up lambda!";
 };

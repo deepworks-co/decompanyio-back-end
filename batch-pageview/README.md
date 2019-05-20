@@ -1,11 +1,15 @@
 # APIs
 
 ## Git clone & checkout
+
+```shell
 git clone https://github.com/decompanyio/decompanyio-back-end.git {branchName} --branch {branchName}
 sprint-qa-03]$ git clone https://github.com/decompanyio/decompanyio-back-end.git sprint-qa-03 --branch sprint-qa-03
+```
 
 ## install dependence
 
+```shell
 npm install --save-dev serverless-mocha-plugin
 npm install ../decompany-modules/decompany-common-utils/
 npm install mongojs
@@ -13,11 +17,60 @@ npm install aws-sdk
 npm install web3
 npm install rxjs
 npm install ethereumjs-tx
+```
 
 
+## Step Function
 
+```javascript
+{
+  "StartAt": "DailyAggregatePageview",
+  "TimeoutSeconds": 60,
+  "States": {
+    "DailyAggregatePageview": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:197966029048:function:batch-pageview-dev-dailyPageview:$LATEST",
+      "Next": "IsExistsAggregatePageview",
+      "InputPath": "$",
+      "ResultPath": "$"
+    },
+    "IsExistsAggregatePageview": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.remains",
+          "NumericGreaterThan": 0,
+          "Next": "WriteOnchain"
+        }
+      ],
+      "Default": "Success"
+    },
+    "WriteOnchain": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-1:197966029048:function:batch-pageview-dev-pageviewWriteOnchain:$LATEST",
+      "Next": "IsLeftDocumentsWrittenOnchain",
+      "InputPath": "$",
+      "ResultPath": "$"
+    },
+    "IsLeftDocumentsWrittenOnchain": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.remains",
+          "NumericGreaterThan": 0,
+          "Next": "WriteOnchain"
+        }
+      ],
+      "Default": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}
+```
 
-## create api 
+## create api
 
 sls create function -f pageviewByHourly --handler functions/pageview/hourly.handler
 sls create function -f pageviewRequestPutOnChainByDaily --handler functions/pageview/requestPutOnChainByDaily.handler
@@ -33,6 +86,9 @@ sls create function -f pageviewCollector --handler functions/cron/pageviewCollec
 sls create function -f registryCollector --handler functions/cron/registryCollector.handler
 sls create function -f blockCollector --handler functions/cron/blockCollector.handler
 sls create function -f recentlyPageview --handler functions/cron/recentlyPageview.handler
+
+
+sls create function -f pageviewWriteOnChainTrigger --handler functions/onchain/pageviewWriteOnChainTrigger.handler
 
 # Test
 
