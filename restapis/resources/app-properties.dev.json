@@ -37,6 +37,7 @@
         "streamName": "TrackingDataStream"
     },
     "applicationConfig": {
+        "mainHost": "https://share.decompany.io",
         "activeVoteDays": 3
     },
     "sesConfig": {

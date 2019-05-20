@@ -104,6 +104,7 @@ sls create function -f accountEthereumSync --handler controllers/account/account
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
 sls create function -f trackingConfirm --handler controllers/tracking/confirm.handler --httpEvent "get /api/tracking/confirm"
 sls create function -f trackingSendEmail --handler controllers/tracking/sendEmail.handler
+sls create function -f embededDocument --handler controllers/embeded/embededDocument.handler --httpEvent "get /api/embeded/document"
 ```
 
 

@@ -37,6 +37,7 @@
         "streamName": "TrackingDataStream"
     },
     "applicationConfig": {
+        "mainHost": "https://www.polarishare.com",
         "activeVoteDays": 3
     },
     "sesConfig": {
