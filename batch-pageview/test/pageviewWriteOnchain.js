@@ -15,15 +15,7 @@ describe('pageviewWriteOnchain', () => {
   it('implement tests here', () => {
 
     const event = {
-      Records:[{
-        body: JSON.stringify({
-          blockchainTimestamp: 1555286400000,
-          count: 14,
-          unit: 10000,
-          endIndex: 0,
-          index: 0
-        })
-      }]
+      blockchainTimestamp: 1558051200000
     }
 
     return wrapped.run(event).then((response) => {
