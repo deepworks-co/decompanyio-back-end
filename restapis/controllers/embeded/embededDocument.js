@@ -40,10 +40,7 @@ module.exports.handler = async (event, context, callback) => {
     contentsUrl = encodeURIComponent(contentsUrl);
     let authorUrl = domain + author.username;
     authorUrl = encodeURIComponent(authorUrl);
-    const html = `<object width="${width}" height="${height}">
-<param name="rich" value="${contentsUrl}"></param>
-<embed src="${domain}" type="application/x-shockwave-flash" width="${width}" height="${height}"></embed>
-</object>`
+    const html = `<object width="${width}" height="${height}"><param name="rich" value="${contentsUrl}"></param><embed src="${domain}" type="application/x-shockwave-flash" width="${width}" height="${height}"></embed></object>`
 
     const response = JSON.stringify({
         version: "1.0",

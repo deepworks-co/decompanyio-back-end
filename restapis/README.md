@@ -6,6 +6,7 @@ Serverless Project
 
 1) Api gateway accesslog 설정
 2) S3 WebHosting을 위한 BucketPolicy 설정
+
 ```javascripy
 {
     "Version": "2012-10-17",
@@ -32,6 +33,7 @@ npm install serverless-aws-documentation
 npm install serverless-plugin-split-stacks
 npm install mongojs
 npm install json-2-csv
+npm --prefix ./opt install sharp
 ```
 
 ## Install Layer
