@@ -916,7 +916,10 @@ async function getTrackingList(documentId, anonymous, include) {
   });
 
   queryPipeline.push({
-    $unwind: "$userAs"
+    $unwind:  {
+      path: "$userAs",
+      preserveNullAndEmptyArrays: true
+    }
   });
 
   queryPipeline.push({
@@ -943,7 +946,7 @@ async function getTrackingList(documentId, anonymous, include) {
   
   if(!anonymous){
     queryPipeline.push({
-      $match: {user: {$exists: true}}
+      $match: {"user._id": {$exists: true}}
     })
   }
 
