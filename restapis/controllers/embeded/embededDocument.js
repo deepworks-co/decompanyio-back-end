@@ -36,10 +36,8 @@ module.exports.handler = async (event, context, callback) => {
     const width = 640;
     const height = width * 9/16;
     const seoTitle = document.seoTitle;
-    let contentsUrl = `${domain}/${username}/${seoTitle}`;
-    contentsUrl = encodeURIComponent(contentsUrl);
-    let authorUrl = domain + author.username;
-    authorUrl = encodeURIComponent(authorUrl);
+    let contentsUrl = `${domain}/${encodeURIComponent(username)}/${seoTitle}`;
+    let authorUrl = domain + encodeURIComponent(author.username);
     const html = `<object width="${width}" height="${height}"><param name="rich" value="${contentsUrl}"></param><embed src="${domain}" type="application/x-shockwave-flash" width="${width}" height="${height}"></embed></object>`
 
     const response = JSON.stringify({
