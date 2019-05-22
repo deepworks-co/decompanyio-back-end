@@ -44,6 +44,7 @@ provider:
        - kinesis:*
        - kms:*
        - ses:*
+       - codedeploy:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
@@ -81,6 +82,10 @@ layers:
     description: "additional node_module"
     
 functions:
+  preHook:
+    handler:  deploy/handler.pre
+  postHook:
+    handler: deploy/handler.post
 
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
@@ -477,6 +482,11 @@ functions:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
             template: $input.path('$')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   documentInfo:
     handler: controllers/document/documentController.info
@@ -782,3 +792,4 @@ plugins:
   - serverless-mocha-plugin
   - serverless-plugin-existing-s3
   - serverless-plugin-split-stacks
+  - serverless-plugin-canary-deployments
