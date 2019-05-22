@@ -82,6 +82,7 @@ layers:
     description: "additional node_module"
     
 functions:
+
   preHook:
     handler:  deploy/handler.pre
   postHook:
@@ -301,6 +302,23 @@ functions:
             - s3:ObjectCreated:Put
           rules:
             - prefix: THUMBNAIL/
+  
+  accountDocuments:
+    handler: controllers/account/documents.handler
+    events:
+      - http:
+          method: get
+          path: /api/account/documents
+          cors: true
+          authorizer: accountAuth
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
 
   accountPicture:
     handler: controllers/account/picture.handler

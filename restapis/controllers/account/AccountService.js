@@ -111,4 +111,64 @@ module.exports = class AccountService {
 			wapper.close();
 		}
 	}
+
+
+	async getDocuments(params) {
+		const wapper = new MongoWapper(connectionString);
+
+		try{
+			let {accountId, pageSize, skip} = params;
+
+			let pipeline = [{
+				$match: { accountId: accountId}
+			}, {
+				$sort:{ created: -1}
+			}, {
+				$skip: skip
+			}, {
+				$limit: pageSize
+			}, {
+				$lookup: {
+					from: tables.DOCUMENT_POPULAR,
+					localField: "_id",
+					foreignField: "_id",
+					as: "popularAs"
+				}
+			}, {
+				$lookup: {
+					from: tables.USER,
+					localField: "accountId",
+					foreignField: "_id",
+					as: "userAs"
+				}
+			}, {
+				$lookup: {
+					from: tables.DOCUMENT_FEATURED,
+					localField: "_id",
+					foreignField: "_id",
+					as: "featuredAs"
+				}
+				}, {
+				$project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+				}, {
+				$addFields: {
+					latestVoteAmount: "$featured.latestVoteAmount",
+					latestPageview: "$popular.latestPageview",
+					latestPageviewList: "$popular.latestPageviewList"
+
+				}
+				}, {
+				$project: {featured: 0, popular: 0}
+			}];
+
+
+
+			console.log("pipeline", JSON.stringify(pipeline));
+			return await wapper.aggregate(tables.DOCUMENT, pipeline);
+		} catch (e) {
+			throw e
+		} finally {
+			wapper.close();
+		}
+	}
 }
