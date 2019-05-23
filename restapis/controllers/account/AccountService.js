@@ -149,12 +149,12 @@ module.exports = class AccountService {
 					as: "featuredAs"
 				}
 				}, {
-				$project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+				$project: {_id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
 				}, {
 				$addFields: {
 					latestVoteAmount: "$featured.latestVoteAmount",
 					latestPageview: "$popular.latestPageview",
-					latestPageviewList: "$popular.latestPageviewList"
+					latestPageviewList: "$popular.latestPageviewList",
 
 				}
 				}, {

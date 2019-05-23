@@ -16,9 +16,11 @@ describe('accountDocuments', () => {
 
     const event = {
       principalId: "google-oauth2|116434154009969203346",
-      query: {a: "a"}
+      query: {pageNo: 1, pageSize: 100}
     }
     return wrapped.run(event).then((response) => {
+      console.log("response")
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });
