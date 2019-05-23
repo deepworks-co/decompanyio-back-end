@@ -31,6 +31,7 @@ npm install serverless-offline
 npm install serverless-plugin-existing-s3
 npm install serverless-aws-documentation
 npm install serverless-plugin-split-stacks
+npm install serverless-plugin-canary-deployments
 npm install mongojs
 npm install json-2-csv
 npm --prefix ./opt install sharp
@@ -88,6 +89,7 @@ sls create function -f accountSync --handler controllers/account/sync.handler --
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
 sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
 sls create function -f accountPicture --handler controllers/account/picture.handler --httpEvent "post /api/account/picture"
+sls create function -f accountDocuments --handler controllers/account/documents.handler --httpEvent "get /api/account/documents"
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
