@@ -31,10 +31,10 @@ module.exports.handler = async (event, context, callback) => {
         concurrentcy = 0
       }
            
-      await Promise.all(Array(concurrentcy).fill(0)
+      const results = await Promise.all(Array(concurrentcy).fill(0)
         .map(async _ => await lambda.invoke(params).promise()));
 
-      console.log(`${functionName} concurrency ${concurrentcy} lambda warm up!`);
+      console.log(`${functionName}:${aliase} concurrency ${results.length} lambda warm up!`);
       return true;
     } catch (e) {
       console.log(`Warm Up Invoke Error: ${func.name}`, e);
