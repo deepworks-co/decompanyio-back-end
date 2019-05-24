@@ -24,7 +24,7 @@ module.exports.handler = async (event, context, callback) => {
     
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, LIMIT);
-    const remains = resultList.length === 'undefined'? 0:resultList.length
+    const remains = resultList.length === undefined? 0:resultList.length
     console.log("getList", remains);
     if(remains === 0){
       return {
