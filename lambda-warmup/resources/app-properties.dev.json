@@ -4,20 +4,20 @@
         "enable": true,
         "prefix": "backend-restapis-dev-",
         "functions": [
-            {"name": "curatorDocumentList", "concurrency": 1}, 
-            {"name": "curatorSummary"},
-            {"name": "analyticsList"},
-            {"name": "tagList"},
-            {"name": "s3DocumentUploadComplete"},
-            {"name": "s3DocumentConvertComplete"},
-            {"name": "accountEthereumSync"},
-            {"name": "profileGet"},
-            {"name": "accountGet"},
+            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
+            {"name": "curatorSummary", "aliase": "prod"},
+            {"name": "analyticsList", "aliase": "prod"},
+            {"name": "tagList", "aliase": "prod"},
+            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
+            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
+            {"name": "accountEthereumSync", "aliase": "prod"},
+            {"name": "profileGet", "aliase": "prod"},
+            {"name": "accountGet", "aliase": "prod"},
             {"name": "documentList", "concurrency": 5, "aliase": "prod"},
-            {"name": "documentInfo"},
-            {"name": "trackingCollect"},
-            {"name": "trackingList"},
-            {"name": "trackingInfo"}
+            {"name": "documentInfo", "aliase": "prod"},
+            {"name": "trackingCollect", "aliase": "prod"},
+            {"name": "trackingList", "aliase": "prod"},
+            {"name": "trackingInfo", "aliase": "prod"}
         ]
     }
 }
