@@ -7,18 +7,19 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("Warm Up Start");
 
-  const {prefix, functions} = warmupConfig;
+  const {prefix, functions,} = warmupConfig;
 
   const payload = JSON.stringify({ source: 'lambda-warmup'});
   
   const invokes = await Promise.all(functions.map(async (func) => {
     const functionName = prefix?prefix.concat(func.name):func.name;
+    const aliase = func.aliase?func.aliase:"$LATEST";
     const params = {
       ClientContext: Buffer.from(payload).toString('base64'),
       FunctionName: functionName,
       InvocationType: "RequestResponse",
       LogType: "None",
-      Qualifier: "$LATEST",
+      Qualifier: aliase,
       Payload: payload
     };
 
