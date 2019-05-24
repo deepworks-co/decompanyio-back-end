@@ -31,7 +31,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const unsendEmail = await documentService.getUnsendEmail(BATCH_LIMIT);
   
-  if(unsendEmail.length === 'undefined' || unsendEmail.length===0){
+  if(unsendEmail.length === undefined || unsendEmail.length===0){
     console.log("A Email is not exists to send!")
     return JSON.stringify({
       success:true
