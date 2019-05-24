@@ -1,6 +1,6 @@
 'use strict';
 const {utils, s3} = require('decompany-common-utils');
-const { mongodb, tables, s3Config } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables, s3Config } = require('decompany-app-properties');
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {

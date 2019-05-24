@@ -320,7 +320,7 @@ functions:
     handler: s3/document/uploadComplete.handler
     events:
       - existingS3: 
-          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          bucket: ${file(./serverlessConfig.js):s3Config.document}
           events:
             - s3:ObjectCreated:Put
           rules:
@@ -337,7 +337,7 @@ functions:
       - {Ref: LibNodeModuleLambdaLayer}
     events:
       - existingS3: 
-          bucket: ${file(./resources/app-properties.${self:provider.stage}.json):s3Config.document}
+          bucket: ${file(./serverlessConfig.js):s3Config.document}
           events: 
             - s3:ObjectCreated:Put
           rules:

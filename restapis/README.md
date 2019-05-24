@@ -26,6 +26,7 @@ Serverless Project
 
 ```shell
 npm install ../decompany-modules/decompany-common-utils/
+npm install ../decompany-modules/decompany-app-properties/
 npm install serverless-mocha-plugin
 npm install serverless-offline
 npm install serverless-plugin-existing-s3
@@ -109,6 +110,7 @@ sls create function -f trackingExport --handler controllers/tracking/trackingExp
 sls create function -f trackingConfirm --handler controllers/tracking/confirm.handler --httpEvent "get /api/tracking/confirm"
 sls create function -f trackingSendEmail --handler controllers/tracking/sendEmail.handler
 sls create function -f embededDocument --handler controllers/embeded/embededDocument.handler --httpEvent "get /api/embeded/document"
+sls create function -f documentDownload --handler controllers/document/documentDownload.handler --httpEvent "get /api/document/download"
 ```
 
 

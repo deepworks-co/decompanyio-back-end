@@ -1,6 +1,6 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
-const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
+const { applicationLogAppender } = require('decompany-app-properties');;
 const {kinesis, utils} = require('decompany-common-utils');
 //const geoip = require('geoip-lite');
 

@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables, s3Config } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 

@@ -1,4 +1,5 @@
 npm install ../decompany-modules/decompany-common-utils/
+npm install ../decompany-modules/decompany-app-properties/
 npm install serverless-mocha-plugin
 npm install serverless-offline
 npm install serverless-plugin-existing-s3

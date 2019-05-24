@@ -1,6 +1,6 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
-const { sesConfig } = require('../../resources/config.js').APP_PROPERTIES();
+const { sesConfig } = require('decompany-app-properties');
 const {ses, utils} = require('decompany-common-utils');
 
 

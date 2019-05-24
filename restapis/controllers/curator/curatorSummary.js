@@ -1,7 +1,7 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 const {utils} = require('decompany-common-utils');
-const { applicationConfig } = require('../../resources/config.js').APP_PROPERTIES();
+const { applicationConfig } = require('decompany-app-properties');;
 const period = applicationConfig.activeVoteDays;
 /**
  * @description recently voted documets

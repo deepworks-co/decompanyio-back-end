@@ -1,7 +1,7 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 const {utils} = require('decompany-common-utils');
-const { applicationConfig, s3Config, region } = require('../../resources/config.js').APP_PROPERTIES();
+const { applicationConfig, s3Config, region } = require('decompany-app-properties');
 
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
