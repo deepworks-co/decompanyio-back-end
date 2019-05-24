@@ -161,11 +161,6 @@ functions:
 
   zapierAuth:
     handler: controllers/zapier/auth.handler
-    deploymentSettings:
-      type: Linear10PercentEvery1Minute
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
 
   zapierEmail:
     handler: controllers/zapier/email.handler
@@ -479,11 +474,6 @@ functions:
 
   accountAuth:
     handler: controllers/account/auth.handler
-    deploymentSettings:
-      type: Linear10PercentEvery1Minute
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
 
   accountGet:
     handler: controllers/account/get.handler
