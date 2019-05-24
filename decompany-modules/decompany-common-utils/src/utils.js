@@ -41,7 +41,7 @@ exports.toSeoFriendly = (str, defaultTitle) => {
   const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
   let url = friendlyUrl(str);
   if(!url){
-    url = defaultTitle?defaultTitle:str;
+    url = defaultTitle?defaultTitle:str+"";
   }
   return url.concat("-", id);
 }
