@@ -82,7 +82,6 @@ layers:
     description: "additional node_module"
     
 functions:
-
   preHook:
     handler:  deploy/handler.pre
   postHook:
@@ -121,6 +120,12 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   curatorSummary:
     handler: controllers/curator/curatorSummary.handler
     events:
@@ -148,9 +153,19 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   zapierAuth:
     handler: controllers/zapier/auth.handler
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   zapierEmail:
     handler: controllers/zapier/email.handler
@@ -165,7 +180,12 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-            
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   zapierDocument:
     handler: controllers/zapier/document.handler
     events:
@@ -179,6 +199,11 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   analyticsList:
     handler: controllers/analytics/list.handler
@@ -217,6 +242,12 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   analyticsExport:
     handler: controllers/analytics/export.handler
     events:
@@ -251,6 +282,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   tagList:
     handler: controllers/tag/list.handler
@@ -279,7 +315,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   s3DocumentUploadComplete:
     handler: s3/document/uploadComplete.handler
@@ -290,6 +330,11 @@ functions:
             - s3:ObjectCreated:Put
           rules:
             - prefix: FILE/
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
@@ -302,7 +347,12 @@ functions:
             - s3:ObjectCreated:Put
           rules:
             - prefix: THUMBNAIL/
-  
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   accountDocuments:
     handler: controllers/account/documents.handler
     events:
@@ -319,6 +369,11 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   accountPicture:
     handler: controllers/account/picture.handler
@@ -346,6 +401,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   accountEthereumSync:
     handler: controllers/account/accountEthereumSync.handler
@@ -378,6 +438,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   profileGet:
     handler: controllers/profile/getProfile.handler
@@ -406,8 +471,19 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   accountAuth:
     handler: controllers/account/auth.handler
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   accountGet:
     handler: controllers/account/get.handler
@@ -422,6 +498,11 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   accountUpdate:
     handler: controllers/account/update.handler
@@ -456,7 +537,12 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-    
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   accountSync:
     handler: controllers/account/sync.handler
     events:
@@ -470,6 +556,11 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   documentRegist:
     handler: controllers/document/documentController.regist
@@ -484,7 +575,12 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      
   documentList:
     handler: controllers/document/documentController.list
     events:
@@ -519,6 +615,11 @@ functions:
               Content-Type: integration.response.header.Content-Type
               Cache-Control: "'max-age=120'"
             template: $input.path('$')
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   documentUpdate:
     handler: controllers/document/documentUpdate.handler
@@ -533,9 +634,14 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')            
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   documentDownload:
-    handler: controllers/document/documentController.downloadFile
+    handler: controllers/document/documentDownload.handler
     events:
       - http:
           path: /api/document/download
@@ -561,6 +667,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   trackingList:
     handler: controllers/tracking/list.handler
@@ -596,7 +707,12 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      
   trackingInfo:
     handler: controllers/tracking/info.handler
     events:
@@ -632,6 +748,11 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook                  
 
   trackingCollect:
     handler: controllers/tracking/collect.handler
@@ -673,6 +794,12 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   trackingExport:
     handler: controllers/tracking/trackingExport.handler
     events:
@@ -729,6 +856,11 @@ functions:
               - name: sid
                 description: sid
                 type: string
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   trackingSendEmail:
     handler: controllers/tracking/sendEmail.handler
@@ -748,7 +880,12 @@ functions:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
-    
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
 # you can add CloudFormation resource templates here
 resources:
   Resources:

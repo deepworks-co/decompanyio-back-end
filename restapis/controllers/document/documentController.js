@@ -46,6 +46,7 @@ module.exports.regist = async (event, context, callback) => {
   const useTracking = body.useTracking?body.useTracking:false
   const forceTracking = body.forceTracking?body.forceTracking:false
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  const isDownload = body.isDownload?body.isDownload:false;
   
   
   let seoTitle;
@@ -87,7 +88,8 @@ module.exports.regist = async (event, context, callback) => {
       tags: tags,
       seoTitle: seoTitle,
       useTracking: useTracking,
-      forceTracking: forceTracking
+      forceTracking: forceTracking,
+      isDownload: isDownload
     }
 
     const result = await documentService.putDocument(putItem);
@@ -249,6 +251,13 @@ module.exports.downloadFile = async (event, context, callback) => {
 
   if(!document){
     throw new Error("document does not exist!!!");
+  }
+
+  if(document.isDownload || document.isDownload === false){
+    return JSON.stringify({
+      success: false,
+      message: "Unable to download"
+    });
   }
 
   const documentName = document.documentName;

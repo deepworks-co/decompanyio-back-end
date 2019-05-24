@@ -247,20 +247,19 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList"
-
       }
     }, {
       $project: {featured: 0, popular: 0}
     }]);
 
 
-    //console.log("pipeline", pipeline);
+    console.log("pipeline", JSON.stringify(pipeline));
     return await wapper.aggregate(tables.DOCUMENT, pipeline);
    
   } catch(err) {
@@ -514,8 +513,7 @@ async function putDocument (item) {
     /* default value */
     const mergedItem = {
       "created": Number(timestamp),
-      "state": "NOT_CONVERT",
-      "viewCount": 0
+      "state": "NOT_CONVERT"
     };
     const params = Object.assign(mergedItem, item);
     console.log("Save New Item", params);
@@ -532,6 +530,7 @@ async function putDocument (item) {
     return newDoc;
 
   } catch(err){
+    console.log(err);
     throw err;
   } finally{
     wapper.close();
