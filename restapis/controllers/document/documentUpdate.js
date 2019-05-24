@@ -48,11 +48,11 @@ module.exports.handler = async (event, context, callback) => {
     document.tags = tags;
   }
 
-  if(useTracking !== 'undefined'){
+  if(useTracking !== undefined){
     document.useTracking = useTracking;
   }
 
-  if(forceTracking !== 'undefined'){
+  if(forceTracking !== undefined){
     document.forceTracking = forceTracking;
   }
 
