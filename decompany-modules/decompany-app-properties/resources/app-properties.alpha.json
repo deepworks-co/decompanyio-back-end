@@ -51,7 +51,7 @@
             },
             "verifyEmail": {
                 "title": "Verify Email",
-                "path": "../../template/aboutus/verify_email.dev.html"
+                "path": "./template/confirm_email.dev.html"
             }
         }
     },
