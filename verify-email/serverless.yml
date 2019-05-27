@@ -45,8 +45,8 @@ provider:
     - .env
 
 functions:
-  trackingConfirm:
-    handler: src/tracking/trackingConfirm.handler
+  trackingConfirmSender:
+    handler: src/tracking/trackingConfirmSender.handler
     timeout: 10
     events:
       - schedule: rate(1 minute)

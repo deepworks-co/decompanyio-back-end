@@ -1,4 +1,4 @@
-# batch-email
+# verify-email
 
 ## Git clone & checkout
 
@@ -25,5 +25,5 @@ npm install aws-sdk
 ## create api
 
 ```shell
-sls create function -f trackingConfirm --handler src/tracking/trackingConfirm.handler
+sls create function -f trackingConfirmSender --handler src/tracking/trackingConfirmSender.handler
 ```

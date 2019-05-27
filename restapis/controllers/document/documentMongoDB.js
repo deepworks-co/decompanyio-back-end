@@ -549,17 +549,9 @@ async function updateDocument (newDoc) {
     const isSeoTitleUpdated = newDoc.seoTitle?true:false;
 
     console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
-    /*
-    const timestamp = Date.now();
-    const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
-    console.log("old document", oldDoc);
-    console.log("new document", newDoc);
-    const mergedItem = Object.assign(oldDoc, newDoc);    
-    console.log("merged document", mergedItem);
-    const result = await wapper.save(TB_DOCUMENT, mergedItem);
-    */
-    const result = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
-
+ 
+    const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
+    console.log("update result", updateResult);
     if(isSeoTitleUpdated){
       const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
         _id: newDoc.seoTitle,
@@ -567,14 +559,11 @@ async function updateDocument (newDoc) {
         id: newDoc._id,
         created: Date.now()
       });
-  
+      const result = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
       console.log("seoTitle save result", seoTitleResult);
     } else {
       console.log("seo title does not updated");
     }
-
-    
-
     return result;
 
   } catch(err){
