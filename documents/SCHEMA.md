@@ -139,3 +139,12 @@ db.createCollection("STAT-PAGEVIEW-TOTALCOUNT-DAILY");
 db["STAT-PAGEVIEW-TOTALCOUNT-DAILY"].createIndex( { blockchainDate: 1 })
 
 ```
+
+## VERIFY-EMAIL
+
+```javascript
+db.createCollection("VERIFY-EMAIL");
+db["VERIFY-EMAIL"].createIndex( { email: 1 })
+db["VERIFY-EMAIL"].createIndex( { verify: 1, created: 1 })
+
+```
