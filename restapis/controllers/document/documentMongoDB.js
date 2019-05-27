@@ -562,9 +562,9 @@ async function updateDocument (newDoc) {
 
     if(isSeoTitleUpdated){
       const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
-        _id: mergedItem.seoTitle,
+        _id: newDoc.seoTitle,
         type: "DOCUMENT",
-        id: mergedItem._id,
+        id: newDoc._id,
         created: Date.now()
       });
   
