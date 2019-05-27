@@ -22,7 +22,8 @@
         "TOP_TAG_POPULAR": "TOP-TAG-POPULAR",
         "TOP_TAG_FEATURED": "TOP-TAG-FEATURED",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
-        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "VERIFY_EMAIL": "VERIFY-EMAIL"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -48,7 +49,7 @@
                 "title": "Join Polaris Share",
                 "templatePath": "../../template/tracking/confirm_email.dev.html"
             },
-            "aboutUs": {
+            "verifyEmail": {
                 "title": "Verify Email",
                 "path": "../../template/aboutus/verify_email.dev.html"
             }
