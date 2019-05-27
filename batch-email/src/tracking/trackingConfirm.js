@@ -4,16 +4,8 @@ const {MongoWapper, ses, utils} = require('decompany-common-utils');
 const { sesConfig } = require('decompany-app-properties');
 const fs = require("fs");
 const path = require("path");
-const MAIL_TITLE = "Join Polairs Share";
 const BATCH_LIMIT = sesConfig.batchLimit;
 module.exports.handler = async (event, context, callback) => {
-
-
-  /** Immediate response for WarmUp plugin */
-  if (event.source === 'lambda-warmup') {
-    console.log('WarmUp - Lambda is warm!')
-    return callback(null, 'Lambda is warm!')
-  }
 
   const { sender, region, templates } = sesConfig;
   const {title, templatePath} = templates.trackingConfirm;
@@ -44,8 +36,6 @@ module.exports.handler = async (event, context, callback) => {
     let html = templateBody.replace("##email##", email);
     html = html.replace("##title##", title);
     //console.log("html", html);
-
-    return true;
     const result = await ses.sendMail(region, email, sender, title, html);
     console.log("send mail", {region, email, sender, title, html})
     return await completeTrackingConfirmSendMail(it, result);
@@ -80,14 +70,14 @@ async function getUnsendEmail(limit){
 }
 
 async function completeTrackingConfirmSendMail(unsend, result) {
-  const wapper = new MongoWapper(connectionString);
+  const wapper = new MongoWapper(mongodb.endpoint);
   const now = new Date();
   try{
     console.log("completeTrackingConfirmSendMail", unsend, result);
     unsend.sent = now.getTime();
     unsend.result = result;
     const r = await wapper.save(tables.TRACKING_CONFIRM, unsend);
-    console.log("check save result", r);
+    console.log("completeTrackingConfirmSendMail", r);
     return true;  
     
   } catch(err){

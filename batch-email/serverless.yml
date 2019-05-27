@@ -47,14 +47,9 @@ provider:
 functions:
   trackingConfirm:
     handler: src/tracking/trackingConfirm.handler
-  emailSender:
-    handler: src/email/emailSender.handler
-
-  sample:
-    handler: src/email/sender.js
-    timeout: 300
+    timeout: 10
     events:
-      - schedule: rate(1 minute) # 10min, hourly
+      - schedule: rate(1 minute)
 
 plugins:
   - serverless-mocha-plugin
