@@ -83,7 +83,7 @@ layers:
     
 functions:
   preHook:
-    handler:  deploy/handler.pre
+    handler: deploy/handler.pre
   postHook:
     handler: deploy/handler.post
 
