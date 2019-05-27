@@ -94,6 +94,4 @@ functions:
 
 plugins:
   - serverless-mocha-plugin
-  - serverless-offline
   - serverless-aws-documentation
-  - serverless-mocha-plugin
