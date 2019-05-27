@@ -91,6 +91,21 @@ functions:
               - name: code
                 description: code
                 type: string
+custom:
+  documentation:
+    api:
+      info:
+        version: '1'
+        title: Rest API
+        description: Decompany Rest Api
+        termsOfService: https://www.google.com
+        contact:
+          name: Jay
+          email: jay@decompany.io
+        license:
+          name: Decompany
+          url: https://www.decompany.io
+
 
 plugins:
   - serverless-mocha-plugin
