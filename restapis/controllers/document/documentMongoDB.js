@@ -21,7 +21,7 @@ module.exports = {
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
-  saveDocument,
+  updateDocument,
   queryVotedDocumentByCurator,
   getVotedDocumentForAccountId,
   getRecentlyPageViewTotalCount,
@@ -34,13 +34,11 @@ module.exports = {
   putTrackingUser,
   putTrackingConfirmSendMail,
   checkTrackingConfirmSendMail,
-  completeTrackingConfirmSendMail,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
-  getUnsendEmail  
 }
 
  /**
@@ -69,7 +67,7 @@ module.exports = {
       }
     }
     
-    console.log("result", result);
+    console.log("getDocumentById", result);
 
     return result;
   } catch (err){
@@ -542,25 +540,40 @@ async function putDocument (item) {
 /**
  * @param  {} item
  */
-async function saveDocument (newDoc) {
+async function updateDocument (newDoc) {
   const wapper = new MongoWapper(connectionString);
 
   try{
+
+    console.log("new Doc", newDoc);
+    const isSeoTitleUpdated = newDoc.seoTitle?true:false;
+
+    console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
+    /*
     const timestamp = Date.now();
     const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
     console.log("old document", oldDoc);
     console.log("new document", newDoc);
     const mergedItem = Object.assign(oldDoc, newDoc);    
     console.log("merged document", mergedItem);
-    
     const result = await wapper.save(TB_DOCUMENT, mergedItem);
+    */
+    const result = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
 
-    await wapper.insert(TB_SEO_FRIENDLY, {
-      _id: mergedItem.seoTitle,
-      type: "DOCUMENT",
-      id: mergedItem._id,
-      created: Number(timestamp)
-    });
+    if(isSeoTitleUpdated){
+      const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
+        _id: mergedItem.seoTitle,
+        type: "DOCUMENT",
+        id: mergedItem._id,
+        created: Date.now()
+      });
+  
+      console.log("seoTitle save result", seoTitleResult);
+    } else {
+      console.log("seo title does not updated");
+    }
+
+    
 
     return result;
 
@@ -1245,24 +1258,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
   }
 }
 
-async function completeTrackingConfirmSendMail(unsend, result) {
-  const wapper = new MongoWapper(connectionString);
-  const now = new Date();
-  try{
-    console.log("completeTrackingConfirmSendMail", unsend, result);
-    unsend.sent = now.getTime();
-    unsend.result = result;
-    const r = await wapper.save(tables.TRACKING_CONFIRM, unsend);
-    console.log("check save result", r);
-    return true;  
-    
-  } catch(err){
-    console.log(err);
-    throw err;
-  } finally {
-    wapper.close();
-  }
-}
+
 
 /**
  * @param  {} cid
@@ -1301,22 +1297,4 @@ async function putTrackingUser(cid, sid, documentId, email){
   }
 
   
-}
-/**
- * getting unsend email
- */
-async function getUnsendEmail(limit){
-  const wapper = new MongoWapper(connectionString);
-  
-  
-  try{
-    const unsendemails = await wapper.findAll(tables.TRACKING_CONFIRM, {sent: {$exists: false}}, {created: 1}, limit);
-
-    return unsendemails;
-    
-  } catch(err){
-    throw err;
-  } finally {
-    wapper.close();
-  }
 }
