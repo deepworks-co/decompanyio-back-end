@@ -42,7 +42,17 @@
     "sesConfig": {
         "region": "us-east-1",
         "sender": "connect@decompany.io",
-        "template": "./template/confirm_email.alpha.html"
+        "batchLimit": 14,
+        "templates": {
+            "trackingConfirm": {
+                "title": "Join Polaris Share",
+                "templatePath": "../../template/tracking/confirm_email.dev.html"
+            },
+            "aboutUs": {
+                "title": "Verify Email",
+                "path": "../../template/aboutus/verify_email.dev.html"
+            }
+        }
     },
     "ethereum": {
         "abis": [

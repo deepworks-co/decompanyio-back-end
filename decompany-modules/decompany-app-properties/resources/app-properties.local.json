@@ -1,6 +1,6 @@
 {
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.224.2:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
     },
     "region": "us-west-1",
     "s3Config":{
@@ -40,7 +40,17 @@
     "sesConfig": {
         "region": "us-east-1",
         "sender": "connect@decompany.io",
-        "template": "../../template/confirm_email.dev.html"
+        "batchLimit": 14,
+        "templates": {
+            "trackingConfirm": {
+                "title": "Join Polaris Share",
+                "templatePath": "../../template/tracking/confirm_email.dev.html"
+            },
+            "aboutUs": {
+                "title": "Verify Email",
+                "path": "../../template/aboutus/verify_email.dev.html"
+            }
+        }
     },
     "ethereum": {
         "abis": [
