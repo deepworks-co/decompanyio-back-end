@@ -1,0 +1,60 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: batch-email # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-west-1
+  stage: ${opt:stage, 'dev'}
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - logs:*
+       - events:*
+       - kms:*
+      Resource: "*"   
+  exclude:
+    - .gitignore
+    - .env
+
+functions:
+  trackingConfirm:
+    handler: src/tracking/trackingConfirm.handler
+  emailSender:
+    handler: src/email/emailSender.handler
+
+  sample:
+    handler: src/email/sender.js
+    timeout: 300
+    events:
+      - schedule: rate(1 minute) # 10min, hourly
+
+plugins:
+  - serverless-mocha-plugin
