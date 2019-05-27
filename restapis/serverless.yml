@@ -851,12 +851,6 @@ functions:
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
-
-  trackingSendEmail:
-    handler: controllers/tracking/sendEmail.handler
-    timeout: 30
-    events:
-      - schedule: rate(1 minute)
   
   embededDocument:
     handler: controllers/embeded/embededDocument.handler
