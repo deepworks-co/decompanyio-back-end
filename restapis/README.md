@@ -111,6 +111,9 @@ sls create function -f trackingConfirm --handler controllers/tracking/confirm.ha
 sls create function -f trackingSendEmail --handler controllers/tracking/sendEmail.handler
 sls create function -f embededDocument --handler controllers/embeded/embededDocument.handler --httpEvent "get /api/embeded/document"
 sls create function -f documentDownload --handler controllers/document/documentDownload.handler --httpEvent "get /api/document/download"
+
+sls create function -f verifyEmailRequest --handler controllers/email/verifyEmailRequest.handler --httpEvent "get /api/email/verifyemailrequest"
+sls create function -f verifyEmail --handler controllers/email/verifyEmail.handler --httpEvent "get /api/email/verifyemail"
 ```
 
 
