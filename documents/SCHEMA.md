@@ -21,7 +21,6 @@ db.DOCUMENT.createIndex({state: 1, accountId: 1, created: -1})
 db.DOCUMENT.createIndex({state: 1, created: -1})
 ```
 
-
 ## DOCUMENT-POPULAR
 
 ```javascript
@@ -83,6 +82,20 @@ db.createCollection("TOP-TAG");
 db["TOP-TAG"].createIndex({value: -1})
 ```
 
+## TOP-TAG-POPULAR
+
+```javascript
+db.createCollection("TOP-TAG-POPULAR");
+db["TOP-TAG-POPULAR"].createIndex({value: -1})
+```
+
+## TOP-TAG-FEATURED
+
+```javascript
+db.createCollection("TTOP-TAG-FEATURED");
+db["TOP-TAG-FEATURED"].createIndex({value: -1})
+```
+
 ## PAGEVIEW-LATEST
 
 ```javascript
@@ -91,13 +104,13 @@ db["PAGEVIEW-LATEST"].createIndex( { "expireAt": 1 }, { expireAfterSeconds: 0 } 
 ```
 
 ## VOTE
+
 ```javascript
 db.createCollection("VOTE");
 db["VOTE"].createIndex( { documentId: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1,documentId: 1,created: -1 } )
 ```
-
 
 ## query collection's index
 
@@ -107,4 +120,22 @@ db["VOTE"].createIndex( { applicant: 1,documentId: 1,created: -1 } )
    print("Indexes for " + collection + ":");
    printjson(indexes);
 });
+```
+
+## STAT-PAGEVIEW-DAILY
+
+```javascript
+db.createCollection("STAT-PAGEVIEW-DAILY");
+db["STAT-PAGEVIEW-DAILY"].createIndex( { documentId: 1, blockchainDate: 1 })
+db["STAT-PAGEVIEW-DAILY"].createIndex( { blockchainDate: 1 })
+db["STAT-PAGEVIEW-DAILY"].createIndex( { blockchainTimestamp: 1 })
+
+```
+
+## STAT-PAGEVIEW-TOTALCOUNT-DAILY
+
+```javascript
+db.createCollection("STAT-PAGEVIEW-TOTALCOUNT-DAILY");
+db["STAT-PAGEVIEW-TOTALCOUNT-DAILY"].createIndex( { blockchainDate: 1 })
+
 ```

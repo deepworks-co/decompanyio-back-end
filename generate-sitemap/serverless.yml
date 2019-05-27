@@ -1,0 +1,68 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: generate-sitemap # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: us-west-1
+  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
+  #apiName: ${self:service.name}-api      # Api Gateway Name
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - s3:*
+       - logs:*
+       - cloudfront:*
+      Resource: "*"
+# you can add statements to the Lambda function's IAM Role here
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+
+package:
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
+    - opt/**
+    
+functions:
+  generateSitemap:
+    handler: src/generateSitemap.handler
+    timeout: 300
+    events:
+      - schedule: cron(10 0 * * ? *) # daily 00:10:00
+  
+
+
+
+plugins:
+  - serverless-mocha-plugin
+

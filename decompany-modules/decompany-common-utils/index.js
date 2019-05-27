@@ -5,6 +5,8 @@ const firehose = require('./src/kinesisFirehose');
 const kinesis = require('./src/kinesis');
 const sqs = require('./src/sqs');
 const kms = require('./src/kms');
+const ses = require('./src/ses');
+const cloudfront = require('./src/cloudfront');
 
 module.exports.utils = utils;
 module.exports.s3 = s3Utils;
@@ -13,3 +15,5 @@ module.exports.firehose = firehose;
 module.exports.kinesis = kinesis;
 module.exports.sqs = sqs;
 module.exports.kms = kms;
+module.exports.ses = ses;
+module.exports.cloudfront = cloudfront;

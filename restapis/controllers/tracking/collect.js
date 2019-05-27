@@ -1,10 +1,16 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('../../resources/config.js').APP_PROPERTIES();
-const {kinesis} = require('decompany-common-utils');
+const {kinesis, utils} = require('decompany-common-utils');
 //const geoip = require('geoip-lite');
 
 module.exports.handler = async (event, context, callback) => {
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   console.log(JSON.stringify(event));
   const {headers, query} = event;
   const body = query
@@ -27,6 +33,11 @@ module.exports.handler = async (event, context, callback) => {
   
   body.t = Number(body.t);
   body.n = Number(body.n);
+  if(!utils.validateEmail(body.e)){
+    delete body.e;
+  }
+  
+
   body.referer = headers.Referer;
   body.useragent = headers["User-Agent"];
   body.xforwardedfor = ips;
@@ -49,10 +60,16 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const result = await documentService.putTrackingInfo(body);
+
+  const user = await documentService.getTrackingUser(body.cid);
+  if(user){
+    delete user._id;
+  }
   console.log("tracking save", result);
   const response = JSON.stringify({
     success: true,
-    message: "ok"
+    message: "ok",
+    user: user
   });
   //console.log("success", body);
   return response;

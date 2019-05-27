@@ -12,6 +12,12 @@ var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
  */
 exports.handler = function(event, context) {
   
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   //console.log("uploadComplete Event", JSON.stringify(event));
   
   // key : FILE/anonymous%40infrawareglobal.com/12a3b909-ec42-4ac2-b0e0-3b01c6ccd77e.hwp

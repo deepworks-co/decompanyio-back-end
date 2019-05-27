@@ -3,8 +3,8 @@ const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
-const contractName = "Curator";
-const eventName = "AddVote";
+const contractName = "Ballot";
+const eventName = "CreateVote";
 module.exports.handler = async (event, context, callback) => {
  
 
@@ -20,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
       }
     ]);
     // contract write block number 3251154
-    let startBlockNumber = 1;
+    let startBlockNumber = 3936264;
     if(maxOne && maxOne.length>0){
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
@@ -40,15 +40,18 @@ module.exports.handler = async (event, context, callback) => {
       //console.log(index, abi.name, decoded.docId, decoded.applicant, decoded.deposit, created, receipt.logs);
       const block = await contractWapper.getBlock(log.blockNumber);
       //console.log("get block", block);
-      
+      const deposit = Number(decoded.deposit);
+      const applicant = decoded.addr;
+      const dateMillis = Number(decoded.dateMillis);
       const item = {
         _id: log.id,
         transactionHash: log.transactionHash,
         blockNumber: log.blockNumber,
         documentId: documentId,
         docId: decoded.docId,
-        applicant: decoded.applicant,
-        deposit: Number(decoded.deposit),
+        applicant: applicant,
+        deposit: deposit,
+        dateMillis: dateMillis,
         created: block.timestamp * 1000,
         contractName: contractName,
         eventName: eventName,

@@ -14,7 +14,7 @@ module.exports = class AccountService {
 			});
 			let result;
 			if(queriedUser){
-				console.log("user is exists", queriedUser);
+				console.log("user exists", queriedUser);
 				queriedUser.connected = Date.now();
 				console.log("update connected time", queriedUser);
 				result = await mongo.save(USER_TALBE, queriedUser);
@@ -104,7 +104,7 @@ module.exports = class AccountService {
 	async updateUserEthAccount(userid, ethAccount) {
 		const wapper = new MongoWapper(connectionString);
 		try{
-			return await wapper.update(TB_USER, {_id: userid}, {$set:{ethAccount: ethAccount}});
+			return await wapper.update(USER_TALBE, {_id: userid}, {$set:{ethAccount: ethAccount}});
 		} catch (e) {
 			throw e
 		} finally {

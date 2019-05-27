@@ -1,29 +1,37 @@
 'use strict';
 const AccountService = require('./AccountService');
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
+   /** Immediate response for WarmUp plugin */
+   if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
+  
   const {principalId, body} = event;
   const {ethAccount} = body;
   const accountService = new AccountService();
-  const user = await accountService.getUserInfo({id: principalId});
+  let user = await accountService.getUserInfo({id: principalId});
   
   if(!ethAccount){
     throw new Error("parameter is invalid!");
   }
 
   if(!user){
-    throw new Error(`user is not exists`);
+    throw new Error(`user does not exist`);
   }
 
   if(user.ethAccount){
     throw new Error(`The ethereum account has already been registered. ${user.ethAccount}`);
   } 
   
-  const result = await accountService.updateUserEthAccount(accountId, ethAccount);
+  const result = await accountService.updateUserEthAccount(principalId, ethAccount);
+
+  user = await accountService.getUserInfo({id: principalId});
 
   
   const response = JSON.stringify({
     success: true,
-    ethAccount: user.ethAccount
+    user: user
   })
 
   return callback(null, response);

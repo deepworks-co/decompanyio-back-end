@@ -2,19 +2,20 @@
 const documentService = require('../document/documentMongoDB');
 module.exports.handler = async (event, context, callback) => {
 
-  const resultList = await documentService.getTopTag();
+  /** Immediate response for WarmUp plugin */
+  if (event.source === 'lambda-warmup') {
+    console.log('WarmUp - Lambda is warm!')
+    return callback(null, 'Lambda is warm!')
+  }
 
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      success: true,
-      resultList: resultList
-    }),
-  };
+  const {t} = event.query;
+  
+  const resultList = await documentService.getTopTag(t);
 
-  return (null, response);
+  const response = JSON.stringify({
+    success: true,
+    resultList: resultList
+  });
+
+  return response;
 };

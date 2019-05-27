@@ -14,10 +14,13 @@
         "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
         "TRACKING": "TRACKING",
         "TRACKING_USER": "TRACKING-USER",
+        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
         "VOTE": "VOTE",
         "USER": "USER",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
         "TOP_TAG": "TOP-TAG",
+        "TOP_TAG_POPULAR": "TOP-TAG-POPULAR",
+        "TOP_TAG_FEATURED": "TOP-TAG-FEATURED",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY"
     },
@@ -32,5 +35,13 @@
         "enable": true,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
+    },
+    "applicationConfig": {
+        "activeVoteDays": 3
+    },
+    "sesConfig": {
+        "region": "us-east-1",
+        "sender": "connect@decompany.io",
+        "template": "./template/confirm_email.dev.html"
     }
 }

@@ -13,11 +13,9 @@ describe('trackingList', () => {
   });
 
   it('implement tests here', () => {
-    const event = {
-      queryStringParameters:{
-        documentId: "6decc182c7d44dc7b80f08c55a78b81a"
-      }
-    }
+    const event = {query: {
+      documentId: "00065c0b528f415a830f50b1c16c8e66"
+    }}
 
     return wrapped.run(event).then((response) => {
       console.log(response);

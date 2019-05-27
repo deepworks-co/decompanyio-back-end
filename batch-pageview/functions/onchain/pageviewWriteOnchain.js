@@ -3,65 +3,72 @@
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
 const {utils, MongoWapper} = require('decompany-common-utils');
+
+const LIMIT = 5000;
 /**
  * @function pageviewWriteOnchain
  * @description
  */
 module.exports.handler = async (event, context, callback) => {
-  console.log(JSON.stringify(event.Records));
-  const body = parse(event.Records[0].body);
-  try{
-    if(!body){
-      throw new Error("sqs message body is invalid!!");
-    }
-    const {blockchainTimestamp, count, unit, endIndex, index} = body;
-  
-    if(isNaN(unit) || isNaN(count) || isNaN(blockchainTimestamp) || isNaN(endIndex) || isNaN(index)) {
-      //throw new Error("Invaild Parameter");
-      throw new Error("parameter is invalid!!");
-    }
 
+  try{
+
+    const now = new Date();
+    const yesterday = new Date(now - 1000 * 60 * 60 * 24);
+    const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
+    
     const contractWapper = new ContractWapper();  
-    const resultList = await getList(blockchainTimestamp, index, unit);
-    //console.log("getList", resultList);
-    if(resultList.length === 0){
-      return "resultList is zero";
-    }
+    const resultList = await getList(blockchainTimestamp, LIMIT);
+    const remains = resultList.length === 'undefined'? 0:resultList.length
+    console.log("getList", remains);
+    if(remains === 0){
+      return {
+        remains: 0
+      };
+    } 
 
     let documentIds = [];
     let pageviews = [];
+    let docIds = [];
     resultList.forEach((doc)=>{
       const documentIdByte32 = contractWapper.asciiToHex(doc.documentId);
       documentIds.push(documentIdByte32);
-      pageviews.push(doc.pageview)
+      pageviews.push(doc.pageview);
+      docIds.push(doc.documentId);
     });
+
+
     console.log("length (resultList, documentIds, pageviews)", resultList.length, documentIds.length, pageviews.length);
+    console.log("docIds", docIds);
     
     if(resultList.length !== documentIds.length || documentIds.length !== pageviews.length){
       throw new Error("result list aggreagation fail...", resultList.length, documentIds.length, pageviews.length);
     }
 
     
-    
     console.log("Transaction Request Start");
-    //const result = await contractWapper.sendTransactionConfirmPageView(documentId, date, confirmPageview);
-    
-    //for test ()
-    /*
-    const testDocIds = ['0x3562616230396466373065643433303761616436363733303066633063393563', '0x3562616230396466373065643433303761616436363733303066633063393563']; //5bab09df70ed4307aad667300fc0c95c
-    const testPageviews = [2, 2];
-    const testBlockchainTimestamp = "1554940800000"
-    const result = await contractWapper.sendTransactionConfirmPageView(testBlockchainTimestamp, testDocIds, testPageviews);
-    */
-    const result = await contractWapper.sendTransactionConfirmPageView(blockchainTimestamp, documentIds, pageviews);
 
+    const result = await contractWapper.sendTransactionConfirmPageView(blockchainTimestamp, documentIds, pageviews);
+    console.log("Transaction Result", result);
+
+
+    const result2 = await updateTransactionResult(blockchainTimestamp, docIds, result);
+    console.log("Transaction Update", result2);
+
+ 
     console.log("Transaction Request End");
+
+    const remainsList = await getList(blockchainTimestamp, LIMIT);
+    console.log("remainsList", remainsList.length);
+    return {
+      remains: remainsList.length
+    };
+
   } catch(error){
     console.error(error);
     throw new Error("document pageview write on chain fail...");
   }
 
-  return "complete";
 };
 
 
@@ -74,12 +81,16 @@ function parse(message){
   } 
 }
 
-async function getList(blockchainTimestamp, skip, limit){
-  console.log("getList", {blockchainTimestamp, skip, limit});
+async function getList(blockchainTimestamp, limit){
+  console.log("getList", {blockchainTimestamp, limit});
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
     const queryPipeline = [{
-      $match: { blockchainTimestamp: blockchainTimestamp }
+      $match: { 
+        blockchainTimestamp: blockchainTimestamp, 
+        "transactionHash.success": {$ne: true}
+
+      }
     }, {
       $lookup: {
         from: tables.EVENT_REGISTRY,
@@ -97,8 +108,6 @@ async function getList(blockchainTimestamp, skip, limit){
         "RegsitryAs": { "$exists": true, "$ne": null }
       }
     }, {
-      $skip: skip
-    }, {
       $limit: limit
     }]
 
@@ -107,6 +116,25 @@ async function getList(blockchainTimestamp, skip, limit){
     console.log(err);
     throw err;
   } finally{
+    wapper.close();
+  }
+}
+
+async function updateTransactionResult(blockchainTimestamp, documentIds, transactionHash){
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    const query = {
+      blockchainTimestamp: blockchainTimestamp, 
+      documentId: {$in: documentIds}
+    }
+    return await wapper.update(tables.STAT_PAGEVIEW_DAILY, query, {
+      $set: {transactionHash: transactionHash}
+    }, {
+      multi: true
+    })
+  } catch(e){
+    throw e;
+  } finally {
     wapper.close();
   }
 }

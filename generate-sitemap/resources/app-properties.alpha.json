@@ -1,0 +1,29 @@
+{
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@172.31.37.166:27017/decompany"
+    },
+    "region": "us-west-1",
+    "tables":{
+        "DOCUMENT": "DOCUMENT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
+        "VOTE": "VOTE",
+        "USER": "USER",
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "SITEMAP": "SITEMAP"
+    },
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://www.polarishare.com",
+        "bucket": "www.polarishare.com",
+        "documentBucket": "alpha-ca-document",
+        "image": "https://res.polarishare.com",
+        "distributionId": "E1UYELY2K59G6Q"
+    }
+}

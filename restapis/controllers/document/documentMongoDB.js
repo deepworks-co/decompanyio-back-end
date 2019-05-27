@@ -3,6 +3,8 @@ const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES(
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
+const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
+const TB_DOCUMENT_FEATURED = tables.DOCUMENT_FEATURED;
 const TB_SEO_FRIENDLY = tables.SEO_FRIENDLY;
 const TB_VOTE = tables.VOTE;
 const TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY = tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY;
@@ -21,16 +23,24 @@ module.exports = {
   putDocument,
   saveDocument,
   queryVotedDocumentByCurator,
-  queryTotalViewCountByToday,
+  getVotedDocumentForAccountId,
+  getRecentlyPageViewTotalCount,
+  queryRecentlyVoteListForApplicant,
   getFeaturedDocuments,
   putTrackingInfo,
   getTrackingInfo,
   getTrackingList,
+  getTrackingUser,
+  putTrackingUser,
+  putTrackingConfirmSendMail,
+  checkTrackingConfirmSendMail,
+  completeTrackingConfirmSendMail,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
-  getDocumentIdsByUserId
+  getDocumentIdsByUserId,
+  getUnsendEmail  
 }
 
  /**
@@ -74,32 +84,66 @@ module.exports = {
   */
  async function getDocumentBySeoTitle(seoTitle) {
   const wapper = new MongoWapper(connectionString);
-  let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
+  
   try{
+    
+    let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
+    let documentId;
     if(!document){
       const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
-      console.log(TB_SEO_FRIENDLY, seoFriendly);
-      if(seoFriendly) {
-        document = await getDocumentById(seoFriendly.id);
+      documentId = seoFriendly.id
+    } else {
+      documentId = document._id;
+    }
+    
+    console.log(`seoTitle ${seoTitle} to documentId ${documentId}`);
+
+    const queryPipeline = [
+      {
+        $match: {_id: documentId}
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_POPULAR,
+          localField: "_id",
+          foreignField: "_id",
+          as: "popularAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.USER,
+          localField: "accountId",
+          foreignField: "_id",
+          as: "userAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_FEATURED,
+          localField: "_id",
+          foreignField: "_id",
+          as: "featuredAs"
+        }
+      }, {
+        $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+        }
+      }, {
+        $addFields: {
+          latestPageview: "$popular.latestPageview",
+          latestPageviewList: "$popular.latestPageviewList",
+          latestVoteAmount: "$featured.latestVoteAmount"
+        }
+      }, {
+        $project: {
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0
+        }
       }
-    }
-    const documentId = document._id;
-    let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
-    let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
+    ]
 
-    if(featured){
-      document.latestVoteAmount = featured.latestVoteAmount;
-    } else {
-      document.latestVoteAmount = 0;
-    }
-
-    if(popular){
-      document.latestPageview = popular.latestPageview;
-    } else {
-      document.latestPageview = 0;
-    }
-
-    return document;
+    document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
+    
+    return document[0];
   } catch (err) {
     throw err;
   } finally {
@@ -207,7 +251,8 @@ async function queryDocumentListByLatest (params) {
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
-        latestPageview: "$popular.latestPageview"
+        latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList"
 
       }
     }, {
@@ -278,7 +323,7 @@ async function queryDocumentListByPopular (params) {
         as: "authorAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, latestPageviewList: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
     }, {
       $addFields: {
         documentId: "$_id",
@@ -369,6 +414,7 @@ async function queryDocumentListByFeatured (params) {
         totalPageview: "$document.totalPageview",
         ethAccount: "$document.ethAccount",
         latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
       }
     }, {
@@ -384,6 +430,69 @@ async function queryDocumentListByFeatured (params) {
   }
   
 }
+
+
+async function getVotedDocumentForAccountId (accountId) {
+  
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    const pipeline = [{
+      $match: {accountId: accountId}
+    }, {
+      $sort:{ latestVoteAmount:-1, created: -1}
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT,
+        localField: "_id",
+        foreignField: "_id",
+        as: "documentAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.DOCUMENT_POPULAR,
+        localField: "_id",
+        foreignField: "_id",
+        as: "popularAs"
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accountId",
+        foreignField: "_id",
+        as: "userAs"
+      }
+    }, {
+      $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          document: { $arrayElemAt: [ "$documentAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+      }
+    }, {
+      $addFields: {
+        documentId: "$_id",
+        documentName: "$document.documentName",
+        documentSize: "$document.documentSize",
+        totalPageview: "$document.totalPageview",
+        ethAccount: "$document.ethAccount",
+        latestPageview: "$popular.latestPageview",
+        latestPageviewList: "$popular.latestPageviewList",
+        seoTitle: "$document.seoTitle",
+      }
+    }, {
+      $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
+    }];
+
+    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+   
+  } catch(err) {
+    throw err;
+  } finally {
+    wapper.close();
+  }
+  
+}
+
 
 
 /**
@@ -489,7 +598,7 @@ async function queryVotedDocumentByCurator(args) {
   }, {
     $group:
     {
-        _id: {documentId: "$documentId"},
+        _id: "$documentId",
         deposit: {$sum: "$deposit"},
         documentId : { $first: '$documentId' }
     }
@@ -509,13 +618,65 @@ async function queryVotedDocumentByCurator(args) {
     }
   },
   {
-    "$match": {
+    $match: {
       "documentInfo": { "$exists": true, "$ne": null }
     }
   }, {
     $skip: skip
   }, {
     $limit: pageSize
+  }, {
+    $addFields: {
+      accountId: "$documentInfo.accountId"
+    }
+  }, {
+    $lookup: {
+      from: TB_USER,
+      localField: "accountId",
+      foreignField: "_id",
+      as: "authorAs"
+    }
+  }, {
+    $lookup: {
+
+      from: TB_DOCUMENT_POPULAR,
+      localField: "_id",
+      foreignField: "_id",
+      as: "popularAs"
+    }
+  }, {
+    $lookup: {
+      from: TB_DOCUMENT_FEATURED,
+      localField: "_id",
+      foreignField: "_id",
+      as: "featuredAs"
+    }
+  }, {
+    $addFields: {
+      author: { $arrayElemAt: [ "$authorAs", 0 ] },
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
+    }
+  }, {
+    $addFields: {
+      documentName: "$documentInfo.documentName",
+      title: "$documentInfo.title",
+      seoTitle: "$documentInfo.seoTitle",
+      desc: "$documentInfo.desc",
+      tags: "$documentInfo.tags",
+      seoTitle: "$documentInfo.seoTitle",
+      created: "$documentInfo.created",
+      latestPageview: "$popular.latestPageview",
+      latestPageviewList: "$popular.latestPageviewList",
+      latestVoteAmount: "$featured.latestVoteAmount",
+    }
+  }, {
+    $project: {
+      documentInfo: 0,
+      authorAs: 0,
+      popularAs: 0,
+      popular: 0
+    }
   }]
   
   const wapper = new MongoWapper(connectionString);
@@ -538,17 +699,91 @@ async function queryVotedDocumentByCurator(args) {
 
 
 /**
+ * 최근(8일간)의 vote목록
+ * @param  {} args
+ */
+async function queryRecentlyVoteListForApplicant(args) {
+
+  const applicant = args.applicant;
+  const startTimestamp = args.startTimestamp?args.startTimestamp:1;
+
+  const queryPipeline = [{
+    $match: {
+      applicant: applicant,
+      created: {$gt: startTimestamp}
+    }
+  }, {
+    $sort: {
+      documentId: 1,
+      created: -1
+    }
+  }, {
+    $group:{
+      _id: {
+        documentId: "$documentId",
+        year: {$year: {$add: [new Date(0), "$created"]}}, 
+        month: {$month: {$add: [new Date(0), "$created"]}}, 
+        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+      },
+      deposit: {$sum: "$deposit"}
+    }
+  }, {
+    $group:{
+      _id: "$_id.documentId",
+      depositList: {$addToSet: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth", deposit: "$deposit", timestamp: {$toLong:{$dateFromString: {dateString: {$concat:[{$toString: "$_id.year"}, "-", {$toString: "$_id.month"}, "-", {$toString: "$_id.dayOfMonth"}]}}}}}}
+    }
+  }, {
+    $lookup: {
+      from: TB_DOCUMENT_POPULAR,
+      localField: "_id",
+      foreignField: "_id",
+      as: "popularAs"
+    }
+  }, {
+    $addFields: {
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+    }
+  }, {
+    $addFields: {
+      latestPageview: "$popular.latestPageview",
+      latestPageviewList: "$popular.latestPageviewList",
+    }
+  }, {
+    $project: {
+      popularAs: 0
+    }
+  }]
+  
+  const wapper = new MongoWapper(connectionString);
+
+  try{
+    console.log(TB_VOTE, "querypipeline", JSON.stringify(queryPipeline));
+    const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
+
+    return resultList;
+  }catch(err){
+    throw err;
+  }finally{
+    wapper.close();
+  }
+  
+}
+
+
+
+/**
  * @param  {} date
  */
-async function queryTotalViewCountByToday (date) {
+async function getRecentlyPageViewTotalCount () {
   const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  const startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 8);
   try{
-    let result = await wapper.findOne(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
-      blockchainTimestamp: date
+    let result = await wapper.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
+      blockchainDate: {$gte: startDate}
     });
-    console.log("queryTotalViewCountByToday", result);
     if(!result) {
-      result = {totalPageviewSquare: 0, totalPageview: 0, blockchainTimestamp: date}
+      result = []
     }
     return result;
   }catch(e){
@@ -619,24 +854,6 @@ async function putTrackingInfo (body) {
   let wapper = new MongoWapper(connectionString);
   try{
 
-    if(body.cid && body.e && utils.validateEmail(body.e)){
-      const item = {
-        _id: {
-          id: body.id,
-          cid: body.cid,
-          sid: body.sid,
-          e: body.e
-        },
-        cid: body.cid,
-        e: body.e,
-        id: body.id,
-        sid: body.sid,
-        created: Date.now()
-      }
-      const r = await wapper.save(TB_TRACKING_USER, item);
-      console.log("tracking target user save", r);
-    }
-    
     return await wapper.save(TB_TRACKING, body);
   } catch(err){
     throw err;
@@ -684,10 +901,10 @@ async function getTrackingList(documentId, anonymous, include) {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
       count: {$sum: 1},
-      viewTimestamp: {$max: "$viewTimestamp"},
-      sidList: { $push: "$_id.sid" },
+      viewTimestamp: {$max: "$viewTimestamp"}
     }
   });
+
 
   queryPipeline.push({
     $lookup: {
@@ -699,27 +916,31 @@ async function getTrackingList(documentId, anonymous, include) {
   });
 
   queryPipeline.push({
+    $unwind: "$userAs"
+  });
+
+  queryPipeline.push({
+    $sort: {
+      "userAs.created": -1
+    }
+  });
+
+  queryPipeline.push({
+    $group: {
+      _id: "$_id",
+      user: {$first: "$userAs"},
+      cid: {$first: "$cid"},
+      viewTimestamp: {$first: "$viewTimestamp"},
+      count: {$first: "$count"}
+    }
+  });
+
+  queryPipeline.push({
     $sort: {
       viewTimestamp: -1
     }
   });
-
-  queryPipeline.push({
-    $addFields: {
-      user: {$arrayElemAt: [ "$userAs", 0 ]}
-    }
-  });
-
-  queryPipeline.push({
-    $project: {
-      cid: 1,
-      count: 1,
-      viewTimestamp: 1,
-      sidList: 1,
-      user: 1
-    }
-  });
-
+  
   if(!anonymous){
     queryPipeline.push({
       $match: {user: {$exists: true}}
@@ -742,7 +963,7 @@ async function getTrackingList(documentId, anonymous, include) {
  * @param  {} cid
  * @param  {} sid
  */
-async function getTrackingInfo(documentId, cid, sid, include) {
+async function getTrackingInfo(documentId, cid, include) {
   if(!documentId || !cid ){
     throw new Error("document id or cid is invalid");
   }
@@ -775,18 +996,7 @@ async function getTrackingInfo(documentId, cid, sid, include) {
       }
     })
   }
-/*
-  if(!include){
-    console.log("excluding 1 page view");
-    queryPipeline.push({
-      $match: {
-        viewTrackingCount: {$gt: 2}
-      }
-    })
-  } else {
-    console.log("include 1 page view");
-  }
-*/
+
   const wapper = new MongoWapper(connectionString);
   try{
     console.log(JSON.stringify(queryPipeline));
@@ -798,13 +1008,36 @@ async function getTrackingInfo(documentId, cid, sid, include) {
   }
 
 }
+
+
+async function getTrackingUser(cid) {
+  const wapper = new MongoWapper(connectionString);
+  try{
+    const users = await wapper.findAll(tables.TRACKING_USER, {cid: cid}, {created: -1}, 1);
+    return users[0];
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+
 /**
  * @description Get Top-Tag
  */
-async function getTopTag() {
+async function getTopTag(t) {
   const wapper = new MongoWapper(connectionString);
   try{
-    return await wapper.findAll(tables.TOP_TAG, {}, {value: -1}, 1000);
+    let tableName = tables.TOP_TAG;
+    if(t==="featured"){
+      tableName = tables.TOP_TAG_FEATURED;
+    } else if(t === "popular") {
+      tableName = tables.TOP_TAG_POPULAR;
+    } else {
+      tableName = tables.TOP_TAG;
+    }
+    return await wapper.findAll(tableName, {}, {value: -1}, 1000);
   } catch(err){
     throw err;
   } finally {
@@ -823,7 +1056,7 @@ async function getAnalyticsListDaily(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
@@ -863,14 +1096,14 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
-        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$statDate"}},
+        _id: {documentId: "$documentId", isoWeek: {$isoWeek: "$blockchainDate"}},
         totalCount: {$sum: "$pageview"},
-        start: {$min: "$statDate"},
-        end: {$max: "$statDate"},
+        start: {$min: "$blockchainDate"},
+        end: {$max: "$blockchainDate"},
       }
     }, {
       $sort:{_id:1}
@@ -906,7 +1139,7 @@ async function getAnalyticsListMonthly(documentIds, start, end) {
   try{
     const queryPipeline = [{
       $match: {
-        $and:[{documentId: { $in:documentIds }}, {statDate:{$gte:start}}, {statDate:{$lt:end}} ]
+        $and:[{documentId: { $in:documentIds }}, {blockchainDate:{$gte:start}}, {blockchainDate:{$lt:end}} ]
       }
     }, {
       $group: {
@@ -915,7 +1148,7 @@ async function getAnalyticsListMonthly(documentIds, start, end) {
       }
     }, {
       $sort:{_id:1 }
-    },{ 
+    }, { 
       $project: {
         "_id": 0,
         year: "$_id.year",
@@ -942,6 +1175,142 @@ async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
     const doclist = await wapper.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
     return doclist.map((doc)=>{return doc.documentId});
    
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+async function putTrackingConfirmSendMail(documentId, email) {
+  const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  try{
+
+    await wapper.insert(tables.TRACKING_CONFIRM, {
+      email: email,
+      documentId: documentId,
+      created: now.getTime(),
+    });
+    return true;  
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
+  const wapper = new MongoWapper(connectionString);
+  
+  try{
+    const user = await getUser({email: email});
+    if(user){
+      //등록된 유저(가입된 유저)이면 가입 메일을 발송하지 않는다.
+      console.log("check false: Already joined users", email);
+      return false;
+    } 
+
+    const now = new Date();
+    //1. 24시간 안에 대상에게 메일을 보냈는가? 
+    const latestSent = now.getTime() - (1000 * 60 * 60 * 24); 
+    const sentInfo = await wapper.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
+
+    if(sentInfo && sentInfo.length>0){
+      console.log("check false : Emails sent within the last 24 hours", email);
+      return false;
+    }
+
+    //2. 이미 발송 대상에 있는가??
+    const emailstosend = await wapper.findAll(tables.TRACKING_CONFIRM, {documentId: documentId, email: email}, {created: -1}, 1);
+
+    if(emailstosend && emailstosend.length>0){
+      if(!emailstosend[0].sent){
+        console.log("check false : The email is in the waiting list.", email);
+        return false;
+      }
+    }
+    console.log(emailstosend);
+
+    return true; 
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+async function completeTrackingConfirmSendMail(unsend, result) {
+  const wapper = new MongoWapper(connectionString);
+  const now = new Date();
+  try{
+    console.log("completeTrackingConfirmSendMail", unsend, result);
+    unsend.sent = now.getTime();
+    unsend.result = result;
+    const r = await wapper.save(tables.TRACKING_CONFIRM, unsend);
+    console.log("check save result", r);
+    return true;  
+    
+  } catch(err){
+    console.log(err);
+    throw err;
+  } finally {
+    wapper.close();
+  }
+}
+
+/**
+ * @param  {} cid
+ * @param  {} email
+ */
+async function putTrackingUser(cid, sid, documentId, email){
+
+  const wapper = new MongoWapper(connectionString);
+  
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const dayOfMonth = now.getUTCDate();
+
+  try{
+    if(cid && utils.validateEmail(email)){
+      const item = {
+        cid: cid,
+        e: email,
+        id: documentId,
+        sid: sid,
+        created: Date.now()
+      }
+      const trackingUser = await wapper.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
+      if(!trackingUser){
+        const r = await wapper.save(TB_TRACKING_USER, item);
+        console.log("tracking target user save", r);
+      }
+      
+    }
+    
+  } catch(err){
+    throw err;
+  } finally {
+    wapper.close();
+  }
+
+  
+}
+/**
+ * getting unsend email
+ */
+async function getUnsendEmail(limit){
+  const wapper = new MongoWapper(connectionString);
+  
+  
+  try{
+    const unsendemails = await wapper.findAll(tables.TRACKING_CONFIRM, {sent: {$exists: false}}, {created: 1}, limit);
+
+    return unsendemails;
     
   } catch(err){
     throw err;
