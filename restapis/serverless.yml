@@ -75,6 +75,7 @@ package:
     - package.json
     - install.sh
     - opt/**
+    - test/**
 
 layers:
   libNodeModule:
