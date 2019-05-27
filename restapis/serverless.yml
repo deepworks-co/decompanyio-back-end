@@ -870,57 +870,6 @@ functions:
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
-  
-  verifyEmailRequest:
-    handler: controllers/email/verifyEmailRequest.handler
-    events:
-      - http: 
-          method: post
-          path: /api/email/verifyemailrequest
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: /api/email/verifyemailrequest
-            description: /api/email/verifyemailrequest
-            queryParams:
-              - name: email
-                description: email
-                type: string
-    deploymentSettings:
-      type: Linear10PercentEvery1Minute
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-  
-  verifyEmail:
-    handler: controllers/email/verifyEmail.handler
-    events:
-      - http: 
-          method: get
-          path: /api/email/verifyemail/{code}
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: /api/email/verifyemail/{code}
-            description: /api/email/verifyemail/{code}
-            queryParams:
-              - name: code
-                description: code
-                type: string
-    deploymentSettings:
-      type: Linear10PercentEvery1Minute
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
 
 # you can add CloudFormation resource templates here
 resources:
