@@ -36,12 +36,19 @@ module.exports.handler = async (event, context, callback) => {
   
   if(verifyRequest && verifyRequest._id) {
     console.log("verifyRequest", verifyRequest);
-    throw new Error(`already exists ${email}`);
+    return JSON.stringify({
+      success: false,
+      message: `already exists ${email} for verify`
+    })
   }
   
   //사실 실행되지 않음 ㅎㅎㅎㅎ
   if(verifyRequest && verifyRequest.verify === true){
-    throw new Error(`already verified ${email}`);
+    //throw new Error(`already verified ${email}`);
+    return JSON.stringify({
+      success: false,
+      message: `already verified ${email}`
+    })
   }
   
   const verifyUrl = getVerifyUrl(sesConfig.templates.verifyEmail.verifyUrl, verifyCode);
