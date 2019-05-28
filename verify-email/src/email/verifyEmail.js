@@ -18,18 +18,27 @@ module.exports.handler = async (event, context, callback) => {
   const verifyRequest = await getVerifyRequest(code);
 
   if(!verifyRequest){
-    throw new Error(`No Verify Request  : ${code}`)
+    //throw new Error(`No Verify Request  : ${code}`)
+    return JSON.stringify({
+      success: false,
+      message: `No Verify Request`
+    })
   }
 
   if(verifyRequest.verify){
-    throw new Error(`already verified  : ${code}`)
+    //throw new Error(`already verified  : ${code}`)
+    return JSON.stringify({
+      success: false,
+      message: `already verified`
+    })
   }
 
   const result = await verifyEmail({_id: verifyRequest._id, referer: referer});
   console.log("verifyEmail", result);
   
   const response = JSON.stringify({
-    success: true
+    success: true,
+    message: "verified"
   })
     
   return response;
