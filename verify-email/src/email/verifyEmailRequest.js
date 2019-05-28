@@ -112,9 +112,6 @@ function getVerifyCode(source){
 
 function getVerifyUrl(host, verifyCode){
   let verifyUrl = host;
-  if(host.slice(-1) !== "/"){
-    verifyUrl += "/";
-  }
   verifyUrl += verifyCode;
   
   return verifyUrl;
