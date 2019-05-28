@@ -91,7 +91,7 @@ functions:
           documentation:
             summary: /api/email/verifyemail/{code}
             description: /api/email/verifyemail/{code}
-            queryParams:
+            pathParams:
               - name: code
                 description: code
                 type: string
