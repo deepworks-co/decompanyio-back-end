@@ -52,7 +52,7 @@
             "verifyEmail": {
                 "title": "Verify Your Email",
                 "templatePath": "./template/verifyemail/verify_email.html",
-                "verifyUrl": "https://api.share.decompany.io/ve/api/verifyemail/"
+                "verifyUrl": "https://share.decompany.io/emailverify?code="
             }
         }
     },
