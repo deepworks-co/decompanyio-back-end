@@ -36,9 +36,10 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
-       - logs:*
-       - events:*
-       - kms:*
+        - logs:*
+        - events:*
+        - kms:*
+        - ses:*
       Resource: "*"   
   exclude:
     - .gitignore
@@ -118,7 +119,7 @@ resources:
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
-          
+
 custom:
   documentation:
     api:
