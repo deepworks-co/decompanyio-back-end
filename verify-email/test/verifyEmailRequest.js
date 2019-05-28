@@ -18,7 +18,7 @@ describe('verifyEmailRequest', () => {
         Referer: "https://share.decompany.io/aboutus/xxxxxxx"
       },
       body: {
-        email: "abc@gmail.com",
+        email: "worn29@gmail.com",
         re: "jay@decompany.io",
         ts: Date.now()
       }

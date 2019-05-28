@@ -44,7 +44,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error(`already verified ${email}`);
   }
   
-  const verifyUrl = getVerifyUrl(applicationConfig.mainHost, verifyCode);
+  const verifyUrl = getVerifyUrl(sesConfig.templates.verifyEmail.verifyUrl, verifyCode);
 
   const request = {
     _id: verifyCode, 
@@ -108,7 +108,7 @@ function getVerifyUrl(host, verifyCode){
   if(host.slice(-1) !== "/"){
     verifyUrl += "/";
   }
-  verifyUrl+=`/api/email/verifyemail/${verifyCode}`;
+  verifyUrl += verifyCode;
   
   return verifyUrl;
 }

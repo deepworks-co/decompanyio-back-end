@@ -45,9 +45,15 @@ provider:
     - .env
 
 functions:
+  verifyEmailSender:
+    handler: src/email/verifyEmailSender.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
+
   trackingConfirmSender:
     handler: src/tracking/trackingConfirmSender.handler
-    timeout: 10
+    timeout: 30
     events:
       - schedule: rate(1 minute)
 
@@ -66,10 +72,8 @@ functions:
           documentation:
             summary: /api/email/verifyemailrequest
             description: /api/email/verifyemailrequest
-            queryParams:
-              - name: email
-                description: email
-                type: string
+            requestBody:
+              description: "email"
 
   
   verifyEmail:
@@ -97,8 +101,8 @@ custom:
       info:
         version: '1'
         title: Rest API
-        description: Decompany Rest Api
-        termsOfService: https://www.google.com
+        description: Verify Email API
+        termsOfService: https://www.decompany.io
         contact:
           name: Jay
           email: jay@decompany.io
