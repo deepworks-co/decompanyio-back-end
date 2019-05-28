@@ -74,7 +74,6 @@ functions:
             description: /api/email/verifyemailrequest
             requestBody:
               description: "email"
-
   
   verifyEmail:
     handler: src/email/verifyEmail.handler
@@ -95,6 +94,31 @@ functions:
               - name: code
                 description: code
                 type: string
+
+resources:
+  Resources:
+  
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+          
 custom:
   documentation:
     api:
