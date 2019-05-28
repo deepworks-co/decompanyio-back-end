@@ -38,7 +38,6 @@ module.exports.handler = async (event, context, callback) => {
     let html = templateBody.replace("##email##", email);
     html = html.replace("##title##", title);
     html = html.replace("##verify_url##", verify_url);
-    html = html.replace("##verify_code##", verify_code);
     //console.log("html", html);
     const result = await ses.sendMail(region, email, sender, title, html);
     console.log("send mail", {region, email, sender, title, html})
