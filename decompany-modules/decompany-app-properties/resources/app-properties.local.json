@@ -48,8 +48,9 @@
                 "templatePath": "../../template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
-                "title": "Verify Email",
-                "path": "../../template/aboutus/verify_email.dev.html"
+                "title": "Verify Your Email",
+                "templatePath": "../../template/verifyemail/verify_email.html",
+                "verifyUrl": "https://api.share.decompany.io/ve/api/verifyemail/"
             }
         }
     },

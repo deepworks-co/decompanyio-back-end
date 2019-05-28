@@ -50,8 +50,9 @@
                 "templatePath": "../../template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
-                "title": "Verify Email",
-                "path": "./template/confirm_email.dev.html"
+                "title": "Verify Your Email",
+                "templatePath": "./template/verifyemail/verify_email.html",
+                "verifyUrl": "https://api.polarishare.com/ve/api/verifyemail/"
             }
         }
     },
