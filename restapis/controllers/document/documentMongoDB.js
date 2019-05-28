@@ -559,11 +559,12 @@ async function updateDocument (newDoc) {
         id: newDoc._id,
         created: Date.now()
       });
-      const result = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
+      
       console.log("seoTitle save result", seoTitleResult);
     } else {
       console.log("seo title does not updated");
     }
+    const result = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
     return result;
 
   } catch(err){
