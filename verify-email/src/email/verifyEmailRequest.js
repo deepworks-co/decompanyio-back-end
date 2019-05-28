@@ -22,7 +22,7 @@ module.exports.handler = async (event, context, callback) => {
     });
   }
 
-  if(!referer || referer.indexOf(applicationConfig.mainHost)<0){
+  if(!referer /*|| referer.indexOf(applicationConfig.mainHost)<0*/){
     throw new Error(`referer is wrong!! ${referer}`);
   }
 
