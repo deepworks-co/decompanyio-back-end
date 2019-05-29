@@ -83,11 +83,15 @@ layers:
     description: "additional node_module"
     
 functions:
-
-  preHook:
-    handler: deploy/handler.pre
-  postHook:
-    handler: deploy/handler.post
+  accountPictureConverter:
+    handler: s3/account/accountPictureConverter.handler
+    layers:   
+      - {Ref: LibNodeModuleLambdaLayer}
+    events:
+      - existingS3: 
+          bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
+          events: 
+            - s3:ObjectCreated:Put
 
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
