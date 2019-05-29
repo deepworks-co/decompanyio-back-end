@@ -23,15 +23,16 @@ exports.handler = async (event, context, callback) => {
 
 async function run(event){
   console.log(JSON.stringify(event));
-  const promises = await event.Records.map((record) =>  {
-    const key = record.s3.object.key;
+  const promises = event.Records.map((record) =>  {
+    const key = decodeURI(record.s3.object.key);
+    const imageSize = record.s3.object.size;
     const bucket = record.s3.bucket.name;
     
     console.log("profile image converter start", bucket, key);
 
     const size = 320;
 
-    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.upload_profile, toPrefix: key}, size);
+    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.profile, toPrefix: key}, size);
 
   });
   
@@ -58,20 +59,7 @@ async function convertJpeg(from, to, size){
   })
   .toBuffer();
 
-  await putS3Object(toBucket, toPrefix, output, "image/jpeg");
-
-  const webpOutput = await sharp(input)
-  .resize(size, size, {
-    fit: sharp.fit.inside,
-    withoutEnlargement: true
-  })
-  .webp({
-    quality: 95
-  })
-  .toBuffer();
-
-
-  return await putS3Object(toBucket, toPrefix, webpOutput, "image/webp");
+  return await putS3Object(toBucket, toPrefix, output, "image/jpeg");
 }
 
 

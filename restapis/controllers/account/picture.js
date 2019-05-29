@@ -8,7 +8,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   console.log(JSON.stringify(event));
-  const {principalId, query} = event;
+  const {principalId} = event;
 
   const filename = Date.now();
 
@@ -19,6 +19,8 @@ module.exports.handler = async (event, context, callback) => {
     signedUploadUrl: signedUploadUrl,
     picture: key
   })
+
+  console.log(response);
   return callback(null, response);
 
 };

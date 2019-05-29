@@ -13,7 +13,33 @@ describe('accountPictureConverter', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+
+    const event  = {
+      Records: [
+          {
+            s3: {
+                bucket: {
+                    name: "dev-ca-upload-profile"
+                },
+                object: {
+                    key: "google-oauth2%7C101778494068951192848/google-oauth2%7C101778494068951192848_1559120598089",
+                    size: 4806
+                }
+            }            
+          }, {
+            s3: {
+                bucket: {
+                    name: "dev-ca-upload-profile"
+                },
+                object: {
+                    key: "google-oauth2%7C101778494068951192848/google-oauth2%7C101778494068951192848_1559121407752",
+                    size: 4806
+                }
+            }            
+          }
+      ]
+  }
+    return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
   });
