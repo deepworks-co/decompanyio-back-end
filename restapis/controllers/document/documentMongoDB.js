@@ -742,17 +742,27 @@ async function queryRecentlyVoteListForApplicant(args) {
       as: "popularAs"
     }
   }, {
+    $lookup: {
+      from: TB_DOCUMENT_FEATURED,
+      localField: "_id",
+      foreignField: "_id",
+      as: "featuredAs"
+    }
+  }, {
     $addFields: {
-      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
     }
   }, {
     $addFields: {
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
+      latestVoteAmount: "$featured.latestVoteAmount",
     }
   }, {
     $project: {
-      popularAs: 0
+      popularAs: 0,
+      featuredAs: 0
     }
   }]
   
