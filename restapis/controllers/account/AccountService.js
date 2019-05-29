@@ -74,20 +74,29 @@ module.exports = class AccountService {
 
 			if(savedUser){
 				console.log("saved user", savedUser);
+				const newUserInfo = {};
 				if(user.nickname){
-					savedUser.nickname = user.nickname;
+					newUserInfo.nickname = user.nickname;
+					
 				}
 				
 				if(user.picture){
-					savedUser.picture = user.picture;
+					newUserInfo.picture = user.picture;
 				}
 
 				if(user.username){
-					savedUser.username = user.username;
+					newUserInfo.username = user.username;
+					const dupusername = await mongo.findOne(USER_TALBE, {
+						username: user.username
+					});
+					if(dupusername && user.id !== dupusername._id){
+						throw Error("duplicated username");
+					}
+					console.log("dupusername", dupusername);
 				}
 				
-				console.log("updated user", savedUser);
-				const result = await mongo.save(USER_TALBE, savedUser);
+				console.log("updated user", newUserInfo);
+				const result = await mongo.update(USER_TALBE, {_id: user.id}, {$set: newUserInfo});
 				return result;
 			} else {
 				console.info("user is not exist", user.id);
