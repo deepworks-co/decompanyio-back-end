@@ -6,7 +6,8 @@
     "s3Config":{
         "document": "alpha-ca-document",
         "thumbnail": "alpha-ca-thumbnail",
-        "profile": "alpha-ca-profile"
+        "profile": "alpha-ca-profile",
+        "upload_profile": "alpha-ca-upload-profile"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",

@@ -6,7 +6,8 @@
     "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
-        "profile": "dev-ca-profile.decompany.io"
+        "profile": "dev-ca-profile.decompany.io",
+        "upload_profile": "dev-ca-upload-profile"
     },
     "tables":{
         "DOCUMENT": "DOCUMENT",
