@@ -49,7 +49,7 @@
                 "templatePath": "../../template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
-                "title": "Verify Your Email",
+                "title": "Please verify your email address",
                 "templatePath": "../../template/verifyemail/verify_email.html",
                 "verifyUrl": "https://share.decompany.io/emailverify?code="
             }
