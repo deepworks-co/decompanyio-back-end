@@ -245,7 +245,7 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
@@ -331,6 +331,7 @@ async function queryDocumentListByPopular (params) {
         documentName: "$document.documentName",
         documentSize: "$document.documentSize",
         seoTitle: "$document.seoTitle",
+        cc: "$document.cc"
       }
     }, {
       $project: {featured: 0, document: 0}
@@ -413,6 +414,7 @@ async function queryDocumentListByFeatured (params) {
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
+        cc: "$document.cc",
       }
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}

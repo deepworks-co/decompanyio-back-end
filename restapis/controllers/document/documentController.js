@@ -47,6 +47,7 @@ module.exports.regist = async (event, context, callback) => {
   const forceTracking = body.forceTracking?body.forceTracking:false
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
   const isDownload = body.isDownload?body.isDownload:false;
+  const cc = body.cc;
   
   
   let seoTitle;
@@ -89,7 +90,8 @@ module.exports.regist = async (event, context, callback) => {
       seoTitle: seoTitle,
       useTracking: useTracking,
       forceTracking: forceTracking,
-      isDownload: isDownload
+      isDownload: isDownload,
+      cc: cc
     }
 
     const result = await documentService.putDocument(putItem);
