@@ -69,7 +69,6 @@ provider:
 
 package:
   individually: true
-  excludeDevDependencies: false
   exclude:
     - .gitignore
     - .env
@@ -93,7 +92,12 @@ functions:
           bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
           events: 
             - s3:ObjectCreated:Put
-  
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   preHook:
     handler: deploy/handler.pre
   postHook:
@@ -133,7 +137,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -166,7 +170,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -188,7 +192,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -207,7 +211,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -250,7 +254,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -290,7 +294,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -323,7 +327,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -338,7 +342,7 @@ functions:
           rules:
             - prefix: FILE/
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -355,7 +359,7 @@ functions:
           rules:
             - prefix: THUMBNAIL/
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -377,7 +381,7 @@ functions:
               500:
                 template: $input.path('$.errorMessage')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -409,7 +413,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -446,7 +450,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -479,7 +483,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -501,7 +505,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -540,7 +544,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -559,7 +563,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -578,7 +582,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -599,7 +603,7 @@ functions:
               Cache-Control: "'max-age=120'"
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -618,7 +622,7 @@ functions:
               Cache-Control: "'max-age=120'"
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -637,7 +641,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')            
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -670,7 +674,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -710,7 +714,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -751,7 +755,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook                  
@@ -797,7 +801,7 @@ functions:
                 responseModels:
                   "application/json": "DefaultResponseModel"
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -859,7 +863,7 @@ functions:
                 description: sid
                 type: string
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -877,7 +881,7 @@ functions:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
@@ -908,6 +912,7 @@ resources:
 
 
 custom:
+  deployType: Canary10Percent5Minutes
   prune:
     automatic: true
     number: 5
