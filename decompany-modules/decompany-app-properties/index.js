@@ -7,7 +7,7 @@ function getProperties(stage){
   try{
 
     if(stage) {
-      return require(stage?'./resources/app-properties.'+ stage + '.json':'./resourcesapp-properties.json');
+      return require('./resources/app-properties.'+ stage + '.json');
     } else {
       return require('./resources/app-properties.json');    
     }

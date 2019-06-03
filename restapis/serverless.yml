@@ -69,6 +69,7 @@ provider:
 
 package:
   individually: true
+  excludeDevDependencies: false
   exclude:
     - .gitignore
     - .env
