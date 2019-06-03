@@ -48,14 +48,6 @@ db.createCollection("SEO-FRIENDLY")
 db["SEO-FRIENDLY"].createIndex({{created: -1}})
 ```
 
-## VOTE (cur DEV-CA-DOCUMENT-VOTE)
-
-```javascript
-db.createCollection("VOTE");
-db["DOCUMENT-VOTE"].createIndex({id: 1, created: -1}, {unique:true})
-db["DOCUMENT-VOTE"].createIndex({created: -1})
-db["DOCUMENT-VOTE"].createIndex({documentId: 1, created: -1})
-```
 
 ## TRACKING
 
@@ -110,6 +102,7 @@ db.createCollection("VOTE");
 db["VOTE"].createIndex( { documentId: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1,documentId: 1,created: -1 } )
+db["VOTE"].createIndex( { blockNumber: -1 } )
 ```
 
 ## query collection's index
@@ -147,4 +140,19 @@ db.createCollection("VERIFY-EMAIL");
 db["VERIFY-EMAIL"].createIndex( { email: 1 })
 db["VERIFY-EMAIL"].createIndex( { verify: 1, created: 1 })
 
+```
+
+## EVENT-REGISTRY
+
+```javascript
+db.createCollection("EVENT-REGISTRY");
+db["EVENT-REGISTRY"].createIndex( { blockNumber: -1 })
+```
+
+
+## EVENT-WRITEPAGEVIEW
+
+```javascript
+db.createCollection("EVENT-WRITEPAGEVIEW");
+db["EVENT-WRITEPAGEVIEW"].createIndex( { blockNumber: -1 })
 ```
