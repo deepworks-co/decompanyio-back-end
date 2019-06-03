@@ -6,6 +6,7 @@ npm install serverless-plugin-existing-s3
 npm install serverless-aws-documentation
 npm install serverless-plugin-split-stacks
 npm install serverless-plugin-canary-deployments
+npm install serverless-prune-plugin
 npm install mongojs
 npm install json-2-csv
 npm --prefix ./opt install sharp

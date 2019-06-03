@@ -907,6 +907,9 @@ resources:
 
 
 custom:
+  prune:
+    automatic: true
+    number: 5
   splitStacks:
     perFunction: false
     perType: true
@@ -943,3 +946,4 @@ plugins:
   - serverless-plugin-existing-s3
   - serverless-plugin-split-stacks
   - serverless-plugin-canary-deployments
+  - serverless-prune-plugin
