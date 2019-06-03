@@ -13,16 +13,9 @@ module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
   const tableName = tables.EVENT_REGISTRY;
   try{
-    const maxOne = await wapper.aggregate(tableName, [
-      {
-        $group: {
-          _id: null,
-          blockNumber : { $max: '$blockNumber' }
-        }
-      }
-    ]);
+    const maxOne = await wapper.findAll(tableName, {}, {blockNumber: -1}, 1);
      // contract write block number 3251154
-    let startBlockNumber = 3251154;
+    let startBlockNumber = 3936298;
     if(maxOne && maxOne.length>0){
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
