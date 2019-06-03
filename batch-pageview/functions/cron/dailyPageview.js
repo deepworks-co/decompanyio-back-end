@@ -8,7 +8,7 @@ const wapper = new MongoWapper(mongodb.endpoint);
  * @description 전날 하루동안의 pageview를 집계 및 추가 작업
  *  - 전날 pageview 블록체인이 입력하기용 큐 발생
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
- *  - 하루에 한번 UTC+0 00:10분에 동작
+ *  - 하루에 한번 UTC 00:10분에 동작
  * @function
  * @cron 
  */
