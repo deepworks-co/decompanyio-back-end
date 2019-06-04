@@ -50,7 +50,7 @@ functions:
     handler: src/email/adminEmailBatchSender.handler
     timeout: 60
     events:
-      - schedule: cron(10 9 * * ? *)
+      - schedule: cron(15 0 * * ? *)
 
   verifyEmailSender:
     handler: src/email/verifyEmailSender.handler
