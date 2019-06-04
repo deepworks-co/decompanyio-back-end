@@ -12,14 +12,19 @@ const LIMIT = 5000;
 module.exports.handler = async (event, context, callback) => {
 
   try{
-
     const now = new Date();
     const yesterday = new Date(now - 1000 * 60 * 60 * 24);
-    const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
+    let blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
+
+    if(event.blockchainTimestamp){
+      console.log("input blockchainTimestamp", event.blockchainTimestamp);
+      blockchainTimestamp = event.blockchainTimestamp
+    } 
+   
     
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, LIMIT);
-    const remains = resultList.length === 'undefined'? 0:resultList.length
+    const remains = resultList.length === undefined? 0:resultList.length
     console.log("getList", remains);
     if(remains === 0){
       return {

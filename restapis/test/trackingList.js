@@ -14,7 +14,9 @@ describe('trackingList', () => {
 
   it('implement tests here', () => {
     const event = {query: {
-      documentId: "00065c0b528f415a830f50b1c16c8e66"
+      documentId: "00065c0b528f415a830f50b1c16c8e66",
+      include: false,
+      anonymous: false
     }}
 
     return wrapped.run(event).then((response) => {

@@ -16,9 +16,11 @@ describe('documentUpdate', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
-        documentId: "e3aa558435ca4d568deba7474f36ad44",
-        title: "SolidWorks Introduction~~" + Date.now()
-
+        documentId: "5bab09df70ed4307aad667300fc0c95c",
+        //title: "SolidWorks Introduction~~" + Date.now(),
+        isDownload: false,
+        useTracking: false,
+        forceTracking: false
       }
     }
     return wrapped.run(event).then((response) => {

@@ -1,0 +1,141 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: verify-email # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-west-1
+  stage: ${opt:stage, 'dev'}
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - logs:*
+        - events:*
+        - kms:*
+        - ses:*
+      Resource: "*"   
+  exclude:
+    - .gitignore
+    - .env
+
+functions:
+  verifyEmailSender:
+    handler: src/email/verifyEmailSender.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
+
+  trackingConfirmSender:
+    handler: src/tracking/trackingConfirmSender.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
+
+  verifyEmailRequest:
+    handler: src/email/verifyEmailRequest.handler
+    events:
+      - http: 
+          method: post
+          path: /api/email/verifyemailrequest
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: /api/email/verifyemailrequest
+            description: /api/email/verifyemailrequest
+            requestBody:
+              description: "email"
+  
+  verifyEmail:
+    handler: src/email/verifyEmail.handler
+    events:
+      - http: 
+          method: get
+          path: /api/email/verifyemail/{code}
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: /api/email/verifyemail/{code}
+            description: /api/email/verifyemail/{code}
+            pathParams:
+              - name: code
+                description: code
+                type: string
+
+resources:
+  Resources:
+  
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+
+custom:
+  documentation:
+    api:
+      info:
+        version: '1'
+        title: Rest API
+        description: Verify Email API
+        termsOfService: https://www.decompany.io
+        contact:
+          name: Jay
+          email: jay@decompany.io
+        license:
+          name: Decompany
+          url: https://www.decompany.io
+
+
+plugins:
+  - serverless-mocha-plugin
+  - serverless-aws-documentation

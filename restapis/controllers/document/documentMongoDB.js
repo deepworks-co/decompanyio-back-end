@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -21,7 +21,7 @@ module.exports = {
   queryDocumentList,
   getFriendlyUrl,
   putDocument,
-  saveDocument,
+  updateDocument,
   queryVotedDocumentByCurator,
   getVotedDocumentForAccountId,
   getRecentlyPageViewTotalCount,
@@ -34,13 +34,11 @@ module.exports = {
   putTrackingUser,
   putTrackingConfirmSendMail,
   checkTrackingConfirmSendMail,
-  completeTrackingConfirmSendMail,
   getTopTag,
   getAnalyticsListDaily,
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
-  getUnsendEmail  
 }
 
  /**
@@ -69,7 +67,7 @@ module.exports = {
       }
     }
     
-    console.log("result", result);
+    console.log("getDocumentById", result);
 
     return result;
   } catch (err){
@@ -247,20 +245,19 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList"
-
       }
     }, {
       $project: {featured: 0, popular: 0}
     }]);
 
 
-    //console.log("pipeline", pipeline);
+    console.log("pipeline", JSON.stringify(pipeline));
     return await wapper.aggregate(tables.DOCUMENT, pipeline);
    
   } catch(err) {
@@ -334,6 +331,7 @@ async function queryDocumentListByPopular (params) {
         documentName: "$document.documentName",
         documentSize: "$document.documentSize",
         seoTitle: "$document.seoTitle",
+        cc: "$document.cc"
       }
     }, {
       $project: {featured: 0, document: 0}
@@ -416,6 +414,7 @@ async function queryDocumentListByFeatured (params) {
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
+        cc: "$document.cc",
       }
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
@@ -514,8 +513,7 @@ async function putDocument (item) {
     /* default value */
     const mergedItem = {
       "created": Number(timestamp),
-      "state": "NOT_CONVERT",
-      "viewCount": 0
+      "state": "NOT_CONVERT"
     };
     const params = Object.assign(mergedItem, item);
     console.log("Save New Item", params);
@@ -532,6 +530,7 @@ async function putDocument (item) {
     return newDoc;
 
   } catch(err){
+    console.log(err);
     throw err;
   } finally{
     wapper.close();
@@ -543,26 +542,31 @@ async function putDocument (item) {
 /**
  * @param  {} item
  */
-async function saveDocument (newDoc) {
+async function updateDocument (newDoc) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-    const timestamp = Date.now();
-    const oldDoc = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
-    console.log("old document", oldDoc);
-    console.log("new document", newDoc);
-    const mergedItem = Object.assign(oldDoc, newDoc);    
-    console.log("merged document", mergedItem);
-    
-    const result = await wapper.save(TB_DOCUMENT, mergedItem);
 
-    await wapper.insert(TB_SEO_FRIENDLY, {
-      _id: mergedItem.seoTitle,
-      type: "DOCUMENT",
-      id: mergedItem._id,
-      created: Number(timestamp)
-    });
+    console.log("new Doc", newDoc);
+    const isSeoTitleUpdated = newDoc.seoTitle?true:false;
 
+    console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
+ 
+    const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
+    console.log("update result", updateResult);
+    if(isSeoTitleUpdated){
+      const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
+        _id: newDoc.seoTitle,
+        type: "DOCUMENT",
+        id: newDoc._id,
+        created: Date.now()
+      });
+      
+      console.log("seoTitle save result", seoTitleResult);
+    } else {
+      console.log("seo title does not updated");
+    }
+    const result = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
     return result;
 
   } catch(err){
@@ -740,17 +744,27 @@ async function queryRecentlyVoteListForApplicant(args) {
       as: "popularAs"
     }
   }, {
+    $lookup: {
+      from: TB_DOCUMENT_FEATURED,
+      localField: "_id",
+      foreignField: "_id",
+      as: "featuredAs"
+    }
+  }, {
     $addFields: {
-      popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
     }
   }, {
     $addFields: {
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
+      latestVoteAmount: "$featured.latestVoteAmount",
     }
   }, {
     $project: {
-      popularAs: 0
+      popularAs: 0,
+      featuredAs: 0
     }
   }]
   
@@ -916,7 +930,10 @@ async function getTrackingList(documentId, anonymous, include) {
   });
 
   queryPipeline.push({
-    $unwind: "$userAs"
+    $unwind:  {
+      path: "$userAs",
+      preserveNullAndEmptyArrays: true
+    }
   });
 
   queryPipeline.push({
@@ -943,7 +960,7 @@ async function getTrackingList(documentId, anonymous, include) {
   
   if(!anonymous){
     queryPipeline.push({
-      $match: {user: {$exists: true}}
+      $match: {"user._id": {$exists: true}}
     })
   }
 
@@ -1243,24 +1260,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
   }
 }
 
-async function completeTrackingConfirmSendMail(unsend, result) {
-  const wapper = new MongoWapper(connectionString);
-  const now = new Date();
-  try{
-    console.log("completeTrackingConfirmSendMail", unsend, result);
-    unsend.sent = now.getTime();
-    unsend.result = result;
-    const r = await wapper.save(tables.TRACKING_CONFIRM, unsend);
-    console.log("check save result", r);
-    return true;  
-    
-  } catch(err){
-    console.log(err);
-    throw err;
-  } finally {
-    wapper.close();
-  }
-}
+
 
 /**
  * @param  {} cid
@@ -1299,22 +1299,4 @@ async function putTrackingUser(cid, sid, documentId, email){
   }
 
   
-}
-/**
- * getting unsend email
- */
-async function getUnsendEmail(limit){
-  const wapper = new MongoWapper(connectionString);
-  
-  
-  try{
-    const unsendemails = await wapper.findAll(tables.TRACKING_CONFIRM, {sent: {$exists: false}}, {created: 1}, limit);
-
-    return unsendemails;
-    
-  } catch(err){
-    throw err;
-  } finally {
-    wapper.close();
-  }
 }

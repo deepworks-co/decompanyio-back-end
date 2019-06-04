@@ -34,12 +34,16 @@ exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
 }
 
-exports.toSeoFriendly = (str) => {
+exports.toSeoFriendly = (str, defaultTitle) => {
   if(!str)
     return;
 
   const id = generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
-  return friendlyUrl(str).concat("-", id);
+  let url = friendlyUrl(str);
+  if(!url){
+    url = defaultTitle?defaultTitle:str+"";
+  }
+  return url.concat("-", id);
 }
 
 exports.isLocal = () => {

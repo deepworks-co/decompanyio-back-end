@@ -2,7 +2,7 @@
 const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
-const { s3Config, region } = require('../../resources/config.js').APP_PROPERTIES();
+const { s3Config, region } = require('decompany-app-properties');
 
 module.exports.handler = async (event, context, callback) => {
 

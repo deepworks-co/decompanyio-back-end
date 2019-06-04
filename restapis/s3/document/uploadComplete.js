@@ -1,6 +1,6 @@
 'use strict';
 var AWS = require('aws-sdk');
-const { s3Config, sqsConfig } = require('../../resources/config.js').APP_PROPERTIES();
+const { s3Config, sqsConfig } = require('decompany-app-properties');
 AWS.config.update({region: "us-west-1"});
 var sqs = new AWS.SQS();
 var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
