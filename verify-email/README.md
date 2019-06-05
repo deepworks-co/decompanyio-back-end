@@ -9,7 +9,7 @@ git clone https://github.com/decompanyio/decompanyio-back-end.git {branchName} -
 example
 
 ```shell
-git clone https://github.com/decompanyio/decompanyio-back-end.git sprint-qa-03 --branch sprint-qa-03
+git clone https://github.com/decompanyio/decompanyio-back-end.git sprint-prepare-release --branch sprint-prepare-release
 ```
 
 ## install dependence
@@ -19,6 +19,7 @@ npm install serverless-mocha-plugin
 npm install serverless-aws-documentation
 npm install ../decompany-modules/decompany-common-utils/
 npm install ../decompany-modules/decompany-app-properties/
+npm install nodemailer
 npm install aws-sdk
 ```
 
