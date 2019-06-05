@@ -89,10 +89,17 @@ module.exports = {
     let documentId;
     if(!document){
       const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
-      documentId = seoFriendly.id
+      if(seoFriendly){
+        documentId = seoFriendly.id
+      } else {
+        return;
+      }
+      
     } else {
       documentId = document._id;
     }
+
+    
     
     console.log(`seoTitle ${seoTitle} to documentId ${documentId}`);
 
