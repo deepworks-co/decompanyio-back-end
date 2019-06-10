@@ -13,11 +13,13 @@ describe('trackingList', () => {
   });
 
   it('implement tests here', () => {
-    const event = {query: {
-      documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
-      include: false,
-      anonymous: false
-    }}
+    const event = {
+      query: {
+        documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
+        include: false,
+        anonymous: false
+      }
+    }
 
     return wrapped.run(event).then((response) => {
       console.log("response!!");

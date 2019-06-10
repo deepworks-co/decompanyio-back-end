@@ -893,7 +893,7 @@ async function getTrackingList(documentId, anonymous, include) {
     throw new Error("document id is invalid");
   }
 
-  const queryPipeline = [{
+  let queryPipeline = [{
     $match: {
         id: documentId
     }
@@ -905,7 +905,15 @@ async function getTrackingList(documentId, anonymous, include) {
       cid: {$first: "$cid"},
       sid: {$first: "$sid"},
       viewTimestamp: {$min: "$t"},
-      maxPageNo: {$max: "$n"}
+      viewTimestampMax: {$max: '$t'},
+      maxPageNo: {$max: "$n"},
+      pages: { $addToSet: '$n' }
+    }
+  }, {
+    $addFields: {
+      readTimestamp: {
+        $subtract: ["$viewTimestampMax", "$viewTimestamp"]
+      }
     }
   }]
   
@@ -922,7 +930,9 @@ async function getTrackingList(documentId, anonymous, include) {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
       count: {$sum: 1},
-      viewTimestamp: {$max: "$viewTimestamp"}
+      viewTimestamp: {$max: "$viewTimestamp"},
+      pages: { $addToSet: '$pages' },
+      totalReadTimestamp: { $sum: "$readTimestamp" }
     }
   });
 
@@ -955,7 +965,9 @@ async function getTrackingList(documentId, anonymous, include) {
       user: {$first: "$userAs"},
       cid: {$first: "$cid"},
       viewTimestamp: {$first: "$viewTimestamp"},
-      count: {$first: "$count"}
+      count: {$first: "$count"},
+      pages: {$first: '$pages' },
+      totalReadTimestamp: {$first: '$totalReadTimestamp' }
     }
   });
 
@@ -971,6 +983,24 @@ async function getTrackingList(documentId, anonymous, include) {
     })
   }
 
+  queryPipeline = queryPipeline.concat([
+    {
+      $addFields: {
+        "pages": {
+          $reduce: {
+            "input": "$pages",
+            "initialValue": [],
+            "in": { "$setUnion": ["$$value", "$$this"]}
+          }
+        }
+      }
+    }, {
+      $addFields: {
+        readPageCount: {$size: "$pages"}
+      }
+    }
+    
+  ])
 
   const wapper = new MongoWapper(connectionString);
   try{
@@ -1005,12 +1035,20 @@ async function getTrackingInfo(documentId, cid, include) {
       cid : { $first: '$cid' },
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
+      viewTimestampMin: {$min: '$t'},
       viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
       viewTrackingCount: {$sum: 1},
-      maxPageNo: {$max: "$n"}
+      maxPageNo: {$max: "$n"},
+      pages: {$addToSet: "$n"}
     }
   }, {
     $sort: {"viewTimestamp": -1}
+  }, {
+    $addFields: {
+      readTimestamp: {
+        $subtract: ["$viewTimestamp", "$viewTimestampMin"]
+      }
+    }
   }]
 
   if(!include){
