@@ -24,7 +24,8 @@
         "TOP_TAG_FEATURED": "TOP-TAG-FEATURED",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
-        "VERIFY_EMAIL": "VERIFY-EMAIL"
+        "VERIFY_EMAIL": "VERIFY-EMAIL",
+        "SEND_EMAIL": "SEND-EMAIL"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -51,9 +52,13 @@
                 "templatePath": "../../template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
-                "title": "Please verify your email address",
+                "title": "Please verify your email address(share.decompany.io)",
                 "templatePath": "./template/verifyemail/verify_email.html",
                 "verifyUrl": "https://share.decompany.io/emailverify?code="
+            },
+            "welcomeEmail": {
+                "title": "Welcome to Polaris Share(share.decompany.io)",
+                "templatePath": "./template/welcome/welcome_email.html"
             }
         }
     },

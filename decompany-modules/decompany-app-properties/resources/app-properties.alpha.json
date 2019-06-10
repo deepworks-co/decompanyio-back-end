@@ -24,7 +24,8 @@
         "TOP_TAG_FEATURED": "TOP-TAG-FEATURED",
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
-        "VERIFY_EMAIL": "VERIFY-EMAIL"
+        "VERIFY_EMAIL": "VERIFY-EMAIL",
+        "SEND_EMAIL": "SEND-EMAIL"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -54,6 +55,10 @@
                 "title": "Please verify your email address",
                 "templatePath": "./template/verifyemail/verify_email.html",
                 "verifyUrl": "https://www.polarishare.com/emailverify?code="
+            },
+            "welcomeEmail": {
+                "title": "Welcome to Polaris Share",
+                "templatePath": "./template/welcome/welcome_email.html"
             }
         }
     },
