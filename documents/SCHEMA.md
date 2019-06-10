@@ -4,8 +4,8 @@
 
 ```javascript
 db.createCollection("USER");
-db.USER.createIndex({email: 1}, {unique:true})
-db.USER.createIndex({username: 1}, {unique:true})
+db.USER.createIndex({email: 1})
+db.USER.createIndex({username: 1})
 db.USER.createIndex({sub: 1}, {unique:true})
 ```
 
@@ -155,4 +155,12 @@ db["EVENT-REGISTRY"].createIndex( { blockNumber: -1 })
 ```javascript
 db.createCollection("EVENT-WRITEPAGEVIEW");
 db["EVENT-WRITEPAGEVIEW"].createIndex( { blockNumber: -1 })
+```
+
+## SEND-EMAIL
+
+```javascript
+db.createCollection("SEND-EMAIL");
+db["SEND-EMAIL"].createIndex( { email: 1, created: 1 });
+db["SEND-EMAIL"].createIndex( { email: 1, emailType: 1 }, {unique: true});
 ```

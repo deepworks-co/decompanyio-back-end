@@ -14,12 +14,13 @@ describe('trackingList', () => {
 
   it('implement tests here', () => {
     const event = {query: {
-      documentId: "00065c0b528f415a830f50b1c16c8e66",
+      documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
       include: false,
       anonymous: false
     }}
 
     return wrapped.run(event).then((response) => {
+      console.log("response!!");
       console.log(response);
       expect(response).to.not.be.empty;
     });
