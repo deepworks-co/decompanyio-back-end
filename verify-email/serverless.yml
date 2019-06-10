@@ -48,6 +48,10 @@ provider:
 functions:
   sendBatchEmail:
     handler: src/batch/sendBatchEmail.handler
+    timeout: 30
+    events:
+      - schedule: rate(2 minutes)
+
   adminEmailBatchSender:
     handler: src/email/adminEmailBatchSender.handler
     timeout: 60
