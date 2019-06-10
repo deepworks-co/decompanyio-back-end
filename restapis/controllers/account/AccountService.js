@@ -14,17 +14,27 @@ module.exports = class AccountService {
 			});
 			let result;
 			if(queriedUser){
+				//existing user
 				console.log("user exists", queriedUser);
-				queriedUser.connected = Date.now();
 				console.log("update connected time", queriedUser);
-				result = await mongo.save(USER_TALBE, queriedUser);
+				result = await mongo.update(USER_TALBE, {_id: queriedUser._id}, {
+					$set: {
+						connected: Date.now()
+					}
+				});
 			} else {
+				//new user
 				const user = Object.assign({
 					_id: userInfo.sub, 
 					connected: Date.now()
 				}, userInfo);
-				result = await mongo.save(USER_TALBE, user);
+				result = await mongo.insert(USER_TALBE, user);
 				console.log("new user", user, result);
+				await mongo.save(tables.SEND_EMAIL, {
+					email: user.email,
+					emailType: "WELCOME",
+					created: Date.now()
+				});
 			}
 			return result;
 		}catch(err){

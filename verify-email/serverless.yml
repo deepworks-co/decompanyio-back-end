@@ -46,6 +46,8 @@ provider:
     - .env
 
 functions:
+  sendBatchEmail:
+    handler: src/batch/sendBatchEmail.handler
   adminEmailBatchSender:
     handler: src/email/adminEmailBatchSender.handler
     timeout: 60

@@ -28,5 +28,7 @@ npm install aws-sdk
 ```shell
 sls create function -f trackingConfirmSender --handler src/tracking/trackingConfirmSender.handler
 sls create function -f verifyEmailSender --handler src/email/verifyEmailSender.handler
-sls create function -f adminEmailBatchSender --handler src/email/adminEmailBatchSender.handler 
+sls create function -f adminEmailBatchSender --handler src/email/adminEmailBatchSender.handler
+
+sls create function -f sendBatchEmail --handler src/batch/sendBatchEmail.handler
 ```
