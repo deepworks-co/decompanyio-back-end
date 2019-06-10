@@ -46,6 +46,12 @@ provider:
     - .env
 
 functions:
+  adminEmailBatchSender:
+    handler: src/email/adminEmailBatchSender.handler
+    timeout: 60
+    events:
+      - schedule: cron(15 0 * * ? *)
+
   verifyEmailSender:
     handler: src/email/verifyEmailSender.handler
     timeout: 30
