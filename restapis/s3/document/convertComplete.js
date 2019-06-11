@@ -12,6 +12,8 @@ const s3 = new AWS.S3();
 const TABLE_NAME = tables.DOCUMENT;
 const CONVERT_COMPLETE = "CONVERT_COMPLETE";
 
+const QUALITY = 90;
+
 exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
@@ -174,7 +176,7 @@ async function convertJpeg(from, to, size){
     withoutEnlargement: true
   })
   .jpeg({
-    quality: 80
+    quality: QUALITY
   })
   .toBuffer();
 
