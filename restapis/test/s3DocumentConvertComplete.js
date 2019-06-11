@@ -32,7 +32,27 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/c656e50750784cc8a0f62ebe62d19623/1200X1200/1"
+              "key": "THUMBNAIL/fa0d69599a0e418283b8eb20d80a84ed/1200X1200/1"
+            }
+          }
+        },
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/fa0d69599a0e418283b8eb20d80a84ed/1200X1200/2"
+            }
+          }
+        },
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/00065c0b528f415a830f50b1c16c8e66/1200X1200/1"
             }
           }
         },
