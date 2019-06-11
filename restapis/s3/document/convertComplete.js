@@ -174,8 +174,19 @@ async function convertJpeg(from, to, size){
   //console.log(size, "dimensions", dimensions); 
   let calcsize;
   let new_size = {};
+  let output
   if(typeof size === 'number'){
     calcsize = size;
+    output = await sharp(input)
+    .resize(calcsize, calcsize, {
+      fit: sharp.fit.inside,
+      withoutEnlargement: true
+    })
+    .jpeg({
+      quality: QUALITY
+    })
+    .toBuffer();
+
   } else {
 
     if(toPrefix.lastIndexOf("/thumb/1") > 0){
@@ -192,6 +203,17 @@ async function convertJpeg(from, to, size){
   
         calcsize = new_size.height;
       }
+
+      output = await sharp(input)
+      .resize(calcsize, calcsize, {
+        fit: sharp.fit.inside,
+        withoutEnlargement: true
+      })
+      .jpeg({
+        quality: QUALITY
+      })
+      .toBuffer();
+      output = await sharp(output).extract({left: new_size.width/2 - 160, top: new_size.height/2 - 120, width: 320, height: 240}).toBuffer()
     } else {
       return await Promise.resolve(true);
     }
@@ -199,15 +221,7 @@ async function convertJpeg(from, to, size){
 
   console.log(size, dimensions, new_size, calcsize);
 
-  const output = await sharp(input)
-  .resize(calcsize, calcsize, {
-    fit: sharp.fit.inside,
-    withoutEnlargement: true
-  })
-  .jpeg({
-    quality: QUALITY
-  })
-  .toBuffer();
+  
 
 
   return await putS3Object(toBucket, toPrefix, output, "image/jpeg");
