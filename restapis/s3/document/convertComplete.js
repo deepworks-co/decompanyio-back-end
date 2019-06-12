@@ -57,7 +57,7 @@ async function run(event){
       const documentId = keys[1]; // ${documentId}
       const sizeType = keys[2]; //1200X1200, 300X300
       const imagename = keys[3];  // 1, 2, 3
-      const sizes = [2048, 1024, 640, 320, 'thumb'];
+      const sizes = ['thumb', 1024, 640, 320, 2048];
       const promises = sizes.map((size)=>{
         const toProfix = documentId + "/" + size + "/" + imagename;
         return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
@@ -188,8 +188,8 @@ async function convertJpeg(from, to, size){
     .toBuffer();
 
   } else {
-
-    if(toPrefix.lastIndexOf("/thumb/1") > 0){
+    console.log("slice", toPrefix.slice(-8));
+    if(toPrefix.slice(-8) === "/thumb/1"){
       if(dimensions.width > dimensions.height){
         const ratio = 240 / dimensions.height;
         new_size.width = parseInt(dimensions.width * ratio);
