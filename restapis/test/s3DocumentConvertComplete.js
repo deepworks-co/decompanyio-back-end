@@ -32,7 +32,7 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/c656e50750784cc8a0f62ebe62d19623/1200X1200/1"
+              "key": "THUMBNAIL/e6cf11472a174eb9ba6897136ac1b2b8/1200X1200/11"
             }
           }
         },

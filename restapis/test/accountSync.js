@@ -13,7 +13,23 @@ describe('accountSync', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        "sub":"google-oauth2|101778494068951192848",
+        "given_name":"Jay",
+        "family_name":"Lee",
+        "nickname":"jay","name":"Jay Lee",
+        "picture":"https://lh5.googleusercontent.com/-XFDbx4F4BCE/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3reBKkzgLiQu2RzziAptt5cYePEgSg/mo/photo.jpg",
+        "locale":"ko",
+        "updated_at":"2019-06-10T05:24:05.175Z",
+        "email":"jay@decompany.io",
+        "email_verified":true
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log("response");
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

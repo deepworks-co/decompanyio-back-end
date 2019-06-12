@@ -36,6 +36,7 @@ npm install --save-dev serverless-plugin-canary-deployments
 npm install --save-dev serverless-prune-plugin
 npm install mongojs
 npm install json-2-csv
+npm install buffer-image-size
 npm --prefix ./opt install sharp
 ```
 
@@ -44,6 +45,13 @@ npm --prefix ./opt install sharp
 ```shell
 npm --prefix ./opt install sharp
 ```
+
+## Local에서 layer 사용하기
+
+```shell
+export NODE_PATH=.:./opt/node_modules
+```
+
 
 ## Running Offline
 
@@ -54,9 +62,7 @@ sls offline start
 cd {project_dir}
 sudo node ../docker-npm.js rebuild
 
-## Local에서 layer 사용하기
 
-export NODE_PATH=.:./opt/node_modules
 
 ## Deploy
 

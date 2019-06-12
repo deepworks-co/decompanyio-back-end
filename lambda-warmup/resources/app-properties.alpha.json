@@ -14,8 +14,8 @@
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
             {"name": "documentList", "concurrency": 5, "aliase": "prod"},
-            {"name": "documentInfo", "aliase": "prod"},
-            {"name": "trackingCollect", "aliase": "prod"},
+            {"name": "documentInfo", "concurrency": 5, "aliase": "prod"},
+            {"name": "trackingCollect", "concurrency": 5, "aliase": "prod"},
             {"name": "trackingList", "aliase": "prod"},
             {"name": "trackingInfo", "aliase": "prod"}
         ]

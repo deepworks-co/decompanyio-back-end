@@ -9,4 +9,5 @@ npm install --save-dev serverless-plugin-canary-deployments
 npm install --save-dev serverless-prune-plugin
 npm install mongojs
 npm install json-2-csv
+npm install buffer-image-size
 npm --prefix ./opt install sharp
