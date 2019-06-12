@@ -25,7 +25,8 @@
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
         "VERIFY_EMAIL": "VERIFY-EMAIL",
-        "SEND_EMAIL": "SEND-EMAIL"
+        "SEND_EMAIL": "SEND-EMAIL",
+        "BOUNTY": "BOUNTY"
     },
     "sqsConfig": {
         "region": "us-west-1",
