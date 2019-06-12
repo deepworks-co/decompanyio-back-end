@@ -83,44 +83,6 @@ layers:
     description: "additional node_module"
     
 functions:
-  bountyState:
-    handler: controllers/bounty/bountyState.handler
-    events:
-      - http: 
-          method: get
-          path: /api/bounty/state
-          authorizer: accountAuth
-          cors: true      
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  bountyRequest:
-    handler: controllers/bounty/bountyRequest.handler
-    events:
-      - http: 
-          method: get
-          path: /api/bounty/request
-          authorizer: accountAuth
-          cors: true      
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
   accountPictureConverter:
     handler: s3/account/accountPictureConverter.handler
     layers:   
