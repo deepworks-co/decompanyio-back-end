@@ -17,7 +17,6 @@ describe('bountyState', () => {
       principalId: "google-oauth2|101778494068951192848",
       query: {
         ethAccount: "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
-        //type: "deck"
       }
     }
     return wrapped.run(event).then((response) => {

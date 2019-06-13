@@ -37,7 +37,7 @@ module.exports.handler = async (event, context, callback) => {
 
   let amount;
   if(bountyType==="DECK"){
-    amount = 1000;
+    amount = 1000 * Math.pow(10, 18);
     if(histories.length === 0) isSendBounty = true;
   } else {
     amount = 0.1 * Math.pow(10, 18);
