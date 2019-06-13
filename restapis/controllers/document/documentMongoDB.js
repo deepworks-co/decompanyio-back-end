@@ -717,7 +717,10 @@ async function queryVotedDocumentByCurator(args) {
       seoTitle: {$first: "$seoTitle" },
       desc: { $first: "$desc" },
       tags: { $first: "$tags" },
-      created: { $first: "$created" }
+      created: { $first: "$created" },
+      latestPageview: {$first: '$latestPageview'},
+      latestPageviewList: {$first: '$latestPageviewList'},
+      latestVoteAmount: {$first: '$latestVoteAmount'},
     }
   }, {
     $group: {
@@ -732,6 +735,9 @@ async function queryVotedDocumentByCurator(args) {
       desc: { $first: "$desc" },
       tags: { $first: "$tags" },
       created: { $first: "$created" },
+      latestPageview: {$first: {$ifNull: ['$latestPageview', 0 ]}},
+      latestPageviewList: {$first: {$ifNull: ['$latestPageviewList', [] ]}},
+      latestVoteAmount: {$first: {$ifNull: ['$latestVoteAmount', 0 ]}},
       totalDepositDailyList: {
         $addToSet: {
           $cond: [
