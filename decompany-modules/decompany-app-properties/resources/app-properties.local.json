@@ -39,7 +39,8 @@
     },
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
-        "activeVoteDays": 3
+        "activeVoteDays": 3,
+        "activeRewardVoteDays": 7
     },
     "sesConfig": {
         "region": "us-east-1",
