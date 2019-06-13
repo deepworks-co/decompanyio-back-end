@@ -16,7 +16,7 @@ describe('accountUpdate', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
-        username: "deandean"
+        username: "<<<<>>>>>"
       }
     }
     return wrapped.run(event).then((response) => {

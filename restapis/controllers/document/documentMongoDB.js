@@ -1095,11 +1095,10 @@ async function getTrackingInfo(documentId, cid, include) {
   }, {
     $group: {
       _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
-      cid : { $first: '$cid' },
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
       viewTimestampMin: {$min: '$t'},
-      viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+      viewTracking: { $push: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
       viewTrackingCount: {$sum: 1},
       maxPageNo: {$max: "$n"},
       pages: {$addToSet: "$n"}

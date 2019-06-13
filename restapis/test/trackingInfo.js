@@ -14,9 +14,13 @@ describe('trackingInfo', () => {
 
   it('implement tests here', () => {
     const event = {
-      query:{
+      /*query:{
         documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
         cid: "1906096669.1559648098"
+      }*/
+      query: {
+        documentId: '3a328b4a0c8e4638b7c110ecb791bbce',
+        cid: '2069428568.1560131978'
       }
     }
 
