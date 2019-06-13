@@ -1,6 +1,7 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 const {utils} = require('decompany-common-utils');
+const {applicationConfig} = require('decompany-app-properties');
 
 var AWS = require("aws-sdk");
 
@@ -24,23 +25,28 @@ module.exports.handler = async (event, context, callback) => {
   const ethAccount = query.ethAccount;
   const tag = query.tag;
   const pageSize = isNaN(query.pageSize)?20:Number(query.pageSize);
-
+  
   if(!ethAccount){
     throw new Error(`parameter is invalid!! ${JSON.stringify(query)}`);
   }
+
+  console.log("activeRewardVoteDays", applicationConfig.activeRewardVoteDays?applicationConfig.activeRewardVoteDays:7)
 
   const promise1 = documentService.queryVotedDocumentByCurator({
     pageNo: pageNo,
     pageSize: pageSize,
     applicant: ethAccount,
-    tag: tag
+    tag: tag,
+    activeRewardVoteDays: applicationConfig.activeRewardVoteDays?applicationConfig.activeRewardVoteDays:7
   })
 
   const date = utils.getBlockchainTimestamp(new Date());    //utc today
-  console.log(date);
+
   const promise2 = documentService.getRecentlyPageViewTotalCount();
 
   const results = await Promise.all([promise1, promise2]);
+
+  
   
   console.log("success!!", JSON.stringify(results));
   const result = results[0];

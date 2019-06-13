@@ -596,7 +596,8 @@ async function queryVotedDocumentByCurator(args) {
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const pageSize = args.pageSize?args.pageSize: 20
   const skip = ((pageNo - 1) * pageSize);
-
+  const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
+  const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
       applicant: applicant,
@@ -687,6 +688,62 @@ async function queryVotedDocumentByCurator(args) {
       authorAs: 0,
       popularAs: 0,
       popular: 0
+    }
+  }, {
+    $lookup: {
+      from: 'VOTE',
+      localField: 'documentId',
+      foreignField: 'documentId',
+      as: 'documentVoteAmounts'
+    }
+  },{
+    $unwind: {
+      path: "$documentVoteAmounts",
+      includeArrayIndex: 'documentVoteAmountsIndex',
+      preserveNullAndEmptyArrays: true
+    }
+  }, {
+    $group: {
+      _id: {
+        documentId: "$_id", 
+        dateMillis: "$documentVoteAmounts.dateMillis"
+      },
+      deposit: { $first: "$deposit" },
+      documentId: { $first: "$documentId" },
+      accountId: { $first: "$accountId" },
+      author: { $first: "author" },
+      documentName: { $first: "$documentName" },
+      title: { $first: "$title" },
+      seoTitle: {$first: "$seoTitle" },
+      desc: { $first: "$desc" },
+      tags: { $first: "$tags" },
+      created: { $first: "$created" }
+    }
+  }, {
+    $group: {
+      _id: "$_id.documentId",
+      deposit: { $first: "$deposit" },
+      documentId: { $first: "$documentId" },
+      accountId: { $first: "$accountId" },
+      author: { $first: "author" },
+      documentName: { $first: "$documentName" },
+      title: { $first: "$title" },
+      seoTitle: { $first: "$seoTitle" },
+      desc: { $first: "$desc" },
+      tags: { $first: "$tags" },
+      created: { $first: "$created" },
+      totalDepositDailyList: {
+        $addToSet: {
+          $cond: [
+            {"$gte": ["$_id.dateMillis", activeRewardVoteTimestamp]}
+            , {
+              year: "$_id.votedYear", 
+              month: "$_id.votedMonth", 
+              dayOfMonth: "$_id.votedDayOfMonth", 
+              deposit: "$totalDeposit"
+          }, null]
+        }
+      }
     }
   }]
   
