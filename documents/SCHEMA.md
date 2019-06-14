@@ -53,6 +53,7 @@ db["SEO-FRIENDLY"].createIndex({{created: -1}})
 
 ```javascript
 db.createCollection("TRACKING");
+db["TRACKING"].createIndex({id: 1, ev: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
 db["TRACKING"].createIndex({id: 1, cid: 1, t: 1})
