@@ -3,7 +3,7 @@ const fs = require('fs');
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx');
 
-const { region, ethereum } = require('../resources/config.js').APP_PROPERTIES();
+const { region, ethereum } = require('decompany-app-properties');
 const { s3, kms } = require('decompany-common-utils');
 const contractName = ["DocumentRegistry", "Creator", "Curator"];
 
