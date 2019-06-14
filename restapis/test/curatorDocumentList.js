@@ -16,7 +16,7 @@ describe('curatorDocumentList', () => {
     const event = {
       query: {
         pageNo: 1,
-        ethAccount: "0x4add6551af429c71eB64e0494BC5E88334E94948"
+        ethAccount: "0xCb58C536d3C32C06e1c0Ffa442952841eCDdeeda"
       }
     }
     return wrapped.run(event).then((response) => {

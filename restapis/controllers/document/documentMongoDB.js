@@ -597,7 +597,6 @@ async function queryVotedDocumentByCurator(args) {
   const pageSize = args.pageSize?args.pageSize: 20
   const skip = ((pageNo - 1) * pageSize);
   const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
-  const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
       applicant: applicant,
@@ -689,68 +688,6 @@ async function queryVotedDocumentByCurator(args) {
       popularAs: 0,
       popular: 0
     }
-  }, {
-    $lookup: {
-      from: 'VOTE',
-      localField: 'documentId',
-      foreignField: 'documentId',
-      as: 'documentVoteAmounts'
-    }
-  },{
-    $unwind: {
-      path: "$documentVoteAmounts",
-      includeArrayIndex: 'documentVoteAmountsIndex',
-      preserveNullAndEmptyArrays: true
-    }
-  }, {
-    $group: {
-      _id: {
-        documentId: "$_id", 
-        dateMillis: "$documentVoteAmounts.dateMillis"
-      },
-      deposit: { $first: "$deposit" },
-      documentId: { $first: "$documentId" },
-      accountId: { $first: "$accountId" },
-      author: { $first: "$author" },
-      documentName: { $first: "$documentName" },
-      title: { $first: "$title" },
-      seoTitle: {$first: "$seoTitle" },
-      desc: { $first: "$desc" },
-      tags: { $first: "$tags" },
-      created: { $first: "$created" },
-      latestPageview: {$first: '$latestPageview'},
-      latestPageviewList: {$first: '$latestPageviewList'},
-      latestVoteAmount: {$first: '$latestVoteAmount'},
-    }
-  }, {
-    $group: {
-      _id: "$_id.documentId",
-      deposit: { $first: "$deposit" },
-      documentId: { $first: "$documentId" },
-      accountId: { $first: "$accountId" },
-      author: { $first: "$author" },
-      documentName: { $first: "$documentName" },
-      title: { $first: "$title" },
-      seoTitle: { $first: "$seoTitle" },
-      desc: { $first: "$desc" },
-      tags: { $first: "$tags" },
-      created: { $first: "$created" },
-      latestPageview: {$first: {$ifNull: ['$latestPageview', 0 ]}},
-      latestPageviewList: {$first: {$ifNull: ['$latestPageviewList', [] ]}},
-      latestVoteAmount: {$first: {$ifNull: ['$latestVoteAmount', 0 ]}},
-      totalDepositDailyList: {
-        $addToSet: {
-          $cond: [
-            {"$gte": ["$_id.dateMillis", activeRewardVoteTimestamp]}
-            , {
-              year: "$_id.votedYear", 
-              month: "$_id.votedMonth", 
-              dayOfMonth: "$_id.votedDayOfMonth", 
-              deposit: "$totalDeposit"
-          }, null]
-        }
-      }
-    }
   }]
   
   const wapper = new MongoWapper(connectionString);
@@ -773,14 +710,15 @@ async function queryVotedDocumentByCurator(args) {
 
 
 /**
- * 최근(8일간)의 vote목록
+ * 최근(8일간)의  나의 vote목록 및 해당 문서의 총 vote amount가져오기 
  * @param  {} args
  */
 async function queryRecentlyVoteListForApplicant(args) {
-
+  console.log("queryRecentlyVoteListForApplicant", args);
   const applicant = args.applicant;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
-
+  const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
+  const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
       applicant: applicant,
@@ -788,60 +726,54 @@ async function queryRecentlyVoteListForApplicant(args) {
     }
   }, {
     $sort: {
-      documentId: 1,
       created: -1
     }
   }, {
     $group:{
+      _id: "$documentId",
+      applicant: {$first: "$applicant"}
+    }
+  }, {
+    $lookup: {
+      from: 'VOTE',
+      localField: '_id',
+      foreignField: 'documentId',
+      as: 'voteAmount'
+    }
+  }, {
+    $unwind: {
+      path: '$voteAmount',
+      includeArrayIndex: 'voteAmountListIndex',
+      preserveNullAndEmptyArrays: true
+    }
+  }, {
+    $match:{
+      "voteAmount.created": {$gte: activeRewardVoteTimestamp}
+    }
+  }, {
+    $group: {
       _id: {
-        documentId: "$documentId",
-        year: {$year: {$add: [new Date(0), "$created"]}}, 
-        month: {$month: {$add: [new Date(0), "$created"]}}, 
-        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+        documentId: "$_id", 
+        dateMillis: "$voteAmount.dateMillis"
       },
-      deposit: {$sum: "$deposit"}
+      totalDeposit: {$sum: "$voteAmount.deposit"}
     }
   }, {
-    $group:{
-      _id: "$_id.documentId",
-      depositList: {$addToSet: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth", deposit: "$deposit", timestamp: {$toLong:{$dateFromString: {dateString: {$concat:[{$toString: "$_id.year"}, "-", {$toString: "$_id.month"}, "-", {$toString: "$_id.dayOfMonth"}]}}}}}}
-    }
-  }, {
-    $lookup: {
-      from: TB_DOCUMENT_POPULAR,
-      localField: "_id",
-      foreignField: "_id",
-      as: "popularAs"
-    }
-  }, {
-    $lookup: {
-      from: TB_DOCUMENT_FEATURED,
-      localField: "_id",
-      foreignField: "_id",
-      as: "featuredAs"
-    }
-  }, {
-    $addFields: {
-      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
-      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
-    }
-  }, {
-    $addFields: {
-      latestPageview: "$popular.latestPageview",
-      latestPageviewList: "$popular.latestPageviewList",
-      latestVoteAmount: "$featured.latestVoteAmount",
-    }
-  }, {
-    $project: {
-      popularAs: 0,
-      featuredAs: 0
+    $group: {
+      _id: '$_id.documentId',
+      latestDepositDailyList: {
+        $push: {
+          dateMillis: '$_id.dateMillis',
+          deposit: '$totalDeposit'
+        }
+      }
     }
   }]
   
   const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log(TB_VOTE, "querypipeline", JSON.stringify(queryPipeline));
+    console.log("queryRecentlyVoteListForApplicant querypipeline", TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return resultList;
