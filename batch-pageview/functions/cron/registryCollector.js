@@ -1,13 +1,12 @@
 'use strict';
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
 const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 
 const contractName = "DocumentRegistry"
-const eventName = "Register";
-
+const eventName = process.env.stage==="alpha"?"RegisterDocument":"Register";
+console.log("eventName", process.env.stage, eventName);
 module.exports.handler = async (event, context, callback) => {
  
   const wapper = new MongoWapper(mongodb.endpoint);
