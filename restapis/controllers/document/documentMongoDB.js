@@ -926,7 +926,8 @@ async function getTrackingList(documentId, anonymous, include) {
 
   let queryPipeline = [{
     $match: {
-        id: documentId
+        id: documentId,
+        ev: {$in: ["view", "leave"]}
     }
   }, {
     $sort: {t: -1}
@@ -1056,6 +1057,7 @@ async function getTrackingInfo(documentId, cid, include) {
   const queryPipeline = [{
     $match: {
       id: documentId, 
+      ev: {$in: ["view", "leave"]},
       cid: cid
     }
   }, {
