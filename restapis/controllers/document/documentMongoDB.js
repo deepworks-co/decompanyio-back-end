@@ -607,14 +607,48 @@ async function queryVotedDocumentByCurator(args) {
         created: -1
     }
   }, {
-    $group:
-    {
-        _id: "$documentId",
-        deposit: {$sum: "$deposit"},
-        documentId : { $first: '$documentId' }
+    $group: {
+      _id: {
+        documentId: '$documentId',
+        year: {$year: {$add: [new Date(0), "$created"]}},
+        month: {$month: {$add: [new Date(0), "$created"]}},
+        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+      },
+      deposit: {
+        $sum: '$deposit'
+      },
+      documentId: {
+        $first: '$documentId'
+      },
+      created: {
+        $last: "$created"
+      }
     }
-  },
-  {
+  }, {
+    $group: {
+      _id: "$_id.documentId",
+      deposit: {
+        $sum: '$deposit'
+      },
+      documentId: {
+        $first: '$documentId'
+      },
+      created: {
+        $first: "$created"
+      },
+      depositList: {
+        $push: {
+          deposit: '$deposit',
+          created: "$created",
+          year: "$_id.year",
+          month: "$_id.month",
+          dayOfMonth: "$_id.dayOfMonth"
+        }
+      }
+    }
+  }, {
+    $sort: {created: -1}
+  }, {
     $lookup: {
       from: TB_DOCUMENT,
       localField: "documentId",
@@ -686,7 +720,9 @@ async function queryVotedDocumentByCurator(args) {
       documentInfo: 0,
       authorAs: 0,
       popularAs: 0,
-      popular: 0
+      popular: 0,
+      featuredAs: 0,
+      featured: 0
     }
   }]
   
