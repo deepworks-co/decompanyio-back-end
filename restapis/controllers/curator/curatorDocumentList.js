@@ -55,7 +55,7 @@ module.exports.handler = async (event, context, callback) => {
   const result = results[0];
   const resultList = result.resultList?result.resultList:[];
   const totalViewCountInfo = results[1]
-  const latestVoteList = results[2];
+  const latestRewardVoteList = results[2];
 
 
   return JSON.stringify({
@@ -64,7 +64,7 @@ module.exports.handler = async (event, context, callback) => {
     count: resultList.length,
     pageNo: pageNo,
     totalViewCountInfo: totalViewCountInfo,
-    latestVoteList: latestVoteList
+    latestRewardVoteList: latestRewardVoteList
   });
   
   
