@@ -203,7 +203,8 @@ module.exports = class ContractWapper {
         abi: selectedAbi,
         decoded: decoded,
         //created: block.timestamp * 1000,
-        log: log
+        log: log,
+        contractAddress: contractAddress
       }
     });
 
