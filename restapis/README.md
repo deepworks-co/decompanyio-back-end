@@ -129,6 +129,9 @@ sls create function -f documentDownload --handler controllers/document/documentD
 
 sls create function -f verifyEmailRequest --handler controllers/email/verifyEmailRequest.handler --httpEvent "get /api/email/verifyemailrequest"
 sls create function -f verifyEmail --handler controllers/email/verifyEmail.handler --httpEvent "get /api/email/verifyemail"
+
+sls create function -f bountyRequest --handler controllers/bounty/bountyRequest.handler --httpEvent "get /api/bounty/request"
+sls create function -f bountyState --handler controllers/bounty/bountyState.handler --httpEvent "get /api/bounty/state"
 ```
 
 

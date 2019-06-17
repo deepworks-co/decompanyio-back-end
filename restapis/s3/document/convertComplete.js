@@ -203,26 +203,26 @@ async function convertJpeg(from, to, size){
   
         calcsize = new_size.height;
       }
-
+      
+      const extractSize= {left: (new_size.width/2 - 160), top: (new_size.height/2 - 120), width: 320, height: 239};
+      //const extractSize= {left: 0, top: 0, width: 100, height: 100};
+      console.log("thumb", "calcsize", calcsize, "new_size", new_size, "extractSize", extractSize);
       output = await sharp(input)
-      .resize(calcsize, calcsize, {
+      .resize(new_size.width, new_size.height, {
         fit: sharp.fit.inside,
         withoutEnlargement: true
       })
       .jpeg({
         quality: QUALITY
       })
+      //.extract(extractSize)
       .toBuffer();
-      output = await sharp(output).extract({left: new_size.width/2 - 160, top: new_size.height/2 - 120, width: 320, height: 240}).toBuffer()
     } else {
       return await Promise.resolve(true);
     }
   }
 
   console.log(size, dimensions, new_size, calcsize);
-
-  
-
 
   return await putS3Object(toBucket, toPrefix, output, "image/jpeg");
 }

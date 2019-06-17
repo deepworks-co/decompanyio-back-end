@@ -53,8 +53,10 @@ db["SEO-FRIENDLY"].createIndex({{created: -1}})
 
 ```javascript
 db.createCollection("TRACKING");
+db["TRACKING"].createIndex({id: 1, ev: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
+db["TRACKING"].createIndex({id: 1, cid: 1, t: 1})
 ```
 
 ## TRACKING-USER
@@ -163,4 +165,12 @@ db["EVENT-WRITEPAGEVIEW"].createIndex( { blockNumber: -1 })
 db.createCollection("SEND-EMAIL");
 db["SEND-EMAIL"].createIndex( { email: 1, created: 1 });
 db["SEND-EMAIL"].createIndex( { email: 1, emailType: 1 }, {unique: true});
+```
+
+
+## BOUNTY
+
+```javascript
+db.createCollection("BOUNTY");
+db["BOUNTY"].createIndex( { accountId: 1, ethAccount: 1, bountyType: 1, created: -1});
 ```

@@ -596,7 +596,7 @@ async function queryVotedDocumentByCurator(args) {
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const pageSize = args.pageSize?args.pageSize: 20
   const skip = ((pageNo - 1) * pageSize);
-
+  const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
   const queryPipeline = [{
     $match: {
       applicant: applicant,
@@ -607,14 +607,48 @@ async function queryVotedDocumentByCurator(args) {
         created: -1
     }
   }, {
-    $group:
-    {
-        _id: "$documentId",
-        deposit: {$sum: "$deposit"},
-        documentId : { $first: '$documentId' }
+    $group: {
+      _id: {
+        documentId: '$documentId',
+        year: {$year: {$add: [new Date(0), "$created"]}},
+        month: {$month: {$add: [new Date(0), "$created"]}},
+        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+      },
+      deposit: {
+        $sum: '$deposit'
+      },
+      documentId: {
+        $first: '$documentId'
+      },
+      created: {
+        $last: "$created"
+      }
     }
-  },
-  {
+  }, {
+    $group: {
+      _id: "$_id.documentId",
+      deposit: {
+        $sum: '$deposit'
+      },
+      documentId: {
+        $first: '$documentId'
+      },
+      created: {
+        $first: "$created"
+      },
+      depositList: {
+        $push: {
+          deposit: '$deposit',
+          created: "$created",
+          year: "$_id.year",
+          month: "$_id.month",
+          dayOfMonth: "$_id.dayOfMonth"
+        }
+      }
+    }
+  }, {
+    $sort: {created: -1}
+  }, {
     $lookup: {
       from: TB_DOCUMENT,
       localField: "documentId",
@@ -686,7 +720,9 @@ async function queryVotedDocumentByCurator(args) {
       documentInfo: 0,
       authorAs: 0,
       popularAs: 0,
-      popular: 0
+      popular: 0,
+      featuredAs: 0,
+      featured: 0
     }
   }]
   
@@ -710,14 +746,15 @@ async function queryVotedDocumentByCurator(args) {
 
 
 /**
- * 최근(8일간)의 vote목록
+ * 최근(8일간)의  나의 vote목록 및 해당 문서의 총 vote amount가져오기 
  * @param  {} args
  */
 async function queryRecentlyVoteListForApplicant(args) {
-
+  console.log("queryRecentlyVoteListForApplicant", args);
   const applicant = args.applicant;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
-
+  const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
+  const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
       applicant: applicant,
@@ -725,60 +762,54 @@ async function queryRecentlyVoteListForApplicant(args) {
     }
   }, {
     $sort: {
-      documentId: 1,
       created: -1
     }
   }, {
     $group:{
+      _id: "$documentId",
+      applicant: {$first: "$applicant"}
+    }
+  }, {
+    $lookup: {
+      from: 'VOTE',
+      localField: '_id',
+      foreignField: 'documentId',
+      as: 'voteAmount'
+    }
+  }, {
+    $unwind: {
+      path: '$voteAmount',
+      includeArrayIndex: 'voteAmountListIndex',
+      preserveNullAndEmptyArrays: true
+    }
+  }, {
+    $match:{
+      "voteAmount.created": {$gte: activeRewardVoteTimestamp}
+    }
+  }, {
+    $group: {
       _id: {
-        documentId: "$documentId",
-        year: {$year: {$add: [new Date(0), "$created"]}}, 
-        month: {$month: {$add: [new Date(0), "$created"]}}, 
-        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$created"]}}
+        documentId: "$_id", 
+        dateMillis: "$voteAmount.dateMillis"
       },
-      deposit: {$sum: "$deposit"}
+      totalDeposit: {$sum: "$voteAmount.deposit"}
     }
   }, {
-    $group:{
-      _id: "$_id.documentId",
-      depositList: {$addToSet: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth", deposit: "$deposit", timestamp: {$toLong:{$dateFromString: {dateString: {$concat:[{$toString: "$_id.year"}, "-", {$toString: "$_id.month"}, "-", {$toString: "$_id.dayOfMonth"}]}}}}}}
-    }
-  }, {
-    $lookup: {
-      from: TB_DOCUMENT_POPULAR,
-      localField: "_id",
-      foreignField: "_id",
-      as: "popularAs"
-    }
-  }, {
-    $lookup: {
-      from: TB_DOCUMENT_FEATURED,
-      localField: "_id",
-      foreignField: "_id",
-      as: "featuredAs"
-    }
-  }, {
-    $addFields: {
-      popular: { $arrayElemAt: [ "$popularAs", 0 ] },
-      featured: { $arrayElemAt: [ "$featuredAs", 0 ] }
-    }
-  }, {
-    $addFields: {
-      latestPageview: "$popular.latestPageview",
-      latestPageviewList: "$popular.latestPageviewList",
-      latestVoteAmount: "$featured.latestVoteAmount",
-    }
-  }, {
-    $project: {
-      popularAs: 0,
-      featuredAs: 0
+    $group: {
+      _id: '$_id.documentId',
+      latestDepositDailyList: {
+        $push: {
+          dateMillis: '$_id.dateMillis',
+          deposit: '$totalDeposit'
+        }
+      }
     }
   }]
   
   const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log(TB_VOTE, "querypipeline", JSON.stringify(queryPipeline));
+    console.log("queryRecentlyVoteListForApplicant querypipeline", TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return resultList;
@@ -895,7 +926,8 @@ async function getTrackingList(documentId, anonymous, include) {
 
   let queryPipeline = [{
     $match: {
-        id: documentId
+        id: documentId,
+        ev: {$in: ["view", "leave"]}
     }
   }, {
     $sort: {t: -1}
@@ -1025,6 +1057,7 @@ async function getTrackingInfo(documentId, cid, include) {
   const queryPipeline = [{
     $match: {
       id: documentId, 
+      ev: {$in: ["view", "leave"]},
       cid: cid
     }
   }, {
@@ -1032,11 +1065,10 @@ async function getTrackingInfo(documentId, cid, include) {
   }, {
     $group: {
       _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
-      cid : { $first: '$cid' },
       sid : { $first: '$sid' },
       viewTimestamp: {$max: "$t"},
       viewTimestampMin: {$min: '$t'},
-      viewTracking: { $addToSet: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+      viewTracking: { $push: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
       viewTrackingCount: {$sum: 1},
       maxPageNo: {$max: "$n"},
       pages: {$addToSet: "$n"}

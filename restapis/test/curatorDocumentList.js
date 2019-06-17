@@ -14,9 +14,9 @@ describe('curatorDocumentList', () => {
 
   it('implement tests here', () => {
     const event = {
-      body: {
+      query: {
         pageNo: 1,
-        accountId: "0xf319E1a032338183c4fDC024F3e3845497dB3152"
+        ethAccount: "0xCb58C536d3C32C06e1c0Ffa442952841eCDdeeda"
       }
     }
     return wrapped.run(event).then((response) => {

@@ -1,7 +1,6 @@
 'use strict';
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 
@@ -31,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
     const bulk = wapper.getUnorderedBulkOp(tableName);
 
     resultList.forEach((result, index)=>{
-      const {decoded, abi, created, log} = result;
+      const {decoded, abi, created, log, contractAddress} = result;
       console.log(`Get Event Logs ${index} :`, result, );
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
@@ -52,6 +51,7 @@ module.exports.handler = async (event, context, callback) => {
         updated: now.getTime(),
         updatedDate: now,
         contractName: contractName,
+        contractAddress: contractAddress,
         eventName: eventName,
         log: log,
         decoded: decoded

@@ -1,0 +1,168 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: bounty-service # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-west-1
+  stage: ${opt:stage, 'dev'}
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+  tags:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - logs:*
+        - events:*
+        - kms:*
+        - ses:*
+      Resource: "*"   
+  exclude:
+    - .gitignore
+    - .env
+
+functions:
+
+  auth:
+    handler: src/auth/auth.handler
+  
+  bountyState:
+    handler: src/api/bountyState.handler
+    events:
+      - http: 
+          method: get
+          path: /api/bounty/state
+          authorizer: auth
+          cors: true      
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/bounty/request"
+            description: "/api/bounty/request"
+            queryParams:
+              - name: ethAccount
+                description: ethAccount
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponseModel"
+  bountyRequest:
+    handler: src/api/bountyRequest.handler
+    events:
+      - http:  
+          path: /api/bounty/request
+          method: get
+          authorizer: auth
+          cors: true      
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+          documentation:
+            summary: "/api/bounty/request"
+            description: "/api/bounty/request"
+            queryParams:
+              - name: ethAccount
+                description: ethAccount
+                type: string
+                required: true
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+                responseModels:
+                  "application/json": "DefaultResponseModel"
+
+resources:
+  Resources:
+  
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+
+custom:
+  documentation:
+    api:
+      info:
+        version: '1'
+        title: Rest API
+        description: Bounty Service
+        termsOfService: https://www.decompany.io
+        contact:
+          name: Jay
+          email: jay@decompany.io
+        license:
+          name: Decompany
+          url: https://www.decompany.io
+
+    models:
+      -
+        name: "ErrorResponseModel"
+        description: "This is an error"
+        contentType: "application/json"
+        schema: ${file(models/error.json)}
+      -
+        name: "DefaultResponseModel"
+        description: "default response"
+        contentType: "application/json"
+        schema: ${file(models/default_response.json)}
+plugins:
+  - serverless-mocha-plugin
+  - serverless-aws-documentation

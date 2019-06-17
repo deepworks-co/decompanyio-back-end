@@ -30,6 +30,10 @@ provider:
     region: ${self:provider.region}
     servicename: ${self:service.name}
     warmup: ${file(./resources/app-properties.${self:provider.stage}.json):warmupConfig.enable}
+  tags:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"

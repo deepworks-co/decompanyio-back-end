@@ -12,6 +12,7 @@ sprint-qa-03]$ git clone https://github.com/decompanyio/decompanyio-back-end.git
 ```shell
 npm install --save-dev serverless-mocha-plugin
 npm install ../decompany-modules/decompany-common-utils/
+npm install ../decompany-modules/decompany-app-properties/
 npm install mongojs
 npm install aws-sdk
 npm install web3

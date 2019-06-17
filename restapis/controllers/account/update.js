@@ -15,6 +15,14 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("parameter is invalid");
   }
 
+  if(body.username){
+    //body.username = body.username.replace(/</g,"&lt;");
+    //body.username = body.username.replace(/>/g,"&gt;");
+    body.username = body.username.replace(/[^a-z0-9 _-]/gi, '-').toLowerCase();
+  }
+
+  
+
   const accountService = new AccountService();
   const result = await accountService.updateUserInfo({
     id: principalId,

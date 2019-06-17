@@ -1,5 +1,5 @@
 'use strict';
-const { region, warmupConfig } = require('../resources/config.js').APP_PROPERTIES();
+const { region, warmupConfig } = require('decompany-app-properties');
 const aws = require("aws-sdk");
 const lambda = new aws.Lambda({region: region}); 
 

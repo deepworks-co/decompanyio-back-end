@@ -25,7 +25,12 @@
         "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
         "VERIFY_EMAIL": "VERIFY-EMAIL",
-        "SEND_EMAIL": "SEND-EMAIL"
+        "SEND_EMAIL": "SEND-EMAIL",
+        "BOUNTY": "BOUNTY",
+        "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
+        "EVENT_REGISTRY": "EVENT-REGISTRY",
+        "EVENT_BLOCK": "EVENT-BLOCK",
+        "SITEMAP": "SITEMAP"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -40,7 +45,8 @@
     },
     "applicationConfig": {
         "mainHost": "https://www.polarishare.com",
-        "activeVoteDays": 3
+        "activeVoteDays": 3,
+        "activeRewardVoteDays": 7
     },
     "sesConfig": {
         "region": "us-east-1",
@@ -49,7 +55,7 @@
         "templates": {
             "trackingConfirm": {
                 "title": "Join Polaris Share",
-                "templatePath": "../../template/tracking/confirm_email.dev.html"
+                "templatePath": "./template/tracking/confirm_email.alpha.html"
             },
             "verifyEmail": {
                 "title": "Please verify your email address",
@@ -76,5 +82,25 @@
             "key": "alpha_enc_prikey"
         },
         "index": "4"
+    },
+    "warmupConfig": {
+        "enable": true,
+        "prefix": "backend-restapis-alpha-",
+        "functions": [
+            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
+            {"name": "curatorSummary", "aliase": "prod"},
+            {"name": "analyticsList", "aliase": "prod"},
+            {"name": "tagList", "aliase": "prod"},
+            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
+            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
+            {"name": "accountEthereumSync", "aliase": "prod"},
+            {"name": "profileGet", "aliase": "prod"},
+            {"name": "accountGet", "aliase": "prod"},
+            {"name": "documentList", "concurrency": 5, "aliase": "prod"},
+            {"name": "documentInfo", "concurrency": 5, "aliase": "prod"},
+            {"name": "trackingCollect", "concurrency": 5, "aliase": "prod"},
+            {"name": "trackingList", "aliase": "prod"},
+            {"name": "trackingInfo", "aliase": "prod"}
+        ]
     }
 }

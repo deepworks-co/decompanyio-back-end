@@ -1,7 +1,7 @@
 'use strict';
 
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 const LIMIT = 5000;
@@ -45,6 +45,8 @@ module.exports.handler = async (event, context, callback) => {
 
     console.log("length (resultList, documentIds, pageviews)", resultList.length, documentIds.length, pageviews.length);
     console.log("docIds", docIds);
+    console.log("documentIds", documentIds);
+    console.log("pageviews", pageviews);
     
     if(resultList.length !== documentIds.length || documentIds.length !== pageviews.length){
       throw new Error("result list aggreagation fail...", resultList.length, documentIds.length, pageviews.length);

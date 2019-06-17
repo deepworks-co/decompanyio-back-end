@@ -13,7 +13,12 @@ describe('accountGet', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      
+    }
+    return wrapped.run(event).then((response) => {
+      console.log("response", response);
       expect(response).to.not.be.empty;
     });
   });
