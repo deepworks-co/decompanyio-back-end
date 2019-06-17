@@ -45,6 +45,8 @@ module.exports.handler = async (event, context, callback) => {
 
     console.log("length (resultList, documentIds, pageviews)", resultList.length, documentIds.length, pageviews.length);
     console.log("docIds", docIds);
+    console.log("documentIds", documentIds);
+    console.log("pageviews", pageviews);
     
     if(resultList.length !== documentIds.length || documentIds.length !== pageviews.length){
       throw new Error("result list aggreagation fail...", resultList.length, documentIds.length, pageviews.length);

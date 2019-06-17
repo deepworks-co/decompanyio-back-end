@@ -103,7 +103,7 @@ module.exports = class ContractWapper {
    * @param  {} date
    * @param  {} confirmPageview
    */
-  sendTransaction(gasPrice, gasLimit, nonce, encodeABI, contractAddress) {
+  async sendTransaction(gasPrice, gasLimit, nonce, encodeABI, contractAddress) {
     return new Promise((resolve, reject)=>{
         //creating raw tranaction
       const rawTransaction = {
@@ -115,7 +115,7 @@ module.exports = class ContractWapper {
         "data": encodeABI ,
         "nonce": this.web3.utils.toHex(nonce)
       }
-      console.log("sendTransactionConfirmPageView", {rawTransaction});
+      console.log("sendTransaction", {rawTransaction});
       //creating tranaction via ethereumjs-tx
       const transaction = new Tx(rawTransaction);
       //signing transaction with private key
