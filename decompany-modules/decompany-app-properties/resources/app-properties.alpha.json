@@ -55,7 +55,7 @@
         "templates": {
             "trackingConfirm": {
                 "title": "Join Polaris Share",
-                "templatePath": "../../template/tracking/confirm_email.dev.html"
+                "templatePath": "./template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
                 "title": "Please verify your email address",

@@ -26,7 +26,11 @@
         "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
         "VERIFY_EMAIL": "VERIFY-EMAIL",
         "SEND_EMAIL": "SEND-EMAIL",
-        "BOUNTY": "BOUNTY"
+        "BOUNTY": "BOUNTY",
+        "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
+        "EVENT_REGISTRY": "EVENT-REGISTRY",
+        "EVENT_BLOCK": "EVENT-BLOCK",
+        "SITEMAP": "SITEMAP"        
     },
     "sqsConfig": {
         "region": "us-west-1",
