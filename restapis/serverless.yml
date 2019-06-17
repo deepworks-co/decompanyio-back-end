@@ -33,6 +33,10 @@ provider:
     AUTH0_ZAPIERCONNECTOR_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_ZAPIERCONNECTOR_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
     NODE_PATH: "./:/opt/node_modules"
+  tags:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"

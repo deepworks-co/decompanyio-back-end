@@ -29,6 +29,10 @@ provider:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
     servicename: ${self:service.name}
+  tags:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
