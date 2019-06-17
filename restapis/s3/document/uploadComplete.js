@@ -10,7 +10,7 @@ var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
  * @event s3
  *  - prefix : FILE/
  */
-exports.handler = function(event, context) {
+exports.handler = function(event, context, callback) {
   
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
