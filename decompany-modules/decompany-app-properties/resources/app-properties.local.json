@@ -80,5 +80,25 @@
             "key": "alpha_enc_prikey"
         },
         "index": "4"
+    },
+    "warmupConfig": {
+        "enable": true,
+        "prefix": "backend-restapis-dev-",
+        "functions": [
+            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
+            {"name": "curatorSummary", "aliase": "prod"},
+            {"name": "analyticsList", "aliase": "prod"},
+            {"name": "tagList", "aliase": "prod"},
+            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
+            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
+            {"name": "accountEthereumSync", "aliase": "prod"},
+            {"name": "profileGet", "aliase": "prod"},
+            {"name": "accountGet", "aliase": "prod"},
+            {"name": "documentList", "concurrency": 5, "aliase": "prod"},
+            {"name": "documentInfo", "aliase": "prod"},
+            {"name": "trackingCollect", "aliase": "prod"},
+            {"name": "trackingList", "aliase": "prod"},
+            {"name": "trackingInfo", "aliase": "prod"}
+        ]
     }
 }
