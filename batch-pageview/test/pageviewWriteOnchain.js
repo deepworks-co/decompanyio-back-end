@@ -15,7 +15,7 @@ describe('pageviewWriteOnchain', () => {
   it('implement tests here', () => {
 
     const event = {
-      blockchainTimestamp: 1558051200000
+      blockchainTimestamp: 1560816000000
     }
 
     return wrapped.run(event).then((response) => {
