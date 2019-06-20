@@ -51,6 +51,7 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     let source = {
         Bucket: bucket,
         Key: key,
+        ACL: "public-read",
         Body: Buffer.from(text, 'binary')
     };
     let sendParams = {}
@@ -74,6 +75,7 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     return s3.putObject({
         Bucket: bucket,
         Key: key,
+        ACL: "public-read",
         ContentType: contentType,
         Expires: expires,
         Body: Buffer.from(text, 'binary')

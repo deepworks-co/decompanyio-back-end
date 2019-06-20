@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
@@ -45,8 +45,14 @@ async function run(event){
     const filename = keys[2];
     
     console.log("convertComplete start", key, prefix, documentId, filename);
-    if("result.txt" == filename){       
-      return runConvertComplete(bucket, key, documentId);
+    if("result.txt" == filename){
+      const document = await getDocument(documentId);
+      //console.log(document);
+      if(!document){
+        throw new Error("documet is not exist, " + documentId);
+      }
+      
+      return runConvertComplete(bucket, key, document);
     } else if("text.json" == filename) {
         //아무것도 안함
     } else if("1200X1200" === filename){
@@ -89,22 +95,16 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, documentId){
-
-  console.log(bucket, key, documentId);
+function runConvertComplete(bucket, key, document){
+  const documentId = document._id;
+  console.log(bucket, key, document);
   const totalPagesPromise = getTotalPages(bucket, key);
-  const getDocumentPromise = getDocument(documentId);
-
+  
   return new Promise((resolve, reject) => {
-    Promise.all([totalPagesPromise, getDocumentPromise]).then((data) => {       
+    Promise.all([totalPagesPromise]).then((data) => {       
       //console.log(data);
       let totalPages = -1;
       const resultTxtFile = data[0];
-      const document = data[1];
-      console.log(document);
-      if(!document){
-        throw new Error("documet is not exist, " + documentId);
-      }
 
       if(resultTxtFile){
         totalPages = resultTxtFile.Body.toString('ascii');
@@ -143,23 +143,46 @@ async function getDocument(documentId){
   
   //throw new Error("error getDocument() : " + documentId);
   const wapper = new MongoWapper(mongodb.endpoint);
-  return await wapper.findOne(TABLE_NAME, {_id: documentId});
+  try{
+    const doc = await wapper.aggregate(TABLE_NAME, [{
+      $match: {_id: documentId}
+    }, {
+      $lookup: {
+        from: 'USER',
+        localField: 'accountId',
+        foreignField: '_id',
+        as: 'author'
+      }
+    }, {
+      $unwind: {
+        path: "$author",
+        preserveNullAndEmptyArrays: true
+      }
+    }]);
+    return doc[0];
+  } catch(ex){
+    console.log(ex);
+  }finally{
+    wapper.close();
+  }
 
 }
 
 async function updateConvertCompleteDocument(documentId, totalPages){
   const wapper = new MongoWapper(mongodb.endpoint);
-
-  const document = await wapper.findOne(TABLE_NAME, {_id: documentId});
-
-  if(document){
-    document.state = "CONVERT_COMPLETE";
-    document.totalPages = Number(totalPages);
-
-    return await wapper.save(TABLE_NAME, document);
-  } else {
-    console.log("document doesn't found", document);
+  try{
+    const updateDoc = {};
+    updateDoc.state = "CONVERT_COMPLETE";
+    updateDoc.totalPages = Number(totalPages);
+      
+    return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    
+  } catch(ex) {
+    console.log(ex);
+  } finally{
+    wapper.close();
   }
+  
 
 }
 
@@ -265,5 +288,10 @@ function putS3Object(bucket, key, body, contentType){
   
      });
   })
+  
+}
+
+
+  
   
 }
