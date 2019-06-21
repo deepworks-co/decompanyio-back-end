@@ -180,7 +180,7 @@ async function updateStatPageviewDaily(resultList){
     item.blockchainDate = blockchainDate;
     item.blockchainTimestamp = utils.getBlockchainTimestamp(blockchainDate);    
     console.log("updateStatPageviewDaily bulk index", index, JSON.stringify(item));
-    bulk.find({_id: item._id}).upsert().replaceOne(item);
+    bulk.find({_id: item._id}).upsert().updateOne({$set: item});
   });
   console.log("bulk ops", bulk.tojson());
   return await wapper.execute(bulk);
