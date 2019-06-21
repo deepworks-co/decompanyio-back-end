@@ -3,6 +3,7 @@ const { mongodb, tables, s3Config, applicationConfig } = require('decompany-app-
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
+const request = require('request');
 
 var AWS = require("aws-sdk");
 AWS.config.update({
@@ -51,8 +52,9 @@ async function run(event){
       if(!document){
         throw new Error("documet is not exist, " + documentId);
       }
-      
-      return runConvertComplete(bucket, key, document);
+      const shortUrl = await getTinyUrl(document);
+      console.log("shortUrl", shortUrl);
+      return runConvertComplete(bucket, key, document, shortUrl);
     } else if("text.json" == filename) {
         //아무것도 안함
     } else if("1200X1200" === filename){
@@ -95,7 +97,7 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, document){
+function runConvertComplete(bucket, key, document, shortUrl){
   const documentId = document._id;
   console.log(bucket, key, document);
   const totalPagesPromise = getTotalPages(bucket, key);
@@ -114,7 +116,7 @@ function runConvertComplete(bucket, key, document){
       console.log("documentId", documentId, "totalPages", totalPages);
       if(totalPages>0 && documentId) {
   
-        updateConvertCompleteDocument(documentId, totalPages).then((data) =>{
+        updateConvertCompleteDocument(documentId, totalPages, shortUrl).then((data) =>{
           console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
           resolve({message: "SUCCESS",
                   documentId: documentId});
@@ -168,12 +170,13 @@ async function getDocument(documentId){
 
 }
 
-async function updateConvertCompleteDocument(documentId, totalPages){
+async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
     const updateDoc = {};
     updateDoc.state = "CONVERT_COMPLETE";
     updateDoc.totalPages = Number(totalPages);
+    if(shortUrl) updateDoc.shortUrl = shortUrl;
       
     return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
     
@@ -291,7 +294,36 @@ function putS3Object(bucket, key, body, contentType){
   
 }
 
-
+async function getTinyUrl(document){
   
+  const author = document.author;
+  
+  return new Promise((resolve, reject)=>{
+    
+    
+    const prefix = author.username?author.username:author.email;
+    let host = applicationConfig.mainHost;
+    if(!host){
+      throw new Error("applicationConfig.mainHost is undefined");
+    }
+    if(host.slice(-1) !== "/"){
+      host += "/";
+    }
+    const url = `${host}${encodeURIComponent(prefix)}/${document.seoTitle}`;
+    console.log("long url", url);
+    
+    
+    request.post({url : "https://tinyurl.com/create.php", form: {url: url}}, function (error, response, body){
+      if(error){
+        reject(error);
+      }else {
+        const regex = /(https?:\/\/tinyurl.com\/)([a-z0-9\w]+\.*)+[a-z0-9]{2,4}/gi;
+        const list = body.match(regex).reduce(function(a,b){if(a.indexOf(b)<0)a.push(b);return a;},[]);
+          
+        resolve(list[0]);
+      }
+    })
+    
+  }) 
   
 }

@@ -37,6 +37,7 @@ npm install --save-dev serverless-prune-plugin
 npm install mongojs
 npm install json-2-csv
 npm install buffer-image-size
+npm install request
 npm --prefix ./opt install sharp
 ```
 
