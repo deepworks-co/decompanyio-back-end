@@ -29,7 +29,7 @@ module.exports.handler = async (event, context, callback) => {
     }
     const author = document.author;
     let domain = applicationConfig.mainHost;
-    if(domain.lastIndexOf("/")<0){
+    if(domain.slice(-1)!=="/"){
       domain += "/";
     }
     const username = author.username;
