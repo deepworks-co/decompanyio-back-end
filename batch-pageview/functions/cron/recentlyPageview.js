@@ -2,10 +2,10 @@
 const {utils, MongoWapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig } = require('decompany-app-properties');
 
-const wapper = new MongoWapper(mongodb.endpoint);
+
 
 /**
- * @description 오늘 (00:00) 현재까지 (최대 24:00) pageview 집계 및 추가 작업
+ * @description 오늘 (00:00) 현재까지 (최대 24:00) pageview, totalpage, totalpageviewsquare 갱신작업
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
  *  - 5분마다 동작
  * @function
@@ -19,16 +19,14 @@ module.exports.handler = async (event, context, callback) => {
   const end = utils.getBlockchainTimestamp(tomorrow);
 
   console.log("query startDate", new Date(start), "~", new Date(end));
-
-  const totalPageviewResult = await aggregatePageviewTotalCountAndSave(start, end);
-  console.log("aggregatePageviewTotalCount result", totalPageviewResult);
     
   const resultList = await aggregatePageview(start, end);
-  console.log("Daily", new Date(start), "aggregatePageview Count", resultList?resultList.length:0);
+  console.log("Recently", new Date(start), "aggregatePageview Count", resultList?resultList.length:0);
   console.log("aggregatePageview resultList count", resultList.length);
 
-  const updateResult = await updateStatPageviewDaily(resultList);
-  console.log("updateStatPageviewRecently(Today) Success", JSON.stringify(updateResult));
+  const totalpageview = await aggregatePageviewTotalCountForOnchainAndSave(start, end);
+  console.log("aggregatePageviewTotalCountForOnchainAndSave Result", totalpageview);
+  
 
   return "success";
 }
@@ -84,40 +82,6 @@ function getQueryPipeline(startTimestamp, endTimestamp){
 
   return queryPipeline;
 }
-/**
- * @param  {} startTimestamp
- * @param  {} endTimestamp
- */
-async function aggregatePageviewTotalCountAndSave(startTimestamp, endTimestamp) {
-  const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp)
-  queryPipeline.push({
-    $group: {
-      _id: {
-        year: "$_id.year", 
-        month: "$_id.month", 
-        dayOfMonth: "$_id.dayOfMonth",
-      },
-      totalPageviewSquare: {$sum: {$pow: ["$pageview", 2]}},
-      totalPageview: {$sum: "$pageview"},
-      count: {$sum: 1}
-    }
-  });
-  //console.log("queryPipeline", queryPipeline);
-  const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
-    allowDiskUse: true
-  });
-  console.log("aggregatePageviewTotalCountAndSave", resultList);
-  const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
-  resultList.forEach((item, index)=>{
-    
-    item.blockchainTimestamp = Date.UTC(item._id.year, item._id.month-1, item._id.dayOfMonth);
-    item.blockchainDate = new Date(item.blockchainTimestamp);
-    item.created = Date.now();
-    bulk.find({_id: item._id}).upsert().replaceOne(item);
-  });
-  
-  return  await wapper.execute(bulk); 
-}
 
 /**
  * @description
@@ -125,44 +89,116 @@ async function aggregatePageviewTotalCountAndSave(startTimestamp, endTimestamp) 
  * @param  {} endTimestamp
  */
 async function aggregatePageview(startTimestamp, endTimestamp){
-    
-  const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
 
-  const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline, {
-    allowDiskUse: true
-  });
+    const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline);
 
-  return resultList;
+    const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
+    resultList.forEach((item, index)=>{
+      item.created = Date.now();
+      item.blockchainTimestamp = startTimestamp;
+      item.blockchainDate = new Date(item.blockchainTimestamp);
+         
+      console.log("updateStatPageviewDaily bulk index", index, JSON.stringify(item));
+      bulk.find({_id: item._id}).upsert().updateOne({$set: item});
+    });
+    console.log("bulk ops", bulk.tojson());
+    const executeResults = await wapper.execute(bulk);
+    console.log("executeResults", executeResults);
+
+    return resultList;
+  } catch(ex){
+    console.log(ex);
+    throw ex;
+  } finally{
+    wapper.close();
+  }
+  
 }
 
-/**
- * @param  {} resultList
- * [
- *   { _id: 
- *    { year: 2019,
- *      month: 2,
- *      dayOfMonth: 15,
- *      id: '49dac043231045829ccca088eadd1f85' },
- *   pageview: 1,
- *   year: 2019,
- *   month: 2,
- *   dayOfMonth: 15,
- *   documentId: '49dac043231045829ccca088eadd1f85',
- *   created: 1552620678519,
- *   statDate: 2019-02-15T00:00:00.000Z },
- *   ....
- * ]
- */
-async function updateStatPageviewDaily(resultList){
-  const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
-  resultList.forEach((item, index)=>{
-    item.created = Date.now();
-    const blockchainDate = new Date(Date.UTC(item.year, item.month-1, item.dayOfMonth));
-    item.blockchainDate = blockchainDate;
-    item.blockchainTimestamp = utils.getBlockchainTimestamp(blockchainDate);    
-    console.log("updateStatPageviewDaily bulk index", index, JSON.stringify(item));
-    bulk.find({_id: item._id}).upsert().replaceOne(item);
-  });
-  console.log("bulk ops", bulk.tojson());
-  return await wapper.execute(bulk);
+
+async function aggregatePageviewTotalCountForOnchainAndSave(startTimestamp, endTimestamp){
+
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    const queryPipeline = [{
+      $match: { 
+        blockchainTimestamp: {$gte: startTimestamp, $lt: endTimestamp}
+      }
+    }, {
+      $lookup: {
+        from: tables.EVENT_REGISTRY,
+        localField: "documentId",
+        foreignField: "documentId",
+        as: "RegistryAs"
+      }
+    }, {
+      $unwind: {
+        path: "$RegistryAs",
+        "preserveNullAndEmptyArrays": true
+      }
+    }, {
+      $match: {
+        "RegistryAs": { "$exists": true, "$ne": null }
+      }
+    }, {
+      $addFields: {
+        blockNumber: "$RegistryAs.blockNumber"
+      }
+    }, {
+      $lookup: {
+        from: 'EVENT-BLOCK',
+        localField: 'RegistryAs.blockNumber',
+        foreignField: '_id',
+        as: 'BlockAs'
+      }
+    }, {
+      $unwind: {
+        path: '$BlockAs',
+        preserveNullAndEmptyArrays: true
+      }
+    }, {
+      $addFields: {
+        minus: {
+          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
+        },
+        blockCreated: "$BlockAs.created",
+        blockCreatedDate: "$BlockAs.createdDate"
+      }
+    }, {
+      $match: {
+        minus: {$gt: -86400000}
+      }
+    }, {
+      $group: {
+        _id: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth"},
+        totalPageview: {$sum: "$pageview"},
+        totalPageviewSquare: {$sum: {$pow: ["$pageview", 2]}},
+        count: {$sum: 1}
+      }
+    }]
+    console.log(tables.STAT_PAGEVIEW_DAILY, JSON.stringify(queryPipeline));
+    const resultList = await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+
+
+    const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
+    resultList.forEach((item, index)=>{
+      
+      item.blockchainTimestamp = startTimestamp;
+      item.blockchainDate = new Date(item.blockchainTimestamp);
+      item.created = Date.now();
+      bulk.find({_id: item._id}).upsert().updateOne({$set: item});
+    });
+    console.log("aggregatePageviewTotalCountForOnchain bulk ops", bulk.tojson());
+    const bulkResult = await wapper.execute(bulk); 
+    console.log("aggregatePageviewTotalCountForOnchain bulk result", tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, JSON.stringify(bulkResult));
+    return resultList
+  } catch(err){
+    console.log(err);
+    throw err;
+  } finally{
+    wapper.close();
+  }
 }

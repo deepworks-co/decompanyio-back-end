@@ -16,6 +16,7 @@ describe('dailyPageview', () => {
     let event ={};
     //evnet = {period: 1}
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   }).timeout(300000);
