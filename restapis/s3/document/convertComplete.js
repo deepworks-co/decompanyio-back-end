@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config, applicationConfig } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig, region } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
@@ -7,7 +7,7 @@ const request = require('request');
 
 var AWS = require("aws-sdk");
 AWS.config.update({
-  region: "us-west-1"
+  region: region
 });
 const s3 = new AWS.S3();
 

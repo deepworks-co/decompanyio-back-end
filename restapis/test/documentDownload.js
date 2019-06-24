@@ -14,9 +14,10 @@ describe('documentDownload', () => {
 
   it('implement tests here', () => {
     const event = {
-      query: {documentId : "ea984b64859d4adf9dd14adafc713420"}
+      query: {documentId : "c4bd778acdc24992a7da9bc57262c536"}
     }
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

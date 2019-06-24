@@ -33,6 +33,7 @@ module.exports.handler = async (event, context, callback) => {
   
   const downloadName = "tracking/" + documentId + "_" + timestamp + ".csv";
   const bucket = s3Config.document;
+  
   const keys = ['user.e','count', 'viewTimestamp', 'totalReadTimestamp'];
   const csvString = await json2csv(resultList, keys);
   
@@ -41,8 +42,9 @@ module.exports.handler = async (event, context, callback) => {
   const expried = new Date(timestamp + 1000 * 60); //1min
   console.log(bucket, csvKey);
   const r = await s3.putObjectAndExpries(bucket, csvKey, csvString, "text/csv", region, expried);
-
-  const csvDownloadUrl = await s3.signedDownloadUrl(region, bucket, csvKey, 60);
+  console.log("putObjectAndExpries", r);
+  const csvDownloadUrl = await s3.signedDownloadUrl2({region: region, bucket: bucket, key: csvKey, signedUrlExpireSeconds: 60});
+   
 
   const response = JSON.stringify({
     success: true,

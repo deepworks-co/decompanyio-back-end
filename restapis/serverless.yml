@@ -573,7 +573,7 @@ functions:
       postTrafficHook: postHook
 
   documentRegist:
-    handler: controllers/document/documentController.regist
+    handler: controllers/document/documentRegist.handler
     events:
       - http:
           path: api/document/regist
