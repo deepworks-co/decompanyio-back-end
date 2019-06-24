@@ -1,21 +1,36 @@
 var AWS = require("aws-sdk");
 
 /**
- * @param regions : default us-west-1
+ * @param region : default us-west-1
  * @param buckname : 
  * @param key
  * @param signedUrlExpireSeconds default : (5 min)
  */
-exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => {
-
-    AWS.config.update({
-        region: regions?regions:"us-west-1"
+exports.signedUploadUrl = (region, bucket, key, signedUrlExpireSeconds) => {
+   
+    const s3 = new AWS.S3({
+        region: region?region:"us-west-1",
+        signatureVersion: 'v4'
     });
     
-    var s3 = new AWS.S3();
+    const url = s3.getSignedUrl('putObject', {
+        Bucket: bucket,
+        Key: key,
+        ACL: "bucket-owner-full-control",
+        Expires: signedUrlExpireSeconds?signedUrlExpireSeconds:(60 * 5)
+    });
+
+    return url;
+ }
+
+ exports.signedDownloadUrl = (region, bucket, key, signedUrlExpireSeconds) => {
+    
+    var s3 = new AWS.S3({
+        region: region?region:"us-west-1"
+    });
     
     const url = s3.getSignedUrl('getObject', {
-        Bucket: bucketname,
+        Bucket: bucket,
         Key: key,
         Expires: signedUrlExpireSeconds?signedUrlExpireSeconds:(60 * 5)
     });
@@ -23,24 +38,47 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     return url;
  }
 
- exports.signedDownloadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => {
+exports.signedUploadUrl2 = (params) => {
 
-    AWS.config.update({
-        region: regions?regions:"us-west-1"
+    const {region, bucket, key, signedUrlExpireSeconds, customEndpoint} = params;
+    
+    const s3 = new AWS.S3({
+        region: region?region:"us-west-1",
+        signatureVersion: 'v4',
+        endpoint: customEndpoint?customEndpoint:undefined,
+        s3BucketEndpoint: customEndpoint?true:false
     });
     
-    var s3 = new AWS.S3();
+    const url = s3.getSignedUrl('putObject', {
+        Bucket: bucket,
+        Key: key,
+        ACL: "bucket-owner-full-control",
+        Expires: signedUrlExpireSeconds?signedUrlExpireSeconds:(60 * 5)
+    });
+
+    return url;
+}
+
+exports.signedDownloadUrl2 = (params) => {
+    console.log(params);
+    const {region, bucket, key, signedUrlExpireSeconds, customEndpoint} = params;
+    
+    var s3 = new AWS.S3({
+        region: region?region:"us-west-1",
+        endpoint: customEndpoint?customEndpoint:undefined,
+        s3BucketEndpoint: customEndpoint?true:false
+    });
     
     const url = s3.getSignedUrl('getObject', {
-        Bucket: bucketname,
+        Bucket: bucket,
         Key: key,
         Expires: signedUrlExpireSeconds?signedUrlExpireSeconds:(60 * 5)
     });
 
     return url;
- }
+}
 
- exports.putObject = (bucket, key, text, attr, regions) =>{
+exports.putObject = (bucket, key, text, attr, regions) =>{
     AWS.config.update({
         region: regions?regions:"us-west-1"
     });
@@ -51,7 +89,6 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     let source = {
         Bucket: bucket,
         Key: key,
-        ACL: "public-read",
         Body: Buffer.from(text, 'binary')
     };
     let sendParams = {}
@@ -63,9 +100,9 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     }
     
     return s3.putObject(sendParams).promise();
- }
+}
 
- exports.putObjectAndExpries = (bucket, key, text, contentType, regions, expires) =>{
+exports.putObjectAndExpries = (bucket, key, text, contentType, regions, expires) =>{
     AWS.config.update({
         region: regions?regions:"us-west-1"
     });
@@ -75,7 +112,6 @@ exports.signedUploadUrl = (regions, bucketname, key, signedUrlExpireSeconds) => 
     return s3.putObject({
         Bucket: bucket,
         Key: key,
-        ACL: "public-read",
         ContentType: contentType,
         Expires: expires,
         Body: Buffer.from(text, 'binary')
