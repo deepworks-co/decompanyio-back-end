@@ -7,8 +7,8 @@ npm install --save-dev serverless-aws-documentation
 npm install --save-dev serverless-plugin-split-stacks
 npm install --save-dev serverless-plugin-canary-deployments
 npm install --save-dev serverless-prune-plugin
-npm install mongojs
-npm install json-2-csv
-npm install buffer-image-size
-npm install request
-npm --prefix ./opt install sharp
+npm install mongojs@2.6.0
+npm install json-2-csv@3.5.4
+npm install buffer-image-size@0.6.4
+npm install request@2.88.0
+npm --prefix ./opt install sharp@0.22.1
