@@ -123,7 +123,7 @@ function updateContentType(bucket, key, ext){
       Bucket: bucket,
       Key: key,
       CopySource: bucket + "/" + key,
-      CacheControl: "no-cache"
+      CacheControl: "no-cache",
       ContentType: contentType,
       MetadataDirective: 'REPLACE'
     }, function(err, data){
