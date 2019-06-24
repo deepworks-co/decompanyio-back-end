@@ -2,7 +2,7 @@
 const uuidv4 = require('uuid/v4');
 
 const documentService = require('./documentMongoDB');
-//const s3 = require('./documentS3');
+const documentS3 = require('./documentS3');
 const {utils, s3} = require('decompany-common-utils');
 const {region, s3Config} = require('decompany-app-properties');
 
@@ -102,7 +102,7 @@ module.exports.info = async (event, context, callback) => {
       
     //const textList = await s3.getDocumentTextById(document._id);
     console.log("documentId", document._id);
-    promises.push(s3.getDocumentTextById(document._id));
+    promises.push(documentS3.getDocumentTextById(document._id));
 
     //console.log(textList);
 
@@ -134,10 +134,9 @@ module.exports.info = async (event, context, callback) => {
   }
   
 }
-
+/*
 module.exports.downloadFile = async (event, context, callback) => {
 
-  /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
@@ -166,7 +165,7 @@ module.exports.downloadFile = async (event, context, callback) => {
 
   const documentName = document.documentName;
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-  const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
+  const signedUrl = documentS3.generateSignedUrl(document.accountId, document.documentId, ext);
   
   return JSON.stringify({
     success: true,
@@ -175,3 +174,4 @@ module.exports.downloadFile = async (event, context, callback) => {
   });
 
 }
+*/
