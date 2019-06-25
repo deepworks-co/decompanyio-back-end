@@ -15,73 +15,15 @@ describe('s3DocumentUploadComplete', () => {
   const event = {
     "Records": [
       {
-        "eventVersion": "2.0",
-        "eventSource": "aws:s3",
-        "awsRegion": "us-west-1",
-        "eventTime": "2018-11-14T00:15:09.033Z",
-        "eventName": "ObjectCreated:Put",
-        "userIdentity": {
-          "principalId": "AWS:AIDAIQHMZ3T4ECMZXJEVK"
-        },
-        "requestParameters": {
-          "sourceIPAddress": "24.7.45.54"
-        },
-        "responseElements": {
-          "x-amz-request-id": "F6873A708C4970C8",
-          "x-amz-id-2": "v1RlnnegbZEnn//UMh20ca1gv8fFuzdfhjulHVFvSFeL1hd2GQiODos6pleVD4pKUX5lMUYBcTc="
-        },
         "s3": {
-          "s3SchemaVersion": "1.0",
-          "configurationId": "CreateDocThumbnailCompleteTrigger",
           "bucket": {
-            "name": "dev-ca-document",
-            "ownerIdentity": {
-              "principalId": "A3C4A60J8BI88N"
-            },
-            "arn": "arn:aws:s3:::dev-ca-document"
+            "name": "dev-ca-document"
           },
           "object": {
-            "key": "FILE/auth0%7C5bb2e1d69631a3321d5175e3/99bfe9e9273542e4aa35852c9d0fe2d7.pptx",
-            "size": 1476706,
-            "eTag": "1c1cb937280f8607f05a4fa86a1bc441",
-            "sequencer": "005BEB690CE5C89929"
+            "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx",
           }
         }
       },
-      {
-        "eventVersion": "2.0",
-        "eventSource": "aws:s3",
-        "awsRegion": "us-west-1",
-        "eventTime": "2018-11-14T00:15:09.033Z",
-        "eventName": "ObjectCreated:Put",
-        "userIdentity": {
-          "principalId": "AWS:AIDAIQHMZ3T4ECMZXJEVK"
-        },
-        "requestParameters": {
-          "sourceIPAddress": "24.7.45.54"
-        },
-        "responseElements": {
-          "x-amz-request-id": "F6873A708C4970C8",
-          "x-amz-id-2": "v1RlnnegbZEnn//UMh20ca1gv8fFuzdfhjulHVFvSFeL1hd2GQiODos6pleVD4pKUX5lMUYBcTc="
-        },
-        "s3": {
-          "s3SchemaVersion": "1.0",
-          "configurationId": "CreateDocThumbnailCompleteTrigger",
-          "bucket": {
-            "name": "dev-ca-document",
-            "ownerIdentity": {
-              "principalId": "A3C4A60J8BI88N"
-            },
-            "arn": "arn:aws:s3:::dev-ca-document"
-          },
-          "object": {
-            "key": "FILE/google-oauth2%7C101778494068951192848/b63147176fff418fb2b2acab40c28e04.pptx",
-            "size": 1476706,
-            "eTag": "1c1cb937280f8607f05a4fa86a1bc441",
-            "sequencer": "005BEB690CE5C89929"
-          }
-        }
-      }
     ]
   }
 

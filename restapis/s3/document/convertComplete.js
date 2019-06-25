@@ -1,12 +1,13 @@
 'use strict';
-const { mongodb, tables, s3Config } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig, region } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
+const request = require('request');
 
 var AWS = require("aws-sdk");
 AWS.config.update({
-  region: "us-west-1"
+  region: region
 });
 const s3 = new AWS.S3();
 
@@ -45,8 +46,15 @@ async function run(event){
     const filename = keys[2];
     
     console.log("convertComplete start", key, prefix, documentId, filename);
-    if("result.txt" == filename){       
-      return runConvertComplete(bucket, key, documentId);
+    if("result.txt" == filename){
+      const document = await getDocument(documentId);
+      //console.log(document);
+      if(!document){
+        throw new Error("documet is not exist, " + documentId);
+      }
+      const shortUrl = await getTinyUrl(document);
+      console.log("shortUrl", shortUrl);
+      return runConvertComplete(bucket, key, document, shortUrl);
     } else if("text.json" == filename) {
         //아무것도 안함
     } else if("1200X1200" === filename){
@@ -89,22 +97,16 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, documentId){
-
-  console.log(bucket, key, documentId);
+function runConvertComplete(bucket, key, document, shortUrl){
+  const documentId = document._id;
+  console.log(bucket, key, document);
   const totalPagesPromise = getTotalPages(bucket, key);
-  const getDocumentPromise = getDocument(documentId);
-
+  
   return new Promise((resolve, reject) => {
-    Promise.all([totalPagesPromise, getDocumentPromise]).then((data) => {       
+    Promise.all([totalPagesPromise]).then((data) => {       
       //console.log(data);
       let totalPages = -1;
       const resultTxtFile = data[0];
-      const document = data[1];
-      console.log(document);
-      if(!document){
-        throw new Error("documet is not exist, " + documentId);
-      }
 
       if(resultTxtFile){
         totalPages = resultTxtFile.Body.toString('ascii');
@@ -114,7 +116,7 @@ function runConvertComplete(bucket, key, documentId){
       console.log("documentId", documentId, "totalPages", totalPages);
       if(totalPages>0 && documentId) {
   
-        updateConvertCompleteDocument(documentId, totalPages).then((data) =>{
+        updateConvertCompleteDocument(documentId, totalPages, shortUrl).then((data) =>{
           console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
           resolve({message: "SUCCESS",
                   documentId: documentId});
@@ -143,23 +145,47 @@ async function getDocument(documentId){
   
   //throw new Error("error getDocument() : " + documentId);
   const wapper = new MongoWapper(mongodb.endpoint);
-  return await wapper.findOne(TABLE_NAME, {_id: documentId});
+  try{
+    const doc = await wapper.aggregate(TABLE_NAME, [{
+      $match: {_id: documentId}
+    }, {
+      $lookup: {
+        from: 'USER',
+        localField: 'accountId',
+        foreignField: '_id',
+        as: 'author'
+      }
+    }, {
+      $unwind: {
+        path: "$author",
+        preserveNullAndEmptyArrays: true
+      }
+    }]);
+    return doc[0];
+  } catch(ex){
+    console.log(ex);
+  }finally{
+    wapper.close();
+  }
 
 }
 
-async function updateConvertCompleteDocument(documentId, totalPages){
+async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
   const wapper = new MongoWapper(mongodb.endpoint);
-
-  const document = await wapper.findOne(TABLE_NAME, {_id: documentId});
-
-  if(document){
-    document.state = "CONVERT_COMPLETE";
-    document.totalPages = Number(totalPages);
-
-    return await wapper.save(TABLE_NAME, document);
-  } else {
-    console.log("document doesn't found", document);
+  try{
+    const updateDoc = {};
+    updateDoc.state = "CONVERT_COMPLETE";
+    updateDoc.totalPages = Number(totalPages);
+    if(shortUrl) updateDoc.shortUrl = shortUrl;
+      
+    return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    
+  } catch(ex) {
+    console.log(ex);
+  } finally{
+    wapper.close();
   }
+  
 
 }
 
@@ -265,5 +291,39 @@ function putS3Object(bucket, key, body, contentType){
   
      });
   })
+  
+}
+
+async function getTinyUrl(document){
+  
+  const author = document.author;
+  
+  return new Promise((resolve, reject)=>{
+    
+    
+    const prefix = author.username?author.username:author.email;
+    let host = applicationConfig.mainHost;
+    if(!host){
+      throw new Error("applicationConfig.mainHost is undefined");
+    }
+    if(host.slice(-1) !== "/"){
+      host += "/";
+    }
+    const url = `${host}${encodeURIComponent(prefix)}/${document.seoTitle}`;
+    console.log("long url", url);
+    
+    
+    request.post({url : "https://tinyurl.com/create.php", form: {url: url}}, function (error, response, body){
+      if(error){
+        reject(error);
+      }else {
+        const regex = /(https?:\/\/tinyurl.com\/)([a-z0-9\w]+\.*)+[a-z0-9]{2,4}/gi;
+        const list = body.match(regex).reduce(function(a,b){if(a.indexOf(b)<0)a.push(b);return a;},[]);
+          
+        resolve(list[0]);
+      }
+    })
+    
+  }) 
   
 }

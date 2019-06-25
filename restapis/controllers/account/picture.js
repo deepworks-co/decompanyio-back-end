@@ -1,6 +1,6 @@
 'use strict';
 const {utils, s3} = require('decompany-common-utils');
-const { mongodb, tables, s3Config } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, region } = require('decompany-app-properties');
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
@@ -13,7 +13,7 @@ module.exports.handler = async (event, context, callback) => {
   const filename = Date.now();
 
   const key = principalId + "/" + principalId + "_" + filename;
-  const signedUploadUrl = s3.signedUploadUrl("us-west-1", s3Config.upload_profile, key);
+  const signedUploadUrl = s3.signedUploadUrl(region, s3Config.upload_profile, key);
   const response = JSON.stringify({
     success: true,
     signedUploadUrl: signedUploadUrl,

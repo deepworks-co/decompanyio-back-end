@@ -24,8 +24,10 @@ module.exports.handler = async (event, context, callback) => {
     
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, LIMIT);
+
     const remains = resultList.length === undefined? 0:resultList.length
     console.log("getList", remains);
+
     if(remains === 0){
       return {
         remains: 0
@@ -95,29 +97,56 @@ async function getList(blockchainTimestamp, limit){
     const queryPipeline = [{
       $match: { 
         blockchainTimestamp: blockchainTimestamp, 
-        "transactionHash.success": {$ne: true}
-
+        transactionHash: { $exists: false }
       }
     }, {
       $lookup: {
         from: tables.EVENT_REGISTRY,
         localField: "documentId",
         foreignField: "documentId",
-        as: "RegsitryAs"
+        as: "RegistryAs"
       }
     }, {
       $unwind: {
-        path: "$RegsitryAs",
+        path: "$RegistryAs",
         "preserveNullAndEmptyArrays": true
       }
     }, {
-      "$match": {
-        "RegsitryAs": { "$exists": true, "$ne": null }
+      $match: {
+        "RegistryAs": { "$exists": true, "$ne": null }
+      }
+    }, {
+      $addFields: {
+        blockNumber: "$RegistryAs.blockNumber"
+      }
+    }, {
+      $lookup: {
+        from: 'EVENT-BLOCK',
+        localField: 'RegistryAs.blockNumber',
+        foreignField: '_id',
+        as: 'BlockAs'
+      }
+    }, {
+      $unwind: {
+        path: '$BlockAs',
+        preserveNullAndEmptyArrays: true
+      }
+    }, {
+      $addFields: {
+        minus: {
+          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
+        },
+        blockCreated: "$BlockAs.created",
+        blockCreatedDate: "$BlockAs.createdDate"
+      }
+    }, {
+      $match: {
+        minus: {$gt: -86400000}
       }
     }, {
       $limit: limit
     }]
-
+    console.log(tables.STAT_PAGEVIEW_DAILY, JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     console.log(err);

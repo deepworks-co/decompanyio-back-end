@@ -1,9 +1,10 @@
 'use strict';
 var AWS = require('aws-sdk');
-const { s3Config, sqsConfig } = require('decompany-app-properties');
-AWS.config.update({region: "us-west-1"});
+const { s3Config, sqsConfig, region } = require('decompany-app-properties');
+AWS.config.update({region: region});
 var sqs = new AWS.SQS();
 var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
+const s3 = new AWS.S3();
 
 /**
  * @description S3 event trigger
@@ -34,36 +35,42 @@ exports.handler = function(event, context, callback) {
 
 async function run(items){
   
-  let promises = [];
-  await items.forEach((record) => {
+  
+  const promises = await items.map(async (record) => {
     
-    
-    const key = record.s3.object.key;
+    const bucket = record.s3.bucket.name;
+    const key = decodeURIComponent(record.s3.object.key);
     const splits = key.split("/");
     
     const fileid = splits[2].split(".")[0];
     const fileindex = decodeURIComponent(splits[1]);
     const ext = splits[2].split(".")[1];
-    
+
+
+    const r = await updateContentType(bucket, key, ext);
+    console.log("updateContentType", r);
+
     const data = {
       "fileindex": fileindex,
       "fileid": fileid,
       "ext": ext
     }
-  
+    
     const messageBody = generateMessageBody(data);
     const message = {
       QueueUrl: QUEUE_URL,
       MessageBody: messageBody
     }
-    console.log(message);
-    promises.push(sendMessage(message));
+    
+    const r2 = await sendMessage(message);
+    console.log("sendMessage", message, r2);
     
 
+    return true;
   });
 
   return await Promise.all(promises).then((results) => {
-    console.log("send sqs success", results.length);
+    console.log("send sqs success", results);
   }).catch((errs)=>{
     console.error("error", results);
   });
@@ -103,4 +110,26 @@ const generateMessageBody = function(param){
   messageBody.ext = param.ext;
   messageBody.owner = param.fileindex;
   return JSON.stringify(messageBody);
+}
+
+
+function updateContentType(bucket, key, ext){
+  console.log(bucket, key, ext);
+  return new Promise((resolve, reject) => {
+
+    let contentType = "application/octet-stream";
+    
+    s3.copyObject({
+      Bucket: bucket,
+      Key: key,
+      CopySource: bucket + "/" + key,
+      CacheControl: "no-cache",
+      ContentType: contentType,
+      MetadataDirective: 'REPLACE'
+    }, function(err, data){
+      if(err) reject(err);
+      else resolve(data);
+    });
+  })
+
 }

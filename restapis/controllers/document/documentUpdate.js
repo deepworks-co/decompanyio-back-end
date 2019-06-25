@@ -10,7 +10,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   const {principalId, body} = event;
-  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc} = body;
+  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl} = body;
 
   console.log(body);
 
@@ -70,6 +70,10 @@ module.exports.handler = async (event, context, callback) => {
   if(cc){
     newDoc.cc = cc;
   } 
+
+  if(shortUrl){
+    newDoc.shortUrl = shortUrl;
+  }
 
   document.updated = Date.now();
   const result = await documentService.updateDocument(newDoc);
