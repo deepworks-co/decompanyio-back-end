@@ -128,24 +128,38 @@ module.exports = {
           as: "featuredAs"
         }
       }, {
+        $lookup: {
+          from: tables.EVENT_REGISTRY,
+          localField: "_id",
+          foreignField: "documentId",
+          as: "registryAs"
+        }
+      }, {
         $addFields: {
           author: { $arrayElemAt: [ "$userAs", 0 ] },
           featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
-          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+          registry: { $arrayElemAt: [ "$registryAs", 0 ] }
         }
       }, {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount"
+          latestVoteAmount: "$featured.latestVoteAmount",
+          isRegistry: {
+            $cond: [
+              { $ifNull: [ '$registry', false ]}, true, false
+            ]
+          }
         }
       }, {
         $project: {
-          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0, registryAs: 0, registry: 0
+          
         }
       }
     ]
-
+    console.log(JSON.stringify(queryPipeline));
     document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
     return document[0];
@@ -252,12 +266,28 @@ async function queryDocumentListByLatest (params) {
         as: "featuredAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1, popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
+      $lookup: {
+        from: tables.EVENT_REGISTRY,
+        localField: "_id",
+        foreignField: "documentId",
+        as: "registryAs"
+      }
+    }, {
+      $project: {
+        _id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1,
+        popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
+        registry: { $arrayElemAt: [ "$registryAs", 0 ] },
+      }
     }, {
       $addFields: {
         latestVoteAmount: "$featured.latestVoteAmount",
         latestPageview: "$popular.latestPageview",
-        latestPageviewList: "$popular.latestPageviewList"
+        latestPageviewList: "$popular.latestPageviewList",
+        isRegistry: {
+                  $cond: [
+                    { $ifNull: [ '$registry', false ]}, true, false
+                  ]
+                }
       }
     }, {
       $project: {featured: 0, popular: 0}
@@ -327,7 +357,22 @@ async function queryDocumentListByPopular (params) {
         as: "authorAs"
       }
     }, {
-      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, latestPageviewList: 1, document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] }}
+      $lookup: {
+        from: 'EVENT-REGISTRY',
+        localField: '_id',
+        foreignField: 'documentId',
+        as: 'registryAs'
+      }
+    }, {
+      $project: {_id: 1, title: 1, created: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, latestPageviewList: 1, 
+        document: { $arrayElemAt: [ "$documentAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$authorAs", 0 ] },
+        registry: {
+          $arrayElemAt: [
+            '$registryAs',
+            0
+          ]
+        }
+    }
     }, {
       $addFields: {
         documentId: "$_id",
@@ -338,12 +383,17 @@ async function queryDocumentListByPopular (params) {
         documentName: "$document.documentName",
         documentSize: "$document.documentSize",
         seoTitle: "$document.seoTitle",
-        cc: "$document.cc"
+        cc: "$document.cc",
+        isRegistry: {
+                  $cond: [
+                    { $ifNull: [ '$registry', false ]}, true, false
+                  ]
+                }
       }
     }, {
       $project: {featured: 0, document: 0}
     }]);
-
+    console.log(JSON.stringify(pipeline));
     return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
    
   } catch(err) {
@@ -406,10 +456,23 @@ async function queryDocumentListByFeatured (params) {
         as: "userAs"
       }
     }, {
+      $match: {
+        from: 'EVENT-REGISTRY',
+        localField: '_id',
+        foreignField: 'documentId',
+        as: 'registryAs'
+      }
+    }, {
       $addFields: {
           author: { $arrayElemAt: [ "$userAs", 0 ] },
           document: { $arrayElemAt: [ "$documentAs", 0 ] },
-          popular: { $arrayElemAt: [ "$popularAs", 0 ] }
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+          registry: {
+            $arrayElemAt: [
+              '$registryAs',
+              0
+            ]
+          }
       }
     }, {
       $addFields: {
@@ -422,11 +485,23 @@ async function queryDocumentListByFeatured (params) {
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
         cc: "$document.cc",
+        isRegistry: {
+          $cond: [
+            {
+              $ifNull: [
+                '$registry',
+                false
+              ]
+            },
+            true,
+            false
+          ]
+        }
       }
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
     }]);
-
+    console.log(JSON.stringify(pipeline))
     return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
    
   } catch(err) {
