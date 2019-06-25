@@ -199,7 +199,7 @@ module.exports = class AccountService {
 
 				}
 			}, {
-				$project: {featured: 0, popular: 0}
+				$project: {featured: 0, popular: 0, registry: 0}
 			}];
 
 			console.log("pipeline", JSON.stringify(pipeline));

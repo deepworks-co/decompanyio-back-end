@@ -290,7 +290,7 @@ async function queryDocumentListByLatest (params) {
                 }
       }
     }, {
-      $project: {featured: 0, popular: 0}
+      $project: {featured: 0, popular: 0, registry: 0}
     }]);
 
 
@@ -391,7 +391,7 @@ async function queryDocumentListByPopular (params) {
                 }
       }
     }, {
-      $project: {featured: 0, document: 0}
+      $project: {featured: 0, document: 0, registry: 0}
     }]);
     console.log(JSON.stringify(pipeline));
     return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
@@ -499,7 +499,7 @@ async function queryDocumentListByFeatured (params) {
         }
       }
     }, {
-      $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
+      $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0, registry: 0}
     }]);
     console.log(JSON.stringify(pipeline))
     return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
