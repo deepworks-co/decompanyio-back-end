@@ -167,20 +167,40 @@ module.exports = class AccountService {
 					foreignField: "_id",
 					as: "featuredAs"
 				}
-				}, {
-				$project: {_id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,   popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] }}
-				}, {
+			}, {
+				$lookup: {
+					from: tables.EVENT_REGISTRY,
+					localField: "_id",
+					foreignField: "documentId",
+					as: "registryAs"
+				}
+			}, {
+				$project: { _id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, 
+					popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
+					registry: { $arrayElemAt: [ "$registryAs", 0 ] }
+				}
+			}, {
 				$addFields: {
 					latestVoteAmount: "$featured.latestVoteAmount",
 					latestPageview: "$popular.latestPageview",
 					latestPageviewList: "$popular.latestPageviewList",
+					isRegistry: {
+					  $cond: [
+						{
+						  $ifNull: [
+							'$registry',
+							false
+						  ]
+						},
+						true,
+						false
+					  ]
+					}
 
 				}
-				}, {
-				$project: {featured: 0, popular: 0}
+			}, {
+				$project: {featured: 0, popular: 0, registry: 0}
 			}];
-
-
 
 			console.log("pipeline", JSON.stringify(pipeline));
 			return await wapper.aggregate(tables.DOCUMENT, pipeline);

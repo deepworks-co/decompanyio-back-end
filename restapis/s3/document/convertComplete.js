@@ -14,7 +14,7 @@ const s3 = new AWS.S3();
 const TABLE_NAME = tables.DOCUMENT;
 const CONVERT_COMPLETE = "CONVERT_COMPLETE";
 
-const QUALITY = 80;
+const QUALITY = 95;
 
 exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
