@@ -20,7 +20,7 @@ describe('s3DocumentUploadComplete', () => {
             "name": "dev-ca-document"
           },
           "object": {
-            "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx",
+            "key": "FILE/google-oauth2|101778494068951192848/47619129a2fe4495ac360759b8c865e7.pptx",
           }
         }
       },

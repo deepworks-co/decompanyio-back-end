@@ -1,9 +1,10 @@
 'use strict';
-var AWS = require('aws-sdk');
-const { s3Config, sqsConfig, region } = require('decompany-app-properties');
+const AWS = require('aws-sdk');
+const { MongoWapper } = require('decompany-common-utils');
+const { mongodb, tables, s3Config, sqsConfig, region } = require('decompany-app-properties');
 AWS.config.update({region: region});
-var sqs = new AWS.SQS();
-var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
+const sqs = new AWS.SQS();
+const QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
 const s3 = new AWS.S3();
 
 /**
@@ -46,7 +47,6 @@ async function run(items){
     const fileindex = decodeURIComponent(splits[1]);
     const ext = splits[2].split(".")[1];
 
-
     const r = await updateContentType(bucket, key, ext);
     console.log("updateContentType", r);
 
@@ -55,7 +55,10 @@ async function run(items){
       "fileid": fileid,
       "ext": ext
     }
-    
+
+    const uploadCompleteResult = await uploadComplete(fileid);
+    console.log("uploadComplete", fileid, uploadCompleteResult);
+        
     const messageBody = generateMessageBody(data);
     const message = {
       QueueUrl: QUEUE_URL,
@@ -72,7 +75,7 @@ async function run(items){
   return await Promise.all(promises).then((results) => {
     console.log("send sqs success", results);
   }).catch((errs)=>{
-    console.error("error", results);
+    console.error("error", errs);
   });
 
 }
@@ -112,6 +115,17 @@ const generateMessageBody = function(param){
   return JSON.stringify(messageBody);
 }
 
+async function uploadComplete(documentId){
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    return await wapper.update(tables.DOCUMENT, {_id: documentId}, {$set: {state: "UPLOAD_COMPLETE"}});
+  }catch(ex){
+    console.log("uploadComplete", ex);
+  } finally{
+    wapper.close();
+  }
+  
+}
 
 function updateContentType(bucket, key, ext){
   console.log(bucket, key, ext);
@@ -133,3 +147,5 @@ function updateContentType(bucket, key, ext){
   })
 
 }
+
+
