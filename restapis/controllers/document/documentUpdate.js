@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.desc = desc;
   }
   
-  if(title) {
+  if(title && title !== document.title) {
     newDoc.title = title;
     let newSeoTitle;
     let existsSeoTitle;
