@@ -1,6 +1,7 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 
+
 module.exports.handler = async (event, context, callback) => {
 
   /** Immediate response for WarmUp plugin */

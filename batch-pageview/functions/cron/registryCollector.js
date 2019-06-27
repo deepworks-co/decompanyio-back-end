@@ -1,28 +1,20 @@
 'use strict';
-const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 
 const contractName = "DocumentRegistry"
-const eventName = "Register";
-
+const eventName = process.env.stage==="alpha"?"RegisterDocument":"Register";
+console.log("eventName", process.env.stage, eventName);
 module.exports.handler = async (event, context, callback) => {
  
   const wapper = new MongoWapper(mongodb.endpoint);
   const tableName = tables.EVENT_REGISTRY;
   try{
-    const maxOne = await wapper.aggregate(tableName, [
-      {
-        $group: {
-          _id: null,
-          blockNumber : { $max: '$blockNumber' }
-        }
-      }
-    ]);
+    const maxOne = await wapper.findAll(tableName, {}, {blockNumber: -1}, 1);
      // contract write block number 3251154
-    let startBlockNumber = 3251154;
+    let startBlockNumber = 3936298;
     if(maxOne && maxOne.length>0){
       console.log(maxOne[0]);
       startBlockNumber = maxOne[0].blockNumber + 1;
@@ -38,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
     const bulk = wapper.getUnorderedBulkOp(tableName);
 
     resultList.forEach((result, index)=>{
-      const {decoded, abi, created, log} = result;
+      const {decoded, abi, created, log, contractAddress} = result;
       //console.log(`Get Event Logs ${index} :`, result);
       //console.log(index, abi.funcName, decoded, receipt.blockHash, receipt.blockNumber, new Date(block.timestamp * 1000));
       const documentId = contractWapper.hexToAscii(decoded.docId);
@@ -53,6 +45,7 @@ module.exports.handler = async (event, context, callback) => {
         documentId: documentId,
         docId: decoded.docId,
         contractName: contractName,
+        contractAddress: contractAddress,
         eventName: eventName,
         updated: now.getTime(),
         updatedDate: now, 

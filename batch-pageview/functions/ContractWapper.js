@@ -3,7 +3,7 @@ const fs = require('fs');
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx');
 
-const { region, ethereum } = require('../resources/config.js').APP_PROPERTIES();
+const { region, ethereum } = require('decompany-app-properties');
 const { s3, kms } = require('decompany-common-utils');
 const contractName = ["DocumentRegistry", "Creator", "Curator"];
 
@@ -103,7 +103,7 @@ module.exports = class ContractWapper {
    * @param  {} date
    * @param  {} confirmPageview
    */
-  sendTransaction(gasPrice, gasLimit, nonce, encodeABI, contractAddress) {
+  async sendTransaction(gasPrice, gasLimit, nonce, encodeABI, contractAddress) {
     return new Promise((resolve, reject)=>{
         //creating raw tranaction
       const rawTransaction = {
@@ -115,7 +115,7 @@ module.exports = class ContractWapper {
         "data": encodeABI ,
         "nonce": this.web3.utils.toHex(nonce)
       }
-      console.log("sendTransactionConfirmPageView", {rawTransaction});
+      console.log("sendTransaction", {rawTransaction});
       //creating tranaction via ethereumjs-tx
       const transaction = new Tx(rawTransaction);
       //signing transaction with private key
@@ -203,7 +203,8 @@ module.exports = class ContractWapper {
         abi: selectedAbi,
         decoded: decoded,
         //created: block.timestamp * 1000,
-        log: log
+        log: log,
+        contractAddress: contractAddress
       }
     });
 

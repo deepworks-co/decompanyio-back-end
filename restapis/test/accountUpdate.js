@@ -13,7 +13,13 @@ describe('accountUpdate', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        username: "<<<<>>>>>"
+      }
+    }
+    return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
   });

@@ -1,7 +1,7 @@
 'use strict';
 const jsonFile = "contracts-rinkeby/DocumentReg.json";
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 const maxSize = 500;
 module.exports.handler = async (event, context, callback) => {
@@ -9,19 +9,12 @@ module.exports.handler = async (event, context, callback) => {
   const wapper = new MongoWapper(mongodb.endpoint);
   const tableName = tables.EVENT_BLOCK;
   try{
-    const maxOne = await wapper.aggregate(tableName, [
-      {
-        $group: {
-          _id: null,
-          blockNumber : { $max: '$_id' }
-        }
-      }
-    ]);
+    const maxOne = await wapper.findAll(tableName, {}, {_id: -1}, 1);
      // contract write block number 3251154
     let startBlockNumber = 3936298;
     if(maxOne && maxOne.length>0){
       console.log(maxOne[0]);
-      startBlockNumber = maxOne[0].blockNumber + 1;
+      startBlockNumber = maxOne[0]._id + 1;
     }
 
     let latestBlockNumber = startBlockNumber + maxSize;

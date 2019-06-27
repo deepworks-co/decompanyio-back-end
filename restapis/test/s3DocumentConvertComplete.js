@@ -7,14 +7,79 @@ const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
 let wrapped = mochaPlugin.getWrapper('s3DocumentConvertComplete', '/s3/document/convertComplete.js', 'handler');
 
+const { mongodb, tables } = require('decompany-app-properties');
+const { MongoWapper, utils } = require('decompany-common-utils');
+
+async function getList(){
+  console.log("stage", process.env.stage);
+  console.log("endpoint", mongodb.endpoint);
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    
+    const resultList = await wapper.aggregate("DOCUMENT", [
+      {
+        $match: {state:"CONVERT_COMPLETE"}
+      }, {
+        $sort: {created: -1}
+      }, {
+        $skip: 50
+      }, {
+        $limit: 10
+      }
+      
+    ]);
+    
+    return resultList.map((it)=>{
+      //console.log(it);
+      const totalPages = it.totalPages;
+
+      let pages = Array.apply(null, {length: totalPages}).map(Number.call, Number)
+
+      pages = pages.map((n, index)=>{
+        return {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": `THUMBNAIL/${it._id}/1200X1200/${index+1}`
+            }
+          }
+        }
+      })
+
+      return pages;
+    });
+  } catch(e){
+    console.log(e)
+  } finally{
+    console.log("close");
+    wapper.close();
+  }
+  
+
+  return null;
+}
+
 describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
-  it('implement tests here', () => {
-
+  it('implement tests here', async () => {
+    
     const event = {
       "Records": [
+       
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/fa0d69599a0e418283b8eb20d80a84ed/result.txt"
+            }
+          }
+        },
         /*
         {
           "s3": {
@@ -22,41 +87,39 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/e3aa558435ca4d568deba7474f36ad44/result.txt"
-            }
-          }
-        },*/
-        {
-          "s3": {
-            "bucket": {
-              "name": "dev-ca-document",
-            },
-            "object": {
-              "key": "THUMBNAIL/c656e50750784cc8a0f62ebe62d19623/1200X1200/1"
+              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/1200X1200/1"
             }
           }
         },
+        */
         
       ]
     }
-    /*
-    const Records = [];
-    for(let i=0;i<34;i++){
-      Records.push({
-        "s3": {
-          "bucket": {
-            "name": "dev-ca-document",
-          },
-          "object": {
-            "key": "THUMBNAIL/21d3dd761bf948f7b4876d568f6e27c2/1200X1200/" + (i+1)
-          }
-        }
-      });
-    }
-    */
+
     return wrapped.run(event).then((response) => {
-      //console.log("test result", response);
       expect(response).to.not.be.empty;
     });
-  }).timeout(300000);
+
+
+  /*
+    let resultList = await getList();
+    //console.log(JSON.stringify(resultList.slice(0, 2)));
+    console.log("getList", resultList.length);
+    let i=0;
+    for(i=0;i<resultList.length;i++){
+      const it = resultList[i];
+      console.log(i, it);
+      const event = {
+        Records: it
+      }
+      const result = await wrapped.run(event);
+      console.log("migration results", i+1, result);
+      //console.log(JSON.stringify(result));
+    }
+    */
+    //console.log("migration results", await Promise.all(results));
+
+    
+  }).timeout(30000000);
+
 });

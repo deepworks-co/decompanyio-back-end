@@ -1,6 +1,6 @@
 'use strict';
 const {utils, MongoWapper, sqs} = require('decompany-common-utils');
-const { mongodb, tables, sqsConfig, applicationConfig} = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables, sqsConfig, applicationConfig} = require('decompany-app-properties');
 
 const TB_DOCUMENT = tables.DOCUMENT;
 const period = applicationConfig.activeVoteDays;

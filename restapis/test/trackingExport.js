@@ -13,7 +13,14 @@ describe('trackingExport', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      query: {
+        documentId: "5bab09df70ed4307aad667300fc0c95c"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

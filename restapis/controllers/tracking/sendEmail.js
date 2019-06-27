@@ -1,7 +1,7 @@
 'use strict';
 const documentService = require('../document/documentMongoDB');
 const {ses, utils} = require('decompany-common-utils');
-const { sesConfig } = require('../../resources/config.js').APP_PROPERTIES();
+const { sesConfig } = require('decompany-app-properties');
 const fs = require("fs");
 const path = require("path");
 const MAIL_TITLE = "Join Polairs Share";
@@ -31,7 +31,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const unsendEmail = await documentService.getUnsendEmail(BATCH_LIMIT);
   
-  if(unsendEmail.length === 'undefined' || unsendEmail.length===0){
+  if(unsendEmail.length === undefined || unsendEmail.length===0){
     console.log("A Email is not exists to send!")
     return JSON.stringify({
       success:true

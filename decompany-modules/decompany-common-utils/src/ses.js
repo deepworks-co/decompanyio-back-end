@@ -32,3 +32,15 @@ exports.sendMail = (region, target_email, source_email, title, html) => {
   console.log(params);
   return ses.sendEmail(params).promise();
  }
+
+
+ exports.sendRawMail = (region, rawMessage) => {
+  const ses = new AWS.SES({region: region, apiVersion: '2010-12-01'})    
+  const params = {
+    RawMessage: {
+      Data: rawMessage
+    }
+  };
+  console.log(JSON.stringify(params));
+  return ses.sendRawEmail(params).promise();
+ }

@@ -1,16 +1,18 @@
 'use strict';
-var AWS = require('aws-sdk');
-const { s3Config, sqsConfig } = require('../../resources/config.js').APP_PROPERTIES();
-AWS.config.update({region: "us-west-1"});
-var sqs = new AWS.SQS();
-var QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
+const AWS = require('aws-sdk');
+const { MongoWapper } = require('decompany-common-utils');
+const { mongodb, tables, s3Config, sqsConfig, region } = require('decompany-app-properties');
+AWS.config.update({region: region});
+const sqs = new AWS.SQS();
+const QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
+const s3 = new AWS.S3();
 
 /**
  * @description S3 event trigger
  * @event s3
  *  - prefix : FILE/
  */
-exports.handler = function(event, context) {
+exports.handler = function(event, context, callback) {
   
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
@@ -34,38 +36,46 @@ exports.handler = function(event, context) {
 
 async function run(items){
   
-  let promises = [];
-  await items.forEach((record) => {
+  
+  const promises = await items.map(async (record) => {
     
-    
-    const key = record.s3.object.key;
+    const bucket = record.s3.bucket.name;
+    const key = decodeURIComponent(record.s3.object.key);
     const splits = key.split("/");
     
     const fileid = splits[2].split(".")[0];
     const fileindex = decodeURIComponent(splits[1]);
     const ext = splits[2].split(".")[1];
-    
+
+    const r = await updateContentType(bucket, key, ext);
+    console.log("updateContentType", r);
+
     const data = {
       "fileindex": fileindex,
       "fileid": fileid,
       "ext": ext
     }
-  
+
+    const uploadCompleteResult = await uploadComplete(fileid);
+    console.log("uploadComplete", fileid, uploadCompleteResult);
+        
     const messageBody = generateMessageBody(data);
     const message = {
       QueueUrl: QUEUE_URL,
       MessageBody: messageBody
     }
-    console.log(message);
-    promises.push(sendMessage(message));
+    
+    const r2 = await sendMessage(message);
+    console.log("sendMessage", message, r2);
     
 
+    return true;
   });
 
   return await Promise.all(promises).then((results) => {
-    console.log("send sqs success", results.length);
+    console.log("send sqs success", results);
   }).catch((errs)=>{
-    console.error("error", results);
+    console.error("error", errs);
   });
 
 }
@@ -104,3 +114,38 @@ const generateMessageBody = function(param){
   messageBody.owner = param.fileindex;
   return JSON.stringify(messageBody);
 }
+
+async function uploadComplete(documentId){
+  const wapper = new MongoWapper(mongodb.endpoint);
+  try{
+    return await wapper.update(tables.DOCUMENT, {_id: documentId}, {$set: {state: "UPLOAD_COMPLETE"}});
+  }catch(ex){
+    console.log("uploadComplete", ex);
+  } finally{
+    wapper.close();
+  }
+  
+}
+
+function updateContentType(bucket, key, ext){
+  console.log(bucket, key, ext);
+  return new Promise((resolve, reject) => {
+
+    let contentType = "application/octet-stream";
+    
+    s3.copyObject({
+      Bucket: bucket,
+      Key: key,
+      CopySource: bucket + "/" + key,
+      CacheControl: "no-cache",
+      ContentType: contentType,
+      MetadataDirective: 'REPLACE'
+    }, function(err, data){
+      if(err) reject(err);
+      else resolve(data);
+    });
+  })
+
+}
+
+

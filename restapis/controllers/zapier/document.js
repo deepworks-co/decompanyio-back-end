@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */

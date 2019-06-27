@@ -1,5 +1,5 @@
 'use strict';
-const { region, warmupConfig } = require('../resources/config.js').APP_PROPERTIES();
+const { region, warmupConfig } = require('decompany-app-properties');
 const aws = require("aws-sdk");
 const lambda = new aws.Lambda({region: region}); 
 
@@ -7,18 +7,19 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("Warm Up Start");
 
-  const {prefix, functions} = warmupConfig;
+  const {prefix, functions,} = warmupConfig;
 
   const payload = JSON.stringify({ source: 'lambda-warmup'});
   
   const invokes = await Promise.all(functions.map(async (func) => {
     const functionName = prefix?prefix.concat(func.name):func.name;
+    const aliase = func.aliase?func.aliase:"$LATEST";
     const params = {
       ClientContext: Buffer.from(payload).toString('base64'),
       FunctionName: functionName,
       InvocationType: "RequestResponse",
       LogType: "None",
-      Qualifier: "$LATEST",
+      Qualifier: aliase,
       Payload: payload
     };
 
@@ -30,10 +31,10 @@ module.exports.handler = async (event, context, callback) => {
         concurrentcy = 0
       }
            
-      await Promise.all(Array(concurrentcy).fill(0)
+      const results = await Promise.all(Array(concurrentcy).fill(0)
         .map(async _ => await lambda.invoke(params).promise()));
 
-      console.log(`${functionName} concurrency ${concurrentcy} lambda warm up!`);
+      console.log(`${functionName}:${aliase} concurrency ${results.length} lambda warm up!`);
       return true;
     } catch (e) {
       console.log(`Warm Up Invoke Error: ${func.name}`, e);

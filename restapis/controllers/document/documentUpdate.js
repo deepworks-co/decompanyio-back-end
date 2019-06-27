@@ -10,7 +10,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   const {principalId, body} = event;
-  const {documentId, desc, title, tags, useTracking, forceTracking} = body;
+  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl} = body;
 
   console.log(body);
 
@@ -20,20 +20,21 @@ module.exports.handler = async (event, context, callback) => {
 
   const document = await documentService.getDocumentById(documentId);
 
+  if(!document){
+    throw new Error(`document does not exists ${documentId}`);
+  }
+
   if(!principalId || document.accountId !== principalId){
     throw new Error("no permission");
   }
 
-  if(!document){
-    throw new Error("document is not exists");
-  } 
-
+  const newDoc = {_id: document._id};
   if(desc){
-    document.desc = desc;
+    newDoc.desc = desc;
   }
   
   if(title) {
-    document.title = title;
+    newDoc.title = title;
     let newSeoTitle;
     let existsSeoTitle;
     do {
@@ -41,24 +42,42 @@ module.exports.handler = async (event, context, callback) => {
       existsSeoTitle = await documentService.getFriendlyUrl(newSeoTitle);
     } while(existsSeoTitle)
 
-    document.seoTitle = newSeoTitle;
+    newDoc.seoTitle = newSeoTitle;
   }
 
   if(tags && tags.length>0){
-    document.tags = tags;
+    newDoc.tags = tags;
   }
 
-  if(useTracking !== 'undefined'){
-    document.useTracking = useTracking;
+  if(useTracking === true || useTracking === 'true'){
+    newDoc.useTracking = true;
+  } else {
+    newDoc.useTracking = false;
   }
 
-  if(forceTracking !== 'undefined'){
-    document.forceTracking = forceTracking;
+  if(forceTracking === true || forceTracking === 'true'){
+    newDoc.forceTracking = true;
+  } else {
+    newDoc.forceTracking = false;
+  }
+
+  if(isDownload === true || isDownload === 'true'){
+    newDoc.isDownload = true;
+  } else {
+    newDoc.isDownload = false;
+  }
+
+  if(cc){
+    newDoc.cc = cc;
+  } 
+
+  if(shortUrl){
+    newDoc.shortUrl = shortUrl;
   }
 
   document.updated = Date.now();
-  const result = await documentService.saveDocument(document);
-  console.log("save document", result);
+  const result = await documentService.updateDocument(newDoc);
+  console.log("update document", result);
 
   const response =  JSON.stringify({
     success: true,

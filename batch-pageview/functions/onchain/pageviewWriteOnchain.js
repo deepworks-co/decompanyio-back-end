@@ -1,7 +1,7 @@
 'use strict';
 
 const ContractWapper = require('../ContractWapper');
-const { mongodb, tables } = require('../../resources/config.js').APP_PROPERTIES();
+const { mongodb, tables } = require('decompany-app-properties');
 const {utils, MongoWapper} = require('decompany-common-utils');
 
 const LIMIT = 5000;
@@ -12,15 +12,22 @@ const LIMIT = 5000;
 module.exports.handler = async (event, context, callback) => {
 
   try{
-
     const now = new Date();
     const yesterday = new Date(now - 1000 * 60 * 60 * 24);
-    const blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
+    let blockchainTimestamp = utils.getBlockchainTimestamp(yesterday);
+
+    if(event.blockchainTimestamp){
+      console.log("input blockchainTimestamp", event.blockchainTimestamp);
+      blockchainTimestamp = event.blockchainTimestamp
+    } 
+   
     
     const contractWapper = new ContractWapper();  
     const resultList = await getList(blockchainTimestamp, LIMIT);
-    const remains = resultList.length === 'undefined'? 0:resultList.length
+
+    const remains = resultList.length === undefined? 0:resultList.length
     console.log("getList", remains);
+
     if(remains === 0){
       return {
         remains: 0
@@ -40,6 +47,8 @@ module.exports.handler = async (event, context, callback) => {
 
     console.log("length (resultList, documentIds, pageviews)", resultList.length, documentIds.length, pageviews.length);
     console.log("docIds", docIds);
+    console.log("documentIds", documentIds);
+    console.log("pageviews", pageviews);
     
     if(resultList.length !== documentIds.length || documentIds.length !== pageviews.length){
       throw new Error("result list aggreagation fail...", resultList.length, documentIds.length, pageviews.length);
@@ -88,29 +97,56 @@ async function getList(blockchainTimestamp, limit){
     const queryPipeline = [{
       $match: { 
         blockchainTimestamp: blockchainTimestamp, 
-        "transactionHash.success": {$ne: true}
-
+        transactionHash: { $exists: false }
       }
     }, {
       $lookup: {
         from: tables.EVENT_REGISTRY,
         localField: "documentId",
         foreignField: "documentId",
-        as: "RegsitryAs"
+        as: "RegistryAs"
       }
     }, {
       $unwind: {
-        path: "$RegsitryAs",
+        path: "$RegistryAs",
         "preserveNullAndEmptyArrays": true
       }
     }, {
-      "$match": {
-        "RegsitryAs": { "$exists": true, "$ne": null }
+      $match: {
+        "RegistryAs": { "$exists": true, "$ne": null }
+      }
+    }, {
+      $addFields: {
+        blockNumber: "$RegistryAs.blockNumber"
+      }
+    }, {
+      $lookup: {
+        from: 'EVENT-BLOCK',
+        localField: 'RegistryAs.blockNumber',
+        foreignField: '_id',
+        as: 'BlockAs'
+      }
+    }, {
+      $unwind: {
+        path: '$BlockAs',
+        preserveNullAndEmptyArrays: true
+      }
+    }, {
+      $addFields: {
+        minus: {
+          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
+        },
+        blockCreated: "$BlockAs.created",
+        blockCreatedDate: "$BlockAs.createdDate"
+      }
+    }, {
+      $match: {
+        minus: {$gt: -86400000}
       }
     }, {
       $limit: limit
     }]
-
+    console.log(tables.STAT_PAGEVIEW_DAILY, JSON.stringify(queryPipeline));
     return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     console.log(err);

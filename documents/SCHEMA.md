@@ -4,8 +4,8 @@
 
 ```javascript
 db.createCollection("USER");
-db.USER.createIndex({email: 1}, {unique:true})
-db.USER.createIndex({username: 1}, {unique:true})
+db.USER.createIndex({email: 1})
+db.USER.createIndex({username: 1})
 db.USER.createIndex({sub: 1}, {unique:true})
 ```
 
@@ -48,21 +48,15 @@ db.createCollection("SEO-FRIENDLY")
 db["SEO-FRIENDLY"].createIndex({{created: -1}})
 ```
 
-## VOTE (cur DEV-CA-DOCUMENT-VOTE)
-
-```javascript
-db.createCollection("VOTE");
-db["DOCUMENT-VOTE"].createIndex({id: 1, created: -1}, {unique:true})
-db["DOCUMENT-VOTE"].createIndex({created: -1})
-db["DOCUMENT-VOTE"].createIndex({documentId: 1, created: -1})
-```
 
 ## TRACKING
 
 ```javascript
 db.createCollection("TRACKING");
+db["TRACKING"].createIndex({id: 1, ev: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, created: -1})
 db["TRACKING"].createIndex({id: 1, cid: 1, sid: 1, t: 1})
+db["TRACKING"].createIndex({id: 1, cid: 1, t: 1})
 ```
 
 ## TRACKING-USER
@@ -110,6 +104,7 @@ db.createCollection("VOTE");
 db["VOTE"].createIndex( { documentId: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1, created: -1 } )
 db["VOTE"].createIndex( { applicant: 1,documentId: 1,created: -1 } )
+db["VOTE"].createIndex( { blockNumber: -1 } )
 ```
 
 ## query collection's index
@@ -138,4 +133,44 @@ db["STAT-PAGEVIEW-DAILY"].createIndex( { blockchainTimestamp: 1 })
 db.createCollection("STAT-PAGEVIEW-TOTALCOUNT-DAILY");
 db["STAT-PAGEVIEW-TOTALCOUNT-DAILY"].createIndex( { blockchainDate: 1 })
 
+```
+
+## VERIFY-EMAIL
+
+```javascript
+db.createCollection("VERIFY-EMAIL");
+db["VERIFY-EMAIL"].createIndex( { email: 1 })
+db["VERIFY-EMAIL"].createIndex( { verify: 1, created: 1 })
+
+```
+
+## EVENT-REGISTRY
+
+```javascript
+db.createCollection("EVENT-REGISTRY");
+db["EVENT-REGISTRY"].createIndex( { blockNumber: -1 })
+```
+
+
+## EVENT-WRITEPAGEVIEW
+
+```javascript
+db.createCollection("EVENT-WRITEPAGEVIEW");
+db["EVENT-WRITEPAGEVIEW"].createIndex( { blockNumber: -1 })
+```
+
+## SEND-EMAIL
+
+```javascript
+db.createCollection("SEND-EMAIL");
+db["SEND-EMAIL"].createIndex( { email: 1, created: 1 });
+db["SEND-EMAIL"].createIndex( { email: 1, emailType: 1 }, {unique: true});
+```
+
+
+## BOUNTY
+
+```javascript
+db.createCollection("BOUNTY");
+db["BOUNTY"].createIndex( { accountId: 1, ethAccount: 1, bountyType: 1, created: -1});
 ```

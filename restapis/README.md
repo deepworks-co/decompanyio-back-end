@@ -6,6 +6,7 @@ Serverless Project
 
 1) Api gateway accesslog 설정
 2) S3 WebHosting을 위한 BucketPolicy 설정
+
 ```javascripy
 {
     "Version": "2012-10-17",
@@ -25,13 +26,19 @@ Serverless Project
 
 ```shell
 npm install ../decompany-modules/decompany-common-utils/
-npm install serverless-mocha-plugin
-npm install serverless-offline
-npm install serverless-plugin-existing-s3
-npm install serverless-aws-documentation
-npm install serverless-plugin-split-stacks
-npm install mongojs
-npm install json-2-csv
+npm install ../decompany-modules/decompany-app-properties/
+npm install --save-dev serverless-mocha-plugin
+npm install --save-dev serverless-offline
+npm install --save-dev serverless-plugin-existing-s3
+npm install --save-dev serverless-aws-documentation
+npm install --save-dev serverless-plugin-split-stacks
+npm install --save-dev serverless-plugin-canary-deployments
+npm install --save-dev serverless-prune-plugin
+npm install mongojs@2.6.0
+npm install json-2-csv@3.5.4
+npm install buffer-image-size@0.6.4
+npm install request@2.88.0
+npm --prefix ./opt install sharp@0.22.1
 ```
 
 ## Install Layer
@@ -39,6 +46,13 @@ npm install json-2-csv
 ```shell
 npm --prefix ./opt install sharp
 ```
+
+## Local에서 layer 사용하기
+
+```shell
+export NODE_PATH=.:./opt/node_modules
+```
+
 
 ## Running Offline
 
@@ -49,9 +63,7 @@ sls offline start
 cd {project_dir}
 sudo node ../docker-npm.js rebuild
 
-## Local에서 layer 사용하기
 
-export NODE_PATH=.:./opt/node_modules
 
 ## Deploy
 
@@ -77,6 +89,13 @@ sls logs -f {FunctionName}  -t
 sls logs -f registYesterdayViewCount  -t
 ```
 
+## Exsiting S3 Plugin
+
+```shell
+sls deploy -s dev
+```
+
+
 ## serverless-mocha-plugin
 
 ## create function history 틀릴수도 있음~
@@ -86,6 +105,8 @@ sls create function -f accountSync --handler controllers/account/sync.handler --
 sls create function -f accountUpdate --handler controllers/account/update.handler --httpEvent "post /api/account/update"
 sls create function -f accountGet --handler controllers/account/get.handler --httpEvent "post /api/account/get"
 sls create function -f accountPicture --handler controllers/account/picture.handler --httpEvent "post /api/account/picture"
+sls create function -f accountPictureConverter --handler s3/account/accountPictureConverter.handler
+sls create function -f accountDocuments --handler controllers/account/documents.handler --httpEvent "get /api/account/documents"
 sls create function -f s3DocumentUploadComplete --handler s3/document/create.handler
 sls create function -f s3DocumentConvertComplete --handler s3/document/create.handler
 sls create function -f s3DocumentMetaInfo --handler s3/document/create.handler
@@ -104,6 +125,14 @@ sls create function -f accountEthereumSync --handler controllers/account/account
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
 sls create function -f trackingConfirm --handler controllers/tracking/confirm.handler --httpEvent "get /api/tracking/confirm"
 sls create function -f trackingSendEmail --handler controllers/tracking/sendEmail.handler
+sls create function -f embededDocument --handler controllers/embeded/embededDocument.handler --httpEvent "get /api/embeded/document"
+sls create function -f documentDownload --handler controllers/document/documentDownload.handler --httpEvent "get /api/document/download"
+
+sls create function -f verifyEmailRequest --handler controllers/email/verifyEmailRequest.handler --httpEvent "get /api/email/verifyemailrequest"
+sls create function -f verifyEmail --handler controllers/email/verifyEmail.handler --httpEvent "get /api/email/verifyemail"
+
+sls create function -f bountyRequest --handler controllers/bounty/bountyRequest.handler --httpEvent "get /api/bounty/request"
+sls create function -f bountyState --handler controllers/bounty/bountyState.handler --httpEvent "get /api/bounty/state"
 ```
 
 

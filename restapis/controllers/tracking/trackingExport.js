@@ -2,7 +2,7 @@
 const documentService = require('../document/documentMongoDB');
 const converter = require('json-2-csv');
 const {utils, s3} = require('decompany-common-utils');
-const { s3Config, region } = require('../../resources/config.js').APP_PROPERTIES();
+const { s3Config, region } = require('decompany-app-properties');
 
 module.exports.handler = async (event, context, callback) => {
 
@@ -30,14 +30,21 @@ module.exports.handler = async (event, context, callback) => {
   const resultList = await documentService.getTrackingList(documentId);
 
   const timestamp = Date.now();
-  const downloadName = "tracking_" + documentId + "_" + timestamp;
-  const csvString = await json2csv(resultList);
-  const csvKey = "temp/csv/tracking/" + downloadName + ".csv";
+  
+  const downloadName = "tracking/" + documentId + "_" + timestamp + ".csv";
   const bucket = s3Config.document;
+  
+  const keys = ['user.e','count', 'viewTimestamp', 'totalReadTimestamp'];
+  const csvString = await json2csv(resultList, keys);
+  
+  const t =  timestamp - (timestamp % (1000 * 60 * 60 * 24));
+  const csvKey = `temp/csv/tracking/T${t}/${documentId}/${downloadName}`;
   const expried = new Date(timestamp + 1000 * 60); //1min
+  console.log(bucket, csvKey);
   const r = await s3.putObjectAndExpries(bucket, csvKey, csvString, "text/csv", region, expried);
-
-  const csvDownloadUrl = await s3.signedDownloadUrl(region, bucket, csvKey, 60);
+  console.log("putObjectAndExpries", r);
+  const csvDownloadUrl = await s3.signedDownloadUrl2({region: region, bucket: bucket, key: csvKey, signedUrlExpireSeconds: 60});
+   
 
   const response = JSON.stringify({
     success: true,
@@ -47,12 +54,14 @@ module.exports.handler = async (event, context, callback) => {
   return callback(null, response);
 };
 
-async function json2csv(jsonList){
+async function json2csv(jsonList, keys){
   return new Promise((resolve, reject)=>{
     
     converter.json2csv(jsonList, (err, csv)=>{    
       if(err) reject(err);
       else resolve(csv);
+    }, {
+      keys: keys
     });
 
   });

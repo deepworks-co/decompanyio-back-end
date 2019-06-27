@@ -1,5 +1,5 @@
 'use strict';
-const { region, mongodb, tables, sitemapConfig } = require('../resources/config.js').APP_PROPERTIES();
+const { region, mongodb, tables, sitemapConfig } = require('decompany-app-properties');
 const { MongoWapper, utils, s3, cloudfront } = require('decompany-common-utils');
 const sitemapGenerater = require('sitemap');
 const zlib = require('zlib');
