@@ -775,6 +775,7 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
+              Set-Cookie: integration.response.body.Cookie
             template: $input.path('$')
           documentation:
             summary: "tracking collector"

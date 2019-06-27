@@ -66,7 +66,10 @@ module.exports.handler = async (event, context, callback) => {
     delete user._id;
   }
   console.log("tracking save", result);
+  const expires = new Date(Date.now() + 1000 * 60);
+  const sid = "abcdef";
   const response = JSON.stringify({
+    Cookie: `sid=${sid};domain=polarishare.com;expires=${expires.toGMTString()}`
     success: true,
     message: "ok",
     user: user
