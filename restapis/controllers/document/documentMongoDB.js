@@ -456,7 +456,7 @@ async function queryDocumentListByFeatured (params) {
         as: "userAs"
       }
     }, {
-      $match: {
+      $lookup: {
         from: 'EVENT-REGISTRY',
         localField: '_id',
         foreignField: 'documentId',
