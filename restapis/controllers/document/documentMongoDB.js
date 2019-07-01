@@ -456,7 +456,7 @@ async function queryDocumentListByFeatured (params) {
         as: "userAs"
       }
     }, {
-      $match: {
+      $lookup: {
         from: 'EVENT-REGISTRY',
         localField: '_id',
         foreignField: 'documentId',
@@ -581,7 +581,7 @@ async function getVotedDocumentForAccountId (accountId) {
  */
 async function getFriendlyUrl (seoTitle) {
   const wapper = new MongoWapper(connectionString);
-  return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
+  return await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
 }
 
 /**

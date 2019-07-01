@@ -16,10 +16,10 @@ describe('documentUpdate', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
-        documentId: "5bab09df70ed4307aad667300fc0c95c",
-        //title: "SolidWorks Introduction~~" + Date.now(),
-        isDownload: false,
-        useTracking: false,
+        documentId: "968de024dd1647f1a7544d9c4b46de48",
+        title: "ethereum yellowpaper",
+        isDownload: true,
+        useTracking: true,
         forceTracking: false
       }
     }

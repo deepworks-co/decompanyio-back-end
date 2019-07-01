@@ -6,7 +6,7 @@ const {kinesis, utils} = require('decompany-common-utils');
 
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
-  if (event.source === 'lambda-warmup') {
+  if (event.source && event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
   }
@@ -25,7 +25,7 @@ module.exports.handler = async (event, context, callback) => {
   if(!body.created){
     body.created = Date.now();
   }
-  const xforwardedfor = headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
+  const xforwardedfor = headers && headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
   //const xforwardedfor = "211.45.65.70, 54.239.154.128";
   const ips = xforwardedfor.split(",").map((ip)=>{
     return ip.replace(/^\s+|\s+$/g,"");
@@ -38,8 +38,8 @@ module.exports.handler = async (event, context, callback) => {
   }
   
 
-  body.referer = headers.Referer;
-  body.useragent = headers["User-Agent"];
+  body.referer = headers && headers.Referer?headers.Referer:undefined;
+  body.useragent = headers && headers["User-Agent"]?headers["User-Agent"]:undefined;
   body.xforwardedfor = ips;
   /*
   if(ips && ips.length>0){
@@ -66,7 +66,10 @@ module.exports.handler = async (event, context, callback) => {
     delete user._id;
   }
   console.log("tracking save", result);
+  const expires = new Date(Date.now() + 1000 * 60);
+  const sid = "abcdef";
   const response = JSON.stringify({
+    Cookie: `sid=${sid};domain=polarishare.com;expires=${expires.toGMTString()}`,
     success: true,
     message: "ok",
     user: user
