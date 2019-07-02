@@ -106,5 +106,13 @@
     "oembedConfig": {
         "host": "https://embed.polarishare.com/",
         "thumbHost": "https://res.polarishare.com/"
+    },
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://www.polarishare.com",
+        "bucket": "www.polarishare.com",
+        "documentBucket": "alpha-ca-document",
+        "image": "https://res.polarishare.com",
+        "distributionId": "E1UYELY2K59G6Q"
     }
 }
