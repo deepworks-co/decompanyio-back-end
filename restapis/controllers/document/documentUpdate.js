@@ -75,7 +75,7 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.shortUrl = shortUrl;
   }
 
-  document.updated = Date.now();
+  newDoc.updated = Date.now();
   const result = await documentService.updateDocument(newDoc);
   console.log("update document", result);
 
