@@ -23,9 +23,9 @@ module.exports.handler = async (event, context, callback) => {
     const parsedUrl = urlParser.parse(url)
     console.log("parsedUrl", parsedUrl);
 
-    const paramSeoTitle = parsedUrl.path.substring(1);
+    const paramSeoTitle = parsedUrl.path.split("/")[2];
     let document = await documentService.getDocumentBySeoTitle(paramSeoTitle);
-    const documentId = document._id;
+    
     console.log("get document by seo title", document);
     if(!document){
       return JSON.stringify({
@@ -33,6 +33,7 @@ module.exports.handler = async (event, context, callback) => {
         message: "document does not exist!",
       });
     }
+    const documentId = document._id;
     const author = document.author;
     let domain = applicationConfig.mainHost;
     if(domain.slice(-1)!=="/"){
