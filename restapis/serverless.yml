@@ -873,12 +873,12 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
   
-  embededDocument:
-    handler: controllers/embeded/embededDocument.handler
+  oembedDocument:
+    handler: controllers/oembed/oembedDocument.handler
     events:
       - http: 
           method: get
-          path: /api/embeded/document
+          path: /api/oembed
           cors: true
           integration: lambda
           response:
