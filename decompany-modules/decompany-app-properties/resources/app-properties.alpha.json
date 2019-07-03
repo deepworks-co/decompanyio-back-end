@@ -45,6 +45,7 @@
     },
     "applicationConfig": {
         "mainHost": "https://www.polarishare.com",
+        "embedHost": "https://embed.polarishare.com",
         "activeVoteDays": 3,
         "activeRewardVoteDays": 7
     },
