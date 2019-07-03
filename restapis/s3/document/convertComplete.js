@@ -302,9 +302,9 @@ async function getTinyUrl(document){
     
     
     const prefix = author.username?author.username:author.email;
-    let host = applicationConfig.mainHost;
+    let host = applicationConfig.embedHost;
     if(!host){
-      throw new Error("applicationConfig.mainHost is undefined");
+      throw new Error("applicationConfig.embedHost is undefined");
     }
     if(host.slice(-1) !== "/"){
       host += "/";
