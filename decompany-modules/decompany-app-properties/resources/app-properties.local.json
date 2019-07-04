@@ -113,5 +113,8 @@
         "documentBucket": "dev-ca-document",
         "image": "https://thumb.share.decompany.io",
         "distributionId": "EDFUPNJU9XKGX"
+    },
+    "shortUrlConfig": {
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha/"
     }
 }

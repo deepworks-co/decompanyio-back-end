@@ -115,5 +115,8 @@
         "documentBucket": "alpha-ca-document",
         "image": "https://res.polarishare.com",
         "distributionId": "E1UYELY2K59G6Q"
+    },
+    "shortUrlConfig": {
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
     }
 }
