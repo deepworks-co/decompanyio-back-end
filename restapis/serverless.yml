@@ -75,7 +75,7 @@ provider:
 #    - exclude-me-dir/**
 
 package:
-  individually: true
+  individually: false
   exclude:
     - .gitignore
     - .env
