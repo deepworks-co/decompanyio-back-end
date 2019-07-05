@@ -26,7 +26,7 @@
     "serverless-prune-plugin": "^1.3.2"
   },
   "scripts": {
-    "preinstall": "echo starting",
+    "preinstall": "echo starting && sh preinstall.sh",
     "test": "mocha",
     "package": "sls package",
     "deploy": "sls deploy && sls s3deploy",
