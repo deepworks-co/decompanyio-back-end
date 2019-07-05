@@ -7,3 +7,4 @@ jspm_packages
 .serverless
 .git
 opt
+package-lock.json
