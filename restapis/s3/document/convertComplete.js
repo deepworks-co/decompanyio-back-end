@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config, applicationConfig, region } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
@@ -52,8 +52,15 @@ async function run(event){
       if(!document){
         throw new Error("documet is not exist, " + documentId);
       }
-      const shortUrl = await getTinyUrl(document);
-      console.log("shortUrl", shortUrl);
+      
+      let shortUrl;
+      if(shortUrlConfig){
+        shortUrl = await getShortUrl(document);
+        console.log("shortUrl", shortUrl);
+      } else {
+        console.log("shortUrlConfig is undefined");
+      }
+           
       return runConvertComplete(bucket, key, document, shortUrl);
     } else if("text.json" == filename) {
         //아무것도 안함
@@ -294,33 +301,44 @@ function putS3Object(bucket, key, body, contentType){
   
 }
 
-async function getTinyUrl(document){
+async function getShortUrl(document){
   
   const author = document.author;
   
   return new Promise((resolve, reject)=>{
-    
-    
-    const prefix = author.username?author.username:author.email;
-    let host = applicationConfig.mainHost;
-    if(!host){
-      throw new Error("applicationConfig.mainHost is undefined");
+
+    if(!shortUrlConfig && !shortUrlConfig.generatorUrl){
+      reject(new Error("shortUrlConfig is undefined!"));
     }
+
+    if(!applicationConfig.embedHost){
+      reject(new Error("applicationConfig.embedHost is undefined!"));
+    } 
+    
+    let host = applicationConfig.embedHost;
+    
     if(host.slice(-1) !== "/"){
       host += "/";
     }
-    const url = `${host}${encodeURIComponent(prefix)}/${document.seoTitle}`;
-    console.log("long url", url);
-    
-    
-    request.post({url : "https://tinyurl.com/create.php", form: {url: url}}, function (error, response, body){
+    const url = `${host}${document.seoTitle}`;
+    console.log("shortUrlConfig.generatorUrl", shortUrlConfig.generatorUrl);
+    request.post({url : shortUrlConfig.generatorUrl, headers: {"Content-Type": "application/json"}, body: JSON.stringify({url: url})}, function (error, response, body){
       if(error){
         reject(error);
       }else {
-        const regex = /(https?:\/\/tinyurl.com\/)([a-z0-9\w]+\.*)+[a-z0-9]{2,4}/gi;
-        const list = body.match(regex).reduce(function(a,b){if(a.indexOf(b)<0)a.push(b);return a;},[]);
+        const parsedBody = typeof(body)==='string'?JSON.parse(body):body;
+        console.log(response.statusCode, response.statusMessage);
+        if(response.statusCode===200){
+          if(parsedBody.url){
+            resolve(parsedBody.url);
+          } else {
+            reject("short url create fail");
+          }
           
-        resolve(list[0]);
+        } else {
+          reject(new Error(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`));
+        }
+        
       }
     })
     

@@ -60,20 +60,25 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const result = await documentService.putTrackingInfo(body);
-
+  console.log("tracking save", result);
   const user = await documentService.getTrackingUser(body.cid);
+  
   if(user){
     delete user._id;
+    console.log("tracking user", user, body.cid);
+  } else {
+    console.log("tracking user is not exists", body.cid);
   }
-  console.log("tracking save", result);
-  const expires = new Date(Date.now() + 1000 * 60);
-  const sid = "abcdef";
-  const response = JSON.stringify({
-    Cookie: `sid=${sid};domain=polarishare.com;expires=${expires.toGMTString()}`,
-    success: true,
-    message: "ok",
-    user: user
-  });
+  
+  const expires = new Date(Date.now() + 1000 * 60 * 30);// 30 mins
+  const response = {
+    cookie: `sid=${body.sid};domain=polarishare.com;expires=${expires.toGMTString()}`,
+    body: JSON.stringify({
+      success: true,
+      message: "ok",
+      user: user
+    })
+  }
   //console.log("success", body);
   return response;
 };

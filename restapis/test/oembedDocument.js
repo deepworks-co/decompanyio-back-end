@@ -5,9 +5,9 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('embededDocument', '/controllers/embeded/embededDocument.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('oembedDocument', '/controllers/oembed/oembedDocument.js', 'handler');
 
-describe('embededDocument', () => {
+describe('oembedDocument', () => {
   before((done) => {
     done();
   });
@@ -15,10 +15,11 @@ describe('embededDocument', () => {
   it('implement tests here', () => {
     const event = {
       query: {
-        documentId: "decompany-introduction-e4g43q"
+        url: encodeURIComponent("https://share.decompany.io/jayjayjay/ethereum-yellowpaper-3xlv2m")
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

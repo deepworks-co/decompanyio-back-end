@@ -75,7 +75,7 @@ provider:
 #    - exclude-me-dir/**
 
 package:
-  individually: true
+  individually: false
   exclude:
     - .gitignore
     - .env
@@ -775,8 +775,8 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-              Set-Cookie: integration.response.body.Cookie
-            template: $input.path('$')
+              Set-Cookie: integration.response.body.cookie
+            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
@@ -873,12 +873,12 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
   
-  embededDocument:
-    handler: controllers/embeded/embededDocument.handler
+  oembedDocument:
+    handler: controllers/oembed/oembedDocument.handler
     events:
       - http: 
           method: get
-          path: /api/embeded/document
+          path: /api/oembed
           cors: true
           integration: lambda
           response:
