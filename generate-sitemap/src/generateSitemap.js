@@ -3,7 +3,7 @@ const { region, mongodb, tables, sitemapConfig } = require('decompany-app-proper
 const { MongoWapper, utils, s3, cloudfront } = require('decompany-common-utils');
 const sitemapGenerater = require('sitemap');
 const zlib = require('zlib');
-
+const THUMBNAIL_SIZE = 2048;
 const wapper = new MongoWapper(mongodb.endpoint);
 module.exports.handler = async (event, context, callback) => {
   
@@ -80,7 +80,7 @@ async function generateSitemapIndex(sitemaps){
 async function generateSitemap(limit, start, index){
   const filename = `sitemap${index}.xml.gz`
   const queryPipeline = getQueryPipeline(limit, start);
-
+  console.log("generateSitemap query", JSON.stringify(queryPipeline));
   const resultList = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
   console.log(`search count : ${resultList.length}`);
   //console.log(resultList.slice(5));
@@ -94,7 +94,7 @@ async function generateSitemap(limit, start, index){
   const now = new Date();
   const promises = resultList.map(async (it)=> {
     const prefix = it.author.username?it.author.username:it.author.email;
-    const url = `${domain}/${prefix}/${it.seoTitle}/`;
+    const url = `${domain}/${prefix}/${it.seoTitle}`;
     //https://thumb.share.decompany.io/b7e1baf131a24e3cb9bc152c4b98a670/320/21
     const documentId = it._id;
     const totalPages = it.totalPages;
@@ -105,7 +105,7 @@ async function generateSitemap(limit, start, index){
 
     const images = Array(totalPages).fill(0).map((it, index)=>{
       return {
-        url: `${image}/${documentId}/320/${index+1}`,
+        url: `${image}/${documentId}/${THUMBNAIL_SIZE}/${index+1}`,
         title: title,
         caption: texts[index].substring(0, 200)
       }
@@ -114,7 +114,6 @@ async function generateSitemap(limit, start, index){
 
     return {
       url : url,
-      changefreq: "never",
       lastmod: [now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate()].join('-'),
       img: images
     }
@@ -159,7 +158,7 @@ function getQueryPipeline(limit, start){
     {
       $match: {
         state: "CONVERT_COMPLETE",
-        created: {$gt: start}
+        $or: [{created: {$gt: start}}, {updated: {$gt: start}}]
       }
     }, {
       $sort: {
