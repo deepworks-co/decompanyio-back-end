@@ -15,7 +15,7 @@ describe('oembedDocument', () => {
   it('implement tests here', () => {
     const event = {
       query: {
-        url: encodeURIComponent("https://share.decompany.io/jayjayjay/ethereum-yellowpaper-3xlv2m")
+        url: encodeURIComponent("https://share.decompany.io/jayjayjay/ethereum-yellowpaper-3xlv2m/")
       }
     }
     return wrapped.run(event).then((response) => {

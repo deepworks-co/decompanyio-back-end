@@ -76,7 +76,7 @@ describe('s3DocumentConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/fa0d69599a0e418283b8eb20d80a84ed/result.txt"
+              "key": "THUMBNAIL/968de024dd1647f1a7544d9c4b46de48/result.txt"
             }
           }
         },
