@@ -785,6 +785,7 @@ async function queryVotedDocumentByCurator(args) {
       desc: "$documentInfo.desc",
       tags: "$documentInfo.tags",
       seoTitle: "$documentInfo.seoTitle",
+      shortUrl: "$documentInfo.shortUrl",
       created: "$documentInfo.created",
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
