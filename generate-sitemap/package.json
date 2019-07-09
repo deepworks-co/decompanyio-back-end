@@ -16,6 +16,8 @@
   "devDependencies": {},
   "scripts": {
     "preinstall": "sh install.sh",
+    "deploy": "sls deploy",
+    "deploy:alpha": "sls deploy -s alpha",
     "test": "mocha"
   },
   "author": "",
