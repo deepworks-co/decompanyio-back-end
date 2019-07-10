@@ -65,3 +65,4 @@
 ## Create Project
 
 > serverless create --template aws-nodejs --path myService
+
