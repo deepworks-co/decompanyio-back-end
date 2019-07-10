@@ -5,18 +5,18 @@
 
 ## Projects
 
-> * batch-pageview
+> * batch-pageview(필수)
 > * bounty-service
 > * decompany-modules
 > * documents
 > * generate-stemap
 > * lambda-warmup
-> * restapis
+> * restapis(필수)
 > * verify-email
 
 * * * 
 
-## batch-pageview
+## batch-pageview(필수)
 > on chain에 pageview를 기록하는 함수을 중슴으로 각종 onchain과 관련된 기능들 구현
 
 
@@ -56,3 +56,7 @@
 ## verify-email
 > 이메일 보내기 cron및 검증 관련 함수들
 > tracking, aboutus, welcome
+
+
+## Create Project
+> serverless create --template aws-nodejs --path myService
