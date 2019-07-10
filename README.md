@@ -56,3 +56,7 @@
 ## verify-email
 > 이메일 보내기 cron및 검증 관련 함수들
 > tracking, aboutus, welcome
+
+
+## Create Project
+> serverless create --template aws-nodejs --path myService
