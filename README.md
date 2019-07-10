@@ -1,4 +1,4 @@
-# Polairs Share Service
+# Polaris Share Service
 > URL : https://www.polarishare.com
 
 
