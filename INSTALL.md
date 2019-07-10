@@ -40,8 +40,8 @@ GoGo
 
 2. 문서 변환용 SQS 생성하기
     - app-properties의 sqsConfig
-        - region :
-        - queueUrls : 
+        - region : SQS region
+        - queueUrls :  이미지 변환시 사용될 SQS
 
 -----
 
@@ -57,9 +57,16 @@ GoGo
     - applicationConfig
         - mainHost: 대표 DNS
     - mongodb
-        - endpoint 
+        - endpoint : mongodb endpoint
     - region 설정 확인 (deploy될 region)
     - s3Config 설정 확인
+        - document : 문서 업로드 전용
+        - thumbnail : 문서 썸네일 서비스용
+        - profile : 프로파일 이미지
+        - upload_profile: 프로파일 이미지 업로드 전용
+    - sqsConfig
+        - region : SQS region
+        - queueUrls :  이미지 변환시 사용될 SQS
 
 ----
 
@@ -71,6 +78,7 @@ GoGo
 6. Deploy batch-pageview
     > cd batch-pageview
     > sls deploy
+
 ---
 
 
@@ -83,3 +91,13 @@ Post Install
     - generatePopular
     - generateFeatured
     - generateTopTag
+
+Image Converter
+-------------
+
+1. 환경설정
+    - 소스 : \\Cdt-16-0046\공유폴더
+    - jdk1.7 / Tomcat7 / maven
+    - PO Converter서버와 동일한 환경
+2. maven build 및 package 생성
+    - mvn clean package -DskipTests -Pdev
