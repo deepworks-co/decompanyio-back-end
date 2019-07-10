@@ -1,6 +1,12 @@
 Install
 =============
 
+Architecture
+-------------
+
+> https://drive.google.com/file/d/1Q94ubwcRWHg7zRoyrFPLPckq-Y0NzQHV/view?usp=sharing
+
+
 Prerequirement
 -------------
 
