@@ -4,9 +4,7 @@ Install
 Prerequirement
 -------------
 
-1. nodejs 8.10 설치
-    - aaa
-    - bbb
+1. nodejs 8.10 설치 
 
 2. serverless 설치
     - https://serverless.com/framework/docs/providers/aws/guide/quick-start/
@@ -60,6 +58,22 @@ GoGo
 ----
 
 
-5. Deploy serverless
+5. Deploy restapis serverless
+    > cd restapis
+    > sls deploy
+
+6. Deploy batch-pageview
+    > cd batch-pageview
     > sls deploy
 ---
+
+
+Post Install
+-------------
+
+1. batch-pageview 프로젝트의 아래 함수는 일반 서비스 관련 함수이다. 이외 다른 함수는 disable 시킨다.
+    - dailyPageview
+    - recentlyPageview
+    - generatePopular
+    - generateFeatured
+    - generateTopTag

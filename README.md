@@ -5,18 +5,18 @@
 
 ## Projects
 
-> * batch-pageview
+> * batch-pageview(필수)
 > * bounty-service
 > * decompany-modules
 > * documents
 > * generate-stemap
 > * lambda-warmup
-> * restapis
+> * restapis(필수)
 > * verify-email
 
 * * * 
 
-## batch-pageview
+## batch-pageview(필수)
 > on chain에 pageview를 기록하는 함수을 중슴으로 각종 onchain과 관련된 기능들 구현
 
 
