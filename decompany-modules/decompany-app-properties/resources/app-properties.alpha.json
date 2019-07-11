@@ -118,11 +118,5 @@
     },
     "shortUrlConfig": {
         "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
-    },
-    "frontendLambdaEdgeConfig": {
-        "frontendBucket": "www.polarisshare.com",
-        "metaUrl": "https://api.polarishare.com/rest/api/document/info/",
-        "resHost": "https://res.polarishare.com",
-        "mainHost": "https://www.polarishare.com"
     }
 }

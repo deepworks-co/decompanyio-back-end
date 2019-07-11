@@ -116,11 +116,6 @@
     },
     "shortUrlConfig": {
         "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha/"
-    },
-    "frontendLambdaEdgeConfig": {
-        "frontendBucket": "share.decompany.io",
-        "metaUrl": "https://api.share.decompany.io/rest/api/document/info/",
-        "resHost": "https://thumb.share.decompany.io",
-        "mainHost": "https://share.decompany.io"
     }
+    
 }
