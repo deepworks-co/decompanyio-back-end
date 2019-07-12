@@ -85,7 +85,7 @@ function checkPermission(document, principalId){
     return true;
   }
 
-  if(principalId === document.accountId){
+  if(principalId && principalId === document.accountId){
     return true;
   }
 
