@@ -19,6 +19,12 @@ db.DOCUMENT.createIndex({state: 1, tags: 1, accountId: 1, created: -1})
 db.DOCUMENT.createIndex({state: 1, tags: 1, created: -1})
 db.DOCUMENT.createIndex({state: 1, accountId: 1, created: -1})
 db.DOCUMENT.createIndex({state: 1, created: -1})
+
+db.DOCUMENT.createIndex({state: 1, isDeleted: 1, isPublic: 1, isBlocked: 1, tags: 1, accountId: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, isDeleted: 1, isPublic: 1, isBlocked: 1, tags: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, isDeleted: 1, isPublic: 1, isBlocked: 1, accountId: 1, created: -1})
+db.DOCUMENT.createIndex({state: 1, isDeleted: 1, isPublic: 1, isBlocked: 1, created: -1})
+
 ```
 
 ## DOCUMENT-POPULAR
