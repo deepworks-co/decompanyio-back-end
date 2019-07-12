@@ -60,3 +60,7 @@ const promiseExec = cmd => (
       })
     ))
   );
+
+module.exports.getGeoipLayer = (serverless)=>{
+  return "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:1";
+}

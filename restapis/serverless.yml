@@ -574,6 +574,9 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentAuth:
+    handler: controllers/document/documentAuth.handler
+
   documentRegist:
     handler: controllers/document/documentRegist.handler
     events:
@@ -614,12 +617,13 @@ functions:
       postTrafficHook: postHook
 
   documentInfo:
-    handler: controllers/document/documentController.info
+    handler: controllers/document/documentInfo.handler
     events:
       - http:
           path: api/document/info/{documentId}
           method: get
           cors: true
+          authorizer: documentAuth
           integration: lambda
           response:
             headers:

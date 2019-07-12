@@ -39,6 +39,7 @@ module.exports = {
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
+  checkRegistrableDocument
 }
 
  /**
@@ -216,13 +217,11 @@ async function queryDocumentListByLatest (params) {
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
-
-
   const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [{
-      $match: { state: "CONVERT_COMPLETE"}
+      $match: { state: "CONVERT_COMPLETE", isDeleted: false, isPublic: true, isBlocked: false }
     },{
       $sort:{ created: -1}
     }];
@@ -1453,5 +1452,32 @@ async function putTrackingUser(cid, sid, documentId, email){
     wapper.close();
   }
 
+  
+}
+
+
+async function checkRegistrableDocument(accountId){
+  
+  return new Promise(async (resolve, reject)=>{
+    const wapper = new MongoWapper(connectionString);
+
+    wapper.query(TB_DOCUMENT, {accountId: accountId, isPublic: false})
+    .sort({created:-1}).toArray((err, data)=>{
+      if(err) {
+        reject(err);
+      } else {
+        console.log("get private doc", data);
+        if(data && data.length > 4){
+          resolve(false)
+        } else {
+          resolve(true)
+        }
+        
+      }
+      wapper.close();
+    });
+
+  })
+  
   
 }

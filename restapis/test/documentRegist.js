@@ -23,7 +23,8 @@ describe('documentRegist', () => {
         desc: "dev test",
         useTracking: true,
         forceTracking: true,
-        isDownload: true
+        isDownload: true,
+        isPublic: 'false'
       }
     }
     return wrapped.run(event).then((response) => {

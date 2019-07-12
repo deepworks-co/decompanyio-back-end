@@ -5,7 +5,7 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('documentInfo', '/controllers/document/documentController.js', 'info');
+let wrapped = mochaPlugin.getWrapper('documentInfo', '/controllers/document/documentInfo.js', 'handler');
 
 describe('documentInfo', () => {
   before((done) => {
@@ -20,6 +20,9 @@ describe('documentInfo', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+
+      console.log("response");
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });
