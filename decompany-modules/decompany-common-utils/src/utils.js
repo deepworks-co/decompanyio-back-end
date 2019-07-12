@@ -55,3 +55,19 @@ exports.validateEmail = (email) => {
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return re.test(String(email).toLowerCase());
 }
+
+
+exports.parseBool = (v, defaultValue) =>{
+  let defaultBoolValue = false;
+  if (typeof(defaultValue) === 'boolean'){
+    defaultBoolValue = defaultValue;
+  }
+
+  let boolValue = v?v:false;
+
+  if(boolValue===true || boolValue==='true'){
+    return true;
+  }
+  
+  return false;
+}

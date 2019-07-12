@@ -44,6 +44,10 @@ module.exports = class MongoWapper {
     });
   }
 
+  query(collection, query) {
+    return this.db.collection(collection).find(query);
+  }
+
   find(collection, query, pageNo = 1, pageSize = 50, sort = {created : -1 /*decending*/ }) {
     this.init();
 
