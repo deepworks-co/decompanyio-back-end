@@ -623,7 +623,6 @@ functions:
           path: api/document/info/{documentId}
           method: get
           cors: true
-          authorizer: documentAuth
           integration: lambda
           response:
             headers:
