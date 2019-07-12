@@ -1,5 +1,25 @@
 # bounty-service
 
+
+## USE
+
+### Bounty 요청
+
+GET /api/bounty/request
+
+headers
+  - Authorize : AUTH0 JWT
+parameter
+  - ethAccount : ethereum account
+  - type : GAS or DECK
+
+### Bounty 상태 확인
+
+GET /api/bounty/state
+
+headers
+  - Authorize : AUTH0 JWT
+
 ## Git clone & checkout
 
 ```shell

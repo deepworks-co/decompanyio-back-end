@@ -1,0 +1,19 @@
+{
+  "name": "frontend-lambdaedge",
+  "version": "1.0.0",
+  "description": "frontend lambda@edge for SSR",
+  "main": "handler.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha",
+    "preinstall": "sh install.sh",
+    "deploy": "sls deploy",
+    "deploy:alpha": "sls deploy -s alpha"
+  },
+  "author": "",
+  "license": "ISC"
+}

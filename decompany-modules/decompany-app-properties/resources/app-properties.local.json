@@ -117,4 +117,5 @@
     "shortUrlConfig": {
         "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha/"
     }
+    
 }

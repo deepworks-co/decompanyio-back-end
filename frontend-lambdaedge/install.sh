@@ -1,0 +1,1 @@
+npm install ../decompany-modules/decompany-app-properties/
