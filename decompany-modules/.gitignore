@@ -6,3 +6,4 @@ jspm_packages
 # Serverless directories
 .serverless
 .git
+package-lock.json
