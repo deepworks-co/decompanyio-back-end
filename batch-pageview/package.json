@@ -1,0 +1,27 @@
+{
+  "name": "batch-pageview",
+  "version": "1.0.0",
+  "description": "## Git clone & checkout",
+  "main": "docker-npm.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.478.0",
+    "decompany-common-utils": "^1.0.0",
+    "decompany-app-properties": "^1.0.0",
+    "ethereumjs-tx": "^1.3.7",
+    "mongojs": "^2.6.0",
+    "rxjs": "^6.5.2",
+    "serverless-mocha-plugin": "^1.10.0",
+    "web3": "^1.0.0-beta.55"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "preinstall": "sh install.sh",
+    "deploy": "sls deploy",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC"
+}
