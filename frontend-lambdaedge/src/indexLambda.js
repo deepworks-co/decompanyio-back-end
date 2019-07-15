@@ -9,19 +9,24 @@ const envConfigs = {
         "frontendBucket": "share.decompany.io",
         "metaUrl": "https://api.share.decompany.io/rest/api/document/info/",
         "resHost": "https://thumb.share.decompany.io",
-        "mainHost": "https://share.decompany.io"
+        "mainHost": "https://share.decompany.io",
+        "titleSuffix": "Decompany"
+        
     },
     "EDFUPNJU9XKGX": {
         "frontendBucket": "share.decompany.io",
         "metaUrl": "https://api.share.decompany.io/rest/api/document/info/",
         "resHost": "https://thumb.share.decompany.io",
-        "mainHost": "https://share.decompany.io"
+        "mainHost": "https://share.decompany.io",
+        "titleSuffix": "Decompany"
     },
     "E1UYELY2K59G6Q": {
         "frontendBucket": "www.polarishare.com",
         "metaUrl": "https://api.polarishare.com/rest/api/document/info/",
         "resHost": "https://res.polarishare.com",
-        "mainHost": "https://www.polarishare.com"
+        "mainHost": "https://www.polarishare.com",
+        "seo" : true,
+        "titleSuffix": "Polaris Share"
     }
     
 }
@@ -40,7 +45,7 @@ exports.handler = (event, context, callback) => {
         const envConfig = envConfigs[config.distributionId];
         if(envConfig){
             BUCKET = envConfig.frontendBucket;
-            META_URL = envConfigmetaUrl;
+            META_URL = envConfig.metaUrl;
             RES_HOST = envConfig.resHost;
             MAIN_HOST = envConfig.mainHost;
         }
@@ -48,6 +53,7 @@ exports.handler = (event, context, callback) => {
         console.log("request", `${request.uri}${request.querystring?'?'+request.querystirng:""}`);
         const seoTitle = request.uri.split("/")[2];
         const metaUrl = `${META_URL}${seoTitle}`;
+        const titleSuffix = envConfig.titleSuffix;
         console.log("metaUrl", metaUrl);
         Promise.all([fetchUrl(metaUrl), getIndexHtml()])
         .then((res)=>{
@@ -69,25 +75,29 @@ exports.handler = (event, context, callback) => {
                 const imageUrl = `${RES_HOST}/${document._id}/2048/1`;
                 const regDate =  document.created;//(new Date(document.created)).toUTCString();
                 
-                const metaTag = `<title>${document.title} - ${authorname} - Polaris Share</title>                
-                <meta content="2237550809844881" property="fb:app_id" name="fb_app_id">
-                <meta name="title" content="${document.title}">
-                <meta name="description" content="${document.desc}">
-                <meta name="author" content="${authorname}">
-                <meta name="keyworkds" content="${document.tags.join(",")}">
-                <meta property="og:url" content="${url}">
-                <meta property="og:site_name" content="Polaris Share">
-                <meta property="og:type" content="website">
-                <meta property="og:title" content="${document.title}">
-                <meta property="og:description" content="${document.desc}">
-                <meta property="og:image" content="${imageUrl}"><meta property="og:image:width" content="720"><meta property="og:image:height" content="498">
-                <meta property="og:regDate" content="${regDate}">               
-                <meta name="twitter:card" content="summary_large_image">
-                <meta name="twitter:site" content="@Polarishare">
-                <meta name="twitter:title" content="${document.title}">
-                <meta name="twitter:description" content="${document.desc}">
-                <meta name="twitter:image" content="${imageUrl}">
-                <meta name="twitter:url" content="${url}">
+                let metaTag = `<title>${document.title} - ${authorname} - ${titleSuffix}</title>`;
+                if(envConfig.seo){
+                    metaTag += `<meta name="Robots" content="noindex, nofollow" />`
+                }
+                
+                metaTag += `<meta content="2237550809844881" property="fb:app_id" name="fb_app_id" />
+                <meta name="title" content="${document.title}" />
+                <meta name="description" content="${document.desc}" />
+                <meta name="author" content="${authorname}" />
+                <meta name="keyworkds" content="${document.tags.join(",")}" />
+                <meta property="og:url" content="${url}" />
+                <meta property="og:site_name" content="Polaris Share" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="${document.title}" />
+                <meta property="og:description" content="${document.desc}" />
+                <meta property="og:image" content="${imageUrl}" /><meta property="og:image:width" content="720"><meta property="og:image:height" content="498" />
+                <meta property="og:regDate" content="${regDate}" />               
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@Polarishare" />
+                <meta name="twitter:title" content="${document.title}" />
+                <meta name="twitter:description" content="${document.desc}" />
+                <meta name="twitter:image" content="${imageUrl}" />
+                <meta name="twitter:url" content="${url}" />
                 `;
 
                 html = html.replace("<title>Polaris Share</title>", metaTag);
