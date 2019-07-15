@@ -24,7 +24,11 @@ Prerequirement
 4. VPC 설정
     - serverless.yml 에 지정함
 
-4. AWS CLI 설정 및 Accesskey, secretkey 설정
+5. AWS CLI 설정 및 Accesskey, secretkey 설정
+
+6. source
+    - Backend : git clone https://github.com/decompanyio/decompanyio-back-end.git
+    - Frontend : git clone https://github.com/decompanyio/decompanyio-front-end.git
 
 GoGo
 -------------
@@ -87,10 +91,25 @@ Post Install
 
 1. batch-pageview 프로젝트의 아래 함수는 일반 서비스 관련 함수이다. 이외 다른 함수는 disable 시킨다.
     - dailyPageview
+        - 일배치 전날의 pageview 집계
+        - 현재 매일 오전 00: 10dp step function 배치에 의해 동작중
+        - wc300에서 동작 시에는 주석되어 있는 events의 주석을 해제해주세요~ 현재는 step function으로 동작하기 때문에  주석처리 되어 있습니다.
     - recentlyPageview
+        - 최근 오날자 pageview 집계
+        - 5분마다 동작
     - generatePopular
+        - 최근 n일간의(현재 7일) pageview 집계
+        - 인기 목록을 생성함
     - generateFeatured
+        - 최근 n일간의(현재 3일) vote 집계
+        - 추천 목록을 생성함
     - generateTopTag
+        - 모든 문서의 tag 랭킹 집계 
+        - 5분마다 집계
+
+2. 배포 
+    - cd batch-pageview 
+    - npm run deploy
 
 Image Converter
 -------------
