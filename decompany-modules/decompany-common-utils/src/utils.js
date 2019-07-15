@@ -61,9 +61,11 @@ exports.parseBool = (v, defaultValue) =>{
   let defaultBoolValue = false;
   if (typeof(defaultValue) === 'boolean'){
     defaultBoolValue = defaultValue;
+  } else {
+    defaultBoolValue = false;
   }
 
-  let boolValue = v?v:false;
+  let boolValue = v?v:defaultBoolValue;
 
   if(boolValue===true || boolValue==='true'){
     return true;
