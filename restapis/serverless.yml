@@ -150,38 +150,38 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
-  curatorSummary:
-    handler: controllers/curator/curatorSummary.handler
-    events:
-      - http:
-          path: /api/curator/summary
-          method: get
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: "/api/curator/summary"
-            description: "/api/curator/summary"
-            queryParams:
-              - name: ethAccount
-                description: ethAccount
-                type: string
-                required: true
-            methodResponses:
-              -
-                statusCode: "200"
-                responseBody:
-                  description: "Response body description"
-                responseModels:
-                  "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
+#  curatorSummary:
+#    handler: controllers/curator/curatorSummary.handler
+#    events:
+#      - http:
+#          path: /api/curator/summary
+#          method: get
+#          cors: true
+#          integration: lambda
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#            template: $input.path('$')
+#          documentation:
+#            summary: "/api/curator/summary"
+#            description: "/api/curator/summary"
+#            queryParams:
+#              - name: ethAccount
+#                description: ethAccount
+#                type: string
+#                required: true
+#            methodResponses:
+#              -
+#                statusCode: "200"
+#                responseBody:
+#                  description: "Response body description"
+#                responseModels:
+#                  "application/json": "DefaultResponseModel"
+#    deploymentSettings:
+#      type: ${self:custom.deployType}
+#      alias: prod
+#      preTrafficHook: preHook
+#      postTrafficHook: postHook
 
   zapierAuth:
     handler: controllers/zapier/auth.handler
