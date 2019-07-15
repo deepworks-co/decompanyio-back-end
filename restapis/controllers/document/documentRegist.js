@@ -44,7 +44,7 @@ module.exports.handler = async (event, context, callback) => {
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
   const isDownload = utils.parseBool(body.isDownload);
   const cc = body.cc;
-  const isPublic = utils.parseBool(body.isPublic);
+  const isPublic = utils.parseBool(body.isPublic, true);
   
   const user = await documentService.getUser(accountId);
   if(!user){

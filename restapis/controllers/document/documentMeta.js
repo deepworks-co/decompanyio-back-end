@@ -13,17 +13,17 @@ module.exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
   }
-  const {principalId, path} = event;
+  const {query} = event;
   console.log("event : ", event);
   try{
     
-    let documentId = path.documentId;
+    let seoTitle = query.seoTitle;
     
-    if(!documentId){
+    if(!seoTitle){
       throw new Error("parameter is invaild!!");
     }
 
-    let document = await documentService.getDocumentBySeoTitle(documentId);
+    const document = await documentService.getDocumentBySeoTitle(seoTitle);
     console.log("get document by seo title", document);
     if(!document || document.isDeleted === true){
       return JSON.stringify({
@@ -32,24 +32,9 @@ module.exports.handler = async (event, context, callback) => {
       });
     }
 
-    console.log("documentId", document._id);
-    const results = await Promise.all([
-      documentS3.getDocumentTextById(document._id),
-      documentService.getRecentlyPageViewTotalCount(),
-      documentService.getFeaturedDocuments({documentId: document.documentId})
-    ]);
-
-    const textList = results[0];
-    const totalViewCountInfo = results[1];
-    const featuredList = results[2];
-    
-
     const response = JSON.stringify({
         success: true,
-        document: document,
-        text: textList,
-        featuredList: featuredList,
-        totalViewCountInfo: totalViewCountInfo
+        document: document
       }
     );
 

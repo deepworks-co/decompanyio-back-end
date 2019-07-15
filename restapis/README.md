@@ -122,6 +122,7 @@ sls create function -f curatorTodayDocumentList --handler controllers/curator/cu
 sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"
 sls create function -f documentUpdate --handler controllers/document/documentUpdate.handler --httpEvent "post /api/document/update"
 sls create function -f documentInfo --handler controllers/document/documentInfo.handler --httpEvent "get /api/document/info"
+sls create function -f documentMeta --handler controllers/document/documentMeta.handler --httpEvent "get /api/document/meta"
 sls create function -f documentMigration --handler migration/documentMigration.handler
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"

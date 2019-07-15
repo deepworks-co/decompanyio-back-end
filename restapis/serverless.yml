@@ -90,6 +90,7 @@ layers:
     description: "additional node_module"
     
 functions:
+
   accountPictureConverter:
     handler: s3/account/accountPictureConverter.handler
     layers:   
@@ -574,9 +575,6 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
-  documentAuth:
-    handler: controllers/document/documentAuth.handler
-
   documentRegist:
     handler: controllers/document/documentRegist.handler
     events:
@@ -616,6 +614,24 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentMeta:
+    handler: controllers/document/documentMeta.handler
+    events:
+      - http: 
+          path: /api/document/meta
+          method: get
+          cors: true
+          integtation: lambda
+          response: 
+              headers:
+                Content-Type: integration.response.header.Content-Type
+              template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   documentInfo:
     handler: controllers/document/documentInfo.handler
     events:
@@ -623,7 +639,7 @@ functions:
           path: api/document/info/{documentId}
           method: get
           cors: true
-          integration: lambda
+          integration: lambda          
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
