@@ -95,7 +95,7 @@ Post Install
         - 현재 매일 오전 00: 10dp step function 배치에 의해 동작중
         - wc300에서 동작 시에는 주석되어 있는 events의 주석을 해제해주세요~ 현재는 step function으로 동작하기 때문에  주석처리 되어 있습니다.
     - recentlyPageview
-        - 최근 오날자 pageview 집계
+        - 최근 pageview 집계(오늘 기준)
         - 5분마다 동작
     - generatePopular
         - 최근 n일간의(현재 7일) pageview 집계
