@@ -621,7 +621,15 @@ functions:
           path: /api/document/meta
           method: get
           cors: true
-          integtation: lambda
+          integration: lambda
+          documentation:
+            summary: "/api/document/download"
+            description: "/api/document/download"
+            queryParams:
+              - name: seoTitle
+                description: seoTitle
+                type: string
+                required: true
           response: 
               headers:
                 Content-Type: integration.response.header.Content-Type
