@@ -76,7 +76,7 @@ exports.handler = (event, context, callback) => {
                 const regDate =  document.created;//(new Date(document.created)).toUTCString();
                 
                 let metaTag = `<title>${document.title} - ${authorname} - ${titleSuffix}</title>`;
-                if(envConfig.seo){
+                if(!envConfig.seo){
                     metaTag += `<meta name="Robots" content="noindex, nofollow" />`
                 }
                 
