@@ -69,7 +69,7 @@ describe('s3DocumentConvertComplete', () => {
     
     const event = {
       "Records": [
-       
+        /*
         {
           "s3": {
             "bucket": {
@@ -80,7 +80,7 @@ describe('s3DocumentConvertComplete', () => {
             }
           }
         },
-        /*
+        */
         {
           "s3": {
             "bucket": {
@@ -91,7 +91,7 @@ describe('s3DocumentConvertComplete', () => {
             }
           }
         },
-        */
+
         
       ]
     }

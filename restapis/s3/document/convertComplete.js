@@ -28,10 +28,8 @@ exports.handler = async (event, context, callback) => {
   //THUMBNAIL/aaaaa/300X300/1
   //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
   
-  const result = await run(event);
-
+  const result = await run(event); 
   return callback(null, result);
-
 };
 
 async function run(event){
@@ -180,8 +178,9 @@ async function getDocument(documentId){
 async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
+    const endPageNo = Number(totalPages);
     const updateDoc = {};
-    updateDoc.state = "CONVERT_COMPLETE";
+    updateDoc.state = endPageNo===1?"SINGLE_PAGE_DOC":"CONVERT_COMPLETE";
     updateDoc.totalPages = Number(totalPages);
     if(shortUrl) updateDoc.shortUrl = shortUrl;
       
@@ -284,9 +283,7 @@ function putS3Object(bucket, key, body, contentType){
       Body: body, 
       Bucket: bucket, 
       Key: key, 
-      Metadata: {
-        "Cache-Control": "max-age=31536000" 
-      },
+      CacheControl: "max-age=31536000",
       ContentType: contentType
      }, function(err, data) {
        if (err) {
