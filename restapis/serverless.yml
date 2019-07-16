@@ -83,18 +83,13 @@ package:
     - install.sh
     - opt/**
     - test/**
-
-layers:
-  libNodeModule:
-    path: opt
-    description: "additional node_module"
     
 functions:
 
   accountPictureConverter:
     handler: s3/account/accountPictureConverter.handler
     layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
+      - ${file(./serverlessConfig.js):getSharpLayer}
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
@@ -357,7 +352,7 @@ functions:
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
     layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
+      - ${file(./serverlessConfig.js):getSharpLayer}
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.document}

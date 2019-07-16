@@ -22,48 +22,107 @@ exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
   }
-  
+  console.log(event);
+  let results;
+  try{
   //console.log("convertCompete Event", JSON.stringify(event));
 
   //THUMBNAIL/aaaaa/300X300/1
   //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
-  
-  const result = await run(event); 
-  return callback(null, result);
+    const promises = event.Records.map((record) =>  {
+
+      const key = record.s3.object.key;
+      const bucket = record.s3.bucket.name;
+      
+      const keys = key.split("/");
+      const prefix = keys[0];
+      const documentId = keys[1];
+      const filename = keys[2];
+      console.log(filename);
+      return run({
+        key: key,
+        bucket: bucket,
+        prefix: prefix,
+        documentId: documentId,
+        filename: filename
+      });
+    });
+
+    results = await Promise.all(promises);
+  } catch(err){
+    console.log(err);
+  }
+
+  return callback(null, results);
 };
 
-async function run(event){
+function run(params){
+  console.log("run", params);
+  const {key, prefix, bucket, filename, documentId} = params;
+  return new Promise((resolve, reject)=>{
+    if("result.txt" === filename){
+      getDocument(documentId)
+      .then((document)=>{
 
-  const promises = await event.Records.map(async (record) =>  {
-    const key = record.s3.object.key;
-    const bucket = record.s3.bucket.name;
-    
-    const keys = key.split("/");
-    const prefix = keys[0];
-    const documentId = keys[1];
-    const filename = keys[2];
-    
-    console.log("convertComplete start", key, prefix, documentId, filename);
-    if("result.txt" == filename){
-      const document = await getDocument(documentId);
-      //console.log(document);
-      if(!document){
-        throw new Error("documet is not exist, " + documentId);
-      }
+        if(!document || !document._id){
+          reject("documet is not exist, " + documentId);
+        }
+
+        return Promise.resolve(document);
+        
+      })
+      .then((document)=>{
+        let shortUrl;
+        if(shortUrlConfig){
+          shortUrl = getShortUrl(document);
+          console.log("shortUrl", shortUrl);
+        } else {
+          console.log("shortUrlConfig is undefined");
+        }
+        return Promise.resolve({
+          document: document,
+          shortUrl: shortUrl
+        })
+      })
+      .then(async (documentWithShortUrl)=>{
+        const {document, shortUrl} = documentWithShortUrl;
+        const result = await runConvertComplete(bucket, key, document, shortUrl);
+        resolve(result);
+      })
+      .catch((err)=>{
+        //console.log(document);
+        reject(err);
+        
+      })
       
-      let shortUrl;
-      if(shortUrlConfig){
-        shortUrl = await getShortUrl(document);
-        console.log("shortUrl", shortUrl);
-      } else {
-        console.log("shortUrlConfig is undefined");
-      }
-           
-      return runConvertComplete(bucket, key, document, shortUrl);
-    } else if("text.json" == filename) {
+      
+      
+
+    } else if("text.json" === filename) {
         //아무것도 안함
+        resolve("text.json is not working");
     } else if("1200X1200" === filename){
       //프리뷰이미지 metadata content-type : image/png
+      convertThumbnail(bucket, key)
+      .then((data)=>{
+        console.log("convertThumbnail success", data);
+        resolve(data)
+      })
+      .catch((err)=>{
+        console.log("convertThumbnail fail", err);
+        reject(err);
+      })
+      
+    } else {
+      resolve("not support");
+    }
+  });
+}
+
+function convertThumbnail(bucket, key){
+  const keys = key.split("/");
+
+  return new Promise(async (resolve, reject)=>{
       const r = await changeImageMetadata(bucket, key);
       console.log("changeImageMetadata", r)
       const type = keys[0]; //THUMBNAIL
@@ -74,18 +133,16 @@ async function run(event){
       const promises = sizes.map((size)=>{
         const toProfix = documentId + "/" + size + "/" + imagename;
         return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
-      });   
+      });
 
-      return Promise.all(promises);
-    }
-
-  });
-
-  const result = await Promise.all(promises);
-  console.log("converter result", result);
-  return result;
+      Promise.all(promises).then((data)=>{
+        resolve(data);
+      })
+      .catch((err)=>{
+        reject(err);
+      })
+  })
 }
-
 function changeImageMetadata(bucket, key){
   return new Promise((resolve, reject) => {
     s3.copyObject({

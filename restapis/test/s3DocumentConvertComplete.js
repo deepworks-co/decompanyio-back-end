@@ -69,18 +69,19 @@ describe('s3DocumentConvertComplete', () => {
     
     const event = {
       "Records": [
-        /*
+        
         {
           "s3": {
             "bucket": {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/968de024dd1647f1a7544d9c4b46de48/result.txt"
+              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/result.txt"
             }
           }
         },
-        */
+
+ 
         {
           "s3": {
             "bucket": {
@@ -91,7 +92,7 @@ describe('s3DocumentConvertComplete', () => {
             }
           }
         },
-
+  
         
       ]
     }
