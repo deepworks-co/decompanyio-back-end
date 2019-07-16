@@ -1,8 +1,12 @@
 {
+    "region": "us-west-1",
+    "layer": {
+        "sharp": "arn:aws:lambda:us-west-1:197966029048:layer:libSharp:2",
+        "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
+    },
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
     },
-    "region": "us-west-1",
     "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
