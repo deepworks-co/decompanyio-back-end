@@ -665,7 +665,16 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')            
+            template: $input.path('$')
+          documentation:
+            summary: "/api/document/update"
+            description: "/api/document/update"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "JWT Token"
+            requestBody:
+              description: "documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted"   
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -889,6 +898,7 @@ functions:
               - name: sid
                 description: sid
                 type: string
+              
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod

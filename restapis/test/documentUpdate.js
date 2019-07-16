@@ -17,13 +17,17 @@ describe('documentUpdate', () => {
       principalId: "google-oauth2|101778494068951192848",
       body: {
         documentId: "968de024dd1647f1a7544d9c4b46de48",
-        title: "ethereum yellowpaper",
         isDownload: true,
         useTracking: true,
-        forceTracking: false
+        forceTracking: false,
+        isPublic: "false",
+        isDeleted: "true"
       }
     }
     return wrapped.run(event).then((response) => {
+
+      console.log(response);
+      
       expect(response).to.not.be.empty;
     });
   });

@@ -10,7 +10,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   const {principalId, body} = event;
-  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl} = body;
+  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted} = body;
 
   console.log(body);
 
@@ -73,6 +73,15 @@ module.exports.handler = async (event, context, callback) => {
 
   if(shortUrl){
     newDoc.shortUrl = shortUrl;
+  }
+
+  if(isPublic){
+    newDoc.isPublic = utils.parseBool(isPublic);
+  }
+
+  if(isDeleted){
+    newDoc.isDeleted = utils.parseBool(isDeleted);
+    newDoc.deleted = Date.now();
   }
 
   newDoc.updated = Date.now();
