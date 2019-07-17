@@ -951,6 +951,10 @@ resources:
 
 custom:
   deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - dev
+      - alpha
   prune:
     automatic: true
     number: 5
