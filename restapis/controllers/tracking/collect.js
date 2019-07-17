@@ -85,8 +85,10 @@ module.exports.handler = async (event, context, callback) => {
   return response;
 };
 
-function getSid(){
+function getSid(header){
   let sid = header._sid;
+
+  if(sid) return sid;
 
   return utils.randomId();
 }
