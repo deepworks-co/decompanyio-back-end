@@ -34,6 +34,12 @@ exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
 }
 
+exports.randomId = () => {
+  
+  return generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
+
+}
+
 exports.toSeoFriendly = (str, defaultTitle) => {
   if(!str)
     return;
