@@ -84,11 +84,18 @@ module.exports.handler = async (event, context, callback) => {
         return callback(null, JSON.stringify({
           success: false,
           code: "EXCEEDEDLIMIT",
-          message: 'Error Registry , You have at least 5 private documents.'
+          message: 'Error Update , You have at least 5 private documents.'
+        }));
+      }
+
+      if(document.isRegistry === true){
+        return callback(null, JSON.stringify({
+          success: false,
+          code: "REGISTRYINBLOCKCHAIN",
+          message: 'Error Update , registry in blockchain'
         }));
       }
     }
-    
   }
 
   if(isDeleted){

@@ -48,35 +48,73 @@ module.exports = {
  async function getDocumentById(documentId) {
   const wapper = new MongoWapper(connectionString);
   
-  try{
-    let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
+  try{     
 
-    if(result){
-      let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
-      let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
-
-      if(featured){
-        result.latestVoteAmount = featured.latestVoteAmount;
-      } else {
-        result.latestVoteAmount = 0;
+    const queryPipeline = [
+      {
+        $match: {_id: documentId}
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_POPULAR,
+          localField: "_id",
+          foreignField: "_id",
+          as: "popularAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.USER,
+          localField: "accountId",
+          foreignField: "_id",
+          as: "userAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_FEATURED,
+          localField: "_id",
+          foreignField: "_id",
+          as: "featuredAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.EVENT_REGISTRY,
+          localField: "_id",
+          foreignField: "documentId",
+          as: "registryAs"
+        }
+      }, {
+        $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+          registry: { $arrayElemAt: [ "$registryAs", 0 ] }
+        }
+      }, {
+        $addFields: {
+          latestPageview: "$popular.latestPageview",
+          latestPageviewList: "$popular.latestPageviewList",
+          latestVoteAmount: "$featured.latestVoteAmount",
+          isRegistry: {
+            $cond: [
+              { $ifNull: [ '$registry', false ]}, true, false
+            ]
+          }
+        }
+      }, {
+        $project: {
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0, registryAs: 0, registry: 0
+          
+        }
       }
-
-      if(popular){
-        result.latestPageview = popular.latestPageview;
-      } else {
-        result.latestPageview = 0;
-      }
-    }
+    ]
+    console.log(JSON.stringify(queryPipeline));
+    const documents = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
-    console.log("getDocumentById", result);
-
-    return result;
-  } catch (err){
+    return documents[0];
+  } catch (err) {
     throw err;
-  } finally{
+  } finally {
     wapper.close();
-  }
-  
+  }      
 }
  /**
   * @param  {} seoTitle
@@ -383,6 +421,8 @@ async function queryDocumentListByPopular (params) {
         documentSize: "$document.documentSize",
         shortUrl: "$document.shortUrl",
         seoTitle: "$document.seoTitle",
+        isDeleted: "$document.isDeleted",
+        isPublic: "$document.isPublic",
         cc: "$document.cc",
         isRegistry: {
                   $cond: [

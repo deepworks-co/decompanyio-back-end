@@ -75,7 +75,7 @@ module.exports.handler = async (event, context, callback) => {
   const domain = process.env.stage === 'alpha'?"polarishare.com":"decompany.io";
   const response = {
     statusCode: 200,
-    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; HttpOnly=true; Secure=true`,
+    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; Secure;`,
     body: JSON.stringify({
       success: true,
       message: "ok",
