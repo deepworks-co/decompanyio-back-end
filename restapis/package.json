@@ -31,7 +31,7 @@
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy && sls s3deploy",
-    "deploy:alpha": "node run tagging && sls deploy -s alpha && sls s3deploy -s alpha"
+    "deploy:alpha": "sls deploy -s alpha && sls s3deploy -s alpha"
   },
   "author": "",
   "license": "ISC"
