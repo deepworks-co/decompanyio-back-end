@@ -673,8 +673,9 @@ functions:
               -
                 name: "Authorization"
                 description: "JWT Token"
+                required: true
             requestBody:
-              description: "documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted"   
+              application/json: "documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted"              
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod

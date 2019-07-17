@@ -77,6 +77,18 @@ module.exports.handler = async (event, context, callback) => {
 
   if(isPublic){
     newDoc.isPublic = utils.parseBool(isPublic);
+    if(newDoc.isPublic===false){
+      const check = await documentService.checkRegistrableDocument(principalId);
+      if(check===false){
+        //throw new Error('registry error, private document over 5');
+        return callback(null, JSON.stringify({
+          success: false,
+          code: "EXCEEDEDLIMIT",
+          message: 'Error Registry , You have at least 5 private documents.'
+        }));
+      }
+    }
+    
   }
 
   if(isDeleted){
