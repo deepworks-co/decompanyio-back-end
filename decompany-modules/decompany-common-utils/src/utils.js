@@ -64,18 +64,18 @@ exports.validateEmail = (email) => {
 
 
 exports.parseBool = (v, defaultValue) =>{
-  let defaultBoolValue = false;
-  if (typeof(defaultValue) === 'boolean'){
-    defaultBoolValue = defaultValue;
-  } else {
-    defaultBoolValue = false;
-  }
-
-  let boolValue = v?v:defaultBoolValue;
-
-  if(boolValue===true || boolValue==='true'){
-    return true;
-  }
   
+  if(v === undefined){
+    if(defaultValue === true || defaultValue === 'true'){
+      return true;
+    } 
+  } else if(typeof(v) === 'boolean'){
+    return v;
+  } else if(typeof(v) === 'string'){
+    if(boolValue===true || boolValue==='true'){
+      return true;
+    }
+  }
+
   return false;
 }
