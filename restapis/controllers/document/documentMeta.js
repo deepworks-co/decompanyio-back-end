@@ -20,11 +20,12 @@ module.exports.handler = async (event, context, callback) => {
 
   const document = await documentService.getDocumentBySeoTitle(seoTitle);
   console.log("get document by seo title", document);
-  if(!document || document.isDeleted === true){
-    return JSON.stringify({
+  if(!document){
+    /*return JSON.stringify({
       success: true,
       message: "document does not exist!",
-    });
+    });*/
+    throw new Error("[404] Not Found");
   }
 
   const response = JSON.stringify({

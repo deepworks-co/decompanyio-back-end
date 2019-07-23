@@ -17,7 +17,8 @@ module.exports.handler = async (event, context, callback) => {
 
   if(!doc){
     console.log("document nothing", {_id: documentId, accountId: principalId, useTracking: true})
-    return JSON.stringify([]);
+    //return JSON.stringify([]);
+    throw new Error("[404] Not Found");
   }
   console.log("tracking doc is\r\n", doc);
   const start = Date.now() - (1000 * 60 * 60 * 24 * 1);
