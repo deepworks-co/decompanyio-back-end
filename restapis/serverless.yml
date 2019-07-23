@@ -970,6 +970,8 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -980,6 +982,8 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_5XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
