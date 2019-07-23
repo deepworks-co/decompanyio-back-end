@@ -72,7 +72,7 @@ exports.parseBool = (v, defaultValue) =>{
   } else if(typeof(v) === 'boolean'){
     return v;
   } else if(typeof(v) === 'string'){
-    if(boolValue===true || boolValue==='true'){
+    if(v===true || v==='true'){
       return true;
     }
   }
