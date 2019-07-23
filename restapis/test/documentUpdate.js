@@ -12,7 +12,7 @@ describe('documentUpdate', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('test1', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
@@ -48,5 +48,18 @@ describe('documentUpdate', () => {
     });
   });
 
-  
+  it('test3', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "968de024dd1647f1a7544d9c4b46de48"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log(response);
+      
+      expect(response).to.not.be.empty;
+    });
+  });
 });

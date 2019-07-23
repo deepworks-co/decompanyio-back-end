@@ -49,23 +49,17 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.tags = tags;
   }
 
-  if(useTracking === true || useTracking === 'true'){
-    newDoc.useTracking = true;
-  } else {
-    newDoc.useTracking = false;
-  }
+  if(useTracking !== undefined){
+    newDoc.useTracking = utils.parseBool(useTracking);
+  } 
 
-  if(forceTracking === true || forceTracking === 'true'){
-    newDoc.forceTracking = true;
-  } else {
-    newDoc.forceTracking = false;
-  }
+  if(forceTracking !== undefined){
+    newDoc.forceTracking = utils.parseBool(forceTracking);
+  } 
 
-  if(isDownload === true || isDownload === 'true'){
-    newDoc.isDownload = true;
-  } else {
-    newDoc.isDownload = false;
-  }
+  if(isDownload !== undefined){
+    newDoc.isDownload = utils.parseBool(isDownload);
+  } 
 
   if(cc){
     newDoc.cc = cc;
@@ -75,7 +69,7 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.shortUrl = shortUrl;
   }
 
-  if(isPublic){
+  if(isPublic !== undefined){
     newDoc.isPublic = utils.parseBool(isPublic);
     if(newDoc.isPublic===false){
       const check = await documentService.checkRegistrableDocument(principalId);
@@ -98,22 +92,22 @@ module.exports.handler = async (event, context, callback) => {
     }
   }
 
-  if(isDeleted){
+  if(isDeleted !== undefined){
     newDoc.isDeleted = utils.parseBool(isDeleted);
     newDoc.deleted = Date.now();
   }
 
-
-  console.log("newDoc", newDoc, Object.keys(newDoc));
-
-  newDoc.updated = Date.now();
-  const result = await documentService.updateDocument(newDoc);
-  console.log("update document", result);
-
   const response =  JSON.stringify({
-    success: true,
-    result: result
+    success: true
   });
+  console.log("newDoc", newDoc, Object.keys(newDoc));
+  if(Object.keys(newDoc).length>1){
+    newDoc.updated = Date.now();
+    const result = await documentService.updateDocument(newDoc);
+    //console.log("update document", result);
+  
+    response.result = result;
+  } 
 
   return callback(null, response);
 };

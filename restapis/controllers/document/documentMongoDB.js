@@ -670,13 +670,13 @@ async function updateDocument (newDoc) {
 
   try{
 
-    console.log("new Doc", newDoc);
+    //console.log("new Doc", newDoc);
     const isSeoTitleUpdated = newDoc.seoTitle?true:false;
 
-    console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
+    //console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
  
     const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
-    console.log("update result", updateResult);
+    //console.log("update result", updateResult);
     if(isSeoTitleUpdated){
       const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
         _id: newDoc.seoTitle,
@@ -846,7 +846,7 @@ async function queryVotedDocumentByCurator(args) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log(TB_VOTE, JSON.stringify(queryPipeline));
+    //console.log(TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return {
