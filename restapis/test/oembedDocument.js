@@ -12,7 +12,7 @@ describe('oembedDocument', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('404 landscape doc', () => {
     const event = {
       query: {
         url: encodeURIComponent("https://share.decompany.io/jayjayjay/ethereum-yellowpaper-3xlv2m/")
@@ -23,4 +23,42 @@ describe('oembedDocument', () => {
       expect(response).to.not.be.empty;
     });
   });
+
+
+  it('landscape doc', () => {
+    const event = {
+      query: {
+        url: encodeURIComponent("https://share.decompany.io/dean123/global-logistics-network-powerpoint-templates1-ss78i3")
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('portrait doc', () => {
+    const event = {
+      query: {
+        url: encodeURIComponent("https://share.decompany.io/jayjayjay/uunio-3cife5/")
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('landscape doc', () => {
+    const event = {
+      query: {
+        url: encodeURIComponent("https://share.decompany.io/dean123/2019-medical-plan-powerpoint-templates-skcn9t/")
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
 });

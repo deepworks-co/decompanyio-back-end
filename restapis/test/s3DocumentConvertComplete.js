@@ -65,7 +65,7 @@ describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
-  it('implement tests here', async () => {
+  it('result.txt Test', async () => {
     
     const event = {
       "Records": [
@@ -81,7 +81,7 @@ describe('s3DocumentConvertComplete', () => {
           }
         },
 
- 
+        /*
         {
           "s3": {
             "bucket": {
@@ -92,7 +92,7 @@ describe('s3DocumentConvertComplete', () => {
             }
           }
         },
-  
+        */
         
       ]
     }
