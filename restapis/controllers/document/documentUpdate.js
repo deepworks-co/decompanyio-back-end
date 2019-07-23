@@ -97,9 +97,9 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.deleted = Date.now();
   }
 
-  const response =  JSON.stringify({
+  const response =  {
     success: true
-  });
+  };
   console.log("newDoc", newDoc, Object.keys(newDoc));
   if(Object.keys(newDoc).length>1){
     newDoc.updated = Date.now();
@@ -109,5 +109,5 @@ module.exports.handler = async (event, context, callback) => {
     response.result = result;
   } 
 
-  return callback(null, response);
+  return JSON.stringify(response);
 };
