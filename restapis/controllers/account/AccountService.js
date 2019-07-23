@@ -139,7 +139,7 @@ module.exports = class AccountService {
 			let {accountId, pageSize, skip} = params;
 
 			let pipeline = [{
-				$match: { accountId: accountId}
+				$match: { isDeleted: false, accountId: accountId}
 			}, {
 				$sort:{ created: -1}
 			}, {
