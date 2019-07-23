@@ -71,11 +71,11 @@ function run(params){
         return Promise.resolve(document);
         
       })
-      .then((document)=>{
+      .then(async (document)=>{
         let shortUrl;
         if(shortUrlConfig){
-          shortUrl = getShortUrl(document);
-          console.log("shortUrl", shortUrl);
+          shortUrl = await getShortUrl(document);
+          //console.log("shortUrl", shortUrl);
         } else {
           console.log("shortUrlConfig is undefined");
         }
@@ -84,9 +84,14 @@ function run(params){
           shortUrl: shortUrl
         })
       })
+      .then((documentWithShortUrl)=>{
+        console.log("get document size");
+        return getDocSize(documentWithShortUrl);
+      })
       .then(async (documentWithShortUrl)=>{
-        const {document, shortUrl} = documentWithShortUrl;
-        const result = await runConvertComplete(bucket, key, document, shortUrl);
+        //console.log("runConvertComplete", documentWithShortUrl);
+        const {document, shortUrl, dimensions} = documentWithShortUrl;
+        const result = await runConvertComplete(bucket, key, document, shortUrl, dimensions);
         resolve(result);
       })
       .catch((err)=>{
@@ -94,15 +99,12 @@ function run(params){
         reject(err);
         
       })
-      
-      
-      
-
     } else if("text.json" === filename) {
         //아무것도 안함
         resolve("text.json is not working");
     } else if("1200X1200" === filename){
       //프리뷰이미지 metadata content-type : image/png
+      //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1
       convertThumbnail(bucket, key)
       .then((data)=>{
         console.log("convertThumbnail success", data);
@@ -116,6 +118,26 @@ function run(params){
     } else {
       resolve("not support");
     }
+  });
+}
+
+function getDocSize(documentWithShortUrl){
+  const { document, shortUrl } = documentWithShortUrl;
+  const bucket = s3Config.document;
+  const prefix = `THUMBNAIL/${document._id}/1200X1200/1`;
+  return new Promise((resolve, reject)=>{
+    s3.getObject({Bucket: bucket, Key: prefix}, function (err, data) {
+      if(err){
+        console.log("error get s3object for Document Size", err);
+        return resolve(documentWithShortUrl);
+
+      } else {
+        const dimensions = sizeOf(data.Body);
+        documentWithShortUrl.dimensions = dimensions;
+        //console.log("get dimensions", dimensions, documentWithShortUrl);
+        return resolve({document: document, shortUrl: shortUrl, dimensions: dimensions});
+      }
+    });
   });
 }
 
@@ -159,7 +181,7 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, document, shortUrl){
+function runConvertComplete(bucket, key, document, shortUrl, dimensions){
   const documentId = document._id;
   console.log(bucket, key, document);
   const totalPagesPromise = getTotalPages(bucket, key);
@@ -178,7 +200,7 @@ function runConvertComplete(bucket, key, document, shortUrl){
       console.log("documentId", documentId, "totalPages", totalPages);
       if(totalPages>0 && documentId) {
   
-        updateConvertCompleteDocument(documentId, totalPages, shortUrl).then((data) =>{
+        updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions).then((data) =>{
           console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
           resolve({message: "SUCCESS",
                   documentId: documentId});
@@ -232,7 +254,7 @@ async function getDocument(documentId){
 
 }
 
-async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
+async function updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions){
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
     const endPageNo = Number(totalPages);
@@ -240,6 +262,7 @@ async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
     updateDoc.state = endPageNo===1?"SINGLE_PAGE_DOC":"CONVERT_COMPLETE";
     updateDoc.totalPages = Number(totalPages);
     if(shortUrl) updateDoc.shortUrl = shortUrl;
+    if(dimensions) updateDoc.dimensions = dimensions;
       
     return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
     
