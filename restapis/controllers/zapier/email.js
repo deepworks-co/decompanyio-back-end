@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('decompany-app-properties');
+const { mongodb, tables, applicationConfig } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
@@ -13,25 +13,63 @@ module.exports.handler = async (event, context, callback) => {
   const {principalId} = event;
   const {documentId} = event.query;
 
-  const doc = await wapper.findOne(tables.DOCUMENT, {_id: documentId, accountId: principalId, useTracking: true});
+  const doc = await getDocument(wapper, documentId, principalId);
 
   if(!doc){
-    console.log("document nothing", {_id: documentId, accountId: principalId, useTracking: true})
+    //console.log("document nothing", {_id: documentId, accountId: principalId, useTracking: true})
     //return JSON.stringify([]);
     throw new Error("[404] Not Found");
   }
-  console.log("tracking doc is\r\n", doc);
+
+  let host = applicationConfig.mainHost;
+  if(host.slice(-1) !== "/"){
+    host += "/";
+  }
+  const {author} = doc;
+  const url = `${host}${author.username?author.username:author.email}/${doc.seoTitle}`;
+  //console.log(url);
+  //console.log("tracking doc is\r\n", doc);
   const start = Date.now() - (1000 * 60 * 60 * 24 * 1);
   const emails = await wapper.distinct(tables.TRACKING_USER, "e", {id: documentId, e: {$regex: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/}, created:{$gt: start}});
-
+ 
+  
   const results = emails.map((e)=>{
     return {
       id: e,
-      documentId: documentId
+      documentId: documentId,
+      title: doc.title,
+      url: url
     }
   })
   
+  wapper.close();
+
   console.log("search email results", results);
 
   return JSON.stringify(results);
 };
+
+async function getDocument(wapper, documentId, principalId) {
+
+  const queryPipline = [
+    {
+      $match: {
+        _id: documentId, isDeleted: false, isBlocked: false, accountId: principalId, useTracking: true
+      }
+    }, {
+      $lookup: {
+        from: tables.USER,
+        localField: "accountId",
+        foreignField: "_id",
+        as: "author"
+      }
+    }, {
+      $unwind: {
+        path: "$author",
+        preserveNullAndEmptyArrays: false
+      }
+    }
+  ]
+  const doc = await wapper.aggregate(tables.DOCUMENT, queryPipline);
+  return doc[0];
+}
