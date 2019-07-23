@@ -29,7 +29,7 @@ module.exports.handler = async (event, context, callback) => {
   const url = `${host}${author.username?author.username:author.email}/${doc.seoTitle}`;
   //console.log(url);
   //console.log("tracking doc is\r\n", doc);
-  const start = Date.now() - (1000 * 60 * 60 * 24 * 1);
+  const start = 0;//Date.now() - (1000 * 60 * 60 * 24 * 1);
   const emails = await wapper.distinct(tables.TRACKING_USER, "e", {id: documentId, e: {$regex: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/}, created:{$gt: start}});
  
   
@@ -38,7 +38,8 @@ module.exports.handler = async (event, context, callback) => {
       id: e,
       documentId: documentId,
       title: doc.title,
-      url: url
+      url: url,
+      shortUrl: doc.shortUrl
     }
   })
   
