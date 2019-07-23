@@ -7,7 +7,7 @@ const AWS = require("aws-sdk");
 const envConfigs = {
     "default": {
         "frontendBucket": "share.decompany.io",
-        "metaUrl": "https://api.share.decompany.io/rest/api/document/info/",
+        "metaUrl": "https://api.share.decompany.io/rest/api/document/meta",
         "resHost": "https://thumb.share.decompany.io",
         "mainHost": "https://share.decompany.io",
         "titleSuffix": "Decompany"
@@ -15,14 +15,14 @@ const envConfigs = {
     },
     "EDFUPNJU9XKGX": {
         "frontendBucket": "share.decompany.io",
-        "metaUrl": "https://api.share.decompany.io/rest/api/document/info/",
+        "metaUrl": "https://api.share.decompany.io/rest/api/document/meta",
         "resHost": "https://thumb.share.decompany.io",
         "mainHost": "https://share.decompany.io",
         "titleSuffix": "Decompany"
     },
     "E1UYELY2K59G6Q": {
         "frontendBucket": "www.polarishare.com",
-        "metaUrl": "https://api.polarishare.com/rest/api/document/info/",
+        "metaUrl": "https://api.polarishare.com/rest/api/document/meta",
         "resHost": "https://res.polarishare.com",
         "mainHost": "https://www.polarishare.com",
         "seo" : true,
@@ -48,11 +48,11 @@ exports.handler = (event, context, callback) => {
             META_URL = envConfig.metaUrl;
             RES_HOST = envConfig.resHost;
             MAIN_HOST = envConfig.mainHost;
-        }
+        } 
         
         console.log("request", `${request.uri}${request.querystring?'?'+request.querystirng:""}`);
         const seoTitle = request.uri.split("/")[2];
-        const metaUrl = `${META_URL}${seoTitle}`;
+        const metaUrl = `${META_URL}?seoTitle=${seoTitle}`;
         const titleSuffix = envConfig.titleSuffix;
         console.log("metaUrl", metaUrl);
         Promise.all([fetchUrl(metaUrl), getIndexHtml()])
@@ -76,7 +76,7 @@ exports.handler = (event, context, callback) => {
                 const regDate =  document.created;//(new Date(document.created)).toUTCString();
                 
                 let metaTag = `<title>${document.title} - ${authorname} - ${titleSuffix}</title>`;
-                if(!envConfig.seo){
+                if(!envConfig.seo || document.isDeleted || document.isBlock || document.isPublic === false){
                     metaTag += `<meta name="Robots" content="noindex, nofollow" />`
                 }
                 
@@ -102,8 +102,13 @@ exports.handler = (event, context, callback) => {
 
                 html = html.replace("<title>Polaris Share</title>", metaTag);
                 
-                console.log(html);
-                return buildResponse(html)
+                //console.log(html);
+                if(document.isDeleted || document.isBlock){
+                    return buildResponse(html, 404)
+                } else {
+                    return buildResponse(html)
+                }
+                
             } else {
                 return buildResponse(html, 404)
             }

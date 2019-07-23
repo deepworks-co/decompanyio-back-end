@@ -20,7 +20,7 @@ describe('IndexLambda', () => {
           "cf": {
             "config": {
               "distributionDomainName": "d2p79h0gazxkbx.cloudfront.net",
-              "distributionId": "E2MJRA60TIQ83Z",
+              "distributionId": "default",
               "eventType": "viewer-request",
               "requestId": "T0UUZpJ4PxwMcTQGt78HK8lnCGAYaKPawaYRS4iQvIuuEuERSh1svA=="
             },
@@ -85,6 +85,7 @@ describe('IndexLambda', () => {
       ]
     }
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

@@ -48,6 +48,7 @@ package:
     - install.sh
     - opt/**
     - test/**
+    - node_modules/*
     
 functions:
   IndexLambda:
@@ -87,3 +88,6 @@ resources:
                   - logs:*
                   - kms:*
                 Resource: "*"
+
+plugins:
+  - serverless-mocha-plugin

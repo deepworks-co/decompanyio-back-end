@@ -7,7 +7,9 @@
     "test": "test"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "serverless-mocha-plugin": "^1.10.0"
+  },
   "scripts": {
     "test": "mocha",
     "preinstall": "sh install.sh",
