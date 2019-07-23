@@ -12,20 +12,20 @@ module.exports.handler = async (event, context, callback) => {
   const {principalId, body} = event;
   const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted} = body;
 
-  console.log(body);
+  //console.log(body);
 
-  if(!documentId && !desc && !title && !tags && !useTracking && !forceTracking){
-    throw new Error("parameter is invalid!!");
+  if(!documentId){
+    throw new Error("[404] document id is invalid");
   }
 
   const document = await documentService.getDocumentById(documentId);
 
   if(!document){
-    throw new Error(`document does not exists ${documentId}`);
+    throw new Error(`[404] document does not exists ${documentId}`);
   }
 
   if(!principalId || document.accountId !== principalId){
-    throw new Error("no permission");
+    throw new Error("[403] no permission");
   }
 
   const newDoc = {_id: document._id};
@@ -102,6 +102,9 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.isDeleted = utils.parseBool(isDeleted);
     newDoc.deleted = Date.now();
   }
+
+
+  console.log("newDoc", newDoc, Object.keys(newDoc));
 
   newDoc.updated = Date.now();
   const result = await documentService.updateDocument(newDoc);
