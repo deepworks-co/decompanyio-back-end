@@ -12,18 +12,53 @@ describe('documentUpdate', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('test1', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
         documentId: "968de024dd1647f1a7544d9c4b46de48",
-        title: "ethereum yellowpaper",
         isDownload: true,
         useTracking: true,
-        forceTracking: false
+        forceTracking: false,
+        isPublic: "false",
+        isDeleted: "true"
       }
     }
     return wrapped.run(event).then((response) => {
+
+      console.log(response);
+      
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('test2 - public->private with onchain document', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "749ee1a1f2cb4a30b22d71baf844b9cf",
+        isPublic: "false"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log(response);
+      
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('test3', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "968de024dd1647f1a7544d9c4b46de48"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log(response);
+      
       expect(response).to.not.be.empty;
     });
   });

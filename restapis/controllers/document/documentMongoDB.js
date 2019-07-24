@@ -39,6 +39,7 @@ module.exports = {
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
+  checkRegistrableDocument
 }
 
  /**
@@ -47,35 +48,73 @@ module.exports = {
  async function getDocumentById(documentId) {
   const wapper = new MongoWapper(connectionString);
   
-  try{
-    let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
+  try{     
 
-    if(result){
-      let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
-      let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
-
-      if(featured){
-        result.latestVoteAmount = featured.latestVoteAmount;
-      } else {
-        result.latestVoteAmount = 0;
+    const queryPipeline = [
+      {
+        $match: {_id: documentId}
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_POPULAR,
+          localField: "_id",
+          foreignField: "_id",
+          as: "popularAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.USER,
+          localField: "accountId",
+          foreignField: "_id",
+          as: "userAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_FEATURED,
+          localField: "_id",
+          foreignField: "_id",
+          as: "featuredAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.EVENT_REGISTRY,
+          localField: "_id",
+          foreignField: "documentId",
+          as: "registryAs"
+        }
+      }, {
+        $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+          registry: { $arrayElemAt: [ "$registryAs", 0 ] }
+        }
+      }, {
+        $addFields: {
+          latestPageview: "$popular.latestPageview",
+          latestPageviewList: "$popular.latestPageviewList",
+          latestVoteAmount: "$featured.latestVoteAmount",
+          isRegistry: {
+            $cond: [
+              { $ifNull: [ '$registry', false ]}, true, false
+            ]
+          }
+        }
+      }, {
+        $project: {
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0, registryAs: 0, registry: 0
+          
+        }
       }
-
-      if(popular){
-        result.latestPageview = popular.latestPageview;
-      } else {
-        result.latestPageview = 0;
-      }
-    }
+    ]
+    console.log(JSON.stringify(queryPipeline));
+    const documents = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
-    console.log("getDocumentById", result);
-
-    return result;
-  } catch (err){
+    return documents[0];
+  } catch (err) {
     throw err;
-  } finally{
+  } finally {
     wapper.close();
-  }
-  
+  }      
 }
  /**
   * @param  {} seoTitle
@@ -216,13 +255,11 @@ async function queryDocumentListByLatest (params) {
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
-
-
   const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [{
-      $match: { state: "CONVERT_COMPLETE"}
+      $match: { state: "CONVERT_COMPLETE", isDeleted: false, isPublic: true, isBlocked: false }
     },{
       $sort:{ created: -1}
     }];
@@ -384,6 +421,8 @@ async function queryDocumentListByPopular (params) {
         documentSize: "$document.documentSize",
         shortUrl: "$document.shortUrl",
         seoTitle: "$document.seoTitle",
+        isDeleted: "$document.isDeleted",
+        isPublic: "$document.isPublic",
         cc: "$document.cc",
         isRegistry: {
                   $cond: [
@@ -631,13 +670,13 @@ async function updateDocument (newDoc) {
 
   try{
 
-    console.log("new Doc", newDoc);
+    //console.log("new Doc", newDoc);
     const isSeoTitleUpdated = newDoc.seoTitle?true:false;
 
-    console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
+    //console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
  
     const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
-    console.log("update result", updateResult);
+    //console.log("update result", updateResult);
     if(isSeoTitleUpdated){
       const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
         _id: newDoc.seoTitle,
@@ -807,7 +846,7 @@ async function queryVotedDocumentByCurator(args) {
   const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log(TB_VOTE, JSON.stringify(queryPipeline));
+    //console.log(TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return {
@@ -1453,5 +1492,32 @@ async function putTrackingUser(cid, sid, documentId, email){
     wapper.close();
   }
 
+  
+}
+
+
+async function checkRegistrableDocument(accountId){
+  
+  return new Promise(async (resolve, reject)=>{
+    const wapper = new MongoWapper(connectionString);
+
+    wapper.query(TB_DOCUMENT, {accountId: accountId, isPublic: false})
+    .sort({created:-1}).toArray((err, data)=>{
+      if(err) {
+        reject(err);
+      } else {
+        console.log("get private doc", data);
+        if(data && data.length > 4){
+          resolve(false)
+        } else {
+          resolve(true)
+        }
+        
+      }
+      wapper.close();
+    });
+
+  })
+  
   
 }

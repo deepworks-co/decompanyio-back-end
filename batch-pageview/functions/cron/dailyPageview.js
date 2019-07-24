@@ -4,10 +4,9 @@ const { mongodb, tables, sqsConfig } = require('decompany-app-properties');
 
 
 /**
- * @description 전날 하루동안의 pageview를 집계 및 추가 작업
- *  - 전날 pageview 블록체인이 입력하기용 큐 발생
+ * @description 전날 하루동안의 pageview를 집계
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
- *  - 하루에 한번 UTC 00:10분에 동작
+ *  - 하루에 한번 UTC 00:50분에 동작 (Step function)
  * @function
  * @cron 
  */
@@ -62,6 +61,38 @@ function getQueryPipeline(startTimestamp, endTimestamp){
       }
     }
   }, {
+    $lookup: {
+      from: "DOCUMENT",
+        foreignField: "_id",
+        localField: "_id.id",
+        as: "documentAs"
+    }
+  }, {
+    $addFields: {
+      "publicDoc": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentAs",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
+    }
+  }, {
+    $unwind: {
+      path: "$publicDoc",
+      preserveNullAndEmptyArrays: false
+    }
+  }, {
     $group: {
       _id: {
         year: "$_id.year", 
@@ -93,6 +124,7 @@ async function aggregatePageviewAndSave(startTimestamp, endTimestamp){
   try{
     const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
     console.log("aggregatePageview queryPipeline", JSON.stringify(queryPipeline));
+
     const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline);
 
     const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
@@ -138,19 +170,11 @@ async function aggregatePageviewTotalCountForOnchainAndSave(blockchainTimestamp)
     }, {
       $unwind: {
         path: "$RegistryAs",
-        "preserveNullAndEmptyArrays": true
-      }
-    }, {
-      $match: {
-        "RegistryAs": { "$exists": true, "$ne": null }
-      }
-    }, {
-      $addFields: {
-        blockNumber: "$RegistryAs.blockNumber"
+        "preserveNullAndEmptyArrays": false
       }
     }, {
       $lookup: {
-        from: 'EVENT-BLOCK',
+        from: tables.EVENT_BLOCK,
         localField: 'RegistryAs.blockNumber',
         foreignField: '_id',
         as: 'BlockAs'
@@ -158,19 +182,7 @@ async function aggregatePageviewTotalCountForOnchainAndSave(blockchainTimestamp)
     }, {
       $unwind: {
         path: '$BlockAs',
-        preserveNullAndEmptyArrays: true
-      }
-    }, {
-      $addFields: {
-        minus: {
-          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
-        },
-        blockCreated: "$BlockAs.created",
-        blockCreatedDate: "$BlockAs.createdDate"
-      }
-    }, {
-      $match: {
-        minus: {$gt: -86400000}
+        preserveNullAndEmptyArrays: false
       }
     }, {
       $group: {

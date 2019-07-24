@@ -83,17 +83,13 @@ package:
     - install.sh
     - opt/**
     - test/**
-
-layers:
-  libNodeModule:
-    path: opt
-    description: "additional node_module"
     
 functions:
+
   accountPictureConverter:
     handler: s3/account/accountPictureConverter.handler
     layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
+      - ${file(./serverlessConfig.js):getSharpLayer}
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
@@ -149,38 +145,38 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
-  curatorSummary:
-    handler: controllers/curator/curatorSummary.handler
-    events:
-      - http:
-          path: /api/curator/summary
-          method: get
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: "/api/curator/summary"
-            description: "/api/curator/summary"
-            queryParams:
-              - name: ethAccount
-                description: ethAccount
-                type: string
-                required: true
-            methodResponses:
-              -
-                statusCode: "200"
-                responseBody:
-                  description: "Response body description"
-                responseModels:
-                  "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
+#  curatorSummary:
+#    handler: controllers/curator/curatorSummary.handler
+#    events:
+#      - http:
+#          path: /api/curator/summary
+#          method: get
+#          cors: true
+#          integration: lambda
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#            template: $input.path('$')
+#          documentation:
+#            summary: "/api/curator/summary"
+#            description: "/api/curator/summary"
+#            queryParams:
+#              - name: ethAccount
+#                description: ethAccount
+#                type: string
+#                required: true
+#            methodResponses:
+#              -
+#                statusCode: "200"
+#                responseBody:
+#                  description: "Response body description"
+#                responseModels:
+#                  "application/json": "DefaultResponseModel"
+#    deploymentSettings:
+#      type: ${self:custom.deployType}
+#      alias: prod
+#      preTrafficHook: preHook
+#      postTrafficHook: postHook
 
   zapierAuth:
     handler: controllers/zapier/auth.handler
@@ -356,7 +352,7 @@ functions:
   s3DocumentConvertComplete:
     handler: s3/document/convertComplete.handler
     layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
+      - ${file(./serverlessConfig.js):getSharpLayer}
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.document}
@@ -613,14 +609,40 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentMeta:
+    handler: controllers/document/documentMeta.handler
+    events:
+      - http: 
+          path: /api/document/meta
+          method: get
+          cors: true
+          integration: lambda
+          documentation:
+            summary: "/api/document/download"
+            description: "/api/document/download"
+            queryParams:
+              - name: seoTitle
+                description: seoTitle
+                type: string
+                required: true
+          response: 
+              headers:
+                Content-Type: integration.response.header.Content-Type
+              template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   documentInfo:
-    handler: controllers/document/documentController.info
+    handler: controllers/document/documentInfo.handler
     events:
       - http:
           path: api/document/info/{documentId}
           method: get
           cors: true
-          integration: lambda
+          integration: lambda          
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -643,7 +665,52 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')            
+            template: $input.path('$')
+          documentation:
+            summary: "/api/document/update"
+            description: "/api/document/update"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "JWT Token"
+                required: true
+            queryParams:
+              - name: documentId
+                description: documentId
+                type: string
+                required: true
+              - name: desc
+                description: desc
+                type: string
+              - name: title
+                description: title
+                type: string
+              - name: tags
+                description: tags
+                type: array
+              - name: useTracking
+                type: boolean
+                description: useTracking
+              - name: forceTracking
+                type: boolean
+                description: forceTracking
+              - name: isDownload
+                type: boolean
+                description: isDownload
+              - name: shortUrl
+                type: string
+                description: shortUrl                
+              - name: cc
+                type: string
+                description: "cc"
+              - name: isPublic
+                type: boolean
+                description: isPublic
+              - name: isDeleted
+                type: boolean
+                description: isDeleted                
+            requestBody:
+              application/json: "documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted"            
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -775,7 +842,7 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-              Set-Cookie: integration.response.body.cookie
+              Set-Cookie: integration.response.body.Cookie
             template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
@@ -867,6 +934,7 @@ functions:
               - name: sid
                 description: sid
                 type: string
+              
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -902,6 +970,8 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -912,12 +982,18 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_5XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
 
 custom:
   deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - dev
+      - alpha
   prune:
     automatic: true
     number: 5

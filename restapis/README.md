@@ -121,6 +121,8 @@ sls create function -f curatorDocumentList --handler controllers/curator/curator
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
 sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"
 sls create function -f documentUpdate --handler controllers/document/documentUpdate.handler --httpEvent "post /api/document/update"
+sls create function -f documentInfo --handler controllers/document/documentInfo.handler --httpEvent "get /api/document/info"
+sls create function -f documentMeta --handler controllers/document/documentMeta.handler --httpEvent "get /api/document/meta"
 sls create function -f documentMigration --handler migration/documentMigration.handler
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
@@ -134,6 +136,8 @@ sls create function -f verifyEmail --handler controllers/email/verifyEmail.handl
 
 sls create function -f bountyRequest --handler controllers/bounty/bountyRequest.handler --httpEvent "get /api/bounty/request"
 sls create function -f bountyState --handler controllers/bounty/bountyState.handler --httpEvent "get /api/bounty/state"
+
+
 ```
 
 

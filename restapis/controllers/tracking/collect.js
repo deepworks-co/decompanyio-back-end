@@ -48,7 +48,7 @@ module.exports.handler = async (event, context, callback) => {
   */
   body.headers = headers;
   console.log("tracking body", JSON.stringify(body));
-  if(applicationLogAppender && applicationLogAppender.enable){
+  if(applicationLogAppender && applicationLogAppender.enable === true){
     try{
       const partitionKey = "tracking-" + Date.now();
       console.log("put kinesis", applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
@@ -71,18 +71,27 @@ module.exports.handler = async (event, context, callback) => {
   }
   
   const expires = new Date(Date.now() + 1000 * 60 * 30);// 30 mins
+  const sid = getSid(event.headers)
+  const domain = process.env.stage === 'alpha'?"polarishare.com":"decompany.io";
   const response = {
-    cookie: `sid=${body.sid};domain=polarishare.com;expires=${expires.toGMTString()}`,
+    statusCode: 200,
+    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; Secure;`,
     body: JSON.stringify({
       success: true,
       message: "ok",
       user: user
     })
   }
-  //console.log("success", body);
   return response;
 };
 
+function getSid(header){
+  let sid = header && header._sid?header._sid:"";
+
+  if(sid && sid!=="") return sid;
+
+  return utils.randomId();
+}
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...

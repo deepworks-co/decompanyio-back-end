@@ -9,7 +9,7 @@ const {region, s3Config} = require('decompany-app-properties');
 var AWS = require("aws-sdk");
 
 AWS.config.update({
-  region: "us-west-1"
+  region: region
 });
 
 
@@ -39,40 +39,31 @@ module.exports.handler = async (event, context, callback) => {
   const ethAccount = body.ethAccount?body.ethAccount:null;//ethereum user account
   const title = body.title;
   const desc = body.desc;
-  const useTracking = body.useTracking?body.useTracking:false
-  const forceTracking = body.forceTracking?body.forceTracking:false
+  const useTracking = utils.parseBool(body.useTracking);
+  const forceTracking = utils.parseBool(body.forceTracking);
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
-  const isDownload = body.isDownload?body.isDownload:false;
+  const isDownload = utils.parseBool(body.isDownload);
   const cc = body.cc;
+  const isPublic = utils.parseBool(body.isPublic, true);
   
-  
-  let seoTitle;
-  let documentId;
-  let document;
-
   const user = await documentService.getUser(accountId);
   if(!user){
     throw new Error(`user(${accountId}) does not exist`);
   }
 
-
-  let loop=0;
-  do {
-    documentId = uuidv4().replace(/-/gi, "");
-    document = await documentService.getDocumentById(documentId);
-    loop++;
-  } while(document)
-  console.log("create documentId", documentId, "loop", loop);
-  let friendlyUrl;
-  loop =0;
-  do {
-    seoTitle = utils.toSeoFriendly(title);
-    friendlyUrl = await documentService.getFriendlyUrl(seoTitle);
-  } while(friendlyUrl)
+  const check = await checkRegistrableDocument(accountId);
+  if(check===false){
+    //throw new Error('registry error, private document over 5');
+    return callback(null, JSON.stringify({
+      success: false,
+      code: "EXCEEDEDLIMIT",
+      message: 'Error Registry , You have at least 5 private documents.'
+    }));
+  }
 
 
-
-  console.log("create seoTitle", seoTitle, "loop", loop);
+  const seoTitle = await generateSeoTitle(title);
+  const documentId = await generateDocumentId();;
 
   if(!documentId || !seoTitle){
     throw new Error("The Document ID or Friendly SEO Title already exists. retry..." + JSON.stringify(document));
@@ -93,7 +84,10 @@ module.exports.handler = async (event, context, callback) => {
       useTracking: useTracking,
       forceTracking: forceTracking,
       isDownload: isDownload,
-      cc: cc
+      cc: cc,
+      isPublic: isPublic,
+      isBlocked: false,
+      isDeleted: false
     }
 
     const result = await documentService.putDocument(putItem);
@@ -118,3 +112,31 @@ module.exports.handler = async (event, context, callback) => {
   }
 
 };
+async function checkRegistrableDocument(accountId){
+  return await documentService.checkRegistrableDocument(accountId);
+}
+function generateDocumentId(){
+  return new Promise(async (resolve, reject)=>{
+    const documentId = uuidv4().replace(/-/gi, "");
+    const document = await documentService.getDocumentById(documentId);
+    console.log("generateDocumentId", documentId, JSON.stringify(document));
+    if(document){
+      resolve(generateDocumentId());
+    }else {
+      resolve(documentId);
+    }
+  })
+}
+
+function generateSeoTitle(title){
+  return new Promise(async (resolve, reject)=>{
+    const seoTitle = utils.toSeoFriendly(title);
+    const friendlyUrl = await documentService.getFriendlyUrl(seoTitle);
+    console.log("generateSeoTitle", seoTitle, JSON.stringify(friendlyUrl));
+    if(friendlyUrl){
+      resolve(generateSeoTitle());
+    }else {
+      resolve(seoTitle);
+    }
+  })
+}

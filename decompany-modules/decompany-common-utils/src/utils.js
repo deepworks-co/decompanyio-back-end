@@ -34,6 +34,12 @@ exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
 }
 
+exports.randomId = () => {
+  
+  return generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
+
+}
+
 exports.toSeoFriendly = (str, defaultTitle) => {
   if(!str)
     return;
@@ -54,4 +60,22 @@ exports.validateEmail = (email) => {
   //General Email Regex (RFC 5322 Official Standard)
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return re.test(String(email).toLowerCase());
+}
+
+
+exports.parseBool = (v, defaultValue) =>{
+  
+  if(v === undefined){
+    if(defaultValue === true || defaultValue === 'true'){
+      return true;
+    } 
+  } else if(typeof(v) === 'boolean'){
+    return v;
+  } else if(typeof(v) === 'string'){
+    if(v===true || v==='true'){
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -65,21 +65,23 @@ describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
-  it('implement tests here', async () => {
+
+  it('1fb0012674b442de9bc4e397f6e8dd62 result.txt Test', async () => {
     
     const event = {
       "Records": [
-       
+        
         {
           "s3": {
             "bucket": {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "THUMBNAIL/968de024dd1647f1a7544d9c4b46de48/result.txt"
+              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/result.txt"
             }
           }
         },
+
         /*
         {
           "s3": {
@@ -121,5 +123,29 @@ describe('s3DocumentConvertComplete', () => {
 
     
   }).timeout(30000000);
+
+
+  it('8dc1ec6e9c0c4ec0be37e4fce15da917 result.txt Test', async () => {
+    
+    const event = {
+      "Records": [
+        
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/8dc1ec6e9c0c4ec0be37e4fce15da917/result.txt"
+            }
+          }
+        }        
+      ]
+    }
+
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });    
+  });
 
 });

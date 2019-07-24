@@ -24,6 +24,7 @@ describe('documentRegist', () => {
         useTracking: true,
         forceTracking: true,
         isDownload: true
+        //isPublic: false
       }
     }
     return wrapped.run(event).then((response) => {

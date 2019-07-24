@@ -61,6 +61,39 @@ function getQueryPipeline(startTimestamp, endTimestamp){
         sid: "$sid"
       }
     }
+
+  }, {
+    $lookup: {
+      from: "DOCUMENT",
+        foreignField: "_id",
+        localField: "_id.id",
+        as: "documentAs"
+    }
+  }, {
+    $addFields: {
+      "publicDoc": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentAs",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
+    }
+  }, {
+    $unwind: {
+      path: "$publicDoc",
+      preserveNullAndEmptyArrays: false
+    }
   }, {
     $group: {
       _id: {

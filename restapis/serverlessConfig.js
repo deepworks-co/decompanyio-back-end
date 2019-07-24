@@ -4,7 +4,7 @@ const exec = require('child_process').exec;
 module.exports.toDateString = async (serverless) => {
   const now = new Date();
   const s = now.toJSON();
-  console.log("toDateString", s);
+  console.log("Build Datetime", s);
   return s;
 }
 
@@ -15,7 +15,7 @@ module.exports.s3Config = async (serverless) => {
     }    
     const { s3Config } = require('decompany-app-properties');    
 
-    console.log('s3Config', JSON.stringify(s3Config));
+    //console.log('s3Config', JSON.stringify(s3Config));
 
     if(!s3Config){
       throw new Error(`s3Config is null ${stage}`);
@@ -60,3 +60,24 @@ const promiseExec = cmd => (
       })
     ))
   );
+
+module.exports.getGeoipLayer = (serverless)=>{
+  const stage = serverless.processedInput.options.stage;
+  if(stage){
+      process.env.stage = stage;
+  }    
+  const { layer } = require('decompany-app-properties');    
+  console.log("load layer", layer.geoip);
+  return layer.geoip;
+}
+
+
+module.exports.getSharpLayer = (serverless)=>{
+  const stage = serverless.processedInput.options.stage;
+  if(stage){
+      process.env.stage = stage;
+  }    
+  const { layer } = require('decompany-app-properties');    
+  console.log("load layer", layer.sharp);
+  return layer.sharp;
+}
