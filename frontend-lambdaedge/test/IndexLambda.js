@@ -19,66 +19,10 @@ describe('IndexLambda', () => {
         {
           "cf": {
             "config": {
-              "distributionDomainName": "d2p79h0gazxkbx.cloudfront.net",
-              "distributionId": "default",
-              "eventType": "viewer-request",
-              "requestId": "T0UUZpJ4PxwMcTQGt78HK8lnCGAYaKPawaYRS4iQvIuuEuERSh1svA=="
+              "distributionId": "default"
             },
             "request": {
-              "clientIp": "211.45.65.70",
-              "headers": {
-                "host": [
-                  {
-                    "key": "Host",
-                    "value": "download.share.decompany.io"
-                  }
-                ],
-                "user-agent": [
-                  {
-                    "key": "User-Agent",
-                    "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
-                  }
-                ],
-                "cache-control": [
-                  {
-                    "key": "cache-control",
-                    "value": "max-age=0"
-                  }
-                ],
-                "upgrade-insecure-requests": [
-                  {
-                    "key": "upgrade-insecure-requests",
-                    "value": "1"
-                  }
-                ],
-                "accept": [
-                  {
-                    "key": "accept",
-                    "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
-                  }
-                ],
-                "accept-encoding": [
-                  {
-                    "key": "accept-encoding",
-                    "value": "gzip, deflate, br"
-                  }
-                ],
-                "accept-language": [
-                  {
-                    "key": "accept-language",
-                    "value": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7"
-                  }
-                ],
-                "cookie": [
-                  {
-                    "key": "cookie",
-                    "value": "_ga=GA1.3.1060212880.1546915423; hubspotutk=4a0e809bd7a4ea92bed3f2b638bc2283; _ga=GA1.2.1889317210.1549865085; __hstc=183962553.4a0e809bd7a4ea92bed3f2b638bc2283.1551171129769.1552642157669.1553732765159.28; _gid=GA1.3.655713734.1562549840; _gid=GA1.2.655713734.1562549840"
-                  }
-                ]
-              },
-              "method": "GET",
-              "querystring": "",
-              "uri": "/dean123/global-logistics-network-powerpoint-templates1-ss78i3"
+              "uri": "/dean123/global-logistics-network-powerpoint-templates1-ss78i31"
             }
           }
         }
