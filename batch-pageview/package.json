@@ -21,7 +21,7 @@
   "scripts": {
     "preinstall": "echo starting && sh install.sh",
     "package": "sls package",
-    "deploy": "npm run preinstall && sls deploy",
+    "deploy": "sls deploy",
     "deploy:alpha": "sls deploy -s alpha",
     "test": "mocha"
   },
