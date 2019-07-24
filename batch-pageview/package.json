@@ -7,19 +7,21 @@
     "test": "test"
   },
   "dependencies": {
-    "aws-sdk": "^2.478.0",
-    "decompany-common-utils": "^1.0.0",
-    "decompany-app-properties": "^1.0.0",
+    "aws-sdk": "^2.498.0",
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "ethereumjs-tx": "^1.3.7",
     "mongojs": "^2.6.0",
     "rxjs": "^6.5.2",
-    "serverless-mocha-plugin": "^1.10.0",
     "web3": "^1.0.0-beta.55"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "serverless-mocha-plugin": "^1.10.0"
+  },
   "scripts": {
-    "preinstall": "sh install.sh",
-    "deploy": "sls deploy",
+    "preinstall": "echo starting && sh install.sh",
+    "package": "sls package",
+    "deploy": "npm run preinstall && sls deploy",
     "deploy:alpha": "sls deploy -s alpha",
     "test": "mocha"
   },
