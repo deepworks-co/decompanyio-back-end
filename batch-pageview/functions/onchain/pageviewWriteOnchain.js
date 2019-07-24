@@ -27,7 +27,7 @@ module.exports.handler = async (event, context, callback) => {
 
     const remains = resultList.length === undefined? 0:resultList.length
     console.log("getList", remains);
-
+   
     if(remains === 0){
       return {
         remains: 0
@@ -109,15 +109,7 @@ async function getList(blockchainTimestamp, limit){
     }, {
       $unwind: {
         path: "$RegistryAs",
-        "preserveNullAndEmptyArrays": true
-      }
-    }, {
-      $match: {
-        "RegistryAs": { "$exists": true, "$ne": null }
-      }
-    }, {
-      $addFields: {
-        blockNumber: "$RegistryAs.blockNumber"
+        "preserveNullAndEmptyArrays": false
       }
     }, {
       $lookup: {
@@ -129,19 +121,7 @@ async function getList(blockchainTimestamp, limit){
     }, {
       $unwind: {
         path: '$BlockAs',
-        preserveNullAndEmptyArrays: true
-      }
-    }, {
-      $addFields: {
-        minus: {
-          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
-        },
-        blockCreated: "$BlockAs.created",
-        blockCreatedDate: "$BlockAs.createdDate"
-      }
-    }, {
-      $match: {
-        minus: {$gt: -86400000}
+        preserveNullAndEmptyArrays: false
       }
     }, {
       $limit: limit

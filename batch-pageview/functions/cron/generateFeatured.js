@@ -50,19 +50,35 @@ function getQueryPipeline(startTimestamp, targetCollection){
   },
   {
       $lookup: {
-          from: "DOCUMENT",
+          from: tables.DOCUMENT,
           localField: "documentId",
           foreignField:"documentId",
           as: "documentInfo"
       }
   }, {
+    $addFields: {
+      "documentInfo": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentInfo",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
+    }
+  }, {
       $unwind: {
           path:"$documentInfo",
-          preserveNullAndEmptyArrays: true
-      }
-  }, {
-      $match: {
-          "documentInfo": {"$exists":true,"$ne":null}
+          preserveNullAndEmptyArrays: false
       }
   }, {
       $addFields: {
@@ -74,7 +90,7 @@ function getQueryPipeline(startTimestamp, targetCollection){
           created: "$documentInfo.created",
           latestVoteAmountDate: {$add: [new Date(0), "$latestVoteAmountUpdated"]}
       }
-  },{
+  }, {
     $project: {
       documentInfo:0
     }

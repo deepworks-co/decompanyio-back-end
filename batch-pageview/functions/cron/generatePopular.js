@@ -59,34 +59,50 @@ function getQueryPipeline(start){
     }
   }, {
     $lookup: {
-      from: "DOCUMENT",
+      from: tables.DOCUMENT,
         foreignField: "_id",
         localField: "_id",
         as: "documentAs"
     }
   }, {
     $addFields: {
-      document: { $arrayElemAt: [ "$documentAs", 0 ] },
+      "documentAs": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentAs",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
     }
   }, {
-    $match: {
-      document: { $exists: true, $ne: null }
+    $unwind: {
+      path:"$documentAs",
+      preserveNullAndEmptyArrays: false
     }
   }, {
     $addFields:{
-      tags: "$document.tags",
-      documentName: "$document.documentName",
-      seoTitle: "$document.seoTitle",
-      accountId: "$document.accountId",
-      title: "$document.title",
-      desc: "$document.desc",
-      created: "$document.created",
-      state: "$document.state",
-      totalPages: "$document.totalPages"
+      tags: "$documentAs.tags",
+      documentName: "$documentAs.documentName",
+      seoTitle: "$documentAs.seoTitle",
+      accountId: "$documentAs.accountId",
+      title: "$documentAs.title",
+      desc: "$documentAs.desc",
+      created: "$documentAs.created",
+      state: "$documentAs.state",
+      totalPages: "$documentAs.totalPages",
     }
   }, {
     $project: {
-      document: 0,
       documentAs: 0
     }
   }, {
