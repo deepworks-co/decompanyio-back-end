@@ -61,7 +61,7 @@ exports.handler = (event, context, callback) => {
             const json = JSON.parse(res[0]);
             const {document} = json;
             let html = res[1];
-            if(document){
+            if(json.success && document){
                 console.log(document);
 
                 if(document.isDeleted === true || document.isBlock === true){
@@ -118,8 +118,7 @@ exports.handler = (event, context, callback) => {
         })
         .catch((err)=>{
             console.log("server side rendering error", err);
-            //callback(null, );
-            return buildResponse(err.errorMessage, 500, "Server Error");
+            callback(null, request);
         })
         .then((response)=>{
             callback(null, response);

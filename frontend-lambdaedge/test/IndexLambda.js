@@ -12,7 +12,7 @@ describe('IndexLambda', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('200 http status', () => {
 
     const event = {
       "Records": [
@@ -22,15 +22,41 @@ describe('IndexLambda', () => {
               "distributionId": "default"
             },
             "request": {
-              "uri": "/dean123/global-logistics-network-powerpoint-templates1-ss78i31"
+              "uri": "/dean123/global-logistics-network-powerpoint-templates1-ss78i3"
             }
           }
         }
       ]
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
-      expect(response).to.not.be.empty;
+      //console.log(response);
+      //expect(response).to.not.be.empty;
+      console.log(response.status );
+      expect(response.status).to.equal(200);
+    });
+  });
+
+  it('404 status', () => {
+
+    const event = {
+      "Records": [
+        {
+          "cf": {
+            "config": {
+              "distributionId": "default"
+            },
+            "request": {
+              "uri": "/nothing/asf"
+            }
+          }
+        }
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response.status );
+      //expect(response).to.not.be.empty;
+      expect(response.status).to.equal(404);
+
     });
   });
 });
