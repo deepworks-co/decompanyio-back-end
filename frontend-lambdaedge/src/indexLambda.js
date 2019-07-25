@@ -62,7 +62,7 @@ exports.handler = (event, context, callback) => {
             const {document} = json;
             let html = res[1];
             if(json.success && document){
-                console.log(document);
+                //console.log(document);
 
                 if(document.isDeleted === true || document.isBlock === true){
                     return buildResponse(html, 404, "Not Found")
@@ -163,14 +163,14 @@ const fetchUrl = (url) => {
     return new Promise((resolve, reject) => {
         https.get(url, distant => {
 
-            if(distant.statusCode === 404){
-                let response = '';
-                distant.on('data', packet => response += packet.toString());
-                distant.on('end', () => resolve(JSON.stringify({error: response})));
-            } else {
+            if(distant.statusCode === 200){
                 let response = '';
                 distant.on('data', packet => response += packet.toString());
                 distant.on('end', () => resolve(response));
+            } else {
+                let response = '';
+                distant.on('data', packet => response += packet.toString());
+                distant.on('end', () => resolve(JSON.stringify({error: response})));
             }
             
         }).on('error', e => {

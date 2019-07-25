@@ -31,7 +31,7 @@ describe('IndexLambda', () => {
     return wrapped.run(event).then((response) => {
       //console.log(response);
       //expect(response).to.not.be.empty;
-      console.log(response.status );
+      console.log("response status", response.status );
       expect(response.status).to.equal(200);
     });
   });
@@ -53,10 +53,37 @@ describe('IndexLambda', () => {
       ]
     }
     return wrapped.run(event).then((response) => {
-      console.log(response.status );
+      console.log("response status", response.status );
       //expect(response).to.not.be.empty;
       expect(response.status).to.equal(404);
 
     });
   });
+
+
+  it('404 deleted document', () => {
+
+    const event = {
+      "Records": [
+        {
+          "cf": {
+            "config": {
+              "distributionId": "default"
+            },
+            "request": {
+              "uri": "/jayjayjay/ethereum-yellowpaper-m8okia"
+            }
+          }
+        }
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      //console.log(response);
+      //expect(response).to.not.be.empty;
+      console.log("response status", response.status );
+      expect(response.status).to.equal(404);
+    });
+  });
+
+
 });
