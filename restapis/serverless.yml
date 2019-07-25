@@ -30,7 +30,6 @@ provider:
     region: ${self:provider.region}
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
-    AUTH0_ZAPIERCONNECTOR_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_ZAPIERCONNECTOR_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
     NODE_PATH: "./:/opt/node_modules"
   tags:
@@ -139,80 +138,6 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-#  curatorSummary:
-#    handler: controllers/curator/curatorSummary.handler
-#    events:
-#      - http:
-#          path: /api/curator/summary
-#          method: get
-#          cors: true
-#          integration: lambda
-#          response:
-#            headers:
-#              Content-Type: integration.response.header.Content-Type
-#            template: $input.path('$')
-#          documentation:
-#            summary: "/api/curator/summary"
-#            description: "/api/curator/summary"
-#            queryParams:
-#              - name: ethAccount
-#                description: ethAccount
-#                type: string
-#                required: true
-#            methodResponses:
-#              -
-#                statusCode: "200"
-#                responseBody:
-#                  description: "Response body description"
-#                responseModels:
-#                  "application/json": "DefaultResponseModel"
-#    deploymentSettings:
-#      type: ${self:custom.deployType}
-#      alias: prod
-#      preTrafficHook: preHook
-#      postTrafficHook: postHook
-
-  zapierAuth:
-    handler: controllers/zapier/auth.handler
-
-  zapierEmail:
-    handler: controllers/zapier/email.handler
-    events:
-      - http:  
-          path: /api/zapier/email
-          method: get
-          authorizer: zapierAuth
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  zapierDocument:
-    handler: controllers/zapier/document.handler
-    events:
-      - http:
-          path: /api/zapier/document
-          method: get
-          authorizer: zapierAuth
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod

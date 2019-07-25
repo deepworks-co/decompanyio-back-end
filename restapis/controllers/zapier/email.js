@@ -15,10 +15,14 @@ module.exports.handler = async (event, context, callback) => {
 
   const doc = await getDocument(wapper, documentId, principalId);
 
-  if(!doc){
+  if(!doc || doc.isDeleted  === true || doc.isBlocked === true){
     //console.log("document nothing", {_id: documentId, accountId: principalId, useTracking: true})
     //return JSON.stringify([]);
     throw new Error("[404] Not Found");
+  }
+
+  if(doc.useTracking !== true){
+    throw new Error("[403] Unauthorized(Tracking)")
   }
 
   let host = applicationConfig.mainHost;
@@ -55,7 +59,7 @@ async function getDocument(wapper, documentId, principalId) {
   const queryPipline = [
     {
       $match: {
-        _id: documentId, isDeleted: false, isBlocked: false, accountId: principalId, useTracking: true
+        _id: documentId, isDeleted: false, isBlocked: false, accountId: principalId
       }
     }, {
       $lookup: {
