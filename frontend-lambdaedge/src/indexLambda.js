@@ -61,8 +61,8 @@ exports.handler = (event, context, callback) => {
             const json = JSON.parse(res[0]);
             const {document} = json;
             let html = res[1];
-            if(document){
-                console.log(document);
+            if(json.success && document){
+                //console.log(document);
 
                 if(document.isDeleted === true || document.isBlock === true){
                     return buildResponse(html, 404, "Not Found")
@@ -118,8 +118,7 @@ exports.handler = (event, context, callback) => {
         })
         .catch((err)=>{
             console.log("server side rendering error", err);
-            //callback(null, );
-            return buildResponse(err.errorMessage, 500, "Server Error");
+            callback(null, request);
         })
         .then((response)=>{
             callback(null, response);
@@ -164,14 +163,14 @@ const fetchUrl = (url) => {
     return new Promise((resolve, reject) => {
         https.get(url, distant => {
 
-            if(distant.statusCode === 404){
-                let response = '';
-                distant.on('data', packet => response += packet.toString());
-                distant.on('end', () => resolve(JSON.stringify({error: response})));
-            } else {
+            if(distant.statusCode === 200){
                 let response = '';
                 distant.on('data', packet => response += packet.toString());
                 distant.on('end', () => resolve(response));
+            } else {
+                let response = '';
+                distant.on('data', packet => response += packet.toString());
+                distant.on('end', () => resolve(JSON.stringify({error: response})));
             }
             
         }).on('error', e => {
