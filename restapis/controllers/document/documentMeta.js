@@ -11,21 +11,23 @@ module.exports.handler = async (event, context, callback) => {
   const {query} = event;
   console.log("event : ", event);
 
-    
   let seoTitle = query.seoTitle;
   
   if(!seoTitle){
-    throw new Error("parameter is invaild!!");
+    //throw new Error("parameter is invaild!!");
+    return JSON.stringify({
+      success: false,
+      message: "seoTitle is invild",
+    });
   }
 
   const document = await documentService.getDocumentBySeoTitle(seoTitle);
   console.log("get document by seo title", document);
   if(!document){
-    /*return JSON.stringify({
-      success: true,
+    return JSON.stringify({
+      success: false,
       message: "document does not exist!",
-    });*/
-    throw new Error("[404] Not Found");
+    });
   }
 
   const response = JSON.stringify({
