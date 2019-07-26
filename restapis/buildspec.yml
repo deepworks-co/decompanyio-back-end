@@ -21,12 +21,12 @@ phases:
       # - command
   #pre_build:
     #commands:
-       - echo Build started on `date`
-       - cd restapis
-       - npm install
+      - echo Build started on `date`
+      - cd restapis
+      - npm install
   build:
     commands:
-       - npm run deploy
+      - npm run deploy
       # - command
   #post_build:
     #commands:
