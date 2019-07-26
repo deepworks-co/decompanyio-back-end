@@ -24,7 +24,6 @@ phases:
       - echo Build started on `date`
   build:
     commands:
-      - git log -1
       - cd restapis
       - npm install
       - npm run deploy
