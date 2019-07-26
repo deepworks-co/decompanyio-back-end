@@ -22,10 +22,11 @@ phases:
   #pre_build:
     #commands:
       - echo Build started on `date`
-      - cd restapis
-      - npm install
   build:
     commands:
+      - git log -1
+      - cd restapis
+      - npm install
       - npm run deploy
       # - command
   #post_build:
