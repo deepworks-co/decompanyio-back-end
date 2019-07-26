@@ -39,7 +39,7 @@ const INDEX = "index.html";
 
 exports.handler = (event, context, callback) => {
     const { request, response, config } = event.Records[0].cf;
-    console.log("request", JSON.stringify(request));
+    //console.log("request", JSON.stringify(request));
     
     if (path.extname(request.uri) === "") { // !.js !.css !.html !.jpg ...
         const envConfig = envConfigs[config.distributionId];
@@ -50,8 +50,14 @@ exports.handler = (event, context, callback) => {
             MAIN_HOST = envConfig.mainHost;
         } 
         
-        console.log("request", `${request.uri}${request.querystring?'?'+request.querystirng:""}`);
+        console.log("request", request.uri);
+        console.log("querystring", request.querystring);
+
         const seoTitle = request.uri.split("/")[2];
+
+        if(seoTitle===undefined){
+            callback(null, request);
+        }
         const metaUrl = `${META_URL}?seoTitle=${seoTitle}`;
         const titleSuffix = envConfig.titleSuffix;
         console.log("metaUrl", metaUrl);

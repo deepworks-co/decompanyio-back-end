@@ -49,9 +49,14 @@ module.exports.handler = async (event, context, callback) => {
     console.log("dimensions", dimensions);
     
     const username = author.username;
-    const width = 640;
+    let width = dimensions.width;  //default landscape
+    let height = dimensions.height; //default landscape
+    /*if(dimensions.height > dimensions.width){
+      width = 210;
+      height = 297;
+    }*/
     //h=(640*dimensions.height)/dimensions.width
-    const height = Math.round(width * dimensions.height / dimensions.width);
+    //const height = Math.round(width * dimensions.height / dimensions.width);
     const title = document.title;
     const seoTitle = document.seoTitle;
     let contentsUrl = `${domain + encodeURIComponent(username)}/${seoTitle}`;
