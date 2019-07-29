@@ -32,6 +32,7 @@ module.exports.project = async (serverless) => {
 module.exports.git_revision = async (serverless) => {
     const revision = await promiseExec('git rev-parse HEAD').then(({stdout})=>{
         const revision = stdout.split('\n')[0];
+        console.log("current revision", revision);
         return revision;
     });
     
@@ -43,6 +44,7 @@ module.exports.git_branch = async (serverless) => {
 
     const branch = await promiseExec('git rev-parse --abbrev-ref HEAD').then(({stdout}) => {
         const currentBranch = stdout.split('\n')[0];
+        console.log("current branch", currentBranch);
         return currentBranch;
     });
 
