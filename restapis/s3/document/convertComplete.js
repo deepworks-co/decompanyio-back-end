@@ -263,7 +263,8 @@ async function updateConvertCompleteDocument(documentId, totalPages, shortUrl, d
     updateDoc.totalPages = Number(totalPages);
     if(shortUrl) updateDoc.shortUrl = shortUrl;
     if(dimensions) updateDoc.dimensions = dimensions;
-      
+    
+    console.log("updateConvertCompleteDocument updateDoc", updateDoc);
     return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
     
   } catch(ex) {
@@ -408,7 +409,9 @@ async function getShortUrl(document){
         console.log(response.statusCode, response.statusMessage);
         if(response.statusCode===200){
           if(parsedBody.url){
-            resolve(parsedBody.url);
+            //resolve(parsedBody.url);
+            console.log(parsedBody);
+            resolve(null);
           } else {
             //reject("short url create fail", body);
             console.log("short url create fail", body);
