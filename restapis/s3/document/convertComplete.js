@@ -401,7 +401,8 @@ async function getShortUrl(document){
     console.log("shortUrlConfig.generatorUrl", shortUrlConfig.generatorUrl);
     request.post({url : shortUrlConfig.generatorUrl, headers: {"Content-Type": "application/json"}, body: JSON.stringify({url: url})}, function (error, response, body){
       if(error){
-        reject(error);
+        console.log("error", error);
+        resolve(null);
       }else {
         const parsedBody = typeof(body)==='string'?JSON.parse(body):body;
         console.log(response.statusCode, response.statusMessage);
@@ -409,11 +410,15 @@ async function getShortUrl(document){
           if(parsedBody.url){
             resolve(parsedBody.url);
           } else {
-            reject("short url create fail", body);
+            //reject("short url create fail", body);
+            console.log("short url create fail", body);
+            resolve(null);
           }
           
         } else {
-          reject(new Error(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`));
+          //reject(new Error(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`));
+          console.log(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`)
+          resolve(null);
         }
         
       }
