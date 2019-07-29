@@ -93,11 +93,10 @@
         "prefix": "backend-restapis-alpha-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "curatorSummary", "aliase": "prod"},
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
-            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
+            {"name": "s3DocumentUploadComplete"},
+            {"name": "s3DocumentConvertComplete"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
