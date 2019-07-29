@@ -409,7 +409,7 @@ async function getShortUrl(document){
           if(parsedBody.url){
             resolve(parsedBody.url);
           } else {
-            reject("short url create fail");
+            reject("short url create fail", body);
           }
           
         } else {
