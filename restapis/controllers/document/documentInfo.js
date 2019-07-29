@@ -17,7 +17,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log("event : ", event);
   try{
     
-    let documentId = path.documentId;
+    let documentId = decodeURI(path.documentId);
     
     if(!documentId){
       throw new Error("parameter is invaild!!");
