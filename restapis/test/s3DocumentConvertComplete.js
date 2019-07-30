@@ -148,4 +148,26 @@ describe('s3DocumentConvertComplete', () => {
     });    
   });
 
+  it('52c130ad55924521a16bb11b044e7f67 result.txt Test', async () => {
+    
+    const event = {
+      "Records": [
+        
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/52c130ad55924521a16bb11b044e7f67/result.txt"
+            }
+          }
+        }        
+      ]
+    }
+
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });    
+  });
 });
