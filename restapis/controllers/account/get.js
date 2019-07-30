@@ -26,6 +26,10 @@ module.exports.handler = async (event, context, callback) => {
     success: user?true:false,
     user: user
   };
+
+  const privateDocumentCount = await getPrivateDocumentCount(principalId);
+  response.privateDocumentCount = privateDocumentCount;
+
   if(user.ethAccount){
     const ethAccount = user.ethAccount;
     const TB_BOUNTY = tables.BOUNTY;
@@ -49,3 +53,24 @@ module.exports.handler = async (event, context, callback) => {
   
   return JSON.stringify(response);
 };
+
+
+function getPrivateDocumentCount(accountId){
+
+  return new Promise(async (resolve, reject)=>{
+    const wapper = new MongoWapper(mongodb.endpoint);
+
+    wapper.query(tables.DOCUMENT, { state: "CONVERT_COMPLETE", isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
+    .sort({created:-1}).toArray((err, data)=>{
+      if(err) {
+        reject(err);
+      } else {
+        console.log("get private doc", data);
+        resolve(data.length);
+      }
+      wapper.close();
+    });
+
+  })
+
+}
