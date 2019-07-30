@@ -54,9 +54,9 @@ exports.handler = (event, context, callback) => {
         console.log("querystring", request.querystring);
 
         const seoTitle = request.uri.split("/")[2];
-
-        if(seoTitle===undefined){
-            callback(null, request);
+        
+        if(seoTitle === undefined){
+            return callback(null, request);
         }
         const metaUrl = `${META_URL}?seoTitle=${seoTitle}`;
         const titleSuffix = envConfig.titleSuffix;

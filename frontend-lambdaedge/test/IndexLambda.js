@@ -109,4 +109,28 @@ describe('IndexLambda', () => {
     });
   });
 
+  it('/callback', () => {
+
+    const event = {
+      "Records": [
+        {
+          "cf": {
+            "config": {
+              "distributionId": "default"
+            },
+            "request": {
+              "uri": "/callback"
+            }
+          }
+        }
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
+      //expect(response).to.not.be.empty;
+      //console.log("response status", response.status );
+      expect(response.status).to.be.empty;
+    });
+  });
+
 });
