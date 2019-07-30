@@ -51,12 +51,13 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error(`user(${accountId}) does not exist`);
   }
 
-  const check = await checkRegistrableDocument(accountId);
+  let {check, privateDocumentCount} = await checkRegistrableDocument(accountId);
   if(check===false){
     //throw new Error('registry error, private document over 5');
     return callback(null, JSON.stringify({
       success: false,
       code: "EXCEEDEDLIMIT",
+      privateDocumentCount: privateDocumentCount,
       message: 'Error Registry , You have at least 5 private documents.'
     }));
   }
@@ -93,6 +94,8 @@ module.exports.handler = async (event, context, callback) => {
     const result = await documentService.putDocument(putItem);
     
     if(result){
+      let {check, privateDocumentCount} = await checkRegistrableDocument(accountId);
+
       console.log("PutItem succeeded:", result);
       
       //const signedUrl = s3.generateSignedUrl(accountId, documentId, ext);
@@ -102,7 +105,8 @@ module.exports.handler = async (event, context, callback) => {
         success: true,
         documentId: documentId,
         accountId: accountId,
-        signedUrl: signedUrl
+        signedUrl: signedUrl,
+        privateDocumentCount: privateDocumentCount
       };
       return callback(null, JSON.stringify(payload));
     } else {

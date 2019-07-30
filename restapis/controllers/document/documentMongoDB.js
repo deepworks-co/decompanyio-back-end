@@ -1508,9 +1508,9 @@ async function checkRegistrableDocument(accountId){
       } else {
         console.log("get private doc", data);
         if(data && data.length > 4){
-          resolve(false)
+          resolve({check: false, privateDocumentCount: data.length})
         } else {
-          resolve(true)
+          resolve({check: true, privateDocumentCount: data.length})
         }
         
       }

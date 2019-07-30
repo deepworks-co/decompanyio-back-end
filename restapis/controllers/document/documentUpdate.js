@@ -72,12 +72,13 @@ module.exports.handler = async (event, context, callback) => {
   if(isPublic !== undefined){
     newDoc.isPublic = utils.parseBool(isPublic);
     if(newDoc.isPublic===false){
-      const check = await documentService.checkRegistrableDocument(principalId);
+      const {check, privateDocumentCount} = await documentService.checkRegistrableDocument(principalId);
       if(check===false){
         //throw new Error('registry error, private document over 5');
         return callback(null, JSON.stringify({
           success: false,
           code: "EXCEEDEDLIMIT",
+          privateDocumentCount: privateDocumentCount,
           message: 'Error Update , You have at least 5 private documents.'
         }));
       }
