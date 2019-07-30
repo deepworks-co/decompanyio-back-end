@@ -40,7 +40,6 @@ const INDEX = "index.html";
 exports.handler = (event, context, callback) => {
     const { request, response, config } = event.Records[0].cf;
     //console.log("request", JSON.stringify(request));
-    
     if (path.extname(request.uri) === "") { // !.js !.css !.html !.jpg ...
         const envConfig = envConfigs[config.distributionId];
         if(envConfig){
@@ -55,21 +54,35 @@ exports.handler = (event, context, callback) => {
 
         const seoTitle = request.uri.split("/")[2];
         
-        if(seoTitle === undefined){
-            return callback(null, request);
-        }
         const metaUrl = `${META_URL}?seoTitle=${seoTitle}`;
         const titleSuffix = envConfig.titleSuffix;
         console.log("metaUrl", metaUrl);
-        Promise.all([fetchUrl(metaUrl), getIndexHtml()])
+        const fetchUrls = [];
+        fetchUrls.push(getIndexHtml());
+        if(seoTitle) fetchUrls.push(fetchUrl(metaUrl));
+        Promise.all(fetchUrls)
         .then((res)=>{
-            
-            const json = JSON.parse(res[0]);
+            let html = res[0];
+
+            if(
+                request.uri.startsWith("/callback") 
+                || request.uri.startsWith("/featured")
+                || request.uri.startsWith("/popular")
+                || request.uri.startsWith("/latest")
+            ) {
+                return buildResponse(html);
+            }
+
+           
+            if(res[1] === undefined){
+                return buildResponse(html);
+            }
+
+            const json = JSON.parse(res[1]);
             const {document} = json;
-            let html = res[1];
             if(json.success && document){
                 //console.log(document);
-
+                
                 if(document.isDeleted === true || document.isBlock === true){
                     return buildResponse(html, 404, "Not Found")
                 }
@@ -161,6 +174,7 @@ function buildResponse(message, status, statusDescription){
         statusDescription: statusDescription?statusDescription:"HTTP OK",
         body: typeof(message) === 'string'? message: JSON.stringify(message)
     }
+    console.log("response status", response.status);
     return response;
 }
 

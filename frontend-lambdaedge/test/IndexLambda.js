@@ -12,7 +12,7 @@ describe('IndexLambda', () => {
     done();
   });
 
-  it('200 http status', () => {
+  it('/dean123/global-logistics-network-powerpoint-templates1-ss78i3 200 http status', () => {
 
     const event = {
       "Records": [
@@ -36,7 +36,7 @@ describe('IndexLambda', () => {
     });
   });
 
-  it('404 status', () => {
+  it('/nothing/asf 404 status', () => {
 
     const event = {
       "Records": [
@@ -102,10 +102,10 @@ describe('IndexLambda', () => {
       ]
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      //console.log(response);
       //expect(response).to.not.be.empty;
       //console.log("response status", response.status );
-      expect(response).to.not.be.empty;
+      expect(response.status).to.equal(200);
     });
   });
 
@@ -126,10 +126,34 @@ describe('IndexLambda', () => {
       ]
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      //console.log(response);
       //expect(response).to.not.be.empty;
       //console.log("response status", response.status );
-      expect(response.status).to.be.empty;
+      expect(response.status).to.equal(200);
+    });
+  });
+
+  it('/featured', () => {
+
+    const event = {
+      "Records": [
+        {
+          "cf": {
+            "config": {
+              "distributionId": "default"
+            },
+            "request": {
+              "uri": "/featured/rsa"
+            }
+          }
+        }
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      //console.log(response);
+      //expect(response).to.not.be.empty;
+      //console.log("response status", response.status );
+      expect(response.status).to.equal(200);
     });
   });
 
