@@ -10,6 +10,7 @@ let wrapped = mochaPlugin.getWrapper('s3DocumentConvertComplete', '/s3/document/
 const { mongodb, tables } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
+/*
 async function getList(){
   console.log("stage", process.env.stage);
   console.log("endpoint", mongodb.endpoint);
@@ -60,29 +61,18 @@ async function getList(){
 
   return null;
 }
+*/
 
 describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
-
-  it('1fb0012674b442de9bc4e397f6e8dd62 result.txt Test', async () => {
+/*
+  it('1fb0012674b442de9bc4e397f6e8dd62 1page convert Test', async () => {
     
     const event = {
       "Records": [
         
-        {
-          "s3": {
-            "bucket": {
-              "name": "dev-ca-document",
-            },
-            "object": {
-              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/result.txt"
-            }
-          }
-        },
-
-        /*
         {
           "s3": {
             "bucket": {
@@ -92,8 +82,7 @@ describe('s3DocumentConvertComplete', () => {
               "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/1200X1200/1"
             }
           }
-        },
-        */
+        }
         
       ]
     }
@@ -102,53 +91,10 @@ describe('s3DocumentConvertComplete', () => {
       expect(response).to.not.be.empty;
     });
 
-
-  /*
-    let resultList = await getList();
-    //console.log(JSON.stringify(resultList.slice(0, 2)));
-    console.log("getList", resultList.length);
-    let i=0;
-    for(i=0;i<resultList.length;i++){
-      const it = resultList[i];
-      console.log(i, it);
-      const event = {
-        Records: it
-      }
-      const result = await wrapped.run(event);
-      console.log("migration results", i+1, result);
-      //console.log(JSON.stringify(result));
-    }
-    */
-    //console.log("migration results", await Promise.all(results));
-
-    
   }).timeout(30000000);
+*/
 
-
-  it('8dc1ec6e9c0c4ec0be37e4fce15da917 result.txt Test', async () => {
-    
-    const event = {
-      "Records": [
-        
-        {
-          "s3": {
-            "bucket": {
-              "name": "dev-ca-document",
-            },
-            "object": {
-              "key": "THUMBNAIL/8dc1ec6e9c0c4ec0be37e4fce15da917/result.txt"
-            }
-          }
-        }        
-      ]
-    }
-
-    return wrapped.run(event).then((response) => {
-      expect(response).to.not.be.empty;
-    });    
-  });
-
-  it('52c130ad55924521a16bb11b044e7f67 result.txt Test', async () => {
+  it('Test result.txt - 52c130ad55924521a16bb11b044e7f67 ', async () => {
     
     const event = {
       "Records": [
@@ -167,7 +113,9 @@ describe('s3DocumentConvertComplete', () => {
     }
 
     return wrapped.run(event).then((response) => {
-      expect(response).to.not.be.empty;
+      const result = response[0]
+      const success = result && result.documentId !== undefined && result.shortUrl !== undefined && result.dimensions !== undefined;
+      expect(success).to.be.true
     });    
   });
 });

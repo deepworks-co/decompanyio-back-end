@@ -38,7 +38,7 @@ exports.handler = async (event, context, callback) => {
       const prefix = keys[0];
       const documentId = keys[1];
       const filename = keys[2];
-      console.log(filename);
+      
       return run({
         key: key,
         bucket: bucket,
@@ -53,11 +53,12 @@ exports.handler = async (event, context, callback) => {
     console.log(err);
   }
 
+  console.log(results)
   return callback(null, results);
 };
 
 function run(params){
-  console.log("run", params);
+
   const {key, prefix, bucket, filename, documentId} = params;
   return new Promise((resolve, reject)=>{
     if("result.txt" === filename){
@@ -75,7 +76,7 @@ function run(params){
         let shortUrl;
         if(shortUrlConfig){
           shortUrl = await getShortUrl(document);
-          //console.log("shortUrl", shortUrl);
+          console.log("shortUrl", shortUrl);
         } else {
           console.log("shortUrlConfig is undefined");
         }
@@ -84,15 +85,15 @@ function run(params){
           shortUrl: shortUrl
         })
       })
-      .then((documentWithShortUrl)=>{
-        console.log("get document size");
-        return getDocSize(documentWithShortUrl);
+      .then((data)=>{
+        //console.log("getDocSize argument", data);
+        return getDocSize(data);
       })
-      .then(async (documentWithShortUrl)=>{
-        //console.log("runConvertComplete", documentWithShortUrl);
-        const {document, shortUrl, dimensions} = documentWithShortUrl;
+      .then(async (data)=>{
+        //console.log("runConvertComplete", data);
+        const {document, shortUrl, dimensions} = data;
         const result = await runConvertComplete(bucket, key, document, shortUrl, dimensions);
-        resolve(result);
+        return resolve(result);
       })
       .catch((err)=>{
         //console.log(document);
@@ -135,7 +136,7 @@ function getDocSize(documentWithShortUrl){
         const dimensions = sizeOf(data.Body);
         documentWithShortUrl.dimensions = dimensions;
         //console.log("get dimensions", dimensions, documentWithShortUrl);
-        return resolve({document: document, shortUrl: shortUrl, dimensions: dimensions});
+        return resolve(documentWithShortUrl);
       }
     });
   });
@@ -181,48 +182,51 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, document, shortUrl, dimensions){
+async function runConvertComplete(bucket, key, document, shortUrl, dimensions){
   const documentId = document._id;
-  console.log(bucket, key, document);
-  const totalPagesPromise = getTotalPages(bucket, key);
-  
-  return new Promise((resolve, reject) => {
-    Promise.all([totalPagesPromise]).then((data) => {       
-      //console.log(data);
-      let totalPages = -1;
-      const resultTxtFile = data[0];
+  //console.log(bucket, key, document);
+  const totalPages = await getTotalPages(bucket, key);
+  console.log("documentId", documentId, "totalPages", totalPages);
 
-      if(resultTxtFile){
-        totalPages = resultTxtFile.Body.toString('ascii');
-        totalPages *= 1;
-      }
-
-      console.log("documentId", documentId, "totalPages", totalPages);
+  return new Promise(async (resolve, reject) => {
+         
       if(totalPages>0 && documentId) {
-  
-        updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions).then((data) =>{
-          console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
-          resolve({message: "SUCCESS",
-                  documentId: documentId});
-        }).catch((err)=> {
-          console.error("Unable to update item. Error JSON:", documentId, JSON.stringify(err, null, 2));
-          reject(err);
-        });
+        const result = await updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions);
+        console.log("Update SUCCESS CONVERT_COMPLETE", result);
+        return resolve(result);
+      } else {
+        reject(new Error("runConvertComplete error"))
       }
-  
-    }).catch((errs) => {
-      console.error("Error Promise!!! result.txt process", errs);
-      reject(errs);
-    });
+
   });
 
 }
 
 function getTotalPages(bucket, key){
-  return s3.getObject({
-      Bucket: bucket,
-      Key: key
-  }).promise();
+
+  return new Promise((resolve, reject)=>{
+
+    return s3.getObject({
+        Bucket: bucket,
+        Key: key
+    }, function (err, data){
+      
+      if(err){
+        reject(err);
+      } else {
+        let totalPages = -1;
+        if(data){
+          totalPages = data.Body.toString('ascii');
+          totalPages *= 1;
+          resolve(totalPages);
+        }
+      }
+      
+    })
+
+    
+  });
+  
 }
 
 async function getDocument(documentId){
@@ -264,8 +268,10 @@ async function updateConvertCompleteDocument(documentId, totalPages, shortUrl, d
     if(shortUrl) updateDoc.shortUrl = shortUrl;
     if(dimensions) updateDoc.dimensions = dimensions;
     
-    console.log("updateConvertCompleteDocument updateDoc", updateDoc);
-    return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    //console.log("updateConvertCompleteDocument updateDoc", updateDoc);
+    const r = await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    //console.log("updateResult", r);
+    return {documentId, totalPages, shortUrl, dimensions}
     
   } catch(ex) {
     console.log(ex);
@@ -406,12 +412,10 @@ async function getShortUrl(document){
         resolve(null);
       }else {
         const parsedBody = typeof(body)==='string'?JSON.parse(body):body;
-        console.log(response.statusCode, response.statusMessage);
+        //console.log(response.statusCode, response.statusMessage);
         if(response.statusCode===200){
           if(parsedBody.url){
-            //resolve(parsedBody.url);
-            console.log(parsedBody);
-            resolve(null);
+            resolve(parsedBody.url);
           } else {
             //reject("short url create fail", body);
             console.log("short url create fail", body);
