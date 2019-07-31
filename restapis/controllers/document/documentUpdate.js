@@ -76,7 +76,7 @@ module.exports.handler = async (event, context, callback) => {
       if(check===false){
         //throw new Error('registry error, private document over 5');
         return callback(null, JSON.stringify({
-          success: false,
+          success: true,
           code: "EXCEEDEDLIMIT",
           privateDocumentCount: privateDocumentCount,
           message: 'Error Update , You have at least 5 private documents.'
@@ -85,7 +85,7 @@ module.exports.handler = async (event, context, callback) => {
 
       if(document.isRegistry === true){
         return callback(null, JSON.stringify({
-          success: false,
+          success: true,
           code: "REGISTRYINBLOCKCHAIN",
           message: 'Error Update , registry in blockchain'
         }));

@@ -55,7 +55,7 @@ module.exports.handler = async (event, context, callback) => {
   if(check===false){
     //throw new Error('registry error, private document over 5');
     return callback(null, JSON.stringify({
-      success: false,
+      success: true,
       code: "EXCEEDEDLIMIT",
       privateDocumentCount: privateDocumentCount,
       message: 'Error Registry , You have at least 5 private documents.'
