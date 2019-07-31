@@ -12,13 +12,13 @@ describe('documentDownload', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('get download url', () => {
     const event = {
       query: {documentId : "c4bd778acdc24992a7da9bc57262c536"}
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
-      expect(response).to.not.be.empty;
+      const res = JSON.parse(response);
+      expect(res.success === true && res.downloadUrl!== undefined).to.be.true;
     });
   });
 });
