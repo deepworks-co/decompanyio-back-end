@@ -6,6 +6,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.503.0",
     "buffer-image-size": "^0.6.4",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
@@ -23,7 +24,7 @@
   "scripts": {
     "preinstall": "sh install.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "sls deploy -s dev",
-    "deploy:alpha": "sls deploy -s alpha"
+    "deploy": "sls deploy -s dev && sls s3deploy -s dev",
+    "deploy:alpha": "sls deploy -s alpha  && sls s3deploy -s alpha"
   }
 }
