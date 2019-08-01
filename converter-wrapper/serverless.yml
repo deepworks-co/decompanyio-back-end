@@ -68,6 +68,12 @@ package:
     - test/**
     
 functions:
+  autoCheckConvertFailDocument:
+    handler: src/document/autoExpireDocument.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
+
   accountPictureConverter:
     handler: src/account/accountPictureConverter.handler
     layers:   
