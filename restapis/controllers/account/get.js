@@ -1,7 +1,7 @@
 'use strict';
 const AccountService = require('./AccountService');
 const { utils, MongoWapper} = require('decompany-common-utils');
-const { tables, mongodb} = require('decompany-app-properties');
+const { tables, mongodb, constants} = require('decompany-app-properties');
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
   if (event.source === 'lambda-warmup') {
@@ -60,7 +60,7 @@ function getPrivateDocumentCount(accountId){
   return new Promise(async (resolve, reject)=>{
     const wapper = new MongoWapper(mongodb.endpoint);
 
-    wapper.query(tables.DOCUMENT, { state: "CONVERT_COMPLETE", isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
+    wapper.query(tables.DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
     .sort({created:-1}).toArray((err, data)=>{
       if(err) {
         reject(err);

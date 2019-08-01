@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('decompany-app-properties');
+const { mongodb, tables, constants } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -1501,7 +1501,7 @@ async function checkRegistrableDocument(accountId){
   return new Promise(async (resolve, reject)=>{
     const wapper = new MongoWapper(connectionString);
 
-    wapper.query(TB_DOCUMENT, { state: {$in: ["CONVERT_COMPLETE", "UPLOAD_COMPLETE"]}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
+    wapper.query(TB_DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
     .sort({created:-1}).toArray((err, data)=>{
       if(err) {
         reject(err);
