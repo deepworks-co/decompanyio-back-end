@@ -48,7 +48,7 @@
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
         "embedHost": "https://embed.share.decompany.io",
-        "activeVoteDays": 3,
+        "activeVoteDays": 7,
         "activeRewardVoteDays": 7
     },
     "sesConfig": {
