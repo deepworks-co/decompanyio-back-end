@@ -17,3 +17,4 @@ function getProperties(stage){
 
 }
 
+module.exports.constants = require('./resources/app-constants.json');
