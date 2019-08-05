@@ -1,17 +1,11 @@
-FROM centos:6
+FROM decompany/pdf-converter-base
 
-# Install yum.
-RUN yum update -y
-RUN yum install -y yum install sudo java-1.8.0-openjdk java-1.8.0-openjdk-devel && yum clean all && yum install -y wget
-RUN yum install -y openssl-devel
-RUN yum install -y gcc-c++ make
-
-# install nodejs 8.x
-RUN curl -sL https://rpm.nodesource.com/setup_8.x | sudo -E bash - 
-RUN yum install -y nodejs
+ENV ENGINE_SRC ./po-converter-library_centos_x64_20190521
+ENV APPLICATION_DIR /batch-application
 
 # Application (nodejs)
-COPY ./sample /sample
-WORKDIR /sample
+#COPY ./batch-application ${APPLICATION_DIR}
+#COPY ./po-converter-library_centos_x64_20190521 /converter
+WORKDIR ${APPLICATION_DIR}
 EXPOSE 8080
 CMD ["npm", "start"]

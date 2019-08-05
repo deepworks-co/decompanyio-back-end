@@ -1,0 +1,9 @@
+FROM centos:6
+
+# Install yum.
+RUN yum update -y
+RUN yum install -y yum install sudo java-1.8.0-openjdk java-1.8.0-openjdk-devel gcc-c++ make openssl-devel wget && yum clean all
+
+# install nodejs 8.x
+RUN curl -sL https://rpm.nodesource.com/setup_8.x | sudo -E bash - 
+RUN yum install -y nodejs
