@@ -43,7 +43,7 @@ var signals = {
 const shutdown = (signal, value) => {
   console.log("shutdown!");
   server.close(() => {
-    task.stop()
+    task.stop();
     console.log(`server stopped by ${signal} with value ${value}`);
     process.exit(128 + value);
   });
