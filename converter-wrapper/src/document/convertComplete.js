@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region, constants } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
@@ -12,7 +12,6 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 const TABLE_NAME = tables.DOCUMENT;
-const CONVERT_COMPLETE = "CONVERT_COMPLETE";
 
 const QUALITY = 95;
 
@@ -260,17 +259,20 @@ async function getDocument(documentId){
 
 async function updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions){
   const wapper = new MongoWapper(mongodb.endpoint);
+  
   try{
+    const {STATE} = constants.DOCUMENT;
     const endPageNo = Number(totalPages);
     const updateDoc = {};
-    updateDoc.state = endPageNo===1?"SINGLE_PAGE_DOC":"CONVERT_COMPLETE";
+    updateDoc.state = STATE.CONVERT_COMPLETE;
+    updateDoc.singlePageDoc = endPageNo===1?true:false;
     updateDoc.totalPages = Number(totalPages);
     if(shortUrl) updateDoc.shortUrl = shortUrl;
     if(dimensions) updateDoc.dimensions = dimensions;
     
     //console.log("updateConvertCompleteDocument updateDoc", updateDoc);
     const r = await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
-    //console.log("updateResult", r);
+    console.log("updateResult", r, updateDoc);
     return {documentId, totalPages, shortUrl, dimensions}
     
   } catch(ex) {

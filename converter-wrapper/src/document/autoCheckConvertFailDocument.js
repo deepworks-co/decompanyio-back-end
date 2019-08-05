@@ -21,7 +21,7 @@ function updateConvertFailAll(wrapper) {
   const {STATE} = constants.DOCUMENT;
 
   return new Promise((resolve, reject) => {
-    const query = {state: {$in: [STATE.UPLOAD_COMPLETE, STATE.NOT_CONVERT]}, created: {$gt: failAt}}
+    const query = {state: {$in: [STATE.UPLOAD_COMPLETE, STATE.NOT_CONVERT]}, created: {$lt: failAt}}
     wrapper.update(tables.DOCUMENT, query, {$set: {state: STATE.CONVERT_FAIL}}, {multi: true})
     .then((data)=>{
       resolve(data);

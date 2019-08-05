@@ -1,5 +1,5 @@
 {
-  "name": "converter-event",
+  "name": "converter-wrapper",
   "version": "1.0.0",
   "description": "",
   "main": "handler.js",
