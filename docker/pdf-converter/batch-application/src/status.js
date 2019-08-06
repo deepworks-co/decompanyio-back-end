@@ -19,7 +19,9 @@ Status.prototype.stop = function() {
 Status.prototype.isStop = function() {
     return this.isStopping;
 }
-
+Status.prototype.isStopped = function() {
+    return this.isStopping === true && this.subprocess.length === 0;
+}
 
 Status.prototype.jobCount = function() {
     return this.subprocess.length;

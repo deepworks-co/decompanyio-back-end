@@ -1,28 +1,38 @@
 'use strict';
 const childProcess = require('child_process')
+const path = require('path');
 
-module.exports = async (event, cb) => {
+module.exports = (event) => {
+
+    return new Promise((resolve, reject)=>{
+        const {downloadPath, outputPath, w, h} = event.payload;
+        const tempPath = `${path.join(downloadPath, "..")}/temp`;
+        const args = [downloadPath, outputPath, w, h, tempPath];
+        execEngine(args)
+        .then((result)=>{
+            const response = {
+                success: result.stderr?false:true,
+                payload: event.payload,
+                jobId: event.jobId,
+                result: result,
+                downloadPath,
+                outputPath
+            }
+            resolve(response);
+        })
+        .catch((err)=>{
+            reject(new Error(`Error Executing Engine ${JSON.stringify(err)}`));
+        });
+    });
     
-    const result = await execEngine(event.payload);
-    const response = {
-        success: result.stderr?false:true,
-        payload: event.payload,
-        jobId: event.jobId,
-        result: result
-    }
-    if(cb) cb(response);
-    
-    return response;
 }
 
 
 function execEngine(payload){
 
     return new Promise((resolve, reject)=>{
-        const rand = Date.now();
-        const temp =  "./temp_" + rand;
-        //console.log(temp);
-        let options = ["-jar", "PolarisConverter8.jar", "PDF"].concat(payload).concat([temp]);
+      
+        let options = ["-jar", "PolarisConverter8.jar", "PDF"].concat(payload);
             
         console.log("java", options.join(" "));
         const cp = childProcess.execFile(
