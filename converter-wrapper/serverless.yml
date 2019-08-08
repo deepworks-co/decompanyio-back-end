@@ -68,6 +68,16 @@ package:
     - test/**
     
 functions:
+  pdfConvertComplete:
+    handler: src/document/pdfConvertComplete
+    events:
+      - existingS3: 
+          bucket: ${file(./serverlessConfig.js):s3Config.document}
+          events:
+            - s3:ObjectCreated:Put
+          rules:
+            - prefix: PDF/
+
   autoCheckConvertFailDocument:
     handler: src/document/autoCheckConvertFailDocument.handler
     timeout: 30
