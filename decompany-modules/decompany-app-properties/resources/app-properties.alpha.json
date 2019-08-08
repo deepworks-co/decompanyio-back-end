@@ -39,7 +39,9 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls": {
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image"
+            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image",
+            "CONVERT_PDF": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
+
         }
     },
     "applicationLogAppender": {
