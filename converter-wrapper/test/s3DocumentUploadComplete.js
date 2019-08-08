@@ -12,22 +12,23 @@ describe('s3DocumentUploadComplete', () => {
     done();
   });
 
-  const event = {
-    "Records": [
-      {
-        "s3": {
-          "bucket": {
-            "name": "dev-ca-document"
-          },
-          "object": {
-            "key": "FILE/google-oauth2|101778494068951192848/0af980594c9c41c89f197f2fd01642d5.pdf",
-          }
-        }
-      },
-    ]
-  }
+  
 
-  it('upload document 0af980594c9c41c89f197f2fd01642d5', () => {
+  it('upload complete document ppt 229257c8085145008268cbd2ba146dc5', () => {
+    const event = {
+      "Records": [
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document"
+            },
+            "object": {
+              "key": "FILE/google-oauth2|101778494068951192848/229257c8085145008268cbd2ba146dc5.pptx",
+            }
+          }
+        },
+      ]
+    }
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });

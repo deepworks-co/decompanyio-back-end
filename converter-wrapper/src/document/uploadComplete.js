@@ -58,16 +58,12 @@ async function run(items){
 
     const uploadCompleteResult = await uploadComplete(fileid);
     console.log("uploadComplete", fileid, uploadCompleteResult);
-        
-    const messageBody = generateMessageBody(data);
-    const message = {
-      QueueUrl: QUEUE_URL,
-      MessageBody: messageBody
-    }
-    
-    const r2 = await sendMessage(message);
-    console.log("sendMessage", message, r2);
-    
+            
+    const r2 = await sendMessage(generateMessageBody(data));
+    console.log("sendMessage", r2);
+
+    const r3 = await sendMessage(generatePDFMessageBody(data));
+    console.log("sendMessage", r3);
 
     return true;
   });
@@ -79,7 +75,12 @@ async function run(items){
   });
 
 }
+function sendPDFConvertMessage(){
+  return new Promise((resolve, reject)=>{
+    
 
+  })
+}
 function sendMessage(message) {
   return new Promise((resolve, reject)=>{
     //console.log("sendMessage", message);
@@ -97,6 +98,28 @@ function sendMessage(message) {
   });
 }
 
+const generatePDFMessageBody = function(param){
+
+  const bucket = s3Config.document;
+
+  const messageBody = {
+    source: {
+      bucket: bucket,
+      key: `FILE/${param.fileindex}/${param.fileid}.${param.ext}`
+    },
+    target: {
+      bucket: bucket,
+      key: `PDF/${param.fileid}/${param.fileid}.pdf`
+    }
+  }
+  
+  return {
+    QueueUrl: sqsConfig.queueUrls.CONVERT_PDF,
+    MessageBody: JSON.stringify(messageBody)
+  }
+ 
+}
+
 const generateMessageBody = function(param){
 
   const bucket = s3Config.document;
@@ -112,7 +135,10 @@ const generateMessageBody = function(param){
   messageBody.secretKey = "";
   messageBody.ext = param.ext;
   messageBody.owner = param.fileindex;
-  return JSON.stringify(messageBody);
+  return {
+    QueueUrl: QUEUE_URL,
+    MessageBody: JSON.stringify(messageBody)
+  }
 }
 
 async function uploadComplete(documentId){
