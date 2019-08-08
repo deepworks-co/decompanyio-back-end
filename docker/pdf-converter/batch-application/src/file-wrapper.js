@@ -51,7 +51,7 @@ function dowloadFromS3 (workdir, bucket, key) {
             const filename = path.basename(key);
             
             const tempPath = workdir + `/temp${extname}`;
-            console.log(filename, extname)
+            //console.log(filename, extname)
             
             makeDir(workdir);
 
