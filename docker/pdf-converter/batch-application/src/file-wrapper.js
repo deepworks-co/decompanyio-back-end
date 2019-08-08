@@ -4,15 +4,26 @@ const path = require('path');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({region: 'us-west-1'});
 
-module.exports.uploadToS3 = (filepath, bucket, key) => {
+module.exports = {
+    uploadToS3,
+    dowloadFromS3,
+    writeFile,
+    readFile,
+    deleteDir
+}
+
+function uploadToS3 (filepath, bucket, key, base64) {
     return new Promise((resolve, reject)=>{
-        const stream = readFile(filepath)
+        const stream = readFile(filepath);
+        let streamBase64;
+        if(base64){
+            streamBase64 = encodeBase64(stream);
+        }
         s3.putObject({
             Bucket: bucket, 
             Key: key,
-            Body: stream,
-            ContentType: "octet-stream"
-
+            Body: base64?streamBase64:stream,
+            ContentType: "application/octet-stream"
         }, function(err, data) {
             if(err){
                 reject(err);
@@ -23,7 +34,8 @@ module.exports.uploadToS3 = (filepath, bucket, key) => {
         })
     });
 }
-module.exports.dowloadFromS3 = (workdir, bucket, key) => {
+
+function dowloadFromS3 (workdir, bucket, key) {
     
     return new Promise((resolve, reject) => {
       s3.getObject({
@@ -54,6 +66,12 @@ module.exports.dowloadFromS3 = (workdir, bucket, key) => {
       });
     })
   }
+  
+
+function encodeBase64(buffer){
+    return buffer.toString("base64");
+
+}
 
 function makeDir(dir) {
 
@@ -88,7 +106,7 @@ function writeFile(filepath, data){
     }
 }
 
-function readFile(filepath){
+function readFile (filepath){
 
     try {
         return fs.readFileSync(filepath)
@@ -98,7 +116,7 @@ function readFile(filepath){
 
 }
 
-module.exports.deleteDir = function(dirPath) {
+function deleteDir(dirPath) {
     if( fs.existsSync(dirPath) ) {
       fs.readdirSync(dirPath).forEach(function(file,index){
         var curPath = dirPath + "/" + file;

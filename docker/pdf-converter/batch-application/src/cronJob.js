@@ -38,7 +38,7 @@ async function cronJob() {
         },
         "target": {
             "bucket": "dev-ca-document",
-            "key": "PDF/07637479b9874749a7e723fe949d3dad.pdf"
+            "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
         }
       }
       */
@@ -51,7 +51,7 @@ async function cronJob() {
         
         const {MessageId, ReceiptHandle, Body, MD5OfBody} = sqsmessage;
         const parsedMessage = parseMessage(Body)
-        console.log("sqsmessage", JSON.stringify(parsedMessage));
+        console.log("receive sqs message", JSON.stringify(parsedMessage));
         const {source} = parsedMessage;
         
         status.addJob(jobId);
@@ -68,27 +68,32 @@ async function cronJob() {
 
         console.log("\r\ndownload complete", data);
         const {downloadPath, extname, filename, sqsmessage} = data;
-
         const outputPath = `${workDir}/temp.pdf`;
-        // large file
-        const event = {t: Date.now(), jobId: jobId, payload: {
-            downloadPath,
-            outputPath,
-            w: "1280", h: "1280"
-          }
-        }
-        const r = await pdfconverter(event);
-        r.sqsmessage = sqsmessage;
-        return r;
+        const payload = {w: "1280", h: "1280", outputPath, downloadPath};
+        const event = Object.assign(payload, data);
+
+        await pdfconverter(event);
+ 
+        return event;
       })
       .then(async (data)=>{
+        //upload pdf
         console.log("\r\npdf convert complete", data);
         const {downloadPath, outputPath, extname, filename, sqsmessage} = data
         const {target} = sqsmessage;
         const r = await filewrapper.uploadToS3(outputPath, target.bucket, target.key)
         return data; 
       })
-      .then((result)=>{
+      .then(async(data)=>{
+        //upload base64 pdf
+        console.log("\r\npdf convert complete", data);
+        const {downloadPath, outputPath, extname, filename, sqsmessage} = data
+        const {target} = sqsmessage;
+        const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
+        console.log(targetBase64Key);
+        const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
+        return data; 
+      }).then((result)=>{
         status.removeJob(jobId);
         filewrapper.deleteDir(workDir);
         console.log("process complete result", result);
