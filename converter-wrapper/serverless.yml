@@ -69,7 +69,7 @@ package:
     
 functions:
   pdfConvertComplete:
-    handler: src/document/pdfConvertComplete
+    handler: src/document/pdfConvertComplete.handler
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.document}

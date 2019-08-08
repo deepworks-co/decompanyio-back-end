@@ -22,7 +22,7 @@ describe('pdfConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
+              "key": "PDF/c64bfec0add949e280de9db670f43331/c64bfec0add949e280de9db670f43331.pdf"
             }
           }
         }
@@ -45,7 +45,7 @@ describe('pdfConvertComplete', () => {
               "name": "dev-ca-document",
             },
             "object": {
-              "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad"
+              "key": "PDF/c64bfec0add949e280de9db670f43331/c64bfec0add949e280de9db670f43331"
             }
           }
         }
