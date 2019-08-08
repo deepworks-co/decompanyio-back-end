@@ -46,7 +46,7 @@ function getMessage(queueURL){
                 //console.log("Receive message", data);
                 resolve(data.Messages[0]?data.Messages[0]:undefined);
             }  else {
-                reject("Empty message received")
+                reject("EmptyMessage")
             }
         });
 

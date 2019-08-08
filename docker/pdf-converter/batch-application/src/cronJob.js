@@ -7,7 +7,7 @@ const Status = require('./status');
 const status = new Status();
 
 let task;
-const expressiojn = '*/10 * * * * *'
+const expressiojn = '*/1 * * * * *'
 const WORK_DIR_PREFIX = '/cronwork'
 module.exports.init = () => {
     console.log("cron start", expressiojn)
@@ -25,26 +25,13 @@ module.exports.status = () => {
 }
 
 async function cronJob() {
-    console.log("current status", status);
+    //console.log("current status", status);
     if(status.isStop() === true && status.jobCount() === 0) {
       console.log("stopping pdf converter");
     } else if(status.jobCount() < 1 && status.isStop() === false){
-      
-      /*
-      {
-        "source": {
-            "bucket": "dev-ca-document",
-            "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx"
-        },
-        "target": {
-            "bucket": "dev-ca-document",
-            "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
-        }
-      }
-      */
       const jobId = `job_${Date.now()}`;
       const workDir = `${WORK_DIR_PREFIX}/${jobId}`;
-      console.log('running for pdf converter cron every 500ms', jobId, workDir);
+      //console.log('running for pdf converter cron every 500ms', jobId, workDir);
 
       getsqsmessage()
       .then(async (sqsmessage)=>{
@@ -65,20 +52,29 @@ async function cronJob() {
         }
       })
       .then(async (data)=>{
-
-        console.log("\r\ndownload complete", data);
         const {downloadPath, extname, filename, sqsmessage} = data;
-        const outputPath = `${workDir}/temp.pdf`;
+        let outputPath = `${workDir}/temp.pdf`;
+        
+        if(extname && extname.toLowerCase() === ".pdf" ){
+          outputPath = downloadPath;
+          const response = Object.assign({
+              outputPath,
+              downloadPath
+          }, data);
+          
+          return response;
+        }
+        //const outputPath = `${workDir}/temp.pdf`;
         const payload = {w: "1280", h: "1280", outputPath, downloadPath};
         const event = Object.assign(payload, data);
 
-        await pdfconverter(event);
+        const r = await pdfconverter(event);
+        console.log(r);
  
         return event;
       })
       .then(async (data)=>{
         //upload pdf
-        console.log("\r\npdf convert complete", data);
         const {downloadPath, outputPath, extname, filename, sqsmessage} = data
         const {target} = sqsmessage;
         const r = await filewrapper.uploadToS3(outputPath, target.bucket, target.key)
@@ -86,11 +82,9 @@ async function cronJob() {
       })
       .then(async(data)=>{
         //upload base64 pdf
-        console.log("\r\npdf convert complete", data);
         const {downloadPath, outputPath, extname, filename, sqsmessage} = data
         const {target} = sqsmessage;
         const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
-        console.log(targetBase64Key);
         const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
         return data; 
       }).then((result)=>{
@@ -102,7 +96,7 @@ async function cronJob() {
       .catch((err)=>{
         filewrapper.deleteDir(workDir);
         status.removeJob(jobId);
-        console.error(err);
+        if(err !== 'EmptyMessage') console.error(err);
       })
     }
   }

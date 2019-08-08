@@ -3,18 +3,20 @@ const childProcess = require('child_process')
 const path = require('path');
 
 module.exports = (event) => {
-    const {extname} = event;
-    if(extname && extname.toLowerCase() === ".pdf" ){
-        const response = Object.assign({
-            success: true,
-            result: "source is pdf file",
-        }, event);
-        
-        resolve(response);
-    }
+    
 
     return new Promise((resolve, reject)=>{
-        const {downloadPath, outputPath, w, h} = event;
+
+        const {downloadPath, outputPath, w, h, extname} = event;
+        if(extname && extname.toLowerCase() === ".pdf" ){
+            const response = Object.assign({
+                success: true,
+                result: "source is pdf file",
+            }, event);
+            
+            resolve(response);
+        }
+
         const tempPath = `${path.join(downloadPath, "..")}/temp`;
         const args = [downloadPath, outputPath, w, h, tempPath];
         execEngine(args)

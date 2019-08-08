@@ -18,12 +18,8 @@ docker build -t decompany/pdf-converter .
 * Retrieve the login command to use to authenticate your Docker client to your registry.
 Use the AWS CLI:
 
-$(aws ecr get-login --no-include-email --region us-west-1)
-
-* Build your Docker image using the following command. For information on building a Docker file from scratch see the instructions here . You can skip this step if your image is already built:
-
 ```bash
-docker build -t decompany/pdf-converter .
+$(aws ecr get-login --no-include-email --region us-west-1)
 ```
 
 ## ECR 등록하기

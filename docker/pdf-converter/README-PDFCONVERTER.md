@@ -94,17 +94,37 @@ SQS Test Message 입력하기
 ===
 
 * 메세지 보내기
-```bash
-aws sqs send-message \
---queue-url https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter \
---message-body '{
-        "source": {
-            "bucket": "dev-ca-document",
-            "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx"
-        },
-        "target": {
-            "bucket": "dev-ca-document",
-            "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
-        }
-      }'
-```
+
+    * ppt문서 변환하기 sample sqs
+
+        ```bash
+        aws sqs send-message \
+        --queue-url https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter \
+        --message-body '{
+                "source": {
+                    "bucket": "dev-ca-document",
+                    "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx"
+                },
+                "target": {
+                    "bucket": "dev-ca-document",
+                    "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
+                }
+            }'
+        ```
+
+    * pdf문서 변환하기 sample sqs
+
+        ```bash
+        aws sqs send-message \
+        --queue-url https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter \
+        --message-body '{
+            "source": {
+                "bucket": "dev-ca-document",
+                "key": "FILE/google-oauth2|101778494068951192848/09cd0e791a284edd9a25f88bd0fbb37e.pdf"
+            },
+            "target": {
+                "bucket": "dev-ca-document",
+                "key": "PDF/09cd0e791a284edd9a25f88bd0fbb37e/09cd0e791a284edd9a25f88bd0fbb37e.pdf"
+            }
+        }'
+        ```
