@@ -15,7 +15,7 @@ module.exports.handler = async (event, context, callback) => {
   });
 
   const results = await Promise.all(promises);
-  callback(null, results);
+  return results;
 };
 
 

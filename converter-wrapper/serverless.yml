@@ -68,6 +68,12 @@ package:
     - test/**
     
 functions:
+  autoCheckConvertFailDocument:
+    handler: src/document/autoCheckConvertFailDocument.handler
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
+  
   pdfConvertComplete:
     handler: src/document/pdfConvertComplete.handler
     events:
@@ -77,12 +83,6 @@ functions:
             - s3:ObjectCreated:Put
           rules:
             - prefix: PDF/
-
-  autoCheckConvertFailDocument:
-    handler: src/document/autoCheckConvertFailDocument.handler
-    timeout: 30
-    events:
-      - schedule: rate(1 minute)
 
   accountPictureConverter:
     handler: src/account/accountPictureConverter.handler
