@@ -1,6 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({region: 'us-west-1'});
 
@@ -9,7 +10,10 @@ module.exports = {
     dowloadFromS3,
     writeFile,
     readFile,
-    deleteDir
+    deleteDir,
+    encodeBase64,
+    gzip,
+    unzip
 }
 
 function uploadToS3 (filepath, bucket, key, base64) {
@@ -18,6 +22,7 @@ function uploadToS3 (filepath, bucket, key, base64) {
         let streamBase64;
         if(base64){
             streamBase64 = encodeBase64(stream);
+
         }
         s3.putObject({
             Bucket: bucket, 
@@ -70,7 +75,29 @@ function dowloadFromS3 (workdir, bucket, key) {
 
 function encodeBase64(buffer){
     return buffer.toString("base64");
+}
+function gzip(buffer) {
+    return new Promise((resolve, reject)=>{
+        zlib.gzip(buffer, function(err, data){
+            if(err){
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        })
+    })
+}
 
+function unzip(buffer) {
+    return new Promise((resolve, reject)=>{
+        zlib.unzip(buffer, function(err, data){
+            if(err){
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        })
+    })
 }
 
 function makeDir(dir) {

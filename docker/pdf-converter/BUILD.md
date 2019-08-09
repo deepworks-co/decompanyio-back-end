@@ -3,7 +3,7 @@ PDF Converter Image 생성하고 ECR에 등록하기
 
 ## PDF Converter 이미지 생성하기
 
-* 기본 Runtime 이미지 생성
+* 기본 Runtime 이미지 생성(최초 한번만 실행, 이후 빌드 환경이 변하지 않으면 계속 사용됨)
 
 ```bash
 docker build --no-cache -f Dockerfile-base -t decompany/pdf-converter-base .
