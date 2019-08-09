@@ -17,26 +17,25 @@ module.exports = {
 }
 
 function uploadToS3 (filepath, bucket, key, base64) {
-    return new Promise((resolve, reject)=>{
+    return new Promise(async (resolve, reject)=>{
         const stream = readFile(filepath);
-        let streamBase64;
+        let streamBase64Compressed;
         if(base64){
-            streamBase64 = encodeBase64(stream);
-
+            const streamBase64 = encodeBase64(stream);
+            streamBase64Compressed = await gzip(streamBase64);
         }
-        s3.putObject({
+        
+        const data = await s3.putObject({
             Bucket: bucket, 
             Key: key,
-            Body: base64?streamBase64:stream,
-            ContentType: "application/octet-stream"
-        }, function(err, data) {
-            if(err){
-                reject(err);
-            } else {
-                console.log("upload file", bucket, key);
-                resolve({data, bucket, key});
-            }
-        })
+            Body: base64?streamBase64Compressed:stream,
+            ContentType: "application/octet-stream",
+            ContentEncoding: base64?"gzip":undefined,
+        }).promise();
+
+        console.log("upload file", bucket, key);
+        resolve({data, bucket, key});
+        
     });
 }
 

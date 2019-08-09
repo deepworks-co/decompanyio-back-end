@@ -40,7 +40,7 @@ docker build -t app .
 
 * 개발 debug mount 모드 이미지 실행
 
-```vs
+```bash
     docker run --rm \
     -v /Users/jay/.aws:/root/.aws \
     -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
