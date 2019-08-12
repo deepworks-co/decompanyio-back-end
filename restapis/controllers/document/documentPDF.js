@@ -27,10 +27,10 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   if(document.isDeleted === true || document.isBlocked === true || document.isPublic === false){
-    return {
+    return JSON.stringify({
       success: true,
       message: "Not Permission."
-    }
+    })
   }
 
   const documentName = document.documentName;
@@ -40,8 +40,10 @@ module.exports.handler = async (event, context, callback) => {
  
   const pdf = await s3.signedDownloadUrl2({region: region, bucket: s3Config.document, key: documentKey, signedUrlExpireSeconds: 60});
 
-  return {
+  return JSON.stringify({
     success: true,
     pdf : pdf
-  }
+  });
+
+  
 };
