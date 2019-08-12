@@ -26,6 +26,13 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("[404] document is not exists!!!");
   }
 
+  if(document.isDeleted === true || document.isBlock === true || document.isPublic === false){
+    return {
+      success: true,
+      message: "Not Permission."
+    }
+  }
+
   const documentName = document.documentName;
   const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
   //const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
