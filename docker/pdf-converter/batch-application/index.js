@@ -21,7 +21,7 @@ app.get('/wait', function (req, res) {
 
 app.get('/status', function (req, res) {
   const status = cronjob.status();
-  console.log(JSON.stringify(status));
+  //console.log(JSON.stringify(status));
   res.send(JSON.stringify(status));
 });
 

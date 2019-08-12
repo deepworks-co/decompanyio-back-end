@@ -43,10 +43,10 @@ function getMessage(queueURL){
                 //console.log("Receive Error", err);
                 reject(err);
             } else if (data.Messages) {
-                //console.log("Receive message", data);
+                //console.log("Receive message", data.Messages);
                 resolve(data.Messages[0]?data.Messages[0]:undefined);
             }  else {
-                reject("EmptyMessage")
+                reject(undefined);
             }
         });
 
@@ -67,10 +67,10 @@ function removeMessage(message){
         };
         sqs.deleteMessage(deleteParams, function(err, data) {
         if (err) {
-            console.log("Delete Error", err);
+            //console.log("Delete Error", err);
             reject(err);
         } else {
-            console.log("Message Deleted", data);
+            //console.log("Message Deleted", data);
             resolve(data);
         }
         });

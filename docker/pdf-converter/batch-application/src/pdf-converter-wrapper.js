@@ -14,23 +14,25 @@ module.exports = (event) => {
                 result: "source is pdf file",
             }, event);
             
-            resolve(response);
+            reject(new Error(`source is pdf file : ${downloadPath}`));
+        } else {
+            const tempPath = `${path.join(downloadPath, "..")}/temp`;
+            const args = [downloadPath, outputPath, w, h, tempPath];
+            execEngine(args)
+            .then((result)=>{
+                const response = Object.assign({
+                    success: result.stderr?false:true,
+                    result: result,
+                }, event);
+                
+                resolve(response);
+            })
+            .catch((err)=>{
+                reject(new Error(`Error Executing Engine ${JSON.stringify(err)}`));
+            });
         }
 
-        const tempPath = `${path.join(downloadPath, "..")}/temp`;
-        const args = [downloadPath, outputPath, w, h, tempPath];
-        execEngine(args)
-        .then((result)=>{
-            const response = Object.assign({
-                success: result.stderr?false:true,
-                result: result,
-            }, event);
-            
-            resolve(response);
-        })
-        .catch((err)=>{
-            reject(new Error(`Error Executing Engine ${JSON.stringify(err)}`));
-        });
+        
     });
     
 }
@@ -42,17 +44,19 @@ function execEngine(payload){
       
         let options = ["-jar", "PolarisConverter8.jar", "PDF"].concat(payload);
             
-        console.log("java", options.join(" "));
+        console.log("execEngine", "java", options.join(" "));
         const cp = childProcess.execFile(
             'java',
             options,
             {cwd: '/converter'},
             (err, stdout, stderr) => {
                 if(err){
-                    console.error(err);
+                    console.error("execEngine Error", err);
                     reject(err);
                 } else {
-                    resolve({stdout, stderr});
+                    if(stdout) console.log("stdout", JSON.stringify(stdout));
+                    if(stderr) console.log("stderr", JSON.stringify(stderr));
+                    resolve(true)
                 }
             }
         )
@@ -60,7 +64,7 @@ function execEngine(payload){
         /*cp.stderr.on('data', (data) => console.error("[exec error]", data))
         cp.stdout.on('data', (data) => console.log("[exec]", data))
         */
-        cp.on('close', (code) => console.log("[exec complete]", code));//process.exit(code))
+        cp.on('close', (code) => console.log("exec close", code));//process.exit(code))
  
     })
     

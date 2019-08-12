@@ -12,6 +12,10 @@ Status.prototype.removeJob = function(jobId) {
     this.subprocess = this.subprocess.filter((cur)=> cur !== jobId)
 }
 
+Status.prototype.removeJobAll = function() {
+    this.subprocess = [];
+}
+
 Status.prototype.stop = function() {
     this.isStopping = true;
 }

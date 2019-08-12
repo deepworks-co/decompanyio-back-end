@@ -33,7 +33,7 @@ function uploadToS3 (filepath, bucket, key, base64) {
             ContentEncoding: base64?"gzip":undefined,
         }).promise();
 
-        console.log("upload file", bucket, key);
+        //console.log("upload file", bucket, key);
         resolve({data, bucket, key});
         
     });
@@ -63,7 +63,7 @@ function dowloadFromS3 (workdir, bucket, key) {
                 reject(new Error(`create file fail ${tempPath}`));
             }
 
-            console.log("download from s3", bucket, key, tempPath);
+            //console.log("download from s3", bucket, key, tempPath);
             resolve({downloadPath: tempPath, extname: extname, filename: filename});
             
         }
@@ -112,10 +112,10 @@ function makeDir(dir) {
 
     if(!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
-        console.log("Created", dir);
+        //console.log("Created", dir);
     }
 
-} 
+}
 
 function writeFile(filepath, data){
 
@@ -147,7 +147,7 @@ function deleteDir(dirPath) {
       fs.readdirSync(dirPath).forEach(function(file,index){
         var curPath = dirPath + "/" + file;
         if(fs.lstatSync(curPath).isDirectory()) { // recurse
-          deleteFolderRecursive(curPath);
+          deleteDir(curPath);
         } else { // delete file
           fs.unlinkSync(curPath);
         }
