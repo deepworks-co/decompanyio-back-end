@@ -595,6 +595,24 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentPDF:
+    handler: controllers/document/documentPDF.handler
+    events:
+      - http: 
+          path: /api/document/pdf
+          method: get
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      
   documentDownload:
     handler: controllers/document/documentDownload.handler
     events:

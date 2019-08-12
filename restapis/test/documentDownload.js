@@ -12,12 +12,13 @@ describe('documentDownload', () => {
     done();
   });
 
-  it('get download url', () => {
+  it('get download c64bfec0add949e280de9db670f43331 url ', () => {
     const event = {
-      query: {documentId : "c4bd778acdc24992a7da9bc57262c536"}
+      query: {documentId : "c64bfec0add949e280de9db670f43331"}
     }
     return wrapped.run(event).then((response) => {
       const res = JSON.parse(response);
+      console.log(res.downloadUrl);
       expect(res.success === true && res.downloadUrl!== undefined).to.be.true;
     });
   });
