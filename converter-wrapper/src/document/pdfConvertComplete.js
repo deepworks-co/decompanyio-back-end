@@ -9,9 +9,8 @@ module.exports.handler = async (event, context, callback) => {
 
     const documentId = keys[1];
     const filename = keys[2];
-    const base64 = filename.indexOf(".pdf") === -1;
     console.log(documentId, filename, base64);
-    return updateCompleteConvertPDF(documentId, base64);
+    return updateCompleteConvertPDF(documentId);
   });
 
   const results = await Promise.all(promises);
@@ -19,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
 };
 
 
-function updateCompleteConvertPDF(documentId, base64){
+function updateCompleteConvertPDF(documentId){
 
   if(!documentId){
     throw new Error("documentId is undefined");
@@ -29,18 +28,16 @@ function updateCompleteConvertPDF(documentId, base64){
     const wrapper = new MongoWapper(mongodb.endpoint);
 
     try{
-      let updateData = {$set: {pdf: true}}
-      if(base64 === true){
-        updateData = {$set: {pdfBase64: true}}
-      }
+      let updateData = {$set: {pdf: true, pdf_created: Date.now()}}
       const r = await wrapper.update(tables.DOCUMENT, {_id: documentId}, updateData);
       console.log(r);
       resolve(r);
+
+      wrapper.close();
     } catch(err){
       reject(err);
-    } finally {
       wrapper.close();
-    }
+    } 
 
   })
 
