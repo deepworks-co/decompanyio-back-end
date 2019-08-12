@@ -9,7 +9,7 @@ module.exports.handler = async (event, context, callback) => {
 
     const documentId = keys[1];
     const filename = keys[2];
-    console.log(documentId, filename, base64);
+    console.log(documentId, filename);
     return updateCompleteConvertPDF(documentId);
   });
 
