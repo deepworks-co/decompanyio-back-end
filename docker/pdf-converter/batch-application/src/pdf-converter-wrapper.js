@@ -1,7 +1,7 @@
 'use strict';
 const childProcess = require('child_process')
 const path = require('path');
-
+const fs = require('fs');
 module.exports = (event) => {
     
 
@@ -20,15 +20,20 @@ module.exports = (event) => {
             const args = [downloadPath, outputPath, w, h, tempPath];
             execEngine(args)
             .then((result)=>{
-                const response = Object.assign({
+                const response = Object.assign(event, {
                     success: result.stderr?false:true,
-                    result: result,
-                }, event);
+                });
                 
                 resolve(response);
             })
             .catch((err)=>{
-                reject(new Error(`Error Executing Engine ${JSON.stringify(err)}`));
+                console.error(`Error Executing Engine ${JSON.stringify(err)}`);
+                
+                writeFalseFile(outputPath);
+                const response = Object.assign(event, {
+                    success: false
+                });
+                resolve(response)
             });
         }
 
@@ -41,7 +46,6 @@ module.exports = (event) => {
 function execEngine(payload){
 
     return new Promise((resolve, reject)=>{
-      
         let options = ["-jar", "PolarisConverter8.jar", "PDF"].concat(payload);
             
         console.log("execEngine", "java", options.join(" "));
@@ -51,7 +55,10 @@ function execEngine(payload){
             {cwd: '/converter'},
             (err, stdout, stderr) => {
                 if(err){
-                    console.error("execEngine Error", err);
+                    console.error("execEngine Error", JSON.stringify(err));
+                    if(stdout) console.log("stdout", JSON.stringify(stdout));
+                    if(stderr) console.log("stderr", JSON.stringify(stderr));
+                    
                     reject(err);
                 } else {
                     if(stdout) console.log("stdout", JSON.stringify(stdout));
@@ -68,4 +75,19 @@ function execEngine(payload){
  
     })
     
+}
+
+function writeFalseFile(filepath){
+
+    try {
+        let parent = path.join(filepath, "..");
+        if(!fs.existsSync(parent)){
+            throw new Error("parent directory is not exists")
+        } 
+
+        fs.writeFileSync(filepath, "false");
+        return true;
+    } catch (err) {
+        throw err;
+    }
 }

@@ -59,7 +59,7 @@ async function cronJob() {
         const msg = await getsqsmessage();
         const {MessageId, ReceiptHandle, Body, MD5OfBody} = msg;
         const parsedMessage = parseMessage(Body)
-        console.log("get sqs message", JSON.stringify(parsedMessage));
+        console.log("[GET_MESSAGE]", JSON.stringify(parsedMessage));
         resolve({
           startAt: Date.now(),
           jobId,
@@ -78,7 +78,7 @@ async function cronJob() {
   async function downloadFile(data) {
     const {workDir, jobId, sqsmessage} = data; 
     const {source} = sqsmessage;
-    console.log("downloadFile", JSON.stringify(data));
+    console.log("[DOWNLOAD_FILE]", JSON.stringify(data));
     return new Promise(async (resolve, reject)=>{
       try{
         const result = await filewrapper.dowloadFromS3(workDir, source.bucket, source.key)
@@ -104,7 +104,7 @@ async function cronJob() {
 
     return new Promise(async (resolve, reject)=>{
       try{
-        console.log("convertPdf", JSON.stringify(data));
+        console.log("[CONVERT_PDF_BASE64]", JSON.stringify(data));
         
         let outputPath = `${workDir}/temp.pdf`;
         
@@ -136,7 +136,7 @@ async function cronJob() {
   }
 
   async function uploadPdf(data){
-    console.log("uploadPdf", JSON.stringify(data));
+    console.log("[UPLOAD_PDF]", JSON.stringify(data));
     
     const {workDir, jobId, outputPath, sqsmessage} = data
     //upload pdf
@@ -155,14 +155,23 @@ async function cronJob() {
   }
 
   async function uploadPdfBase64(data){
-    console.log("uploadPdfBase64", JSON.stringify(data));
+    
     //upload base64 pdf
-    const {workDir, jobId, outputPath, sqsmessage} = data
+    const {workDir, jobId, outputPath, sqsmessage, success} = data
     const {target} = sqsmessage;
     return new Promise(async (resolve, reject)=>{
       try{
-        const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
-        const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
+        if(success === true){
+          console.log("[UPLOAD_PDF]", JSON.stringify(data));
+          const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
+          const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
+        } else {
+          console.log("[UPLOAD_PDF_FALSE]", JSON.stringify(data));
+          const falseKey = target.key.substring(0, target.key.lastIndexOf("/") + 1) + "false";
+          console.log(falseKey);
+          const r = await filewrapper.uploadToS3(outputPath, target.bucket, falseKey);
+        }
+        
         resolve(data);
       }catch(err){
         reject({jobId, workDir, err});
@@ -177,22 +186,23 @@ async function cronJob() {
       clearJob(data);
       
       const workingDuration = startAt?(Date.now() - startAt): -1;
-      console.log(`process complete ${jobId} ${workingDuration}ms`);
+      console.log(`[COMPLETE] ${jobId} ${workingDuration}ms`);
     })
 
   }
-  async function clearJob(data){
-    console.error("clearJob", JSON.stringify(data));
-    const {jobId, workDir} = data
-    status.removeJob(jobId);
-    filewrapper.deleteDir(workDir);
-    
-  }
+
 
   async function clearErrorJob(data){
     
     const {jobId, workDir, err} = data
+    clearJob(data);
+    if(err) console.error("[ERROR_JOB]", err);
+  }
+
+  async function clearJob(data){
+    //console.error("[CLEAR_JOB]", JSON.stringify(data));
+    const {jobId, workDir} = data
     if(jobId) status.removeJob(jobId);
     if(workDir) filewrapper.deleteDir(workDir);
-    if(err) console.error("clearErrorJob", err);
+    
   }
