@@ -28,7 +28,7 @@ function updateCompleteConvertPDF(documentId){
     const wrapper = new MongoWapper(mongodb.endpoint);
 
     try{
-      let updateData = {$set: {pdf: true, pdf_created: Date.now()}}
+      let updateData = {$set: {pdf: true}}
       const r = await wrapper.update(tables.DOCUMENT, {_id: documentId}, updateData);
       console.log(r);
       resolve(r);
