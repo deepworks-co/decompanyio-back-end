@@ -26,7 +26,7 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("[404] document is not exists!!!");
   }
 
-  if(document.isDeleted === true || document.isBlock === true || document.isPublic === false){
+  if(document.isDeleted === true || document.isBlocked === true || document.isPublic === false){
     return {
       success: true,
       message: "Not Permission."
