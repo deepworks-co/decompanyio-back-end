@@ -13,7 +13,7 @@ module.exports.handler = async (event, context, callback) => {
     if(filename === 'false'){
       flag = false;
     }
-    console.log(documentId, filename);
+    console.log(`documentId: ${documentId}, filename: ${filename}, flag : ${flag}`);
     return updateCompleteConvertPDF(documentId, flag);
   });
 
