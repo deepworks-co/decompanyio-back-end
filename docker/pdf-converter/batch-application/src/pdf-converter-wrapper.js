@@ -8,12 +8,7 @@ module.exports = (event) => {
     return new Promise((resolve, reject)=>{
 
         const {downloadPath, outputPath, w, h, extname} = event;
-        if(extname && extname.toLowerCase() === ".pdf" ){
-            const response = Object.assign({
-                success: true,
-                result: "source is pdf file",
-            }, event);
-            
+        if(extname && extname.toLowerCase() === ".pdf" ){            
             reject(new Error(`source is pdf file : ${downloadPath}`));
         } else {
             const tempPath = `${path.join(downloadPath, "..")}/temp`;

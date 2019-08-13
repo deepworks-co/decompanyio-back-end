@@ -111,6 +111,7 @@ async function cronJob() {
         if(extname && extname.toLowerCase() === ".pdf" ){
           outputPath = downloadPath;
           const response = Object.assign({
+              success: true,
               outputPath,
               downloadPath
           }, data);
