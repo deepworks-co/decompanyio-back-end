@@ -2,11 +2,14 @@
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-west-1'});
 const sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-const QUEUE_URL = "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
+const QUEUE_URL = process.env.QUEUE_URL;//"https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
 
 module.exports = () => {
     
     return new Promise((resolve, reject)=>{
+        if(!QUEUE_URL){
+            return reject(new Error("QUEUE_URL is not defined"));
+        }
         getMessage(QUEUE_URL)
         .then((message)=>{
             return message

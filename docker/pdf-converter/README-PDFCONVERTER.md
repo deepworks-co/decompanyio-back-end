@@ -42,6 +42,10 @@ docker build -t app .
 
 ```bash
     docker run --rm \
+    -e QUEUE_URL='https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter' \
+    -e REGION=us-west1 \
+    -e WORK_DIR_PREFIX='/cronwork' \
+    -e EXPRESSION='*/1 * * * * *' \
     -v /Users/jay/.aws:/root/.aws \
     -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
     -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modeuls:/decompany-modeuls \
@@ -49,29 +53,25 @@ docker build -t app .
     -p 8080:8080 --name pdf-converter decompany/pdf-converter-dev 
 ```
 
-``` bash
-docker run --rm \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modeuls:/decompany-modeuls \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/po-converter-library_centos_x64_20190521:/converter \
--p 8080:8080 --name pdf-converter decompany/pdf-converter-dev 
+## 배포용 이미지 로컬 테스트 하기
+
+* 이미지 생성
+```bash
+docker build -t decompany/pdf-converter .
 ```
 
-interactive 모드
-===
+* foreground 실행하기
 
 ```bash
-docker run -it --rm \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/po-converter-library_centos_x64_20190521:/converter \
--p 8080:8080 --name pdf-converter decompany/pdf-converter /bin/bash
+docker run --rm -v /Users/jay/.aws:/root/.aws -p 8080:8080 decompany/pdf-converter
 ```
 
-background 실행하기
+* background 실행하기
 
 ```bash
-docker run -d -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/workspace -p 8080:8080 --name pdf-converter decompany-pdf-converter:latest
+docker run -d --rm -v /Users/jay/.aws:/root/.aws -p 8080:8080 --name pdf-converter decompany/pdf-converter
 ```
+
 
 엔진 명령 사용하기 - PDF & PNG 변환하기
 ===
@@ -79,6 +79,7 @@ docker run -d -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/work
     ```bash
     java -jar PolarisConverter8.jar PDF rsa.ppt rsa.pdf 1280 1280 ./temp
     java -jar PolarisConverter8.jar PNG rsa.ppt ./temp 1280 1280 ./rsa_ppt 
+    java -jar PolarisConverter8.jar PDF 20cc01e1d49d4bcebb3936cb5cb044ff.pptx 20cc01e1d49d4bcebb3936cb5cb044ff.pdf 1280 1280 ./temp
     ```
 
 ecs cli 명령들 

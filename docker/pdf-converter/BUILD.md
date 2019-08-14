@@ -1,5 +1,4 @@
-PDF Converter Image 생성하고 ECR에 등록하기
-====
+# PDF Converter Image 생성하고 ECR에 등록하기
 
 ## PDF Converter 이미지 생성하기
 
@@ -24,10 +23,11 @@ $(aws ecr get-login --no-include-email --region us-west-1)
 
 ## ECR 등록하기
 
-* After the build completes, tag your image so you can push the image to this repository:
-```bash
-docker tag decompany/pdf-converter:latest 197966029048.dkr.ecr.us-west-1.amazonaws.com/decompany/pdf-converter:latest
-```
+    * After the build completes, tag your image so you can push the image to this repository:
+
+    ```bash
+    docker tag decompany/pdf-converter:latest 197966029048.dkr.ecr.us-west-1.amazonaws.com/decompany/pdf-converter:latest
+    ```
 
 * Run the following command to push this image to your newly created AWS repository:
 
