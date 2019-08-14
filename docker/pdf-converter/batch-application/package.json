@@ -1,0 +1,19 @@
+{
+  "name": "batch-application",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm install && node index.js",
+    "start:local": "npm install && node index.js local",
+    "test": "mocha test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.503.0",
+    "express": "^4.17.1",
+    "node-cron": "^2.0.3",
+    "ramda": "^0.26.1"
+  }
+}

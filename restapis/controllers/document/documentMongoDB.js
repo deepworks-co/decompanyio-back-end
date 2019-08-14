@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('decompany-app-properties');
+const { mongodb, tables, constants } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -1501,16 +1501,16 @@ async function checkRegistrableDocument(accountId){
   return new Promise(async (resolve, reject)=>{
     const wapper = new MongoWapper(connectionString);
 
-    wapper.query(TB_DOCUMENT, {accountId: accountId, isPublic: false})
+    wapper.query(TB_DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
     .sort({created:-1}).toArray((err, data)=>{
       if(err) {
         reject(err);
       } else {
         console.log("get private doc", data);
         if(data && data.length > 4){
-          resolve(false)
+          resolve({check: false, privateDocumentCount: data.length})
         } else {
-          resolve(true)
+          resolve({check: true, privateDocumentCount: data.length})
         }
         
       }

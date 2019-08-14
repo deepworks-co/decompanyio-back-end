@@ -7,11 +7,11 @@
     "test": "test"
   },
   "dependencies": {
-    "aws-sdk": "^2.488.0",
+    "aws-sdk": "^2.501.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
-    "serverless-mocha-plugin": "^1.10.0",
-    "sitemap": "^3.2.0"
+    "serverless-mocha-plugin": "^1.11.0",
+    "sitemap": "^3.2.2"
   },
   "devDependencies": {},
   "scripts": {

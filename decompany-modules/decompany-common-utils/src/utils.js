@@ -16,6 +16,8 @@ exports.getBlockchainTimestamp = (date) => {
   } else if(typeof(date) === 'object'){
     //Date type
     convertedDate = date;
+  } else if(typeof(date) === 'number') {
+    convertedDate = new Date(date);
   } else {
     throw new Error('Unsupported datatype.' + typeof(date));
   }

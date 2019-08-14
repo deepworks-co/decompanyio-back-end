@@ -1,0 +1,12 @@
+FROM decompany/pdf-converter-base
+
+ENV ENGINE_SRC ./po-converter-library_centos_x64_20190521
+ENV APPLICATION_DIR /batch-application
+
+# Application (nodejs)
+#COPY ./batch-application ${APPLICATION_DIR}
+#COPY ./po-converter-library_centos_x64_20190521 /converter
+
+WORKDIR ${APPLICATION_DIR}
+EXPOSE 8080
+CMD ["npm", "start"]

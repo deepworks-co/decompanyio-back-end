@@ -4,44 +4,34 @@ const { MongoWapper, utils, s3, cloudfront } = require('decompany-common-utils')
 const sitemapGenerater = require('sitemap');
 const zlib = require('zlib');
 const THUMBNAIL_SIZE = 2048;
-const wapper = new MongoWapper(mongodb.endpoint);
+
 module.exports.handler = async (event, context, callback) => {
-  
+
+  const wapper = new MongoWapper(mongodb.endpoint);
+  const {domain, bucket} = sitemapConfig;
   try{
-    const sitemaps = await getSitemap();
-    console.log(JSON.stringify(sitemaps));
-    const last = sitemaps[sitemaps.length-1];
-    console.log("last", last);
-    const start = last && last.timestamp?last.timestamp:0;
-    const index = last && last.index>-1?(last.index + 1):0;
-    console.log("query start", start, "index", index);
     
-    const r = await generateSitemap(sitemapConfig.limit, start, index);
-    console.log("generateSitemap complete", r);
-    if(r){
+    const lastSitemapInfo = await getLastSitemapTimestamp(wapper);
+    console.log(lastSitemapInfo.start);
+    
+    const lastTimestamp = lastSitemapInfo&& lastSitemapInfo.start>0?lastSitemapInfo.start:0;
+    console.log(lastTimestamp, new Date(lastTimestamp), lastTimestamp);
+    const start = utils.getBlockchainTimestamp(lastTimestamp);
+    const end = utils.getBlockchainTimestamp(lastTimestamp) + 1000* 60 * 60 * 24;
 
-      const newSitemaps = await getSitemap();
+    console.log(start, new Date(start), "~", end, new Date(end));
+    const createdSitemapDoc = await generateSitemap(wapper, start, end);
+    console.log("generateSitemap complete", createdSitemapDoc);
+    if(createdSitemapDoc){
 
-      const r2 = await generateSitemapIndex(newSitemaps);
+      const sitemaps = await getSitemap(wapper);
+      console.log("getSitemap", sitemaps);
+
+      const r2 = await generateSitemapIndex(sitemapConfig, sitemaps);
       console.log("generateSitemapIndex complete", r2);
 
-      const items = newSitemaps.map((it)=>{
-        return `/${it.filename}`;
-      })
-
-      items.push("/sitemap.xml");
- 
-      const r3 = await cloudfront.createInvalidation(region, {
-        DistributionId: sitemapConfig.distributionId, 
-        InvalidationBatch: { 
-          CallerReference: `T${Date.now()}`, 
-          Paths: { 
-            Quantity: items.length, 
-            Items: items
-          }
-        }
-      });
-      console.log("createInvalidation", JSON.stringify(r3));
+      //const r3 = await invalidation(sitemapConfig, r2.Items);
+      //console.log("createInvalidation", JSON.stringify(r3));
      
 
     } else {
@@ -59,13 +49,57 @@ module.exports.handler = async (event, context, callback) => {
   
 };
 
-async function generateSitemapIndex(sitemaps){
-  const {domain, bucket} = sitemapConfig;
- 
+
+async function invalidation(sitemapConfig, items){
+  const r3 = await cloudfront.createInvalidation(region, {
+    DistributionId: sitemapConfig.distributionId, 
+    InvalidationBatch: { 
+      CallerReference: `T${Date.now()}`, 
+      Paths: { 
+        Quantity: items.length, 
+        Items: ["/sitemap*"]
+      }
+    }
+  });
+  return r3;
+}
+
+function getLastSitemapTimestamp(wapper){
+
+  return new Promise(async (resolve, reject)=>{
+    
+    const sitemaps = await getSitemap(wapper);
+    console.log("already registry sitemaps", JSON.stringify(sitemaps));
+    const last = sitemaps[sitemaps.length-1];
+    console.log("last", last);
+    let start = last && last.timestamp?last.timestamp:0;
+    console.log("query start", start);
+
+    if(start === 0){
+      const doc = await getFirstDocument(wapper);
+      start = doc.created;
+    } else {
+      start += 1000 * 60 * 60 * 24;
+    }
+
+    resolve({start});
+
+  });
+}
+
+async function generateSitemapIndex(sitemapConfig, sitemaps){
+  const {domain, bucket} = sitemapConfig
+  const items = sitemaps.map((it)=>{
+    return `/${it.filename}`;
+  })
+
+  items.push("/sitemap.xml");
+
+  const now = new Date();
   const urls = sitemaps.map((it)=>{
     return `${domain}/${it.filename}`;
   });
-  const now = new Date();
+
   const xml = sitemapGenerater.buildSitemapIndex({
     urls: urls,
     lastmod: now.toISOString()
@@ -73,23 +107,31 @@ async function generateSitemapIndex(sitemaps){
   
   console.log("sitemap index", xml);
   const uploadResult = await s3.putObject(bucket, "sitemap.xml", xml, "application/xml", region);
-
-  return true;  
+  console.log("uploadSitemapIndex", uploadResult);
+  return {
+    Items: items
+  }
 }
 
-async function generateSitemap(limit, start, index){
-  const filename = `sitemap${index}.xml.gz`
-  const queryPipeline = getQueryPipeline(limit, start);
+
+async function generateSitemap(wapper, start, end){
+
+  const startDate = new Date(start);
+
+
+  const filename = `sitemap-${startDate.toISOString().substring(0, 10)}.xml`;
+  const queryPipeline = getQueryPipeline(start, end);
+
   console.log("generateSitemap query", JSON.stringify(queryPipeline));
   const resultList = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
   console.log(`search count : ${resultList.length}`);
   //console.log(resultList.slice(5));
 
-  if(resultList.length===0){
+  /*if(resultList.length===0){
     return;
-  }
+  }*/
   
-  const {domain, image, bucket, documentBucket} = sitemapConfig;
+  const {domain, bucket} = sitemapConfig;
 
   const now = new Date();
   const promises = resultList.map(async (it)=> {
@@ -101,21 +143,9 @@ async function generateSitemap(limit, start, index){
     const title = it.title;
     const tags = it.tags;
 
-    const texts = await getDocumentTextById(documentBucket, region, documentId);
-
-    const images = Array(totalPages).fill(0).map((it, index)=>{
-      return {
-        url: `${image}/${documentId}/${THUMBNAIL_SIZE}/${index+1}`,
-        title: title,
-        caption: texts[index].substring(0, 200)
-      }
-    })
-
-
     return {
       url : url,
-      lastmod: [now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate()].join('-'),
-      img: images
+      lastmod: [now.getUTCFullYear(), now.getUTCMonth()+1, now.getUTCDate()].join('-')
     }
   });//end resultList.map()
 
@@ -130,12 +160,10 @@ async function generateSitemap(limit, start, index){
     return b
   })(xml);
   
-  const compressedXml = await compress(xml)
+  //const compressedXml = await compress(xml)
   //console.log(compressedXml);
-  const uploadResult = await s3.putObject(bucket, filename, compressedXml, {
-    /*ContentType: "application/x-gzip",
-    ContentEncoding: "gzip",
-    ContentDisposition: `attachment; filename="${filename}"`*/
+  const uploadResult = await s3.putObject(bucket, filename, xml, {
+    ContentType: "application/xml"
   }, region);
 
   const last = resultList[resultList.length-1];
@@ -143,22 +171,23 @@ async function generateSitemap(limit, start, index){
   const result = {
     bucket: bucket,
     filename: filename,
-    timestamp: last.created,
+    timestamp: last?last.created:start,
     filesize: stringByteLength,
-    count: resultList.length,
-    index: index
+    count: resultList.length
   };
-  await saveSitemap(result);
+  console.log(result);
+  await saveSitemap(wapper, result);
   return result;
 }
 
 
-function getQueryPipeline(limit, start){
+function getQueryPipeline(start, end){
   return [
     {
       $match: {
         state: "CONVERT_COMPLETE",
-        $or: [{created: {$gt: start}}, {updated: {$gt: start}}]
+        isDeleted: false, isPublic: true, isBlocked: false, 
+        created: {$gte: start, $lt: end}
       }
     }, {
       $sort: {
@@ -175,19 +204,36 @@ function getQueryPipeline(limit, start){
       $addFields: {
         author: { $arrayElemAt: [ "$userAs", 0 ] },
       }
-    }, {
-      $limit: limit
     }
   ]
 }
 
-async function getSitemap(){
+async function getSitemap(wapper){
   const result = await wapper.findAll(tables.SITEMAP, {}, {created: 1});
 
   return result;
 }
 
-async function saveSitemap(sitemap){
+async function getFirstDocument(wapper){
+  return new Promise((resolve, reject)=>{
+
+    wapper.query(tables.DOCUMENT, { state: "CONVERT_COMPLETE", isDeleted: false, isPublic: true, isBlocked: false})
+    .sort({created: 1})
+    .limit(1)
+    .toArray((err, data)=>{
+      if(err) reject(err)
+      else {
+        console.log(data);
+        resolve(data[0]);
+      }
+    });
+    
+
+  });
+  
+}
+
+async function saveSitemap(wapper, sitemap){
 
   const params = Object.assign({
     _id: sitemap.filename,

@@ -85,21 +85,6 @@ package:
     
 functions:
 
-  accountPictureConverter:
-    handler: s3/account/accountPictureConverter.handler
-    layers:   
-      - ${file(./serverlessConfig.js):getSharpLayer}
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
-          events: 
-            - s3:ObjectCreated:Put
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
   preHook:
     handler: deploy/handler.pre
   postHook:
@@ -253,38 +238,6 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  s3DocumentUploadComplete:
-    handler: s3/document/uploadComplete.handler
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.document}
-          events:
-            - s3:ObjectCreated:Put
-          rules:
-            - prefix: FILE/
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  s3DocumentConvertComplete:
-    handler: s3/document/convertComplete.handler
-    layers:   
-      - ${file(./serverlessConfig.js):getSharpLayer}
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.document}
-          events: 
-            - s3:ObjectCreated:Put
-          rules:
-            - prefix: THUMBNAIL/
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -642,6 +595,24 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentPDF:
+    handler: controllers/document/documentPDF.handler
+    events:
+      - http: 
+          path: /api/document/pdf
+          method: get
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      
   documentDownload:
     handler: controllers/document/documentDownload.handler
     events:
@@ -955,7 +926,6 @@ plugins:
   - serverless-offline
   - serverless-aws-documentation
   - serverless-mocha-plugin
-  - serverless-plugin-existing-s3
   - serverless-plugin-split-stacks
   - serverless-plugin-canary-deployments
   - serverless-prune-plugin

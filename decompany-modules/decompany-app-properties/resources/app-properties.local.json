@@ -39,7 +39,8 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls":{
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE"
+            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
+            "CONVERT_PDF": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
         }
     },
     "applicationLogAppender": {
@@ -48,7 +49,7 @@
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
         "embedHost": "https://embed.share.decompany.io",
-        "activeVoteDays": 3,
+        "activeVoteDays": 7,
         "activeRewardVoteDays": 7
     },
     "sesConfig": {
@@ -91,11 +92,10 @@
         "prefix": "backend-restapis-dev-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "curatorSummary", "aliase": "prod"},
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
-            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
+            {"name": "s3DocumentUploadComplete"},
+            {"name": "s3DocumentConvertComplete"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
