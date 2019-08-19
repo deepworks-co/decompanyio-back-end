@@ -138,6 +138,12 @@ sls create function -f verifyEmail --handler controllers/email/verifyEmail.handl
 sls create function -f bountyRequest --handler controllers/bounty/bountyRequest.handler --httpEvent "get /api/bounty/request"
 sls create function -f bountyState --handler controllers/bounty/bountyState.handler --httpEvent "get /api/bounty/state"
 
+sls create function -f documentFavorite --handler controllers/document/documentFavorite.handler --httpEvent "post /api/document/favorite"
+sls create function -f documentHistory --handler controllers/document/documentHistory.handler --httpEvent "post /api/document/history"
+sls create function -f documentFavoriteList --handler controllers/document/documentFavoriteList.handler --httpEvent "get /api/document/favorite/list"
+sls create function -f documentHistoryList --handler controllers/document/documentHistoryList.handler --httpEvent "get /api/document/history/list"
+
+
 
 ```
 
