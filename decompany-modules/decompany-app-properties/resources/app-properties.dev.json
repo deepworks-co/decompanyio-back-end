@@ -34,7 +34,9 @@
         "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
         "EVENT_REGISTRY": "EVENT-REGISTRY",
         "EVENT_BLOCK": "EVENT-BLOCK",
-        "SITEMAP": "SITEMAP"
+        "SITEMAP": "SITEMAP",
+        "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
     },
     "sqsConfig": {
         "region": "us-west-1",
