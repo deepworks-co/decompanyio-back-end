@@ -13,41 +13,21 @@ describe('qraphql', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
-
-      const res = await graphql.graphql(
-        schema,
-        `query {
-          getDocument: Document {
-            findById(_id: "fdc219a700c344469fa076b5bbac4d08"){
-              _id
-              title
-              seoTitle
-              desc
-            }	
-          },
-          getUser: User {
-            findById(_id: "fdc219a700c344469fa076b5bbac4d08"){
-              _id
-              email
-            }	
-          },
-          getDocuments: Document {
-              findMany(filter: {state: CONVERT_COMPLETE, isPublic: false},
-              sort: STATE__CREATED_DESC){
-              _id
-              state
-              title
-              seoTitle
-              desc
-              isPublic
-              created
+    
+    const event = {
+      body: {
+        "operationName":null, 
+        "variables":{}, 
+        "query": `mutation { 
+          UserDocumentFavorite {addFavorite(documentId: "asdf") {
+            _id
             }
           }
-              
-        }`
-      );
-      
+        }
+          `}
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(res).to.not.be.empty;
     });
   });

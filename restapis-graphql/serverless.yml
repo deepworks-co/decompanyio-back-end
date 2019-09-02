@@ -91,6 +91,7 @@ functions:
       - http: 
           method: ANY
           path: /api/graphql
+#          authorizer: auth
 
 custom:
   deployType: Canary10Percent5Minutes

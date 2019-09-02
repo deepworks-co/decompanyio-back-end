@@ -19,7 +19,7 @@ function getResolverField(utc){
     if(resolverkey.startsWith('remove') 
       || resolverkey.startsWith('create') 
       || resolverkey.startsWith('update')){
-
+        
       if(resolverkey === 'createOne') {
         mutation[`${type}.${resolverkey}WithUserId`] = utc.getResolver(resolverkey).wrapResolve(next=>(rp, context)=>{
           console.log("rp.args.record", rp, context);
@@ -47,7 +47,7 @@ function getResolverField(utc){
 }
 const fieldsByUtc = getResolverField(utc);
 schemaComposer.Query.addNestedFields(fieldsByUtc.query);
-schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);
+//schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);
 
 /*
 schemaComposer.addTypeDefs(`
@@ -70,10 +70,11 @@ schemaComposer.Mutation.addNestedFields({
       documentId: 'String!',
     },
     resolve: async (_, { documentId }, context, info) => {
-      console.log(_);
-      console.log(context);
-      console.log(info);
-      return await UserDocumentFavorite.create({userId: "test_" + Date.now(), documentId: documentId});;
+      const {principalId} = context;
+      if(!principalId){
+        throw new Error("Unauthorized");
+      }
+      return await UserDocumentFavorite.create({userId: principalId, documentId: documentId});;
     },
   },
 });

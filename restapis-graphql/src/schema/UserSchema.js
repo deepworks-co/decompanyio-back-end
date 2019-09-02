@@ -32,7 +32,7 @@ function getResolverField(utc){
 (()=> {
   const fieldsByUtc = getResolverField(utc);
   schemaComposer.Query.addNestedFields(fieldsByUtc.query);
-  schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);  
+  //schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);  
 })();
 
 

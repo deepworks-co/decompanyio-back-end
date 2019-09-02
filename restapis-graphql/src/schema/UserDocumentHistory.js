@@ -45,7 +45,21 @@ function getResolverField(utc){
 
 const fieldsByUtc = getResolverField(utc);
 schemaComposer.Query.addNestedFields(fieldsByUtc.query);
-schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);
-
+//schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);
+schemaComposer.Mutation.addNestedFields({
+  "UserDocumentHistory.addFavorite": {
+    type: 'UserDocumentHistory',
+    args: {
+      documentId: 'String!',
+    },
+    resolve: async (_, { documentId }, context, info) => {
+      const {principalId} = context;
+      if(!principalId){
+        throw new Error("Unauthorized");
+      }
+      return await UserDocumentHistory.create({userId: principalId, documentId: documentId});;
+    },
+  },
+});
 
 module.exports = schemaComposer.buildSchema();
