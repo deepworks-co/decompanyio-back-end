@@ -1,0 +1,1 @@
+sls create function -f qraphql --handler src/qraphql/graphql --httpEvent "get /api/graphql"

@@ -1,0 +1,112 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: restapis-graphql # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: us-west-1
+  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
+  #apiName: ${self:service.name}-api      # Api Gateway Name
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+  tags:
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:*
+       - s3:*
+       - logs:*
+       - sqs:*
+       - kinesis:*
+       - kms:*
+       - ses:*
+       - codedeploy:*
+      Resource: "*"
+# you can add statements to the Lambda function's IAM Role here
+  vpc:
+    securityGroupIds:
+      - sg-05a13849fc117801b
+    subnetIds:
+      - subnet-37594850
+      - subnet-38bb9963
+
+# you can define service wide environment variables here
+  #environment:
+  #  CROS: true
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+package:
+  individually: false
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
+    - opt/**
+    - test/**
+    
+functions:
+  auth:
+    handler: src/auth/auth.handler
+
+  qraphql:
+    handler: src/qraphql/graphql.handler
+    events:
+      - http: 
+          method: ANY
+          path: /api/graphql
+
+custom:
+  deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - dev
+      - alpha
+  prune:
+    automatic: true
+    number: 5
+  splitStacks:
+    perFunction: false
+    perType: true
+  serverless-offline:
+    port: 4080
+plugins:
+  - serverless-offline
+  - serverless-mocha-plugin
+  - serverless-prune-plugin
