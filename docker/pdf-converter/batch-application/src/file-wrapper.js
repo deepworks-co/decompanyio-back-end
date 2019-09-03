@@ -16,13 +16,13 @@ module.exports = {
     unzip
 }
 
-function uploadToS3 (filepath, bucket, key, gzip) {
+function uploadToS3 (filepath, bucket, key, isCompress) {
     return new Promise(async (resolve, reject)=>{
         try{
             const stream = readFile(filepath);
             //console.log(filepath, stat);
             let streamBase64Compressed;
-            if(gzip){
+            if(isCompress){
                 const streamBase64 = encodeBase64(stream);
                 streamBase64Compressed = await gzip(streamBase64);
             }
@@ -30,7 +30,7 @@ function uploadToS3 (filepath, bucket, key, gzip) {
             const data = await s3.putObject({
                 Bucket: bucket, 
                 Key: key,
-                Body: gzip?streamBase64Compressed:stream,
+                Body: isCompress?streamBase64Compressed:stream,
                 ContentType: "application/octet-stream"
             }).promise();
     
