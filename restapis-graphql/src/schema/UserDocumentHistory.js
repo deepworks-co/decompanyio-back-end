@@ -5,6 +5,8 @@ const {UserDocumentHistory} = require('../mongoose/model')
 
 const utc = composeWithMongoose(UserDocumentHistory, {});
 
+
+
 function getResolverField(utc){
   const type = utc.getType();
   const resolvers = utc.getResolvers();
@@ -47,7 +49,7 @@ const fieldsByUtc = getResolverField(utc);
 schemaComposer.Query.addNestedFields(fieldsByUtc.query);
 //schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);
 schemaComposer.Mutation.addNestedFields({
-  "UserDocumentHistory.addFavorite": {
+  "UserDocumentHistory.addHistory": {
     type: 'UserDocumentHistory',
     args: {
       documentId: 'String!',

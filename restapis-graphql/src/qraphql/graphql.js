@@ -1,4 +1,5 @@
 'use strict';
+const console = require('../common/logger');
 const { ApolloServer, gql } = require('apollo-server-lambda');
 const {connectToMongoDB, models} = require('../mongoose');
 const {schema} = require('../schema');

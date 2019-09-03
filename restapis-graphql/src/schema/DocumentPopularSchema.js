@@ -1,10 +1,8 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const {DocumentRepository} = require('../repository');
-const {Document} = require('../mongoose/model')
+const {DocumentPopular} = require('../mongoose/model')
 
-const utc = composeWithMongoose(Document, {});
-//utc.removeField(["isPublic", "isDeleted", "isBlocked"]);
+const utc = composeWithMongoose(DocumentPopular, {});
 
 
 function getResolverField(utc){
