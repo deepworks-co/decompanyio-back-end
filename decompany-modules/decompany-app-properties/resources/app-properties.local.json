@@ -5,7 +5,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompanyjay?connectTimeoutMS=3000&socketTimeoutMS=3000"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -34,7 +34,9 @@
         "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
         "EVENT_REGISTRY": "EVENT-REGISTRY",
         "EVENT_BLOCK": "EVENT-BLOCK",
-        "SITEMAP": "SITEMAP"        
+        "SITEMAP": "SITEMAP",
+        "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
     },
     "sqsConfig": {
         "region": "us-west-1",
