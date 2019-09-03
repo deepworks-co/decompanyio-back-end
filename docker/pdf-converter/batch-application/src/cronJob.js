@@ -10,24 +10,10 @@ let task;
 const expression = process.env.EXPRESSION?process.env.EXPRESSION:'*/1 * * * * *'
 const WORK_DIR_PREFIX = process.env.WORK_DIR_PREFIX?process.env.WORK_DIR_PREFIX:'/cronwork'
 
-module.exports.init = (args) => {
-  if(args){
-    console.log("local start", args)
-    /*
-    cronJob(args).then((data)=>{
-      console.error("cronJob init Result", data);
-    })
-    .catch((err)=>{
-      console.error("cronJob init Error", err);
-    })
-    */
-    return this;
-  } else {
-    console.log("cron start", expression)
-    task = cron.schedule(expression, cronJob);
-    return this;
-  }
-    
+module.exports.init = () => {
+  console.log("cron start", expression)
+  task = cron.schedule(expression, cronJob);
+  return this;    
 }
 
 module.exports.stop = () => {
@@ -48,37 +34,36 @@ async function cronJob(args) {
       const jobId = `job_${Date.now()}`;
       const workDir = `${WORK_DIR_PREFIX}/${jobId}`;
       //console.log(jobId, workDir);
-      /*
-      makeParameter(jobId, workDir)
+      
+      makeParameter(getsqsmessageWrapper, jobId, workDir)
       .then((data) => downloadFile(data))
       .then((data)=>convertPdf(data))
       //.then((data)=>uploadPdf(data))
       .then((data)=>uploadPdfBase64(data))
       .then((data)=>completeJob(data))
       .catch((err)=>clearErrorJob(err))
-      */
 
-      const inputParameterFromSQS = R.curry(function(getsqsmessageFunc, jobId, workDir){
-        console.log("inputParameterFromSQS");
-        return makeParameter(getsqsmessageFunc, jobId, workDir);
-      })
 
-      const inputParameterFromArgs = R.curry(function(args, jobId, workDir){
-        console.log("inputParameterFromArgs");
-        return function(args, jobId, workDir) {
-          
-          return {
-            jobId, workDir,
-            sqsmessage: args
-          }
-        };
-      })
-
-      
+      /*
       try{
-        console.log("args", args);
+        const inputParameterFromSQS = R.curry(function(getsqsmessageFunc, jobId, workDir){
+          console.log("inputParameterFromSQS");
+          return makeParameter(getsqsmessageFunc, jobId, workDir);
+        })
+
+        const inputParameterFromArgs = R.curry(function(args, jobId, workDir){
+          console.log("inputParameterFromArgs");
+          return function(args, jobId, workDir) {
+            
+            return {
+              jobId, workDir,
+              sqsmessage: args
+            }
+          };
+        })
+        
         let inputParameter = args?inputParameterFromArgs(args):inputParameterFromSQS(getsqsmessageWrapper);
-        //let inputParameter = args?inputParameterFromArgs:inputParameterFromSQS;
+
         const converter = R.composeP(completeJob, uploadPdfBase64, convertPdf, downloadFile, inputParameter);
         
         const r = await converter(jobId, workDir)
@@ -87,6 +72,7 @@ async function cronJob(args) {
         if(err && err.err) console.error("err", err.err);
         clearErrorJob(err);
       }
+      */
       //console.log("cron end");
     }
   }
@@ -100,11 +86,11 @@ async function cronJob(args) {
     return {}
   }
 
-  async function makeParameter(getsqsmessage, jobId, workDir){
+  async function makeParameter(getsqsmessageFunc, jobId, workDir){
     return new Promise(async (resolve, reject)=>{
       try{
         status.addJob(jobId);
-        const msg = await getsqsmessage();
+        const msg = await getsqsmessageFunc();
         const {MessageId, ReceiptHandle, Body, MD5OfBody} = msg;
         const parsedMessage = parseMessage(Body)
         console.log("[GET_MESSAGE]", JSON.stringify(parsedMessage));
@@ -212,11 +198,11 @@ async function cronJob(args) {
     return new Promise(async (resolve, reject)=>{
       try{
         if(success === true){
-          console.log("[UPLOAD_PDF]", JSON.stringify(data));
+          console.log("[UPLOAD_PDF_BASE64]", JSON.stringify(data));
           const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
           const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
         } else {
-          console.log("[UPLOAD_PDF_FALSE]", JSON.stringify(data));
+          console.log("[UPLOAD_PDF_BASE64_FALSE]", JSON.stringify(data));
           const falseKey = target.key.substring(0, target.key.lastIndexOf("/") + 1) + "false";
           console.log(falseKey);
           const r = await filewrapper.uploadToS3(outputPath, target.bucket, falseKey);

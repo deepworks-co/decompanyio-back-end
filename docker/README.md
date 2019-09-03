@@ -47,7 +47,7 @@ docker build -f Dockerfile-dev -t decompany/pdf-converter-dev .
 docker run --rm \
 -v /Users/jay/.aws:/root/.aws \
 -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modeuls:/decompany-modeuls \
+-v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modules:/decompany-modules \
 -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/po-converter-library_centos_x64_20190521:/converter \
 -p 8080:8080 --name pdf-converter decompany/pdf-converter-dev
 

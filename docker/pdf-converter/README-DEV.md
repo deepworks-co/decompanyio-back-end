@@ -30,7 +30,7 @@ docker build -t app .
         docker run --rm -p 8080:8080 --name pdf-converter decompany/pdf-converter
         ```
 
-## 개발 환경 구성
+## 개발 환경 실행
 
 
 * 개발 debug mount 모드 이미지 생성
@@ -48,9 +48,9 @@ docker build -t app .
     -e EXPRESSION='*/1 * * * * *' \
     -v /Users/jay/.aws:/root/.aws \
     -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
-    -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modeuls:/decompany-modeuls \
+    -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modules:/decompany-modules \
     -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/po-converter-library_centos_x64_20190521:/converter \
-    -p 8080:8080 --name pdf-converter decompany/pdf-converter-dev 
+    -p 8080:8080 --name pdf-converter decompany/pdf-converter-dev
 ```
 
 ## 배포용 이미지 로컬 테스트 하기
