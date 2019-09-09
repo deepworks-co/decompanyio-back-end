@@ -89,15 +89,13 @@
         },
         "index": "4"
     },
-    "warmupConfig": {
+    "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-dev-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete"},
-            {"name": "s3DocumentConvertComplete"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
@@ -107,7 +105,25 @@
             {"name": "trackingList", "aliase": "prod"},
             {"name": "trackingInfo", "aliase": "prod"}
         ]
-    },
+    }, {
+        "enable": true,
+        "prefix": "restapis-graphql-dev-",
+        "functions": [
+            {"name": "graphql", "concurrency": 5}
+        ]
+    }, {
+        "enable": true,
+        "prefix": "dev-ssr-",
+        "functions": [
+            {"name": "embed", "concurrency": 5}
+        ]
+    }, {
+        "enable": true,
+        "prefix": "dev-ssr-",
+        "functions": [
+            {"name": "pdf", "concurrency": 5}
+        ]
+    }],
     "oembedConfig": {
         "host": "https://embed.share.decompany.io/",
         "thumbHost": "https://thumb.share.decompany.io/"
