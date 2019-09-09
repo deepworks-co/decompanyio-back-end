@@ -9,7 +9,7 @@
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy",
-    "deploy:alpha": "sls deploy -s alpha"
+    "deploy:alpha": "sls deploy -s alpha -r ap-northeast-2"
   },
   "author": "",
   "license": "ISC",

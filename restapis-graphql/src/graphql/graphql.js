@@ -25,6 +25,8 @@ const server = new ApolloServer({
       principalId = await authorize(Authorization)
       console.log("principalId", principalId);
     }
+
+    
     
     return {principalId}
   }

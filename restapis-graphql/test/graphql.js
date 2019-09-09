@@ -5,14 +5,14 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('qraphql', '/src/qraphql/graphql.js', 'src/qraphql/graphql');
+let wrapped = mochaPlugin.getWrapper('graphql', '/src/graphql/graphql.js', 'src/graphql/graphql');
 
-describe('qraphql', () => {
+describe('graphql', () => {
   before((done) => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('addFavorite', () => {
     
     const event = {
       body: {
