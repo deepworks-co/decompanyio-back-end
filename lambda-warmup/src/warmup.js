@@ -2,15 +2,31 @@
 const { region, warmupConfig } = require('decompany-app-properties');
 const aws = require("aws-sdk");
 const lambda = new aws.Lambda({region: region}); 
-
+const WARMUP_PAYLOAD = JSON.stringify({ source: 'lambda-warmup'});
 module.exports.handler = async (event, context, callback) => {
 
   console.log("Warm Up Start");
 
-  const {prefix, functions,} = warmupConfig;
+  const promises = warmupConfig.map((warmup)=>{
+    return warmupService(warmup);
+  })
 
-  const payload = JSON.stringify({ source: 'lambda-warmup'});
+  await Promise.all(promises);
   
+  
+
+  return "warm up lambda!";
+};
+
+async function warmupService(warmup){
+  const {enable, prefix, functions} = warmup;
+
+  if(enable === false){
+    console.log(`Warm Up prefix ${prefix} enable ${enable}`);
+    return [];
+  }
+
+  const payload = WARMUP_PAYLOAD;
   const invokes = await Promise.all(functions.map(async (func) => {
     const functionName = prefix?prefix.concat(func.name):func.name;
     const aliase = func.aliase?func.aliase:"$LATEST";
@@ -42,9 +58,6 @@ module.exports.handler = async (event, context, callback) => {
     }
    
   }));
-  
-  await Promise.all(invokes);
-  console.log(`Warm Up Finished with ${invokes.filter(r => !r).length} invoke errors`);
 
-  return "warm up lambda!";
-};
+  console.log(`Warm Up Finished with ${invokes.filter(r => !r).length} invoke errors`);
+}

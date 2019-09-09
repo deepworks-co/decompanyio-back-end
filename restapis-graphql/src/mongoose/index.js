@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const {mongodb} = require('decompany-app-properties');
 const models = require('./model');
+const console = require('../common/logger');
 let db;
 //console.log("mongoose", mongoose.connection);
 function connectToMongoDB(){

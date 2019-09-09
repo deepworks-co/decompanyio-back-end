@@ -6,7 +6,7 @@ https://blog.apollographql.com/4-simple-ways-to-call-a-graphql-api-a6807bcdb355
 
 ## Mutation
 
-```curl
+```javascript
 
 mutation {
   UserDocumentHistory {
@@ -70,3 +70,30 @@ query {
 }
 ```
 
+```javascript
+query {
+   Document {
+    findById(_id: "fdc219a700c344469fa076b5bbac4d08"){
+      _id
+      title
+      seoTitle
+      desc
+      documentId
+    },
+    findOne(filter: {seoTitle:"sample-cou0o3"}) {
+      _id
+      title
+      seoTitle
+      desc
+      documentId
+      accountId
+    }
+  },
+  User {
+    findById(_id: "google-oauth2|101778494068951192848"){
+      _id
+      email
+    }
+  }
+}
+```

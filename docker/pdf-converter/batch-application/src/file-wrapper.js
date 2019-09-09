@@ -16,25 +16,30 @@ module.exports = {
     unzip
 }
 
-function uploadToS3 (filepath, bucket, key, base64) {
+function uploadToS3 (filepath, bucket, key, isCompress) {
     return new Promise(async (resolve, reject)=>{
-        const stream = readFile(filepath);
-        let streamBase64Compressed;
-        if(base64){
-            const streamBase64 = encodeBase64(stream);
-            streamBase64Compressed = await gzip(streamBase64);
+        try{
+            const stream = readFile(filepath);
+            //console.log(filepath, stat);
+            let streamBase64Compressed;
+            if(isCompress){
+                const streamBase64 = encodeBase64(stream);
+                streamBase64Compressed = await gzip(streamBase64);
+            }
+            console.log('put');
+            const data = await s3.putObject({
+                Bucket: bucket, 
+                Key: key,
+                Body: isCompress?streamBase64Compressed:stream,
+                ContentType: "application/octet-stream"
+            }).promise();
+    
+            //console.log("upload file", bucket, key);
+            resolve({data, bucket, key});
+        } catch(err){
+            reject(err);
         }
         
-        const data = await s3.putObject({
-            Bucket: bucket, 
-            Key: key,
-            Body: base64?streamBase64Compressed:stream,
-            ContentType: "application/octet-stream",
-            ContentEncoding: base64?"gzip":undefined,
-        }).promise();
-
-        //console.log("upload file", bucket, key);
-        resolve({data, bucket, key});
         
     });
 }
@@ -136,6 +141,16 @@ function readFile (filepath){
 
     try {
         return fs.readFileSync(filepath)
+    } catch (err) {
+        console.error(err)
+    }
+
+}
+
+function fileStat (filepath){
+
+    try {
+        return fs.statSync(filepath)
     } catch (err) {
         console.error(err)
     }

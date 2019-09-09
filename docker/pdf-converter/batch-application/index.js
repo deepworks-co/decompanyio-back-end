@@ -33,7 +33,7 @@ app.get('/stop', function (req, res) {
   res.send(JSON.stringify(status));
 });
 
-const cron = cronjob.init(process.argv[2]);
+const cron = cronjob.init();
 const server = app.listen(PORT);
 console.log("Listen...", PORT);
 // The signals we want to handle

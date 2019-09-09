@@ -22,7 +22,7 @@ provider:
   runtime: nodejs8.10
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
-  region: us-west-1
+  region: ${opt:region, 'us-west-1'}
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
   environment:
@@ -54,9 +54,6 @@ provider:
   vpc:
     securityGroupIds:
       - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
 
 # you can define service wide environment variables here
   #environment:
@@ -82,11 +79,8 @@ package:
     - test/**
     
 functions:
-  auth:
-    handler: src/auth/auth.handler
-
-  qraphql:
-    handler: src/qraphql/graphql.handler
+  graphql:
+    handler: src/graphql/graphql.handler
     events:
       - http: 
           method: ANY

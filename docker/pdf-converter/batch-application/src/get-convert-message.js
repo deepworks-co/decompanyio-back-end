@@ -37,9 +37,7 @@ function getMessage(queueURL){
 
         var params = {
             QueueUrl: queueURL,
-            MaxNumberOfMessages: 1,
-            VisibilityTimeout: 0,
-            WaitTimeSeconds: 0
+            MaxNumberOfMessages: 1
         };
         sqs.receiveMessage(params, function(err, data) {
             if (err) {
@@ -70,10 +68,10 @@ function removeMessage(message){
         };
         sqs.deleteMessage(deleteParams, function(err, data) {
         if (err) {
-            //console.log("Delete Error", err);
+            console.log("Delete Error", err);
             reject(err);
         } else {
-            //console.log("Message Deleted", data);
+            console.log("Message Deleted", data);
             resolve(data);
         }
         });

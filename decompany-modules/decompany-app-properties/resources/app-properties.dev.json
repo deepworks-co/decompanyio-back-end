@@ -91,15 +91,13 @@
         },
         "index": "4"
     },
-    "warmupConfig": {
+    "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-dev-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete"},
-            {"name": "s3DocumentConvertComplete"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
@@ -109,7 +107,7 @@
             {"name": "trackingList", "aliase": "prod"},
             {"name": "trackingInfo", "aliase": "prod"}
         ]
-    },
+    }],
     "oembedConfig": {
         "host": "https://embed.share.decompany.io/",
         "thumbHost": "https://thumb.share.decompany.io/"

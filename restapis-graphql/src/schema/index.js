@@ -1,6 +1,8 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
 const DocumentSchema = require('./DocumentSchema')
+const DocumentFeaturedSchema = require('./DocumentFeaturedSchema')
+const DocumentPopularSchema = require('./DocumentPopularSchema')
 const UserSchema = require('./UserSchema')
 const UserDocumentFavorite = require('./UserDocumentFavorite')
 const UserDocumentHistory = require('./UserDocumentHistory')
