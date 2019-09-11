@@ -22,9 +22,7 @@ provider:
   runtime: nodejs8.10
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
-  region: us-west-1
-  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
-  #apiName: ${self:service.name}-api      # Api Gateway Name
+  region: ${file(./serverlessConfig.js):region}
   environment:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
@@ -33,9 +31,9 @@ provider:
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
     NODE_PATH: "./:/opt/node_modules"
   tags:
-    stage: ${self:provider.stage}
-    region: ${self:provider.region}
-    servicename: ${self:service.name}
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
     GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
     GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
     DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
@@ -54,24 +52,14 @@ provider:
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
-
-# you can define service wide environment variables here
-  #environment:
-  #  CROS: true
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
 
 package:
   individually: false

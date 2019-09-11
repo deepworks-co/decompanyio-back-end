@@ -21,7 +21,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   stage: ${opt:stage, 'dev'}
-  region: us-west-1
+  region: ${opt:region, 'us-west-1'}
   environment:
     NODE_PATH: "./:/sharp/node_modules:/geoip/node_modules"
   logRetentionInDays: 3

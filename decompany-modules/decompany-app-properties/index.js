@@ -1,11 +1,10 @@
 'use strict';
 const stage = process.env.stage?process.env.stage:"local";
-
-
+const constants = require('./resources/app-constants.json');
 
 function getProperties(stage){
   try{
-
+    //console.log(`Get properties ${stage}`);
     if(stage) {
       return require('./resources/app-properties.'+ stage + '.json');
     } else {
@@ -18,5 +17,5 @@ function getProperties(stage){
 }
 
 module.exports = getProperties(stage);
-module.exports.constants = require('./resources/app-constants.json');
+module.exports.constants = constants;
 module.exports.getProperties = getProperties;

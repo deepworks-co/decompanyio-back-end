@@ -20,10 +20,10 @@ describe('s3DocumentUploadComplete', () => {
         {
           "s3": {
             "bucket": {
-              "name": "dev-ca-document"
+              "name": "asem-ko-document"
             },
             "object": {
-              "key": "FILE/google-oauth2|101778494068951192848/229257c8085145008268cbd2ba146dc5.pptx",
+              "key": "FILE/google-oauth2|101778494068951192848/98af37649f554903aa9837eff72b1aa0.pdf",
             }
           }
         },

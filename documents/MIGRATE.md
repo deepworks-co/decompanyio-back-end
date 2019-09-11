@@ -13,7 +13,9 @@ db["DEV-CA-DOCUMENT-VOTE"].update({}, {$unset: {documentInfo: ""}}, {multi: true
 
 # ETC
 
-#login admin
+# login admin
+
+```bash
 use admin
 db.createUser({
   user: "admin",
@@ -22,8 +24,11 @@ db.createUser({
 })
 
 db.auth("admin", "infra1122!")
+```
 
-#create database and create user
+# create database and create user
+
+```bash
 use decompany
 db.createUser(
    {
@@ -33,8 +38,21 @@ db.createUser(
    }
 )
 db.auth("decompany", "decompany1234")
+```
 
-#create table
+
+# grant role
+
+```bash
+use {database}
+db.grantRolesToUser(
+   "decompany",
+   [ "readWrite" ],
+   { w: "majority" , wtimeout: 4000 }
+)
+```
+
+# create table
 db.createCollection("DEV-CA-DOCUMENT", { capped: false,
                               size: <number>,
                               max: <number>,

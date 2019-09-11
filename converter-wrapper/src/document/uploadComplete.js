@@ -1,11 +1,9 @@
 'use strict';
 const AWS = require('aws-sdk');
 const { MongoWapper } = require('decompany-common-utils');
-const { mongodb, tables, s3Config, sqsConfig, region } = require('decompany-app-properties');
-AWS.config.update({region: region});
-const sqs = new AWS.SQS();
+const { mongodb, tables, sqsConfig, region } = require('decompany-app-properties');
 const QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
-const s3 = new AWS.S3();
+
 
 /**
  * @description S3 event trigger
@@ -51,9 +49,10 @@ async function run(items){
     console.log("updateContentType", r);
 
     const data = {
-      "fileindex": fileindex,
-      "fileid": fileid,
-      "ext": ext
+      bucket: bucket,
+      fileindex: fileindex,
+      fileid: fileid,
+      ext: ext
     }
 
     const uploadCompleteResult = await uploadComplete(fileid);
@@ -82,6 +81,10 @@ function sendPDFConvertMessage(){
   })
 }
 function sendMessage(message) {
+  console.log("sendMessage", sqsConfig.region)
+  console.log("sendMessage", message);
+  const sqs = new AWS.SQS({endpoint: "sqs.us-west-1.amazonaws.com"});
+
   return new Promise((resolve, reject)=>{
     //console.log("sendMessage", message);
 
@@ -100,7 +103,8 @@ function sendMessage(message) {
 
 const generatePDFMessageBody = function(param){
 
-  const bucket = s3Config.document;
+  //const bucket = s3Config.document;
+  const bucket = param.bucket;
 
   const messageBody = {
     source: {
@@ -122,7 +126,9 @@ const generatePDFMessageBody = function(param){
 
 const generateMessageBody = function(param){
 
-  const bucket = s3Config.document;
+  //const bucket = s3Config.document;
+  const bucket = param.bucket;
+
   var messageBody = new Object();
   messageBody.command="image";
   messageBody.filePath = bucket + "/FILE/"+ param.fileindex +"/" + param.fileid + "." + param.ext;
@@ -154,7 +160,9 @@ async function uploadComplete(documentId){
 }
 
 function updateContentType(bucket, key, ext){
-  console.log(bucket, key, ext);
+  console.log(bucket, key, ext, region);
+  const s3 = new AWS.S3();
+
   return new Promise((resolve, reject) => {
 
     let contentType = "application/octet-stream";
