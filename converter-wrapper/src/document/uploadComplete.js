@@ -48,22 +48,24 @@ async function run(items){
     const r = await updateContentType(bucket, key, ext);
     console.log("updateContentType", r);
 
+    const uploadCompleteResult = await uploadComplete(fileid);
+    console.log("uploadComplete", fileid, uploadCompleteResult);
+
+    const r4 = await copyFileToCABucket({bucket, key}, {bucket: "asem-ca-upload-document", key})
+    console.log("copyFileToCABucket", r4)
+    /*
     const data = {
       bucket: bucket,
       fileindex: fileindex,
       fileid: fileid,
       ext: ext
     }
-
-    const uploadCompleteResult = await uploadComplete(fileid);
-    console.log("uploadComplete", fileid, uploadCompleteResult);
-            
     const r2 = await sendMessage(generateMessageBody(data));
     console.log("sendMessage", r2);
 
     const r3 = await sendMessage(generatePDFMessageBody(data));
     console.log("sendMessage", r3);
-
+    */
     return true;
   });
 
@@ -74,12 +76,7 @@ async function run(items){
   });
 
 }
-function sendPDFConvertMessage(){
-  return new Promise((resolve, reject)=>{
-    
 
-  })
-}
 function sendMessage(message) {
   console.log("sendMessage", sqsConfig.region)
   console.log("sendMessage", message);
@@ -174,6 +171,24 @@ function updateContentType(bucket, key, ext){
       CacheControl: "no-cache",
       ContentType: contentType,
       MetadataDirective: 'REPLACE'
+    }, function(err, data){
+      if(err) reject(err);
+      else resolve(data);
+    });
+  })
+
+}
+
+function copyFileToCABucket(source, target){
+
+  const s3 = new AWS.S3();
+
+  return new Promise((resolve, reject) => {
+    
+    s3.copyObject({
+      Bucket: target.bucket,
+      Key: target.key,
+      CopySource: source.bucket + "/" + source.key,
     }, function(err, data){
       if(err) reject(err);
       else resolve(data);

@@ -14,7 +14,7 @@ describe('s3DocumentUploadComplete', () => {
 
   
 
-  it('upload complete document ppt 229257c8085145008268cbd2ba146dc5', () => {
+  it('[ASEM] upload complete 98af37649f554903aa9837eff72b1aa0', () => {
     const event = {
       "Records": [
         {
