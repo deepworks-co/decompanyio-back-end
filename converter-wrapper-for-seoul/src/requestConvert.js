@@ -2,7 +2,7 @@
 const AWS = require('aws-sdk');
 const QUEUE_IMAGE_URL = "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image";
 const QUEUE_PDF_URL = "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter";
-
+const s3 = new AWS.S3();
 
 /**
  * @description S3 event trigger
@@ -44,9 +44,6 @@ async function run(items){
     const fileindex = decodeURIComponent(splits[1]);
     const ext = splits[2].split(".")[1];
 
-    const r = await updateContentType(bucket, key, ext);
-    console.log("updateContentType", r);
-
     const data = {
       bucket: bucket,
       fileindex: fileindex,
@@ -70,12 +67,7 @@ async function run(items){
   });
 
 }
-function sendPDFConvertMessage(){
-  return new Promise((resolve, reject)=>{
-    
 
-  })
-}
 function sendMessage(message) {
 
   const sqs = new AWS.SQS({region:"us-west-1"});
