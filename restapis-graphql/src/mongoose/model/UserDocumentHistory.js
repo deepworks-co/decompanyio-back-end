@@ -18,6 +18,6 @@ const UserDocumentHistorySchema = new Schema({
 }, { collection: "USER-DOCUMENT-HISTORY"});
 
 UserDocumentHistorySchema.index({userId: 1, created: -1})
-UserDocumentHistorySchema.index({userId: 1, documentId: 1}, {unique: true})
+UserDocumentHistorySchema.index({userId: 1, documentId: 1, created: -1})
 
 module.exports = mongoose.models.UserDocumentHistory || mongoose.model('UserDocumentHistory', UserDocumentHistorySchema);

@@ -19,6 +19,18 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
+    picture: {
+        type: String
+    },
+    local: {
+        type: String
+    },
+    nickname: {
+        type: String
+    },
+    family_name: {
+        type: String
+    },
     ethAccount: {
         type: String
     } 
