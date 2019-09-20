@@ -9,7 +9,7 @@
         "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:4"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@172.31.19.113:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@10.1.11.213:27017/decompany"
     },
     "s3Config":{
         "document": "asem-ko-document",
