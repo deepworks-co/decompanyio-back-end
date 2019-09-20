@@ -2,7 +2,6 @@
 const AWS = require('aws-sdk');
 const QUEUE_IMAGE_URL = "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image";
 const QUEUE_PDF_URL = "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter";
-const s3 = new AWS.S3();
 
 /**
  * @description S3 event trigger
@@ -156,5 +155,3 @@ function updateContentType(bucket, key, ext){
   })
 
 }
-
-
