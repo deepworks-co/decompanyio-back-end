@@ -45,7 +45,7 @@ function run(params){
   
   const {key, prefix, bucket, filename, documentId} = params;
   return new Promise((resolve, reject)=>{
-    if("result.txt" === filename || "text.json" === filename){
+    if("PDF" === prefix || "result.txt" === filename || "text.json" === filename){
       putFileToOrignBucket({
         bucket: bucket,
         key: key
