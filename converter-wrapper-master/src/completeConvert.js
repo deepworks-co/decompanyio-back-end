@@ -6,6 +6,7 @@ const sizeOf = require('buffer-image-size');
 
 const s3 = new AWS.S3();
 const CF_THUMB_BUCKET = "alpha-ca-thumbnail"
+const DOCUMENT_BUCKET = s3Config.document
 const QUALITY = 100;
 
 exports.handler = async (event, context, callback) => {
@@ -50,7 +51,7 @@ function run(params){
         bucket: bucket,
         key: key
       }, {
-        bucket: "asem-ko-document",
+        bucket: DOCUMENT_BUCKET,
         key: key
       })
     } else if("1200X1200" === filename){
@@ -65,7 +66,7 @@ function run(params){
       })
       
     } else {
-      resolve("not support", params);
+      resolve({message: "not support", params});
     }
   });
 }
@@ -81,6 +82,16 @@ function convertThumbnail(bucket, key, target){
       const sizeType = keys[2]; //1200X1200, 300X300
       const imagename = keys[3];  // 1, 2, 3
       const sizes = ['thumb', 1024, 640, 320, 2048];
+
+      if(imagename === "1" || imagename === 1){
+        await putFileToOrignBucket({
+          bucket: bucket,
+          key: key
+        }, {
+          bucket: DOCUMENT_BUCKET,
+          key: key
+        })
+      }
       const promises = sizes.map((size)=>{
         const toProfix = documentId + "/" + size + "/" + imagename;
         //return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
