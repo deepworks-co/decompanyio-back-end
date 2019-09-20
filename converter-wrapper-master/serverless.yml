@@ -34,6 +34,9 @@ provider:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
     servicename: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
   logRetentionInDays: 3
   iamRoleStatements:
     - Effect: "Allow"
@@ -60,6 +63,8 @@ package:
 functions:
   completeConvert:
     handler: src/completeConvert.handler
+    layers:   
+      - ${file(./serverlessConfig.js):getSharpLayer}
     timeout: 60
     events:
       - existingS3: 
