@@ -1,8 +1,8 @@
 {
     "region": "ap-northeast-2",
     "vpc": {
-        "securityGroupIds": "sg-0dbdbc6c314aa0134",
-        "subnetIds": "subnet-1355417b, subnet-741f6738"
+        "securityGroupIds": "sg-0c03c968f873d05ed",
+        "subnetIds": "subnet-05330f2b3c5d43583, subnet-06b50f88dee69cfad, subnet-0c114b51c4b9ba52f"
     },
     "layer": {
         "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:4",
