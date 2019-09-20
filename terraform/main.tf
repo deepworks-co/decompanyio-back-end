@@ -206,6 +206,7 @@ resource "aws_security_group" "sg_endpoint" {
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = "${aws_vpc.vpc.id}"
   service_name = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Gateway"
   tags = merge(var.default_tags,
     {
       "Name" = "endpoint_s3_${var.profile}"  
@@ -213,16 +214,7 @@ resource "aws_vpc_endpoint" "s3" {
   )
 }
 
-resource "aws_vpc_endpoint" "sqs" {
-  vpc_id       = "${aws_vpc.vpc.id}"
-  service_name = "com.amazonaws.${var.region}.sqs"
-  vpc_endpoint_type = "Interface"
-  security_group_ids = [
-    "${aws_security_group.sg_endpoint.id}",
-  ]
-  tags = merge(var.default_tags,
-    {
-      "Name" = "endpoint_sqs_${var.profile}"
-    }
-  )
+resource "aws_vpc_endpoint_route_table_association" "s3" {
+  route_table_id  = "${aws_route_table.rtb_public.id}"
+  vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
