@@ -45,8 +45,8 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls": {
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image",
-            "CONVERT_PDF": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
+            "CONVERT_IMAGE": "https://sqs.ap-northeast-1.amazonaws.com/197966029048/jpdev-jp-convert-image",
+            "CONVERT_PDF": "https://sqs.ap-northeast-1.amazonaws.com/197966029048/jpdev-jp-pdf-converter"
 
         }
     },
