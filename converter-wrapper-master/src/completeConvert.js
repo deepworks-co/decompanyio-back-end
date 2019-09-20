@@ -37,7 +37,7 @@ exports.handler = async (event, context, callback) => {
     console.log(err);
   }
 
-  console.log(results)
+  console.log("complete", results)
   return callback(null, results);
 };
 
@@ -115,7 +115,7 @@ function changeImageMetadata(bucket, key){
 async function convertJpeg(from, to, size){
   const {fromBucket, fromPrefix} = from;
   const {toBucket, toPrefix} = to;
-  console.log({from, to});
+  console.log("convertJpeg", {from, to, size});
 
   const input = await getS3ObjectBody(fromBucket, fromPrefix);
   const dimensions = sizeOf(input);
