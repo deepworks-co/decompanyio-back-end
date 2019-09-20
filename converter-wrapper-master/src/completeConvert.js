@@ -10,11 +10,11 @@ const QUALITY = 100;
 
 exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
-  console.log(event);
+
   let results;
   try{
     const promises = event.Records.map((record) =>  {
-
+      
       const key = record.s3.object.key;
       const bucket = record.s3.bucket.name;
       
@@ -42,7 +42,7 @@ exports.handler = async (event, context, callback) => {
 };
 
 function run(params){
-
+  
   const {key, prefix, bucket, filename, documentId} = params;
   return new Promise((resolve, reject)=>{
     if("result.txt" === filename || "text.json" === filename){
@@ -65,7 +65,7 @@ function run(params){
       })
       
     } else {
-      resolve("not support");
+      resolve("not support", params);
     }
   });
 }
