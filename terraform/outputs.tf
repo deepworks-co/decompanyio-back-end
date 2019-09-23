@@ -12,7 +12,7 @@ output "profile" {
 }
 output "public_subnet_arns" {
   description = "List of ARNs of public subnets"
-  value       = aws_subnet.subnet_public.*.arn
+  value       = aws_subnet.public.*.arn
 }
 output "availability_zone" {
   description = "A list of availability zones specified as argument to this module"

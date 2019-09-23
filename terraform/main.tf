@@ -19,8 +19,7 @@ resource "aws_internet_gateway" "igw" {
   )
 }
 
-
-resource "aws_subnet" "subnet_public" {
+resource "aws_subnet" "public" {
   count = "${length(var.cidr_public_subnet)}"
   
   vpc_id = "${aws_vpc.vpc.id}"
@@ -49,12 +48,77 @@ resource "aws_route_table" "rtb_public" {
   )
 }
 
+
+
 resource "aws_route_table_association" "rta_subnet_public" {
   count = "${length(var.cidr_public_subnet)}"
-  subnet_id      = "${aws_subnet.subnet_public[count.index].id}"
+  subnet_id      = "${aws_subnet.public[count.index].id}"
   route_table_id = "${aws_route_table.rtb_public.id}"
 }
 
+
+resource "aws_eip" "eip" {
+  count = "${length(var.cidr_public_subnet)}"
+
+  vpc      = true
+
+  tags = merge(var.default_tags,
+    {
+      "Name" = "eip_${var.profile}"
+    }
+  )
+}
+
+resource "aws_nat_gateway" "gw" {
+  count = "${length(var.cidr_public_subnet)}"
+
+  allocation_id = "${aws_eip.eip[count.index].id}"
+  subnet_id     = "${aws_subnet.public[count.index].id}"
+
+  tags = merge(var.default_tags,
+    {
+      "Name" = "nat_${var.profile}"
+    }
+  )
+}
+
+resource "aws_subnet" "private" {
+  count = "${length(var.cidr_private_subnet)}"
+  
+  vpc_id = "${aws_vpc.vpc.id}"
+  cidr_block = "${var.cidr_private_subnet[count.index]}"
+  availability_zone = "${var.availability_zone[count.index]}"
+  tags = merge(var.default_tags,
+    {
+      "Name" = "private_subnet_${var.profile}"
+    }
+  )
+}
+
+resource "aws_route_table" "rtb_private" {
+  count = "${length(aws_nat_gateway.gw)}"
+
+  vpc_id = "${aws_vpc.vpc.id}"
+
+  route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = "${aws_nat_gateway.gw[count.index].id}"
+  }
+
+  tags = merge(var.default_tags,
+    {
+      "Name" = "rtb_private_${var.profile}"
+    }
+  )
+}
+
+
+
+resource "aws_route_table_association" "rta_subnet_private" {
+  count = "${length(var.cidr_private_subnet)}"
+  subnet_id      = "${aws_subnet.private[count.index].id}"
+  route_table_id = "${aws_route_table.rtb_private[count.index].id}"
+}
 
 resource "aws_security_group" "sg_default" {
   name = "sg_${var.profile}_default"
@@ -215,6 +279,8 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_vpc_endpoint_route_table_association" "s3" {
-  route_table_id  = "${aws_route_table.rtb_public.id}"
+  count = "${length(aws_route_table.rtb_private)}"
+
+  route_table_id  = "${aws_route_table.rtb_private[count.index].id}"
   vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
