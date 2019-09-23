@@ -23,6 +23,7 @@
     "package": "sls package",
     "deploy": "sls deploy",
     "deploy:alpha": "sls deploy -s alpha",
+    "deploy:asem": "sls deploy -s asem",
     "test": "mocha"
   },
   "author": "",
