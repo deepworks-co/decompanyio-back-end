@@ -83,8 +83,8 @@
     },
     "ethereum": {
         "abis": [
-            {"name": "DocumentRegistry", "path": "./contracts-rinkeby-alpha/DocumentRegistry.json"},
-            {"name": "Ballot", "path": "./contracts-rinkeby-alpha/Ballot.json"}
+            {"name": "DocumentRegistry", "path": "./contracts-rinkeby-asem/DocumentRegistry.json"},
+            {"name": "Ballot", "path": "./contracts-rinkeby-asem/Ballot.json"}
         ],
         "network": "rinkeby", 
         "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
@@ -98,7 +98,7 @@
     },
     "warmupConfig": [{
         "enable": true,
-        "prefix": "backend-restapis-alpha-",
+        "prefix": "backend-restapis-asem-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
             {"name": "analyticsList", "aliase": "prod"},
