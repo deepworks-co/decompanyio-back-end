@@ -1,15 +1,15 @@
 {
     "region": "ap-northeast-2",
     "vpc": {
-        "securityGroupIds": "sg-0c03c968f873d05ed",
-        "subnetIds": "subnet-05330f2b3c5d43583, subnet-06b50f88dee69cfad, subnet-0c114b51c4b9ba52f"
+        "securityGroupIds": "sg-06891dc67ef6e8e47",
+        "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
     },
     "layer": {
         "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:4",
         "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:4"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@10.1.11.213:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany"
     },
     "s3Config":{
         "document": "asem-ko-document",
