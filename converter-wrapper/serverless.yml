@@ -100,7 +100,6 @@ functions:
 
   s3DocumentUploadComplete:
     handler: src/document/uploadComplete.handler
-    timeout: 30
     events:
       - existingS3: 
           bucket: ${file(./serverlessConfig.js):s3Config.document}
@@ -118,7 +117,6 @@ functions:
           bucket: ${file(./serverlessConfig.js):s3Config.document}
           events: 
             - s3:ObjectCreated:Put
-            - s3:ObjectCreated:Copy
           rules:
             - prefix: THUMBNAIL/
 

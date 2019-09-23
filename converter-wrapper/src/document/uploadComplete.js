@@ -35,10 +35,11 @@ async function run(items){
     
     const bucket = record.s3.bucket.name;
     const key = decodeURIComponent(record.s3.object.key);
-    const splits = key.split("/");
     
+    const splits = key.split("/");
     const fileid = splits[2].split(".")[0];
     const fileindex = decodeURIComponent(splits[1]);
+
     const ext = splits[2].split(".")[1];
 
     const r = await updateContentType(bucket, key, ext);
@@ -47,8 +48,23 @@ async function run(items){
     const uploadCompleteResult = await uploadComplete(fileid);
     console.log("uploadComplete", fileid, uploadCompleteResult);
 
-    const r4 = await putFileToCABucket({bucket, key}, {bucket: "asem-ca-upload-document", key})
-    console.log("copyFileToCABucket", r4)
+    const sqsMessage = {
+      QueueUrl: QUEUE_URL,
+      MessageBody: JSON.stringify({
+        source: {
+          bucket: bucket,
+          key: key
+        },
+        target: {
+          bucket: "asem-ca-upload-document",
+          key: key
+        }
+      })
+    }
+    const r2 = await sendMessage(sqsMessage);
+    console.log("sendMessage", r2);
+
+   
     /*
     const data = {
       bucket: bucket,
@@ -56,9 +72,10 @@ async function run(items){
       fileid: fileid,
       ext: ext
     }
+    
     const r2 = await sendMessage(generateMessageBody(data));
     console.log("sendMessage", r2);
-
+    
     const r3 = await sendMessage(generatePDFMessageBody(data));
     console.log("sendMessage", r3);
     */
@@ -170,87 +187,6 @@ function updateContentType(bucket, key, ext){
     }, function(err, data){
       if(err) reject(err);
       else resolve(data);
-    });
-  })
-
-}
-
-function copyFileToCABucket(source, target){
-  console.log("copyFileToCABucket", source, target);
-  const s3 = new AWS.S3();
-
-  return new Promise((resolve, reject) => {
-    
-    s3.copyObject({
-      Bucket: target.bucket,
-      Key: target.key,
-      CopySource: source.bucket + "/" + source.key,
-    }, function(err, data){
-      if(err) reject(err);
-      else resolve(data);
-    });
-  })
-
-}
-
-function putFileToCABucket(source, target){
-  console.log("copyFileToCABucket", source, target);
-  return new Promise((resolve, reject)=>{
-
-    getUploadFileBody(source)
-    .then((data)=>{
-      return putFileToCaBucket(target, data);
-    })
-    .then((data)=>{
-      console.log("complete", data);
-      resolve(data);
-    })
-    .catch((err)=>{
-      reject(err);
-    })
-
-  }) 
-
-}
-
-
-
-function getUploadFileBody(source){
-  const s3 = new AWS.S3();
-  return new Promise((resolve, reject) => {
-    
-    s3.getObject({
-      Bucket: source.bucket,
-      Key: source.key
-    }, function(err, data){
-      if(err) {
-        reject(err)
-      } else {
-        console.log("getUploadFileBody success", source);
-        resolve(data.Body);
-        
-      }
-      
-    });
-  })
-
-}
-
-function putFileToCaBucket(target, body){
-  const s3 = new AWS.S3();
-  console.log("putFile", target);
-  return new Promise((resolve, reject) => {
-    s3.putObject({
-      Bucket: target.bucket,
-      Key: target.key,
-      Body: body
-    }, function(err, data){
-      if(err) { 
-        reject(err);
-      } else {
-        console.log("putFile success", target, data);
-        resolve(data);
-      }
     });
   })
 

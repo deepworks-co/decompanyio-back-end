@@ -14,7 +14,7 @@ describe('s3DocumentUploadComplete', () => {
 
   
 
-  it('[ASEM] upload complete 98af37649f554903aa9837eff72b1aa0', () => {
+  it('[ASEM] upload complete', () => {
     const event = {
       "Records": [
         {
@@ -23,7 +23,7 @@ describe('s3DocumentUploadComplete', () => {
               "name": "asem-ko-document"
             },
             "object": {
-              "key": "FILE/google-oauth2|101778494068951192848/98af37649f554903aa9837eff72b1aa0.pdf",
+              "key": "FILE/google-oauth2|101778494068951192848/022f3acc6b05484cb787032c81fc304d.pdf",
             }
           }
         },
@@ -32,5 +32,5 @@ describe('s3DocumentUploadComplete', () => {
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(30000);
 });

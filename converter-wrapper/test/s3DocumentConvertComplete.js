@@ -24,10 +24,10 @@ describe('s3DocumentConvertComplete', () => {
         {
           "s3": {
             "bucket": {
-              "name": "dev-ca-document",
+              "name": "asem-ko-document",
             },
             "object": {
-              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/1200X1200/1"
+              "key": "THUMBNAIL/ce352d3873174318a780a72f9b0ed028/result.txt"
             }
           }
         }
