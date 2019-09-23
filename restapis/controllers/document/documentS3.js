@@ -1,6 +1,5 @@
 var AWS = require("aws-sdk");
 const { s3Config } = require('decompany-app-properties');
-//const endpoint = new AWS.Endpoint("s3.us-west-1.amazonaws.com");
 const s3 = new AWS.S3();
 
 const  bucketName = s3Config.document;
