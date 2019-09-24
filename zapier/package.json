@@ -19,7 +19,8 @@
     "preinstall": "sh install.sh",
     "test": "mocha",
     "deploy": "sls deploy",
-    "deploy:alpha": "sls deploy -s alpha"
+    "deploy:alpha": "sls deploy -s alpha",
+    "deploy:asem": "sls deploy -s asem"
   },
   "author": "",
   "license": "ISC"
