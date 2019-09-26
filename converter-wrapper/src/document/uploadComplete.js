@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const { MongoWapper } = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig, region } = require('decompany-app-properties');
 const QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
-
+const s3 = new AWS.S3();
 
 
 /**
@@ -48,6 +48,7 @@ async function run(items){
     const uploadCompleteResult = await uploadComplete(fileid);
     console.log("uploadComplete", fileid, uploadCompleteResult);
 
+    /*
     const sqsMessage = {
       QueueUrl: QUEUE_URL,
       MessageBody: JSON.stringify({
@@ -63,7 +64,16 @@ async function run(items){
     }
     const r2 = await sendMessage(sqsMessage);
     console.log("sendMessage", r2);
+    */
 
+    const r2 = await putFileToCABucket({
+      bucket: bucket,
+      key: key
+    }, {
+      bucket: "asem-ca-upload-document",
+      key: key
+    });
+    console.log("putFileToCABucket", r2);
    
     /*
     const data = {
@@ -187,6 +197,71 @@ function updateContentType(bucket, key, ext){
     }, function(err, data){
       if(err) reject(err);
       else resolve(data);
+    });
+  })
+
+}
+
+
+function putFileToCABucket(source, target){
+  console.log("putFileToCABucket", source, target);
+  return new Promise((resolve, reject)=>{
+
+    getUploadFileBody(source)
+    .then((data)=>{
+      return putFileToCaBucket(target, data);
+    })
+    .then((data)=>{
+      console.log("complete", data);
+      resolve(data);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+
+  }) 
+
+}
+
+
+
+function getUploadFileBody(source){
+
+  return new Promise((resolve, reject) => {
+    
+    s3.getObject({
+      Bucket: source.bucket,
+      Key: source.key
+    }, function(err, data){
+      if(err) {
+          console.log("Err getUploadFileBody", err)
+        reject(err)
+      } else {
+        console.log("getUploadFileBody success", source);
+        resolve(data.Body);
+        
+      }
+      
+    });
+  })
+
+}
+
+function putFileToCaBucket(target, body){
+  const s3 = new AWS.S3();
+  console.log("putFile", target);
+  return new Promise((resolve, reject) => {
+    s3.putObject({
+      Bucket: target.bucket,
+      Key: target.key,
+      Body: body
+    }, function(err, data){
+      if(err) { 
+        reject(err);
+      } else {
+        console.log("putFile success", target, data);
+        resolve(data);
+      }
     });
   })
 
