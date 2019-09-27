@@ -1,13 +1,14 @@
 'use strict';
 const console = require('../common/logger');
 const { ApolloServer, gql } = require('apollo-server-lambda');
-const {connectToMongoDB, models} = require('../mongoose');
+const {connectToMongoDB, mongoDBStatus, models} = require('../mongoose');
 const {schema} = require('../schema');
 const jwt = require('jsonwebtoken');
 // Set in `environment` of serverless.yml
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
 let db;
+const dbState = ["disconnected", "connected", "connecting", "disconnecting"];
 const server = new ApolloServer({
   schema,
   // By default, the GraphQL Playground interface and GraphQL introspection
@@ -18,10 +19,11 @@ const server = new ApolloServer({
   playground: true,
   introspection: true,
   context: async ({event} )=>{
-    console.log("event.authorizationToken", event.headers);
+    
     const {Authorization} = event.headers;
     let principalId;
     if(Authorization){
+      console.log("event.authorizationToken", event.headers);
       principalId = await authorize(Authorization)
       console.log("principalId", principalId);
     }
@@ -32,13 +34,15 @@ const server = new ApolloServer({
   }
 });
 
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
-  if(db===undefined){
-    console.log("db object is undefined");
-    db = connectToMongoDB();
-  }
+  if(db===undefined || db.readyState !== 1){
+    console.log("db connecting!!");
+    db = await connectToMongoDB();
+  } 
+  console.log("db.readyState", dbState[db.readyState]);
+  
 
   const callbackFilter = function(error, output) {
     if(error) console.error("graphql error!!!", error);
@@ -50,11 +54,18 @@ module.exports.handler = (event, context, callback) => {
     origin: '*',
     credentials: true,
   }});
-
-  return handler(event, context, callbackFilter)
+  const response = await runApolloHandler(event, context, handler);
+  return response;
+  //return handler(event, context, callbackFilter)
 }
 
-//module.exports.handler = server.createHandler();
+function runApolloHandler(event, context, handler) {
+  return new Promise((resolve, reject) => {
+		const callback = (error, body) => (error ? reject(error) : resolve(body));
+
+		handler(event, context, callback);
+	});
+}
 
 function authorize(authorizationToken){
   if(!authorizationToken){

@@ -1,7 +1,6 @@
 var AWS = require("aws-sdk");
 const { s3Config } = require('decompany-app-properties');
-const endpoint = new AWS.Endpoint("s3.us-west-1.amazonaws.com");
-var s3 = new AWS.S3({endpoint: endpoint});
+const s3 = new AWS.S3();
 
 const  bucketName = s3Config.document;
 
@@ -25,17 +24,24 @@ async function getDocumentText(documentId, pageNo){
   console.log(result);
 }
 
-async function getDocumentTextById(documentId){
-  let resultText;
+ function getDocumentTextById(documentId){
   
-  if(!resultText){
-    const textBuffer = await s3.getObject({
+  return new Promise((resolve, reject)=>{
+    const key = 'THUMBNAIL/' + documentId + '/text.json';
+    console.log("getDocumentTextById", bucketName, key)
+    s3.getObject({
       Bucket: bucketName,
-      Key: 'THUMBNAIL/' + documentId + '/text.json'
-    }).promise();
-    resultText = JSON.parse(textBuffer.Body.toString("utf-8"));
-  }
-  return resultText;
+      Key: key
+    }, (err, data)=>{
+      if(err) {
+        reject(err);
+      } else {
+        const resultText = JSON.parse(data.Body.toString("utf-8"));
+        resolve(resultText);
+      }
+    })
+  })
+  
 }
 
 function generateSignedUrl (accountId, documentId, ext) {

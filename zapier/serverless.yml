@@ -22,7 +22,7 @@ provider:
   runtime: nodejs8.10
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
-  region: us-west-1
+  region: ${file(./serverlessConfig.js):region}
   #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
   #apiName: ${self:service.name}-api      # Api Gateway Name
   environment:
@@ -52,11 +52,14 @@ provider:
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
 
 # you can define service wide environment variables here
   #environment:

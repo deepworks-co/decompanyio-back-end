@@ -1,0 +1,131 @@
+{
+    "region": "ap-northeast-2",
+    "vpc": {
+        "securityGroupIds": "sg-06891dc67ef6e8e47",
+        "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
+    },
+    "layer": {
+        "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:5",
+        "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:5"
+    },
+    "mongodb": {
+        "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany"
+    },
+    "s3Config":{
+        "document": "asem-ko-document",
+        "thumbnail": "asem-ko-thumbnail",
+        "profile": "asem-ko-profile",
+        "upload_profile": "asem-ko-upload-profile"
+    },
+    "tables":{
+        "DOCUMENT": "DOCUMENT",
+        "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
+        "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
+        "TRACKING": "TRACKING",
+        "TRACKING_USER": "TRACKING-USER",
+        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
+        "VOTE": "VOTE",
+        "USER": "USER",
+        "SEO_FRIENDLY": "SEO-FRIENDLY",
+        "TOP_TAG": "TOP-TAG",
+        "TOP_TAG_POPULAR": "TOP-TAG-POPULAR",
+        "TOP_TAG_FEATURED": "TOP-TAG-FEATURED",
+        "STAT_PAGEVIEW_DAILY": "STAT-PAGEVIEW-DAILY",
+        "STAT_PAGEVIEW_TOTALCOUNT_DAILY": "STAT-PAGEVIEW-TOTALCOUNT-DAILY",
+        "VERIFY_EMAIL": "VERIFY-EMAIL",
+        "SEND_EMAIL": "SEND-EMAIL",
+        "BOUNTY": "BOUNTY",
+        "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
+        "EVENT_REGISTRY": "EVENT-REGISTRY",
+        "EVENT_BLOCK": "EVENT-BLOCK",
+        "SITEMAP": "SITEMAP",
+        "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
+    },
+    "sqsConfig": {
+        "region": "ap-northeast-2",
+        "queueUrls": {
+            "CONVERT_IMAGE": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-convert-image",
+            "CONVERT_PDF": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-pdf-converter"
+
+        }
+    },
+    "applicationLogAppender": {
+        "enable": false,
+        "region": "ap-northeast-2",
+        "streamName": "TrackingDataStream"
+    },
+    "applicationConfig": {
+        "mainHost": "https://www.polarishare.com",
+        "embedHost": "https://embed.polarishare.com",
+        "activeVoteDays": 7,
+        "activeRewardVoteDays": 7
+    },
+    "sesConfig": {
+        "region": "us-east-1",
+        "sender": "connect@decompany.io",
+        "batchLimit": 14,
+        "templates": {
+            "trackingConfirm": {
+                "title": "Join Polaris Share",
+                "templatePath": "./template/tracking/confirm_email.alpha.html"
+            },
+            "verifyEmail": {
+                "title": "Please verify your email address",
+                "templatePath": "./template/verifyemail/verify_email.html",
+                "verifyUrl": "https://www.polarishare.com/emailverify?code="
+            },
+            "welcomeEmail": {
+                "title": "Welcome to Polaris Share",
+                "templatePath": "./template/welcome/welcome_email.html"
+            }
+        }
+    },
+    "ethereum": {
+        "abis": [
+            {"name": "DocumentRegistry", "path": "./contracts-rinkeby-asem/DocumentRegistry.json"},
+            {"name": "Ballot", "path": "./contracts-rinkeby-asem/Ballot.json"}
+        ],
+        "network": "rinkeby", 
+        "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
+        "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+        "privateKey": {
+            "region": "us-west-1",
+            "bucket": "dev-ca-env",
+            "key": "alpha_enc_prikey"
+        },
+        "index": "4"
+    },
+    "warmupConfig": [{
+        "enable": true,
+        "prefix": "backend-restapis-asem-",
+        "functions": [
+            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
+            {"name": "analyticsList", "aliase": "prod"},
+            {"name": "tagList", "aliase": "prod"},
+            {"name": "accountEthereumSync", "aliase": "prod"},
+            {"name": "profileGet", "aliase": "prod"},
+            {"name": "accountGet", "aliase": "prod"},
+            {"name": "documentList", "concurrency": 5, "aliase": "prod"},
+            {"name": "documentInfo", "concurrency": 5, "aliase": "prod"},
+            {"name": "trackingCollect", "concurrency": 5, "aliase": "prod"},
+            {"name": "trackingList", "aliase": "prod"},
+            {"name": "trackingInfo", "aliase": "prod"}
+        ]
+    }],
+    "oembedConfig": {
+        "host": "https://embed.polarishare.com/",
+        "thumbHost": "https://res.polarishare.com/"
+    },
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://www.polarishare.com",
+        "bucket": "www.polarishare.com",
+        "documentBucket": "alpha-ca-document",
+        "image": "https://res.polarishare.com",
+        "distributionId": "E1UYELY2K59G6Q"
+    },
+    "shortUrlConfig": {
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
+    }
+}

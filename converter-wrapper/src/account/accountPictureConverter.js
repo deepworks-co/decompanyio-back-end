@@ -1,11 +1,7 @@
 'use strict';
 const { s3Config } = require('decompany-app-properties');
 const sharp = require("sharp");
-
-var AWS = require("aws-sdk");
-AWS.config.update({
-  region: "us-west-1"
-});
+const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 
 exports.handler = async (event, context, callback) => {
@@ -32,7 +28,7 @@ async function run(event){
 
     const size = 320;
 
-    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.profile, toPrefix: key}, size);
+    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: "alpha-ca-profile", toPrefix: key}, size);
 
   });
   

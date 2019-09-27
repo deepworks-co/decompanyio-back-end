@@ -16,7 +16,7 @@ describe('documentInfo', () => {
     const event = {
       path: {
         //documentId: "dev-test-ovobik"
-        documentId: "free-ppt-template-3rsjwy"
+        documentId: "functional-programming-in-javascript-chapter-4-s54sg1"
       }
     }
     return wrapped.run(event).then((response) => {

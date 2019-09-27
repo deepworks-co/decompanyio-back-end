@@ -2,6 +2,13 @@
 const { mongodb, tables} = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 module.exports.handler = async (event, context, callback) => {
+    /** Immediate response for WarmUp plugin */
+    if (event.source === 'lambda-warmup') {
+      console.log('WarmUp - Lambda is warm!')
+      return callback(null, 'Lambda is warm!')
+    }
+  
+    
   const promises = event.Records.map((record) =>  {
     const bucket = record.s3.bucket.name;
     const key = record.s3.object.key;

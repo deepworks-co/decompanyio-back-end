@@ -24,10 +24,10 @@ describe('s3DocumentConvertComplete', () => {
         {
           "s3": {
             "bucket": {
-              "name": "dev-ca-document",
+              "name": "asem-ko-document",
             },
             "object": {
-              "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/1200X1200/1"
+              "key": "THUMBNAIL/ce352d3873174318a780a72f9b0ed028/result.txt"
             }
           }
         }
@@ -46,17 +46,26 @@ describe('s3DocumentConvertComplete', () => {
     
     const event = {
       "Records": [
-        
         {
           "s3": {
             "bucket": {
-              "name": "dev-ca-document",
+              "name": "asem-ko-document",
             },
             "object": {
-              "key": "THUMBNAIL/52c130ad55924521a16bb11b044e7f67/result.txt"
+              "key": "THUMBNAIL/98af37649f554903aa9837eff72b1aa0/result.txt"
             }
           }
-        }        
+        },
+        {
+          "s3": {
+            "bucket": {
+              "name": "asem-ko-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/98af37649f554903aa9837eff72b1aa0/1200X1200/1"
+            }
+          }
+        }   
       ]
     }
 

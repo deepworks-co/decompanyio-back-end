@@ -14,16 +14,16 @@ describe('s3DocumentUploadComplete', () => {
 
   
 
-  it('upload complete document ppt 229257c8085145008268cbd2ba146dc5', () => {
+  it('[ASEM] upload complete', () => {
     const event = {
       "Records": [
         {
           "s3": {
             "bucket": {
-              "name": "dev-ca-document"
+              "name": "asem-ko-document"
             },
             "object": {
-              "key": "FILE/google-oauth2|101778494068951192848/229257c8085145008268cbd2ba146dc5.pptx",
+              "key": "FILE/google-oauth2|101778494068951192848/022f3acc6b05484cb787032c81fc304d.pdf",
             }
           }
         },
@@ -32,5 +32,5 @@ describe('s3DocumentUploadComplete', () => {
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(30000);
 });

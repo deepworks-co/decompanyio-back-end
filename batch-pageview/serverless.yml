@@ -20,14 +20,17 @@ service: batch-pageview # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
-  region: us-west-1
+  region: ${file(./serverlessConfig.js):region}
   stage: ${opt:stage, 'dev'}
   vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
   environment:
     stage: ${self:provider.stage}
     region: ${self:provider.region}

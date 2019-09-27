@@ -1,7 +1,6 @@
 'use strict';
 const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region, constants } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
-const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
 const request = require('request');
 
@@ -17,7 +16,7 @@ const QUALITY = 95;
 
 exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
-  console.log(event);
+  
   let results;
   try{
   //console.log("convertCompete Event", JSON.stringify(event));
@@ -25,7 +24,7 @@ exports.handler = async (event, context, callback) => {
   //THUMBNAIL/aaaaa/300X300/1
   //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
     const promises = event.Records.map((record) =>  {
-
+      console.log("record", record);
       const key = record.s3.object.key;
       const bucket = record.s3.bucket.name;
       
@@ -95,24 +94,8 @@ function run(params){
         reject(err);
         
       })
-    } else if("text.json" === filename) {
-        //아무것도 안함
-        resolve("text.json is not working");
-    } else if("1200X1200" === filename){
-      //프리뷰이미지 metadata content-type : image/png
-      //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1
-      convertThumbnail(bucket, key)
-      .then((data)=>{
-        console.log("convertThumbnail success", data);
-        resolve(data)
-      })
-      .catch((err)=>{
-        console.log("convertThumbnail fail", err);
-        reject(err);
-      })
-      
     } else {
-      resolve("not support");
+      resolve({message: "not support", params});
     }
   });
 }

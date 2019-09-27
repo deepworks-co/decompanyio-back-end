@@ -66,3 +66,32 @@ rs.status()
 slave에서 아래 command를 실행한다.
 >rs.slaveOk()
 ```
+
+
+## Backup & Restore
+https://docs.mongodb.com/manual/reference/program/mongodump/
+
+> Backup
+```bash
+mongodump --gzip --out 덤프지정위치 -u아이디 -p비밀번호 --db decompany
+```
+
+mongodump --gzip -udecompany -pdecompany1234 --db decompany --archive=backup.decompany_20190926.gz
+
+> Restory
+
+```bash
+mongorestore --gzip --archive={백업된 giz 파일명} --db decompany
+
+mongorestore --gzip --archive=backup.decompany_20190926.gz --db decompany
+```
+
+> Upload
+```bash
+aws s3 cp backup.decompany_20190926.gz s3://dev-ca-temp
+```
+
+> Download
+```bash
+aws s3 cp s3://dev-ca-temp/backup.decompany_20190926.gz .
+```
