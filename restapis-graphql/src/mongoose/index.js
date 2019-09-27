@@ -10,6 +10,11 @@ function connectToMongoDB(){
   return new Promise((resolve, reject)=>{
     console.log("mongodb connecting!!", mongodb.endpoint)
     mongoose.connect(mongodb.endpoint, {useNewUrlParser: true});
+    
+    if(process.env.local){
+      mongoose.set('debug', true);
+    }
+    
     mongoose.Promise = global.Promise;
     db = mongoose.connection;
     db.id = crypto.randomBytes(32).toString('hex')

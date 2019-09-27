@@ -1,8 +1,8 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { makeExecutableSchema } = require('graphql-tools');
 const { schemaComposer } = require('graphql-compose');
-const {UserDocumentHistory} = require('../mongoose/model')
-
+const {UserDocumentHistory, Document} = require('../mongoose/model')
+const console = require('../common/logger');
 const utc = composeWithMongoose(UserDocumentHistory, {});
 
 
@@ -55,13 +55,31 @@ schemaComposer.Mutation.addNestedFields({
       documentId: 'String!',
     },
     resolve: async (_, { documentId }, context, info) => {
-      const {principalId} = context;
+
+      let {principalId} = context;
       if(!principalId){
         throw new Error("Unauthorized");
       }
-      return await UserDocumentHistory.create({userId: principalId, documentId: documentId});;
+
+      const history = await UserDocumentHistory.findOne({userId: principalId, documentId: documentId});
+      console.log("addHistory", JSON.stringify(history));
+      const doc = await Document.findOne({_id: documentId});
+      if(!doc) {
+        throw new Error("Not Found")
+      }
+      if(history){
+        const r =  await UserDocumentHistory.updateOne({_id: history._id}, { updated: Date.now(), $inc: {refs: 1}});
+        console.log("addHistory updateOne", r);
+      } else {
+        const r = await UserDocumentHistory.create({userId: principalId, documentId: documentId});;
+        console.log("addHistory createOne", r);
+      }
+
+      return {_id: history?history._id:null}
+      
     },
   },
 });
+
 
 module.exports = schemaComposer.buildSchema();
