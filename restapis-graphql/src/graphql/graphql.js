@@ -1,6 +1,6 @@
 'use strict';
 const console = require('../common/logger');
-const { ApolloServer, gql } = require('apollo-server-lambda');
+const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda');
 const {connectToMongoDB, mongoDBStatus, models} = require('../mongoose');
 const {schema} = require('../schema');
 const jwt = require('jsonwebtoken');
@@ -18,19 +18,33 @@ const server = new ApolloServer({
   // the `playground` and `introspection` options must be set explicitly to `true`.
   playground: true,
   introspection: true,
+  debug: true,
+  formatError: (err, data)=>{
+    if(err) console.error(err);
+  },
+  formatResponse: (response, request)=>{
+    //console.log("formatResponse", response);
+
+    //console.log("formatResponse", data);
+  },
+  engine: {
+    rewriteError(err) {
+      console.log("engine error", err);
+      return err;
+    }
+  },
   context: async ({event} )=>{
     
     const {Authorization} = event.headers;
     let principalId;
     if(Authorization){
-      console.log("event.authorizationToken", event.headers);
+      //console.log("event.authorizationToken", event.headers);
       principalId = await authorize(Authorization)
-      console.log("principalId", principalId);
+      //principalId = "google-oauth2|101778494068951192848"
+      console.log("authorized principalId", principalId);
     }
 
-    
-    
-    return {principalId}
+    return {headers: event.headers, principalId}
   }
 });
 
@@ -42,17 +56,18 @@ module.exports.handler = async (event, context, callback) => {
     db = await connectToMongoDB();
   } 
   console.log("db.readyState", dbState[db.readyState]);
+  console.log("stage", process.env.stage)
   
-
+/*
   const callbackFilter = function(error, output) {
     if(error) console.error("graphql error!!!", error);
     output.headers['Access-Control-Allow-Origin'] = '*';
     callback(error, output);
   };
-
+*/
   const handler = server.createHandler({cors: {
     origin: '*',
-    credentials: true,
+    credentials: true
   }});
   const response = await runApolloHandler(event, context, handler);
   return response;
@@ -61,7 +76,14 @@ module.exports.handler = async (event, context, callback) => {
 
 function runApolloHandler(event, context, handler) {
   return new Promise((resolve, reject) => {
-		const callback = (error, body) => (error ? reject(error) : resolve(body));
+		const callback = (error, body) => {
+      if(error){
+        console.log("runApolloHandler Error", error);
+        reject(error)
+      } else {
+        resolve(body);
+      }
+    }
 
 		handler(event, context, callback);
 	});
@@ -83,7 +105,7 @@ function authorize(authorizationToken){
       jwt.verify(tokenValue, AUTH0_CLIENT_PUBLIC_KEY, options, (verifyError, decoded) => {
         if (verifyError) {
           // 401 Unauthorized
-          console.log(`Token invalid. ${verifyError}`);
+          console.error(`Token invalid. ${verifyError}`);
           return reject(new Error("Unauthorized"));
         }
         // is custom authorizer function
@@ -92,7 +114,7 @@ function authorize(authorizationToken){
       });
     } catch (err) {
       console.error('catch error. Invalid token', err);
-      reject(new Error("Unauthorized"));
+      reject(new AuthenticationError("Unauthorized"));
     }
   })
   
