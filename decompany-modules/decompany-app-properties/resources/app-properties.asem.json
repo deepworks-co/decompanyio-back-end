@@ -100,17 +100,30 @@
         "enable": true,
         "prefix": "backend-restapis-asem-",
         "functions": [
-            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "analyticsList", "aliase": "prod"},
-            {"name": "tagList", "aliase": "prod"},
-            {"name": "accountEthereumSync", "aliase": "prod"},
-            {"name": "profileGet", "aliase": "prod"},
-            {"name": "accountGet", "aliase": "prod"},
-            {"name": "documentList", "concurrency": 5, "aliase": "prod"},
-            {"name": "documentInfo", "concurrency": 5, "aliase": "prod"},
-            {"name": "trackingCollect", "concurrency": 5, "aliase": "prod"},
-            {"name": "trackingList", "aliase": "prod"},
-            {"name": "trackingInfo", "aliase": "prod"}
+            {"name": "curatorDocumentList", "concurrency": 1}, 
+            {"name": "analyticsList"},
+            {"name": "tagList"},
+            {"name": "accountEthereumSync"},
+            {"name": "profileGet"},
+            {"name": "accountGet"},
+            {"name": "documentList", "concurrency": 5},
+            {"name": "documentInfo", "concurrency": 5},
+            {"name": "trackingCollect", "concurrency": 5},
+            {"name": "trackingList"},
+            {"name": "trackingInfo"}
+        ]
+    }, 
+    {
+        "enable": true,
+        "region": "us-west-1",
+        "functions": [
+            {"name": "alpha-ssr-pdf", "concurrency": 5}
+        ]
+    }, 
+    {
+        "enable": true,
+        "functions": [
+            {"name": "restapis-graphql-asem-graphql", "concurrency": 5}
         ]
     }],
     "oembedConfig": {
