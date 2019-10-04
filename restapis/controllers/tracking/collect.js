@@ -74,11 +74,15 @@ module.exports.handler = async (event, context, callback) => {
   const expires = new Date(Date.now() + 1000 * 60 * 30);// 30 mins
   const sid = getSid(event.headers)
   const domain = process.env.stage === 'alpha'?"polarishare.com":"decompany.io";
-  const response = JSON.stringify({
-    success: true,
-    message: "ok",
-    user: user
-  })
+  const response = {
+    statusCode: 200,
+    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; Secure;`,
+    body: JSON.stringify({
+      success: true,
+      message: "ok",
+      user: user
+    })
+  }
   return response;
 };
 
@@ -89,7 +93,6 @@ function getSid(header){
 
   return utils.randomId();
 }
-
 
 
 /* 
