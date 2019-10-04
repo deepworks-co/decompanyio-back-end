@@ -12,7 +12,7 @@ describe('trackingCollect', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('no headers', () => {
 
     const event = {
       query: {
@@ -25,8 +25,29 @@ describe('trackingCollect', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
-      expect(response).to.not.be.empty;
+      console.log(JSON.parse(response));
+      expect(JSON.parse(response).message).to.equal("no collecting");
+    });
+  });
+
+  it('headers', () => {
+
+    const event = {
+      headers: {
+        Referer: "Asfdasf"
+      },
+      query: {
+        id: "968de024dd1647f1a7544d9c4b46de48",
+        n: 2,
+        ev: "test",
+        sid: "y6Of_R_8s",
+        cid: "1060212880.1546915423",
+        t: 1561619940891
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(JSON.parse(response));
+      expect(JSON.parse(response).success).to.equal(true);
     });
   });
 });

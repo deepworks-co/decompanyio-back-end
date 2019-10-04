@@ -12,10 +12,10 @@ module.exports.handler = async (event, context, callback) => {
   }
   
   console.log(JSON.stringify(event));
-  const {headers, query} = event;
+  let {headers, query} = event;
   const body = query
 
-  if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
+  if(!headers || !body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
     console.error("tracking error", "parameter is invalid", body);
     return JSON.stringify({
       message: "no collecting"
@@ -37,8 +37,9 @@ module.exports.handler = async (event, context, callback) => {
     delete body.e;
   }
   
+  headers = utils.convertKeysToLowerCase(headers)
 
-  body.referer = headers && headers.Referer?headers.Referer:undefined;
+  body.referer = headers.Referer?headers.Referer:headers.referer;
   body.useragent = headers && headers["User-Agent"]?headers["User-Agent"]:undefined;
   body.xforwardedfor = ips;
   /*
@@ -73,15 +74,11 @@ module.exports.handler = async (event, context, callback) => {
   const expires = new Date(Date.now() + 1000 * 60 * 30);// 30 mins
   const sid = getSid(event.headers)
   const domain = process.env.stage === 'alpha'?"polarishare.com":"decompany.io";
-  const response = {
-    statusCode: 200,
-    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; Secure;`,
-    body: JSON.stringify({
-      success: true,
-      message: "ok",
-      user: user
-    })
-  }
+  const response = JSON.stringify({
+    success: true,
+    message: "ok",
+    user: user
+  })
   return response;
 };
 
@@ -92,6 +89,8 @@ function getSid(header){
 
   return utils.randomId();
 }
+
+
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...
