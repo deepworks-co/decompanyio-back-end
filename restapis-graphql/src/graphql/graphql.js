@@ -16,8 +16,8 @@ const server = new ApolloServer({
   //
   // If you'd like to have GraphQL Playground and introspection enabled in production,
   // the `playground` and `introspection` options must be set explicitly to `true`.
-  playground: true,
-  introspection: true,
+  playground: process.env.stage==='dev'?true:false,
+  introspection: process.env.stage==='dev'?true:false,
   debug: true,
   formatError: (err, data)=>{
     if(err) console.error(err);
