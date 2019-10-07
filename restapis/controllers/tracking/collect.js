@@ -12,10 +12,10 @@ module.exports.handler = async (event, context, callback) => {
   }
   
   console.log(JSON.stringify(event));
-  const {headers, query} = event;
+  let {headers, query} = event;
   const body = query
 
-  if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
+  if(!headers || !body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
     console.error("tracking error", "parameter is invalid", body);
     return JSON.stringify({
       message: "no collecting"
@@ -37,8 +37,9 @@ module.exports.handler = async (event, context, callback) => {
     delete body.e;
   }
   
+  headers = utils.convertKeysToLowerCase(headers)
 
-  body.referer = headers && headers.Referer?headers.Referer:undefined;
+  body.referer = headers.Referer?headers.Referer:headers.referer;
   body.useragent = headers && headers["User-Agent"]?headers["User-Agent"]:undefined;
   body.xforwardedfor = ips;
   /*
@@ -92,6 +93,7 @@ function getSid(header){
 
   return utils.randomId();
 }
+
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...

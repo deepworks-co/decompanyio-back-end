@@ -1,7 +1,7 @@
 'use strict';
 const { region, warmupConfig } = require('decompany-app-properties');
 const aws = require("aws-sdk");
-const lambda = new aws.Lambda({region: region}); 
+
 const WARMUP_PAYLOAD = JSON.stringify({ source: 'lambda-warmup'});
 module.exports.handler = async (event, context, callback) => {
 
@@ -21,6 +21,7 @@ module.exports.handler = async (event, context, callback) => {
 async function warmupService(warmup){
   const {enable, prefix, functions} = warmup;
 
+  const lambda = new aws.Lambda({region: warmup.region?warmup.region:region}); 
   if(enable === false){
     console.log(`Warm Up prefix ${prefix} enable ${enable}`);
     return [];
