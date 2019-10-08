@@ -1,0 +1,25 @@
+{
+  "name": "restapis-watllet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "sls deploy",
+    "deploy:asem": "sls deploy -s asem"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
+    "decompany-wallet": "file:../decompany-modules/decompany-wallet",
+    "jsonwebtoken": "^8.5.1",
+    "mongojs": "^2.6.0"
+  },
+  "devDependencies": {
+    "serverless-mocha-plugin": "^1.11.0",
+    "serverless-offline": "^5.12.0",
+    "serverless-plugin-split-stacks": "^1.9.1",
+    "serverless-prune-plugin": "^1.4.1"
+  }
+}
