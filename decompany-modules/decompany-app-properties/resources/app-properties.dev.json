@@ -40,7 +40,8 @@
         "EVENT_BLOCK": "EVENT-BLOCK",
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
-        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
+        "WALLET_USER": "WALLET-USER"
     },
     "sqsConfig": {
         "region": "us-west-1",

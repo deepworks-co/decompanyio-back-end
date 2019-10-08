@@ -2,8 +2,8 @@
 
 const mongojs = require('mongojs');
 
-var MongoWapperSingletonInstance = null;
-module.exports = class MongoWapper {
+let MongoWapperSingletonInstance = null;
+module.exports = class MongoWrapper {
 
   constructor(connectionString) {
     if(MongoWapperSingletonInstance==null){
@@ -20,7 +20,7 @@ module.exports = class MongoWapper {
       this.db = mongojs(this.connectionString);
       MongoWapperSingletonInstance = this;
       this.db.on('error', function (err) {
-          console.log('database error', err)
+        console.log('database error', err)
       })
       
       this.db.on('connect', function () {
@@ -28,7 +28,7 @@ module.exports = class MongoWapper {
       })
       //console.log("MongoWapper constructor runnging!!", this.connectionString);
     }
-
+    
   }
 
   close() {

@@ -1,0 +1,19 @@
+{
+  "name": "decompany-wallet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.543.0",
+    "decompany-app-properties": "file:../decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-common-utils",
+    "ethereumjs-tx": "^2.1.1",
+    "rxjs": "^6.5.3",
+    "web3": "^1.2.1"
+  }
+}
