@@ -55,14 +55,7 @@ docker build -t app .
 
   ```
 
-개발용 interactive 모드
 
-```shell
-docker run -it --rm \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
--v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/po-converter-library_centos_x64_20190521:/converter \
--p 8080:8080 --name pdf-converter decompany/pdf-converter /bin/bash
-```
 
 background 실행하기
 
