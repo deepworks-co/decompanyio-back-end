@@ -16,7 +16,7 @@ describe('documentInfo', () => {
     const event = {
       path: {
         //documentId: "dev-test-ovobik"
-        documentId: "functional-programming-in-javascript-chapter-4-s54sg1"
+        documentId: "test-xaxg51"
       }
     }
     return wrapped.run(event).then((response) => {
