@@ -12,9 +12,20 @@ describe('createAccount', () => {
     done();
   });
 
-  it('Create Externally Owned Address (EOA)', () => {
+  it('Create Externally Owned Address (EOA), google-oauth2|101778494068951192848', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848"
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    }).catch((err)=>{
+      console.log(err);
+    });
+  });
+
+  it('Create Externally Owned Address (EOA), linkedin|HpIQ_mxN0N', () => {
+    const event = {
+      principalId: "linkedin|HpIQ_mxN0N"
     }
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;

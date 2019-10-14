@@ -72,8 +72,15 @@ package:
     - test/**
     
 functions:
-  jwt:
-    handler: src/authorizer/jwt.handler
+  transferDeck:
+    handler: src/deck/transfer.handler
+    events:
+      - http: 
+          method: post
+          path: /api/deck/transfer
+          cors: true
+          integration: lambda
+          authorizer: jwt
 
   createAccount:
     handler: src/account/create.handler
@@ -85,7 +92,8 @@ functions:
           integration: lambda
           authorizer: jwt
   
-
+  jwt:
+    handler: src/authorizer/jwt.handler
 # you can add CloudFormation resource templates here
 resources:
   Resources:

@@ -32,4 +32,9 @@ npm install rxjs
 npm install ethereumjs-tx
 ```
 
+## create function
+
+```bash
 sls create function -f createAccount --handler src/account/create.handler --httpEvent "post /api/account/create"
+sls create function -f transferDeck --handler src/deck/transfer.handler --httpEvent "post /api/deck/transfer"
+```
