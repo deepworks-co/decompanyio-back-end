@@ -6,6 +6,7 @@ let MongoWapperSingletonInstance = null;
 module.exports = class MongoWrapper {
 
   constructor(connectionString) {
+
     if(MongoWapperSingletonInstance==null){
       this.connectionString = connectionString;
       this.init();
@@ -15,7 +16,7 @@ module.exports = class MongoWrapper {
   }
 
   init() {
-
+        
     if(MongoWapperSingletonInstance==null){
       this.db = mongojs(this.connectionString);
       MongoWapperSingletonInstance = this;
@@ -24,11 +25,19 @@ module.exports = class MongoWrapper {
       })
       
       this.db.on('connect', function () {
-          console.log('database connected ' + JSON.stringify(this));
+          console.log('database connect ' + JSON.stringify(this));
+      })
+
+      this.db.on('close', function () {
+        console.log('database close ' + JSON.stringify(this));
       })
       //console.log("MongoWapper constructor runnging!!", this.connectionString);
     }
     
+  }
+
+  status() {
+    console.log(this.db);
   }
 
   close() {

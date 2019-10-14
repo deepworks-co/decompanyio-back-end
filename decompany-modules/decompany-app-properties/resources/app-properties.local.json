@@ -9,7 +9,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany?connectTimeoutMS=30000"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -96,6 +96,18 @@
         },
         "index": "931",
         "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
+    },
+    "walletConfig": {
+        "abis": [
+            {"name": "Deck", "path": "../../abi/asem/ERC20.json"},
+            {"name": "Ballot", "path": "../../abi/asem/Ballot.json"},
+            {"name": "Registry", "path": "../../abi/asem/Registry.json"},
+            {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
+        ],
+        "network": "mygeth", 
+        "providerUrl" : "https://geth.polarishare.com",
+        "index": "931",
+        "kmsId": "alias/asem-ko-owa-enc-key"
     },
     "warmupConfig": [{
         "enable": false,

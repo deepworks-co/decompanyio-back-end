@@ -98,6 +98,18 @@
         "index": "931",
         "kmsId": "alias/asem-ko-owa-enc-key"
     },
+    "walletConfig": {
+        "abis": [
+            {"name": "Deck", "path": "./abi/asem/ERC20.json"},
+            {"name": "Ballot", "path": "./abi/asem/Ballot.json"},
+            {"name": "Registry", "path": "./abi/asem/Registry.json"},
+            {"name": "RewardPool", "path": "./abi/asem/RewardPool.json"}
+        ],
+        "network": "mygeth", 
+        "providerUrl" : "https://geth.polarishare.com",
+        "index": "931",
+        "kmsId": "alias/asem-ko-owa-enc-key"
+    },
     "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-asem-",

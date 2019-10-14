@@ -1,29 +1,29 @@
 
 'use strict';
 const Web3 = require('web3');
-const {ethereum, mongodb, tables, region} = require("decompany-app-properties");
+const {walletConfig, mongodb, tables, region} = require("decompany-app-properties");
 const {MongoWrapper, kms} = require("decompany-common-utils");
-
-const web3 = new Web3(ethereum.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
+const web3 = new Web3(walletConfig.providerUrl);
 module.exports = (params) => {
   
   const {principalId} = params;
 
+  console.log("mongo wrapper info :", mongo);
+
   return new Promise((resolve, reject)=>{
 
-    isNotExistAccount({
+    isNotExistWalletAccount({
       principalId
     })
     .then((user)=>{
       return createAccount();
     }).then((data)=>{
       
-      return encrypt(
-        {
+      return encrypt({
           region,
-          kmsId: ethereum.kmsId,
+          kmsId: walletConfig.kmsId,
           createdAccount: data
         }
       );
@@ -31,12 +31,9 @@ module.exports = (params) => {
     }).then((data)=>{
       
       return saveAccount(Object.assign(data, {principalId}))
-    }).then((data)=>{
-      
-      mongo.close();
+    }).then((data)=>{      
       resolve(data);
     }).catch((err)=>{
-      mongo.close();
       reject(err);
     })
 
@@ -44,19 +41,19 @@ module.exports = (params) => {
 
 }
 
-function isNotExistAccount(params){
+function isNotExistWalletAccount(params){
 
   if(params.principalId){
     return new Promise(async (resolve, reject)=>{
       try{
         const user = await mongo.findOne(tables.WALLET_USER, {_id: params.principalId});
         if(user){
-          reject(new Error("User is exists"));
+          reject(new Error("User's wallet account is exists"));
         } else {
           resolve({exists:true});
         }
       } catch(err){
-        throw err;
+        reject(err);
       }
 
     })
@@ -74,7 +71,7 @@ function createAccount(){
     if(result){
       resolve(result);
     } else {
-      reject(new Error("createAccount error(OWA)"))
+      reject(new Error("createAccount error(EOA)"))
     }
     
 
