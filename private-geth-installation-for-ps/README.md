@@ -112,7 +112,7 @@ geth attach ipc:~/.ethereum/geth.ipc
 ## Transcation Test (Send Ether)
 
 ```bash
-personal.unlockAccount("0x55735115f06986e6fa2561976ebf55d29eec4212", "infra1122!")
+personal.unlockAccount("0x55735115f06986e6fa2561976ebf55d29eec4212", "******")
 eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x0d720e25e424ca6e4a7dcccddae136db2bc44639", value: web3.toWei(100, "ether")})
 eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x4Ee128892469e7962e6E617727cb99C59525D7D2", value: web3.toWei(100, "ether")}) //for jay
 eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x4add6551af429c71eB64e0494BC5E88334E94948", value: web3.toWei(1000, "ether")}) //for chris
