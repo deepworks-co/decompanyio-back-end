@@ -4,7 +4,6 @@ const {MongoWrapper, kms} = require("decompany-common-utils");
 const WalletWrapper = require("./src/lib/WalletWrapper");
 
 const mongo = new MongoWrapper(mongodb.endpoint);
-console.log("mongo init!!", mongo)
 const wallet = new WalletWrapper();
 
 const context = {mongo, wallet}
