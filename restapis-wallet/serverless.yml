@@ -75,11 +75,23 @@ functions:
   getBalance:
     handler: src/account/balance.handler
     events:
-      - http: get /account/balance
+      - http: 
+          method: get
+          path: /account/balance
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          
   requestGas:
     handler: src/gas/request.handler
     events:
-      - http: post /api/gas/request
+      - http: 
+          method: post
+          path: /api/gas/request
+          cors: true
+          integration: lambda
+          authorizer: jwt
+
   transferDeck:
     handler: src/deck/transfer.handler
     events:

@@ -5,7 +5,8 @@
   "main": "handler.js",
   "scripts": {
     "deploy": "sls deploy",
-    "deploy:asem": "sls deploy -s asem"
+    "deploy:asem": "sls deploy -s asem",
+    "deploy:dev": "sls deploy -s dev"
   },
   "author": "",
   "license": "ISC",
