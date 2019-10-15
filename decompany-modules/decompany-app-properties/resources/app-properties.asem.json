@@ -88,7 +88,7 @@
             {"name": "Ballot", "path": "./contracts-rinkeby-dev/Ballot.json"}
         ],
         "network": "mygeth", 
-        "providerUrl" : "https://geth.polarishare.com",
+        "providerUrl" : "https://geth-internal.polarishare.com",
         "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
         "privateKey": {
             "region": "us-west-1",
