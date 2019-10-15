@@ -72,6 +72,14 @@ package:
     - test/**
     
 functions:
+  getBalance:
+    handler: src/account/balance.handler
+    events:
+      - http: get /account/balance
+  requestGas:
+    handler: src/gas/request.handler
+    events:
+      - http: post /api/gas/request
   transferDeck:
     handler: src/deck/transfer.handler
     events:

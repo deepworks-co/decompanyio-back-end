@@ -37,4 +37,6 @@ npm install ethereumjs-tx
 ```bash
 sls create function -f createAccount --handler src/account/create.handler --httpEvent "post /api/account/create"
 sls create function -f transferDeck --handler src/deck/transfer.handler --httpEvent "post /api/deck/transfer"
+sls create function -f requestGas --handler src/gas/request.handler --httpEvent "post /api/gas/request"
+sls create function -f getBalance --handler src/account/balance.handler --httpEvent "get /account/balance"
 ```

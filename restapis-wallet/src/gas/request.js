@@ -13,11 +13,11 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const {principalId} = event;
-  const account = await wallet.newAccount({principalId});
+  const result = await wallet.requestGas({principalId});
 
   const response = JSON.stringify({
-    success: true, 
-    account: account
+    success: true,
+    result: result
   })
   
   return response;

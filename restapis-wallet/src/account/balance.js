@@ -12,12 +12,18 @@ module.exports.handler = async (event, context, callback) => {
     });
   }
 
+  context.callbackWaitsForEmptyEventLoop = false;
+
   const {principalId} = event;
-  const account = await wallet.newAccount({principalId});
+  const balance = await wallet.getBalance({principalId});
+
+  if(!balance){
+    throw new Error("get balnace error");
+  }
 
   const response = JSON.stringify({
     success: true, 
-    account: account
+    balance: balance
   })
   
   return response;
