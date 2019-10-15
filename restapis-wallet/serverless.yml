@@ -77,11 +77,11 @@ functions:
     events:
       - http: 
           method: get
-          path: /account/balance
+          path: /api/account/balance
           cors: true
           integration: lambda
           authorizer: jwt
-          
+
   requestGas:
     handler: src/gas/request.handler
     events:
