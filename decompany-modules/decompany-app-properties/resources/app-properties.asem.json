@@ -100,10 +100,10 @@
     },
     "walletConfig": {
         "abis": [
-            {"name": "Deck", "path": "./abi/asem/ERC20.json"},
-            {"name": "Ballot", "path": "./abi/asem/Ballot.json"},
-            {"name": "Registry", "path": "./abi/asem/Registry.json"},
-            {"name": "RewardPool", "path": "./abi/asem/RewardPool.json"}
+            {"name": "Deck", "path": "../../abi/asem/ERC20.json"},
+            {"name": "Ballot", "path": "../../abi/asem/Ballot.json"},
+            {"name": "Registry", "path": "../../abi/asem/Registry.json"},
+            {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
         ],
         "network": "mygeth", 
         "providerUrl" : "https://geth.polarishare.com",
