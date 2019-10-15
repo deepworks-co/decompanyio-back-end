@@ -84,19 +84,18 @@
     },
     "ethereum": {
         "abis": [
-            {"name": "DocumentRegistry", "path": "./contracts-rinkeby-dev/DocumentRegistry.json"},
-            {"name": "Ballot", "path": "./contracts-rinkeby-dev/Ballot.json"}
+            {"name": "DocumentRegistry", "path": "./contracts-rinkeby-alpha/DocumentRegistry.json"},
+            {"name": "Ballot", "path": "./contracts-rinkeby-alpha/Ballot.json"}
         ],
-        "network": "mygeth", 
-        "providerUrl" : "https://geth-internal.polarishare.com",
+        "network": "rinkeby", 
+        "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
         "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
         "privateKey": {
             "region": "us-west-1",
             "bucket": "dev-ca-env",
             "key": "alpha_enc_prikey"
         },
-        "index": "931",
-        "kmsId": "alias/asem-ko-owa-enc-key"
+        "index": "4"
     },
     "walletConfig": {
         "abis": [
@@ -106,7 +105,7 @@
             {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
         ],
         "network": "mygeth", 
-        "providerUrl" : "https://geth.polarishare.com",
+        "providerUrl" : "https://geth-internal.polarishare.com",
         "index": "931",
         "kmsId": "alias/asem-ko-owa-enc-key"
     },
