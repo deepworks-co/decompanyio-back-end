@@ -81,7 +81,13 @@ functions:
           cors: true
           integration: lambda
           authorizer: jwt
-
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
   requestGas:
     handler: src/gas/request.handler
     events:
@@ -91,7 +97,13 @@ functions:
           cors: true
           integration: lambda
           authorizer: jwt
-
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
   transferDeck:
     handler: src/deck/transfer.handler
     events:
@@ -101,7 +113,13 @@ functions:
           cors: true
           integration: lambda
           authorizer: jwt
-
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
   createAccount:
     handler: src/account/create.handler
     events:
@@ -111,7 +129,13 @@ functions:
           cors: true
           integration: lambda
           authorizer: jwt
-  
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')  
   jwt:
     handler: src/authorizer/jwt.handler
 # you can add CloudFormation resource templates here
