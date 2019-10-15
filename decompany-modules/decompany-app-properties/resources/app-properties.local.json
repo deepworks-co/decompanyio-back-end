@@ -9,7 +9,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -107,7 +107,7 @@
         "network": "mygeth", 
         "providerUrl" : "https://geth.polarishare.com",
         "index": "931",
-        "kmsId": "alias/asem-ko-owa-enc-key"
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
     },
     "warmupConfig": [{
         "enable": false,

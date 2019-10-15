@@ -2,19 +2,16 @@
 'use strict';
 const Web3 = require('web3');
 const {walletConfig, mongodb, tables, region} = require("decompany-app-properties");
-const {MongoWrapper, kms} = require("decompany-common-utils");
-const mongo = new MongoWrapper(mongodb.endpoint);
+const {kms} = require("decompany-common-utils");
 
 const web3 = new Web3(walletConfig.providerUrl);
-module.exports = (params) => {
-  
+module.exports = (context, params) => {
+  const {wallet, mongo} = context;
   const {principalId} = params;
-
-  console.log("mongo wrapper info :", mongo);
 
   return new Promise((resolve, reject)=>{
 
-    isNotExistWalletAccount({
+    isNotExistWalletAccount(mongo, {
       principalId
     })
     .then((user)=>{
@@ -30,7 +27,7 @@ module.exports = (params) => {
 
     }).then((data)=>{
       
-      return saveAccount(Object.assign(data, {principalId}))
+      return saveAccount(mongo, Object.assign(data, {principalId}))
     }).then((data)=>{      
       resolve(data);
     }).catch((err)=>{
@@ -41,7 +38,7 @@ module.exports = (params) => {
 
 }
 
-function isNotExistWalletAccount(params){
+function isNotExistWalletAccount(mongo, params){
 
   if(params.principalId){
     return new Promise(async (resolve, reject)=>{
@@ -98,7 +95,7 @@ function encrypt(params) {
   
 }
 
-function saveAccount(params) {
+function saveAccount(mongo, params) {
   const {principalId, address, base64EncryptedEOA} = params;
   return new Promise((resolve, reject)=>{
 

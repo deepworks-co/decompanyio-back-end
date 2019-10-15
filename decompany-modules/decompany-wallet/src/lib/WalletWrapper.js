@@ -53,11 +53,22 @@ module.exports = class WalletWapper {
     }
 
   }
+
+  async sendGas(sender, receiver, ether) {
+    console.log("sendGas", {sender, receiver, ether});
+
+    const sendGasAmount = this.web3.utils.toWei(ether + "", "ether");
+
+    const rawTransaction = await this.generationRawTransaction({senderAddress: sender.address, toAddress: receiver.address, ether: sendGasAmount});
+
+    return this.sendTransaction(sender, rawTransaction);
+  }
+
   /**
    * @description deck transfer
-   * @param  {} documentId
-   * @param  {} date
-   * @param  {} confirmPageview
+   * @param  {} sender
+   * @param  {} recipient
+   * @param  {} deck
    */
   async transferDeck(sender, recipient, deck) {
     console.log("transferDeck", {sender, recipient, deck});
@@ -67,19 +78,27 @@ module.exports = class WalletWapper {
     const transferMethod = Deck.methods.transfer(recipient.address, deckAmount);
     const contractAddress = this.contractMap[contractName].address;
 
-    const rawTransaction = await this.generationRawTransaction(sender.address, contractAddress, transferMethod);
+    const rawTransaction = await this.generationRawTransaction({senderAddress: sender.address, toAddress: contractAddress, method: transferMethod});
 
     return this.sendTransaction(sender, rawTransaction);
   }
 
-  async generationRawTransaction(senderAddress, contractAddress, method) {
+  async generationRawTransaction(params) {
 
-    const estimateGas = await method.estimateGas({
-      from: senderAddress
-    });
-    
-    const gasLimit = Math.round(estimateGas);
-
+    const {senderAddress, toAddress, method, ether} = params
+    let gasLimit = 0;
+    if(method){
+      const estimateGas = await method.estimateGas({
+        from: senderAddress
+      });
+      gasLimit = Math.round(estimateGas);
+    } else {
+      const block = await this.web3.eth.getBlock("latest");
+      console.log("latest block", block);
+      gasLimit = block.gasLimit;
+      
+    }
+    console.log("gasLimit", gasLimit);
     const gasPrice = await this.web3.eth.getGasPrice();
 
     const nonce = await this.web3.eth.getTransactionCount(senderAddress);
@@ -88,9 +107,9 @@ module.exports = class WalletWapper {
       "nonce": this.web3.utils.toHex(nonce),
       "gasPrice": this.web3.utils.toHex(gasPrice),
       "gasLimit": this.web3.utils.toHex(gasLimit),      
-      "to": contractAddress,
-      "value":"0x0",      //ether!!
-      "data": method.encodeABI()
+      "to": toAddress,
+      "value": ether?this.web3.utils.toHex(ether):"0x0",      //ether!!
+      "data": method?method.encodeABI():undefined
     }
     console.log("rawTransaction", {rawTransaction});
 
@@ -100,9 +119,8 @@ module.exports = class WalletWapper {
    * @description transaction을 설정된 privatekey를 통하여 서명한뒤 infura로 보낸다.
    *              내부 node를 이용할경우 web3.eth.sendTransaction 이용 가능
    *              현재 상태에서는 transactionHash를 리턴하면 종료된다. (첫 응답)
-   * @param  {} documentId
-   * @param  {} date
-   * @param  {} confirmPageview
+   * @param  {} sender
+   * @param  {} rawTransaction
    */
   sendTransaction(sender, rawTransaction) {
     console.log("sendTransaction", sender, rawTransaction);
@@ -110,10 +128,14 @@ module.exports = class WalletWapper {
       if(!sender.privateKey){
         reject(new Error("sender privateKey is undefined"));
       }
+
+      if(!rawTransaction){
+        reject(new Error("rawTransaction is undefined"));
+      }
       
       //creating tranaction via ethereumjs-tx     
       const transaction = new Transaction(rawTransaction);
-      console.log(transaction);
+      //console.log(transaction);
 
       //signing transaction with private key
       transaction.sign(sender.privateKey);
@@ -121,20 +143,20 @@ module.exports = class WalletWapper {
       this.web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
       .once('transactionHash', function(hash){
         console.log("transactionHash", hash);
-        resolve({success: true, transactionHash: hash});
+        //resolve({success: true, transactionHash: hash});
       }).once('receipt', function(receipt){
         console.log("receipt", receipt);
         resolve(receipt);
       }).on('confirmation', function(confNumber, receipt){
         console.log("confirmation", {confNumber, receipt});
-        resolve({confNumber, receipt});
+        //resolve({confNumber, receipt});
       }).on('error', function(error){
         console.log("sendTransaction error", error);
         reject({success: false, error: error});
       }).then(function(receipt){
         // will be fired once the receipt is mined
-        console.log("receipt", receipt);
-        resolve(receipt);
+        console.log("complete", receipt);
+        //resolve(receipt);
       });
     });
     

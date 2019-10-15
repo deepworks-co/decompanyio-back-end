@@ -6,48 +6,71 @@ let MongoWapperSingletonInstance = null;
 module.exports = class MongoWrapper {
 
   constructor(connectionString) {
-
     if(MongoWapperSingletonInstance==null){
       this.connectionString = connectionString;
-      this.init();
-    }
+      this.connect();
+      this.id = Math.random().toString(36).substring(7);
+      //console.log("connect", MongoWapperSingletonInstance);
+      
+    } 
 
     return MongoWapperSingletonInstance;
   }
 
-  init() {
+  connect() {
         
     if(MongoWapperSingletonInstance==null){
+      
       this.db = mongojs(this.connectionString);
       MongoWapperSingletonInstance = this;
-      this.db.on('error', function (err) {
-        console.log('database error', err)
+
+      this.db.on('error', function(err){
+        console.error("mongo connection error", err);
+      })
+      /*
+      db.on('connect', function(){
+        console.log("mongo connect");
       })
       
-      this.db.on('connect', function () {
-          console.log('database connect ' + JSON.stringify(this));
-      })
 
-      this.db.on('close', function () {
-        console.log('database close ' + JSON.stringify(this));
+      db.on('close', function(args){
+        console.log("close", args);
+        MongoWapperSingletonInstance = null;
       })
-      //console.log("MongoWapper constructor runnging!!", this.connectionString);
+      */
+    } else {
+      console.log("MongoWapperSingletonInstance is not null", MongoWapperSingletonInstance)
+    }
+
+
+  }
+
+  status() {
+    console.log("status this", this);
+    console.log("status MongoWapperSingletonInstance", MongoWapperSingletonInstance);
+
+    if(this.db){
+      return {connected: true}
+    } else {
+      return {connected: false}
     }
     
   }
 
-  status() {
-    console.log(this.db);
+  reconnect() {
+    if(!MongoWapperSingletonInstance || MongoWapperSingletonInstance === null){
+      this.connect();
+    }
   }
 
   close() {
-    //console.log("mongodb close()");
+    //console.log("close()", MongoWapperSingletonInstance);
     this.db.close();
     MongoWapperSingletonInstance = null;
   }
 
   findOne(collection, query, projection) {
-
+    //this.status();
     return new Promise((resolve, reject) => {
       this.db.collection(collection).findOne(query, projection, (err, doc)=>{
         if(err){
@@ -65,8 +88,7 @@ module.exports = class MongoWrapper {
   }
 
   find(collection, query, pageNo = 1, pageSize = 50, sort = {created : -1 /*decending*/ }) {
-    this.init();
-
+    
     return new Promise((resolve, reject) => {
 
       const skip = !isNaN(pageNo) && pageNo > 1? ((pageNo - 1) * pageSize) : 0;

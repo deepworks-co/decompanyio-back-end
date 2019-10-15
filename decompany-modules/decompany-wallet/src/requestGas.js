@@ -4,40 +4,33 @@ const {walletConfig, mongodb, tables, region} = require("decompany-app-propertie
 const {MongoWrapper, kms} = require("decompany-common-utils");
 const WalletWrapper = require("./lib/WalletWrapper");
 
-const mongo = new MongoWrapper(mongodb.endpoint);
-const wallet = new WalletWrapper();
 
+const REQUEST_ETHER = 1;//ether
+const GAS_SENDER_ID = "miner"
 module.exports = (context, params) => {
   const {wallet, mongo} = context;
-  const {deck, principalId, to} = params;
+  const {principalId} = params;
   console.log("params", params);
 
-  getWalletAccount(mongo, principalId)
-  .then(async (sender)=>{
-    console.log("get sender", sender);
-    const recipient = await getWalletAccount(mongo, to);
-    return {sender, recipient};
+  getWalletAccount(mongo, GAS_SENDER_ID)
+  .then(async (miner)=>{
+    console.log("get miner", miner);
+    const requester = await getWalletAccount(mongo, principalId);
+    return {miner, requester}
   })
   .then(async (data)=>{
-    const {sender} = data;
-    const balance = await wallet.getDeckBalance(sender.address)
-    console.log("sender balance ", sender.address, balance);
-    return data;
-  })
-  .then(async (data)=>{
-
-    const {sender} = data;
-    const privateKey = await decryptPrivateKey(sender)
-    
-    data.deck = params.deck;
-    data.privateKey = privateKey;
-    return transferDeck(wallet, data)
+    const {miner, requester} = data;
+    const privateKey = await decryptPrivateKey(miner);
+    return {miner, requester, privateKey}
   })
   .then((data)=>{
-    console.log("transfer complete", data);
+    return sendGas(wallet, data);
+  })
+  .then((data)=>{
+    console.log(data);
   })
   .catch((err)=>{
-    console.log("deck transfer error", err);
+    console.error("reqest gas error", err);
   })
 }
 
@@ -56,7 +49,7 @@ function getWalletAccount(mongo, userId){
 
 
 function decryptPrivateKey(walletUser) {
-  const {principalId, address, base64EncryptedEOA} = walletUser;
+  const {base64EncryptedEOA} = walletUser;
   return new Promise((resolve, reject)=>{
     const encryptedData = Buffer.from(base64EncryptedEOA, 'base64');
     kms.decrypt(region, encryptedData)
@@ -74,17 +67,17 @@ function decryptPrivateKey(walletUser) {
   
 }
 
-function transferDeck(wallet, params) {
+function sendGas(wallet, params) {
 
-  const {sender, recipient, privateKey, deck} = params;
+  const {miner, requester, privateKey} = params;
   
-  return wallet.transferDeck(
+  return wallet.sendGas(
     {
-      address: sender.address, 
+      address: miner.address, 
       privateKey
     }, {
-      address: recipient.address
+      address: requester.address
     }, 
-    deck);
+    REQUEST_ETHER);
 }
 
