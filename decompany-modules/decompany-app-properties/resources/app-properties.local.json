@@ -105,7 +105,7 @@
             {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
         ],
         "network": "mygeth", 
-        "providerUrl" : "https://geth.polarishare.com",
+        "providerUrl" : "http://ec2-54-67-107-190.us-west-1.compute.amazonaws.com:8545",
         "index": "931",
         "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
     },

@@ -96,6 +96,18 @@
         },
         "index": "4"
     },
+    "walletConfig": {
+        "abis": [
+            {"name": "Deck", "path": "../../abi/asem/ERC20.json"},
+            {"name": "Ballot", "path": "../../abi/asem/Ballot.json"},
+            {"name": "Registry", "path": "../../abi/asem/Registry.json"},
+            {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
+        ],
+        "network": "mygeth", 
+        "providerUrl" : "http://ec2-54-67-107-190.us-west-1.compute.amazonaws.com:8545",
+        "index": "931",
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
+    },
     "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-dev-",
