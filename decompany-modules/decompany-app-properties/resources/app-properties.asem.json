@@ -119,9 +119,10 @@
             {"name": "accountEthereumSync"},
             {"name": "profileGet"},
             {"name": "accountGet"},
-            {"name": "documentList", "concurrency": 5},
-            {"name": "documentInfo", "concurrency": 5},
-            {"name": "trackingCollect", "concurrency": 5},
+            {"name": "documentList", "concurrency": 2},
+            {"name": "documentInfo", "concurrency": 2},
+            {"name": "documentMeta", "concurrency": 2},
+            {"name": "trackingCollect", "concurrency": 2},
             {"name": "trackingList"},
             {"name": "trackingInfo"}
         ]
@@ -130,13 +131,13 @@
         "enable": true,
         "region": "us-west-1",
         "functions": [
-            {"name": "alpha-ssr-pdf", "concurrency": 5}
+            {"name": "alpha-ssr-pdf", "concurrency": 2}
         ]
     }, 
     {
         "enable": true,
         "functions": [
-            {"name": "restapis-graphql-asem-graphql", "concurrency": 5}
+            {"name": "restapis-graphql-asem-graphql", "concurrency": 2}
         ]
     }],
     "oembedConfig": {
