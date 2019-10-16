@@ -11,12 +11,27 @@ describe('documentInfo', () => {
   before((done) => {
     done();
   });
-
-  it('implement tests here', () => {
+/*
+  it('Get Document Doc', () => {
     const event = {
       path: {
         //documentId: "dev-test-ovobik"
         documentId: "test-xaxg51"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log("response");
+      //console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+*/
+  it('FAIL_CONVERT Doc', () => {
+    const event = {
+      path: {
+        //documentId: "dev-test-c3nkml"
+        documentId: "dev-test-kdhkfe"
       }
     }
     return wrapped.run(event).then((response) => {

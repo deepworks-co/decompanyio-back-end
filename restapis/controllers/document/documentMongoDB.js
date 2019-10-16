@@ -198,7 +198,7 @@ module.exports = {
         }
       }
     ]
-    console.log(JSON.stringify(queryPipeline));
+    //console.log(JSON.stringify(queryPipeline));
     document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
     return document[0];
