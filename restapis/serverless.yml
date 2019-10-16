@@ -72,6 +72,11 @@ package:
     - test/**
     
 functions:
+  preHook:
+    handler: deploy/handler.pre
+  postHook:
+    handler: deploy/handler.post
+    
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
