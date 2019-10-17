@@ -12,7 +12,8 @@ module.exports.handler = async (event, context, callback) => {
     });
   }
   context.callbackWaitsForEmptyEventLoop = false;
-  const {principalId, to, deck} = event;
+  const {principalId, body} = event;
+  const {to, deck} = body;
   try{
     const result = await wallet.transferDeck({principalId, deck, to});
 

@@ -15,8 +15,10 @@ describe('transferDeck', () => {
   it('implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
-      to: "linkedin|HpIQ_mxN0N",
-      deck: 0.1
+      body: {
+        to: "linkedin|HpIQ_mxN0N",
+        deck: 0.1
+      }
     }
     return wrapped.run(event).then((response) => {
       console.log(response)

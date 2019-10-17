@@ -7,6 +7,11 @@ module.exports = (context, params) => {
   const {wallet, mongo} = context;
   const {deck, principalId, to} = params;
 
+  if(!deck || !to){
+    throw new Error(`parameters is not valid`);
+  }
+
+
   return new Promise((resolve, reject)=>{
     getWalletAccount(mongo, principalId)
     .then(async (sender)=>{
@@ -24,7 +29,7 @@ module.exports = (context, params) => {
   
       const {sender, recipient} = data;
       const privateKey = await decryptPrivateKey(sender)
-
+      console.log("transferDeck", data);
       return transferDeck(wallet, {sender, recipient, privateKey, deck})
     })
     .then((data)=>{
@@ -44,7 +49,8 @@ function getWalletAccount(mongo, userId){
   return new Promise((resolve, reject)=>{
     mongo.findOne(tables.WALLET_USER, {_id: userId})
     .then((data)=>{
-      resolve(data);
+      if(data) resolve(data);
+      else reject(new Error(`${userId} is not exists`));
     })
     .catch((err)=>{
       reject(err);
