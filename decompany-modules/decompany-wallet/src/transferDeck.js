@@ -1,44 +1,44 @@
 'use strict';
 
-const {walletConfig, mongodb, tables, region} = require("decompany-app-properties");
-const {MongoWrapper, kms} = require("decompany-common-utils");
-const WalletWrapper = require("./lib/WalletWrapper");
-
-const mongo = new MongoWrapper(mongodb.endpoint);
-const wallet = new WalletWrapper();
+const {tables, region} = require("decompany-app-properties");
+const {kms} = require("decompany-common-utils");
 
 module.exports = (context, params) => {
   const {wallet, mongo} = context;
   const {deck, principalId, to} = params;
-  console.log("params", params);
 
-  getWalletAccount(mongo, principalId)
-  .then(async (sender)=>{
-    console.log("get sender", sender);
-    const recipient = await getWalletAccount(mongo, to);
-    return {sender, recipient};
+  return new Promise((resolve, reject)=>{
+    getWalletAccount(mongo, principalId)
+    .then(async (sender)=>{
+      console.log("get sender", sender);
+      const recipient = await getWalletAccount(mongo, to);
+      return {sender, recipient};
+    })
+    .then(async (data)=>{
+      const {sender} = data;
+      const balance = await wallet.getDeckBalance(sender.address)
+      console.log("sender balance ", sender.address, balance);
+      return data;
+    })
+    .then(async (data)=>{
+  
+      const {sender} = data;
+      const privateKey = await decryptPrivateKey(sender)
+      
+      data.deck = deck;
+      data.privateKey = privateKey;
+      return transferDeck(wallet, data)
+    })
+    .then((data)=>{
+      console.log("transfer complete", data);
+      resolve(data);
+    })
+    .catch((err)=>{
+      console.log("deck transfer error", err);
+      reject(err);
+    })
   })
-  .then(async (data)=>{
-    const {sender} = data;
-    const balance = await wallet.getDeckBalance(sender.address)
-    console.log("sender balance ", sender.address, balance);
-    return data;
-  })
-  .then(async (data)=>{
-
-    const {sender} = data;
-    const privateKey = await decryptPrivateKey(sender)
-    
-    data.deck = params.deck;
-    data.privateKey = privateKey;
-    return transferDeck(wallet, data)
-  })
-  .then((data)=>{
-    console.log("transfer complete", data);
-  })
-  .catch((err)=>{
-    console.log("deck transfer error", err);
-  })
+  
 }
 
 function getWalletAccount(mongo, userId){

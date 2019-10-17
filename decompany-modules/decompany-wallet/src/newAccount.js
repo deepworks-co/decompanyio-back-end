@@ -1,7 +1,7 @@
 
 'use strict';
 const Web3 = require('web3');
-const {walletConfig, mongodb, tables, region} = require("decompany-app-properties");
+const {walletConfig, tables, region} = require("decompany-app-properties");
 const {kms} = require("decompany-common-utils");
 
 const web3 = new Web3(walletConfig.providerUrl);
@@ -26,7 +26,6 @@ module.exports = (context, params) => {
       );
 
     }).then((data)=>{
-      
       return saveAccount(mongo, Object.assign(data, {principalId}))
     }).then((data)=>{      
       resolve(data);

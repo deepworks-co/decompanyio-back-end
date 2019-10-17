@@ -15,16 +15,21 @@ module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const {principalId} = event;
-  const balance = await wallet.getBalance({principalId});
+  try{
+    const balance = await wallet.getBalance({principalId});
 
-  if(!balance){
-    throw new Error("get balnace error");
+    if(!balance){
+      throw new Error("[500] GetBalnace error");
+    }
+
+    const response = JSON.stringify({
+      success: true, 
+      balance: balance
+    })
+    
+    return response;
+  } catch(err){
+    throw new Error(`[500] ${err}`);
   }
-
-  const response = JSON.stringify({
-    success: true, 
-    balance: balance
-  })
   
-  return response;
 };

@@ -12,13 +12,18 @@ module.exports.handler = async (event, context, callback) => {
     });
   }
   context.callbackWaitsForEmptyEventLoop = false;
-  const {principalId, to, deck, test} = event;
-  const result = await wallet.transferDeck({principalId, deck, to});
+  const {principalId, to, deck} = event;
+  try{
+    const result = await wallet.transferDeck({principalId, deck, to});
 
-  const response = JSON.stringify({
-    success: true,
-    result: result
-  })
+    const response = JSON.stringify({
+      success: true,
+      result: result
+    })
+    
+    return response;
+  } catch(err){
+    throw new Error(`[500] ${err}`);
+  }
   
-  return response;
 };

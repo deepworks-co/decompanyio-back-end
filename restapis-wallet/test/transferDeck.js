@@ -16,8 +16,7 @@ describe('transferDeck', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       to: "linkedin|HpIQ_mxN0N",
-      deck: 0.1,
-      test: true
+      deck: 0.1
     }
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;

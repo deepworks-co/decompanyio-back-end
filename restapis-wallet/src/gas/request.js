@@ -13,12 +13,17 @@ module.exports.handler = async (event, context, callback) => {
   }
   context.callbackWaitsForEmptyEventLoop = false;
   const {principalId} = event;
-  const result = await wallet.requestGas({principalId});
+  try{
+    const result = await wallet.requestGas({principalId});
 
-  const response = JSON.stringify({
-    success: true,
-    result: result
-  })
+    const response = JSON.stringify({
+      success: true,
+      result: result
+    })
+    
+    return response;
+  } catch(err){
+    throw new Error(`[500] ${err}`);
+  }
   
-  return response;
 };
