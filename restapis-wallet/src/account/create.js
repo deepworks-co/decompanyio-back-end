@@ -13,12 +13,18 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const {principalId} = event;
-  const account = await wallet.newAccount({principalId});
+  try{
+    const account = await wallet.newAccount({principalId});
 
-  const response = JSON.stringify({
-    success: true, 
-    account: account
-  })
+    const response = JSON.stringify({
+      success: true, 
+      account: account
+    })
+    
+    return response;
+  } catch(err){
+    console.error(err);
+    return callback(new Error(`[500] ${err.toString()}`));
+  }
   
-  return response;
 };

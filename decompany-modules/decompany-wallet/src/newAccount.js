@@ -45,7 +45,7 @@ function isNotExistWalletAccount(mongo, params){
       try{
         const user = await mongo.findOne(tables.WALLET_USER, {_id: params.principalId});
         if(user){
-          reject(new Error("User's wallet account is exists"));
+          reject("User's wallet account is exists");
         } else {
           resolve({exists:true});
         }
