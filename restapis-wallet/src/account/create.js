@@ -11,9 +11,11 @@ module.exports.handler = async (event, context, callback) => {
       message: 'Lambda is warm!'
     });
   }
-
+  context.callbackWaitsForEmptyEventLoop = false;
+  
   const {principalId} = event;
   try{
+
     const account = await wallet.newAccount({principalId});
 
     const response = JSON.stringify({
@@ -23,8 +25,7 @@ module.exports.handler = async (event, context, callback) => {
     
     return response;
   } catch(err){
-    console.error(err);
-    return callback(new Error(`[500] ${err.toString()}`));
+    throw new Error(`[500] ${err}`);
   }
   
 };

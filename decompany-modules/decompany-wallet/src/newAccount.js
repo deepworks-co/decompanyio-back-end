@@ -31,6 +31,7 @@ module.exports = (context, params) => {
     }).then((data)=>{      
       resolve(data);
     }).catch((err)=>{
+      console.error("Error newAccount", err)
       reject(err);
     })
 
@@ -45,7 +46,7 @@ function isNotExistWalletAccount(mongo, params){
       try{
         const user = await mongo.findOne(tables.WALLET_USER, {_id: params.principalId});
         if(user){
-          reject("User's wallet account is exists");
+          reject(new Error("User's wallet account is exists"));
         } else {
           resolve({exists:true});
         }
