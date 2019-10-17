@@ -11,7 +11,7 @@ module.exports.handler = async (event, context, callback) => {
       message: 'Lambda is warm!'
     });
   }
-
+  context.callbackWaitsForEmptyEventLoop = false;
   const {principalId} = event;
   const result = await wallet.requestGas({principalId});
 
