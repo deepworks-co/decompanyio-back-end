@@ -147,7 +147,8 @@ module.exports = class WalletWapper {
       }).once('receipt', function(receipt){
         console.log("receipt", receipt);
         resolve(receipt);
-      }).on('confirmation', function(confNumber, receipt){
+      })
+      /*.on('confirmation', function(confNumber, receipt){
         console.log("confirmation", {confNumber, receipt});
         //resolve({confNumber, receipt});
       }).on('error', function(error){
@@ -158,6 +159,7 @@ module.exports = class WalletWapper {
         console.log("complete", receipt);
         //resolve(receipt);
       });
+      */
     });
     
 
