@@ -19,7 +19,8 @@ describe('transferDeck', () => {
       deck: 0.1
     }
     return wrapped.run(event).then((response) => {
+      console.log(response)
       expect(response).to.not.be.empty;
-    });
-  });
+    })
+  }).timeout(60000);
 });

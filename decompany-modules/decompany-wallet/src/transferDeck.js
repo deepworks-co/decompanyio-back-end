@@ -22,12 +22,10 @@ module.exports = (context, params) => {
     })
     .then(async (data)=>{
   
-      const {sender} = data;
+      const {sender, recipient} = data;
       const privateKey = await decryptPrivateKey(sender)
-      
-      data.deck = deck;
-      data.privateKey = privateKey;
-      return transferDeck(wallet, data)
+
+      return transferDeck(wallet, {sender, recipient, privateKey, deck})
     })
     .then((data)=>{
       console.log("transfer complete", data);

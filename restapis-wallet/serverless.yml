@@ -90,6 +90,7 @@ functions:
                 template: $input.path('$.errorMessage')
   requestGas:
     handler: src/gas/request.handler
+    timeout: 60
     events:
       - http: 
           method: post
@@ -106,6 +107,7 @@ functions:
                 template: $input.path('$.errorMessage')
   transferDeck:
     handler: src/deck/transfer.handler
+    timeout: 60
     events:
       - http: 
           method: post

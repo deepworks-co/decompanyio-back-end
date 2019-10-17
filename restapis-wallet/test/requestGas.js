@@ -18,7 +18,8 @@ describe('requestGas', () => {
     }
 
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
-  });
+  }).timeout(60000);
 });
