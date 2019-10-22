@@ -15,7 +15,7 @@ module.exports.handler = async (event, context, callback) => {
   const {principalId, body} = event;
   const {to, deck} = body;
   try{
-    const result = await wallet.transferDeck({principalId, deck, to});
+    const result = await wallet.transferDeck({from: principalId, deck, to});
 
     const response = JSON.stringify({
       success: true,

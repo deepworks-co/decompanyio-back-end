@@ -5,7 +5,7 @@ const {kms} = require("decompany-common-utils");
 
 module.exports = (context, params) => {
   const {wallet, mongo} = context;
-  const {deck, principalId, to} = params;
+  const {deck, from, to} = params;
 
   if(!deck || !to){
     throw new Error(`parameters is not valid`);
@@ -13,7 +13,7 @@ module.exports = (context, params) => {
 
 
   return new Promise((resolve, reject)=>{
-    getWalletAccount(mongo, principalId)
+    getWalletAccount(mongo, from)
     .then(async (sender)=>{
       console.log("get sender", sender);
       const recipient = await getWalletAccount(mongo, to);
