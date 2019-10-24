@@ -949,7 +949,10 @@ async function getRecentlyPageViewTotalCount () {
   const startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 8);
   try{
     let result = await wapper.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
-      blockchainDate: {$gte: startDate}
+      query: {
+        blockchainDate: {$gte: startDate}
+      },
+      sort: {created : -1 }
     });
     if(!result) {
       result = []
