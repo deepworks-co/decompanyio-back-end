@@ -24,7 +24,7 @@
   "scripts": {
     "preinstall": "sh install.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "sls deploy -s dev && sls s3deploy -s dev",
+    "deploy": "echo \"no working  (sls deploy -s dev && sls s3deploy -s dev)\"",
     "deploy:alpha": "sls deploy -s alpha  && sls s3deploy -s alpha",
     "deploy:asem": "sls deploy -s asem && sls s3deploy -s asem",
     "deploy:jpdev": "sls deploy -s jpdev && sls s3deploy -s jpdev"

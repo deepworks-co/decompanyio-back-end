@@ -93,7 +93,7 @@ function convertThumbnail(bucket, key, target){
         })
       }
       const promises = sizes.map((size)=>{
-        const toProfix = documentId + "/" + size + "/" + imagename;
+        const toProfix = "thumb/" + documentId + "/" + size + "/" + imagename;
         //return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
         return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: target, toPrefix: toProfix}, size);
         

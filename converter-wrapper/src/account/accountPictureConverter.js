@@ -28,7 +28,7 @@ async function run(event){
 
     const size = 320;
 
-    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: "alpha-ca-profile", toPrefix: key}, size);
+    return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.profile, toPrefix: `profile/${key}`}, size);
 
   });
   
