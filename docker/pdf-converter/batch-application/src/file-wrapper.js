@@ -31,7 +31,8 @@ function uploadToS3 (filepath, bucket, key, isCompress) {
                 Bucket: bucket, 
                 Key: key,
                 Body: isCompress?streamBase64Compressed:stream,
-                ContentType: "application/octet-stream"
+                ContentType: "application/octet-stream",
+                ContentEncoding: isCompress?"gzip":undefined,
             }).promise();
     
             //console.log("upload file", bucket, key);
