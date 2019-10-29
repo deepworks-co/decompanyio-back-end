@@ -125,7 +125,8 @@
             "providerUrl" : "https://geth.polarishare.com"
         },
         "queueUrls":{
-            "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/asem-ko-deposit"
+            "EVENT_DEPOSIT": "",
+            "EVENT_WITHDRAW": ""
         }
     },
     "warmupConfig": [{
