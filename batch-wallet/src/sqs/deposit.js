@@ -26,7 +26,7 @@ module.exports.handler = (event, context, callback) => {
   })
   .catch((err)=>{
     console.error(err);
-    callback(err);
+    callback(null, err);
   })
 
 };
@@ -36,6 +36,7 @@ function run(record) {
   return new Promise((resolve, reject)=>{
     validate(record)
     .then(async (params)=>{
+      console.log("vaildate parameter", params);
       const {message} = params;
       const {log} = message;
       const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: log.id});
