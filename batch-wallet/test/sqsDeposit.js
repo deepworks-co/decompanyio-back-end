@@ -21,15 +21,17 @@ describe('sqsDeposit', () => {
               "body": JSON.stringify({
                 "log" : {
                   "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
-                  "blockHash" : "0x64448beab29400db261813ef606116bb823e76ab610cbe317f9eca73b9941b5b",
-                  "blockNumber" : 4252874,
-                  "data" : "0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000",
-                  "logIndex" : 13,
+                  "blockHash" : "0x228899fdc5211a615ceb3ea5bf01d35b916293343adae73ae185da31484d92b4",
+                  "blockNumber" : 5346085,
+                  "data" : "0x000000000000000000000000000000000000000000000000002386f26fc10000",
+                  "logIndex" : 1,
                   "removed" : false,
-                  "topics" : [ ],
-                  "transactionHash" : "0x642c403c6a3173aafb3523c5d64ebfa29054f22c4330d936c9ad09c13407bb14",
-                  "transactionIndex" : 10,
-                  "id" : "log_82e2d5ca"
+                  "topics" : [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                  ],
+                  "transactionHash" : "0x248fc9ad4e0b4e9f41113c53bcec2caabc9a3e3012b3cde883b9a1c96605b4ae",
+                  "transactionIndex" : 1,
+                  "id" : "log_3eb2f24d"
                 },
                 "decoded" : {
                   "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
@@ -66,7 +68,7 @@ describe('sqsDeposit', () => {
                 },
                 "decoded" : {
                   "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
-                  "to" : "this is not foundation",
+                  "to" : "0xxxxxxzxxxxxxx",
                   "value" : "10"
                 }
               })

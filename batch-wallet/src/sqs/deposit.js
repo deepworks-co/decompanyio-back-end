@@ -37,29 +37,23 @@ function run(record) {
     validate(record)
     .then(async (params)=>{
       console.log("vaildate parameter", params);
-      const {message} = params;
-      const {log} = message;
-      const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: log.id});
+      const {logId} = params;
+      const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
       console.log("checkDepositResult", check)
       return params;
     })
     .then(async (params)=>{
       //console.log("params", params)
-      const {messageId, receiptHandle, message, privateKey} = params;
-      console.log("get message", message);
-      const {log, decoded, eventFunc} = message;
-      const {from, to, value} = decoded;
-      /*
-      * 메인넷의 Deck이 user->foundation으로 이동했기때문에,
-      * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
-      */
-      const result = await transferDeck(to, from, value, privateKey);
-      return {log, result}
+      const {logId, from, to, value, privateKey} = params;
+
+
+      const result = await transferDeck(from, to, value, privateKey);
+      return {logId, result}
     })
     .then(async (data)=>{
-      const {log, result} = data;
+      const {logId, result} = data;
       console.log("transaction info", data);
-      const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: log.id}, {psnet: result});
+      const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {psnet: result});
       console.log("updateDepositResult", updateResult)
       return data;
     })
@@ -74,23 +68,46 @@ function run(record) {
 }
 
 async function validate(record){
-  const {messageId, receiptHandle, body} = record;
+  const {body} = record;
   const message =  JSON.parse(body);
   const {decoded, log} = message;
   const {from, to, value} = decoded;
+  /*
+  * 메인넷의 Deck이 user->foundation으로 이동했기때문에,
+  * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
+  */
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
   if(foundation.address !== to){
     throw new Error("this address is not foundation!! : " + to);
   }
+
+  const user = await getUser(from);
+  const targetUser = await getWalletAccount(user._id);
+  console.log("mainnet address", from, "psnet address", targetUser.address);
   
   return {
-    messageId,
-    receiptHandle,
-    message: message,
+    logId: log.id,
+    from: foundation.address,
+    to: targetUser.address,
+    value: value,
     foundation,
     privateKey
   }
+}
+
+function getUser(ethAccount){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.USER, {ethAccount: ethAccount})
+    .then((data)=>{
+      if(data) resolve(data);
+      else reject(new Error(`${userId} is not exists in USER Collection`));
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
 }
 
 function getWalletAccount(userId){
@@ -152,6 +169,8 @@ function transferDeck(from, to, value, privateKey) {
         "value": "0x0",
         "data": transferMethod.encodeABI()
       }
+
+      console.log("rawTransaction", rawTransaction);
 
       const r = await sendTransaction(privateKey, rawTransaction);
       resolve(r);
