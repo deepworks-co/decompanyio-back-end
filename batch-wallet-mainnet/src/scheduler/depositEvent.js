@@ -15,7 +15,8 @@ module.exports.handler = (event, context, callback) => {
   getLatestDepositLog(tables.WALLET_DEPOSIT)
   .then((data)=>{
     //console.log("get latest log", data[0]);
-    return data[0]?data[0].mainnet.log.blockNumber + 1:1;
+    return 5346085
+    //return data[0]?data[0].mainnet.log.blockNumber + 1:1;
     
   })
   .then((blockNumber)=>{
@@ -28,13 +29,13 @@ module.exports.handler = (event, context, callback) => {
     })
   })
   .then((pastLogs)=>{
-    console.log("get past logs", pastLogs.length);
+    console.log("get past logs", pastLogs);
     const eventLogs = pastLogs.map((log)=>{
       const eventFunc = EVENT_SIGNATURES[log.topics[0]];
-      const decoded = getDecodedLog(log, eventFunc.inputs);
+      const decoded = getDecodedLog(log, eventFunc.inputs, eventFunc.anonymous?log.topics.splice(0):log.topics.splice(1));
       return {log, eventFunc, decoded};
     })
-    console.log("eventLogs", eventLogs);
+    //console.log("eventLogs", eventLogs);
     return eventLogs;
   })
   .then(async (eventLogs)=>{
@@ -108,9 +109,9 @@ function getEventSignature(abis) {
   return v;
 }
 
-function getDecodedLog(log, inputs) {
+function getDecodedLog(log, inputs, topics) {
   
-  const decoded = web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(0));
+  const decoded = web3.eth.abi.decodeLog(inputs, log.data, topics);
   
   return decoded;
 }

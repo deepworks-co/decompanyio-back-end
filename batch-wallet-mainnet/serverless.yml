@@ -79,12 +79,9 @@ functions:
 
   schedulerDepositEvent:
     handler: src/scheduler/depositEvent.handler
-
-  
-
-# you can add CloudFormation resource templates here
-resources:
-
+    timeout: 30
+    events:
+      - schedule: rate(1 minute)
 
 custom:
   prune:
