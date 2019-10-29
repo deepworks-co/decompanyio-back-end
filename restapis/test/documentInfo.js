@@ -11,7 +11,7 @@ describe('documentInfo', () => {
   before((done) => {
     done();
   });
-/*
+
   it('Get Document Doc', () => {
     const event = {
       path: {
@@ -26,7 +26,7 @@ describe('documentInfo', () => {
       expect(response).to.not.be.empty;
     });
   });
-*/
+
   it('FAIL_CONVERT Doc', () => {
     const event = {
       path: {
