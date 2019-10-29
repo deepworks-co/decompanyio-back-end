@@ -33,10 +33,9 @@ phases:
       - echo Build started on `date`
   build:
     commands:
-      - cd restapis-wallet
+      - cd batch-wallet
       - npm install ../decompany-modules/decompany-app-properties
       - npm install ../decompany-modules/decompany-common-utils
-      - npm install ../decompany-modules/decompany-wallet
       - npm install
       - npm run deploy:dev
 ```
