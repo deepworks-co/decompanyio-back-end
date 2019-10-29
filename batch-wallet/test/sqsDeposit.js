@@ -32,8 +32,8 @@ describe('sqsDeposit', () => {
                   "id" : "log_82e2d5ca"
                 },
                 "decoded" : {
-                  "from" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
-                  "to" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                  "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                  "to" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
                   "value" : "10"
                 }
               })
@@ -43,5 +43,40 @@ describe('sqsDeposit', () => {
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
+
+    
+  }).timeout(30000);
+
+  it('this is not foundation', () => {
+    const event = {
+      "Records": [
+          {
+              "body": JSON.stringify({
+                "log" : {
+                  "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
+                  "blockHash" : "0x64448beab29400db261813ef606116bb823e76ab610cbe317f9eca73b9941b5b",
+                  "blockNumber" : 4252874,
+                  "data" : "0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000",
+                  "logIndex" : 13,
+                  "removed" : false,
+                  "topics" : [ ],
+                  "transactionHash" : "0x642c403c6a3173aafb3523c5d64ebfa29054f22c4330d936c9ad09c13407bb14",
+                  "transactionIndex" : 10,
+                  "id" : "log_82e2d5ca"
+                },
+                "decoded" : {
+                  "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                  "to" : "this is not foundation",
+                  "value" : "10"
+                }
+              })
+          }
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+
+    
   }).timeout(30000);
 });

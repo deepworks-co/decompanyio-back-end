@@ -49,7 +49,11 @@ function run(record) {
       console.log("get message", message);
       const {log, decoded, eventFunc} = message;
       const {from, to, value} = decoded;
-      const result = await transferDeck(from, to, value, privateKey);
+      /*
+      * 메인넷의 Deck이 user->foundation으로 이동했기때문에,
+      * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
+      */
+      const result = await transferDeck(to, from, value, privateKey);
       return {log, result}
     })
     .then(async (data)=>{
@@ -71,15 +75,21 @@ function run(record) {
 
 async function validate(record){
   const {messageId, receiptHandle, body} = record;
-
-  const fouondation = await getWalletAccount(FOUNDATION_ID);
-  const privateKey = await decryptPrivateKey(fouondation);
+  const message =  JSON.parse(body);
+  const {decoded, log} = message;
+  const {from, to, value} = decoded;
+  const foundation = await getWalletAccount(FOUNDATION_ID);
+  const privateKey = await decryptPrivateKey(foundation);
+  
+  if(foundation.address !== to){
+    throw new Error("this address is not foundation!! : ", to)
+  }
   
   return {
     messageId,
     receiptHandle,
-    message: JSON.parse(body),
-    fouondation,
+    message: message,
+    foundation,
     privateKey
   }
 }
