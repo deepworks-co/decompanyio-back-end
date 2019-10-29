@@ -15,8 +15,7 @@ module.exports.handler = (event, context, callback) => {
   getLatestDepositLog(tables.WALLET_DEPOSIT)
   .then((data)=>{
     //console.log("get latest log", data[0]);
-    return 5346085
-    //return data[0]?data[0].mainnet.log.blockNumber + 1:1;
+    return data[0]?data[0].mainnet.log.blockNumber + 1:1;
     
   })
   .then((blockNumber)=>{
