@@ -10,7 +10,6 @@ const { s3, kms } = require('decompany-common-utils');
 module.exports = class WalletWapper {
 
   constructor() {
-
     const providerUrl = walletConfig.providerUrl;
     this.web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
 
@@ -19,7 +18,7 @@ module.exports = class WalletWapper {
       const {name, path} = abi;
       const contractJson= require(path);
       const constractAbi = contractJson.abi;
-      const constractAddress = contractJson.networks[walletConfig.index].address;
+      const constractAddress = contractJson.networks[walletConfig.psnet.id].address;
       const contract = new this.web3.eth.Contract(constractAbi, constractAddress);
       this.contractMap[name] = {
         abi: constractAbi,
@@ -204,6 +203,50 @@ module.exports = class WalletWapper {
     })
     
     
+  }
+
+  getEventSignature(params) {
+    const {abis} = params;
+
+    return abis.filter((abi, index)=>{
+      
+      if(abi.type === 'event') {
+        const k = {}
+        k[abi.signature] = abi;
+        return k;
+      }
+      
+    });
+  
+  }
+
+  getPastLog(params) {
+    return new Promise((resolve, reject)=>{
+      const options = {
+        fromBlock: params.fromBlock,
+        toBlock: "latest",
+        address: params.address,
+        topics: params.topics?params.topics:[]
+      }
+      
+      console.log("getPastLog options", options);
+      this.web3.eth.getPastLogs(options)
+      .then((logs)=>{
+        resolve(logs);
+      })
+      .catch((err)=>{
+        reject(err);
+      })
+    })
+    
+  }
+
+  getDecodedLog(parmas) {
+    const {log, inputs} = params;
+    
+    const decoded = this.web3.eth.abi.decodeLog(inputs, log.data, log.topics.splice(1));
+    
+    return decoded;
   }
 
   
