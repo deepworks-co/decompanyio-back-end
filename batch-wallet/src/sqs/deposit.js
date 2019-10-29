@@ -32,7 +32,7 @@ module.exports.handler = (event, context, callback) => {
 };
 
 function run(record) {
-  //console.log("run record", record);
+
   return new Promise((resolve, reject)=>{
     validate(record)
     .then(async (params)=>{
@@ -80,9 +80,8 @@ async function validate(record){
   const {from, to, value} = decoded;
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
-  
   if(foundation.address !== to){
-    throw new Error("this address is not foundation!! : ", to)
+    throw new Error("this address is not foundation!! : " + to);
   }
   
   return {
