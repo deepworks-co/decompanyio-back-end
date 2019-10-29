@@ -1,5 +1,6 @@
 {
     "region": "ap-northeast-2",
+    "stage": "asem",
     "vpc": {
         "securityGroupIds": "sg-06891dc67ef6e8e47",
         "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
@@ -41,7 +42,13 @@
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
-        "WALLET_USER": "WALLET-USER"
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_BLOCK": "WALLET-BLOCK",
+        "WALLET_TRANSACTION": "WALLET-TRANSACTION",
+        "MAINNET_DEPOSIT": "MAINNET-DEPOSIT",
+        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
+        "MAINNET_WITHDRAW": "MAINNET-WITHDRAW",
+        "WALLET_WITHDRAW": "WALLET-WITHDRAW"
     },
     "sqsConfig": {
         "region": "ap-northeast-2",
@@ -99,15 +106,27 @@
     },
     "walletConfig": {
         "abis": [
-            {"name": "Deck", "path": "../../abi/asem/ERC20.json"},
-            {"name": "Ballot", "path": "../../abi/asem/Ballot.json"},
-            {"name": "Registry", "path": "../../abi/asem/Registry.json"},
-            {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
+            {"name": "Deck", "path": "../../psnet/dev/ERC20.json"},
+            {"name": "Ballot", "path": "../../psnet/dev/Ballot.json"},
+            {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
+            {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
         "network": "mygeth", 
         "providerUrl" : "https://geth-internal.polarishare.com",
         "index": "931",
-        "kmsId": "alias/asem-ko-owa-enc-key"
+        "kmsId": "alias/asem-ko-owa-enc-key",
+        "foundation": "miner",
+        "mainnet": {
+            "id": "4",
+            "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c"
+        },
+        "psnet": {
+            "id": "931",
+            "providerUrl" : "https://geth.polarishare.com"
+        },
+        "queueUrls":{
+            "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/asem-ko-deposit"
+        }
     },
     "warmupConfig": [{
         "enable": true,

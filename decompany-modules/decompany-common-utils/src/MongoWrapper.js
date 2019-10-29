@@ -9,7 +9,7 @@ module.exports = class MongoWrapper {
     if(MongoWapperSingletonInstance==null){
       this.connectionString = connectionString;
       this.connect();
-      this.id = Math.random().toString(36).substring(7);
+      
       //console.log("connect", MongoWapperSingletonInstance);
       
     } 
@@ -26,18 +26,21 @@ module.exports = class MongoWrapper {
 
       this.db.on('error', function(err){
         console.error("mongo connection error", err);
+        this.close();
       })
-      /*
-      db.on('connect', function(){
-        console.log("mongo connect");
+
+      this.db.on('connect', function(){
+        this.id = Math.random().toString(36).substring(7);
+        console.log("mongo connect", this.id);
       })
       
 
-      db.on('close', function(args){
-        console.log("close", args);
+      this.db.on('close', function(){
+        console.log("close", this.id);
         MongoWapperSingletonInstance = null;
       })
-      */
+
+
     } else {
       console.log("MongoWapperSingletonInstance is not null", MongoWapperSingletonInstance)
     }
@@ -65,8 +68,11 @@ module.exports = class MongoWrapper {
 
   close() {
     //console.log("close()", MongoWapperSingletonInstance);
-    this.db.close();
     MongoWapperSingletonInstance = null;
+    if(this.db){
+      this.db.close();
+    }
+    
   }
 
   findOne(collection, query, projection) {
@@ -87,7 +93,22 @@ module.exports = class MongoWrapper {
     return this.db.collection(collection).find(query);
   }
 
-  find(collection, query, pageNo = 1, pageSize = 50, sort = {created : -1 /*decending*/ }) {
+
+  find(collection, params) {
+    const {query, sort, skip, limit} = params;
+    return new Promise((resolve, reject) => {
+      this.db.collection(collection).find(query?query:{}).sort(sort?sort:{_id: -1}).skip(skip?skip:0).limit(limit?limit:10).toArray((err, res)=>{
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+
+    });
+  }
+  /*
+  find(collection, query, pageNo = 1, pageSize = 50, sort = {created : -1 }) {
     
     return new Promise((resolve, reject) => {
 
@@ -103,6 +124,8 @@ module.exports = class MongoWrapper {
 
     });
   }
+  */
+
 
   findAll(collection, query, sort = {created : -1 /*decending*/ }, limit) {
 
@@ -290,4 +313,5 @@ module.exports = class MongoWrapper {
     });
 
   }
+
 };

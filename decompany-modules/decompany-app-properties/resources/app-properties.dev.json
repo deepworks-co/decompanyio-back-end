@@ -1,5 +1,6 @@
 {
     "region": "us-west-1",
+    "stage": "dev",
     "vpc": {
         "securityGroupIds": "sg-05a13849fc117801b",
         "subnetIds": "subnet-37594850, subnet-38bb9963"
@@ -41,7 +42,13 @@
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
-        "WALLET_USER": "WALLET-USER"
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_BLOCK": "WALLET-BLOCK",
+        "WALLET_TRANSACTION": "WALLET-TRANSACTION",
+        "MAINNET_DEPOSIT": "MAINNET-DEPOSIT",
+        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
+        "MAINNET_WITHDRAW": "MAINNET-WITHDRAW",
+        "WALLET_WITHDRAW": "WALLET-WITHDRAW"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -98,15 +105,27 @@
     },
     "walletConfig": {
         "abis": [
-            {"name": "Deck", "path": "../../abi/asem/ERC20.json"},
-            {"name": "Ballot", "path": "../../abi/asem/Ballot.json"},
-            {"name": "Registry", "path": "../../abi/asem/Registry.json"},
-            {"name": "RewardPool", "path": "../../abi/asem/RewardPool.json"}
+            {"name": "Deck", "path": "../../psnet/dev/ERC20.json"},
+            {"name": "Ballot", "path": "../../psnet/dev/Ballot.json"},
+            {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
+            {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
         "network": "mygeth", 
         "providerUrl" : "https://geth.polarishare.com",
         "index": "931",
-        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2",
+        "foundation": "miner",
+        "mainnet": {
+            "id": "4",
+            "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c"
+        },
+        "psnet": {
+            "id": "931",
+            "providerUrl" : "https://geth.polarishare.com"
+        },
+        "queueUrls":{
+            "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit"
+        }
     },
     "warmupConfig": [{
         "enable": true,
