@@ -24,7 +24,15 @@ aws kms create-alias \
 --region ap-northeast-2
 ```
 
-ethereum npm
+## decompany modules
+
+```bash
+npm install ../decompany-modules/decompany-app-properties
+npm install ../decompany-modules/decompany-common-utils
+npm install ../decompany-modules/decompany-wallet
+```
+
+## ethereum npm
 
 ```bash
 npm install web3
@@ -39,4 +47,5 @@ sls create function -f createAccount --handler src/account/create.handler --http
 sls create function -f transferDeck --handler src/deck/transfer.handler --httpEvent "post /api/deck/transfer"
 sls create function -f requestGas --handler src/gas/request.handler --httpEvent "post /api/gas/request"
 sls create function -f getBalance --handler src/account/balance.handler --httpEvent "get /account/balance"
+
 ```

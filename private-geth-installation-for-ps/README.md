@@ -20,22 +20,22 @@ geth init genesis.json
   ```
 
   ### geth를 rpc, ws, graphql과 함께 구동하기
-  ```bash
-  nohup geth \
-  --networkid 931 \
-  --rpc \
-  --rpcaddr "0.0.0.0" \
-  --rpcvhosts "*" \
-  --rpccorsdomain "*" \
-  --ws \
-  --wsaddr "0.0.0.0" \
-  --wsorigins "*" \
-  --graphql \
-  --graphql.addr "0.0.0.0" \
-  --graphql.corsdomain "*" \
-  --graphql.vhosts "*" \
-  2>> eth.log &
-  ```
+```bash
+nohup geth \
+--networkid 931 \
+--rpc \
+--rpcaddr "0.0.0.0" \
+--rpcvhosts "*" \
+--rpccorsdomain "*" \
+--ws \
+--wsaddr "0.0.0.0" \
+--wsorigins "*" \
+--graphql \
+--graphql.addr "0.0.0.0" \
+--graphql.corsdomain "*" \
+--graphql.vhosts "*" \
+2>> eth.log &
+```
 
 ## Running Geth node with bootnodes
 
@@ -79,6 +79,13 @@ nohup geth --networkid 931 \
       --ethstats "miner:Polarishare@10.1.11.45:3000" \
       --mine --minerthreads=1 &
 ```
+
+## 개발 geth 실행하기
+``` bash
+nohup geth --networkid 931 \
+      --etherbase "0xa5909482f9f32219de9b23ceb0c4ee26609bcf94" \
+      --mine --minerthreads=1 &
+```
 ## Option 설명
 
 ### RPC Option 설명
@@ -112,11 +119,16 @@ geth attach ipc:~/.ethereum/geth.ipc
 ## Transcation Test (Send Ether)
 
 ```bash
+personal.unlockAccount(eth.coinbase, "******")
 personal.unlockAccount("0x55735115f06986e6fa2561976ebf55d29eec4212", "******")
 eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x0d720e25e424ca6e4a7dcccddae136db2bc44639", value: web3.toWei(100, "ether")})
-eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x4Ee128892469e7962e6E617727cb99C59525D7D2", value: web3.toWei(100, "ether")}) //for jay
-eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x4add6551af429c71eB64e0494BC5E88334E94948", value: web3.toWei(1000, "ether")}) //for chris
+eth.sendTransaction({from:eth.accounts[0], to:"0x4Ee128892469e7962e6E617727cb99C59525D7D2", value: web3.toWei(100, "ether")}) //for jay
+eth.sendTransaction({from:eth.accounts[0], to:"0x4add6551af429c71eB64e0494BC5E88334E94948", value: web3.toWei(100, "ether")}) //for chris
+```
 
+```base
+personal.unlockAccount(eth.accounts[0], "******")
+eth.sendTransaction({from:eth.accounts[0], to:"0x07Ab267B6F70940f66EAf519b4a7c050496480D3", value: web3.toWei(100, "ether")}) //for jay
 ```
 
 
@@ -124,22 +136,25 @@ eth.sendTransaction({from:"0x55735115f06986e6fa2561976ebf55d29eec4212", to:"0x4a
 ## static-nodes.json
 ```json
 [
-  "enode://88ff2e9837df46b48ee793adbb61e7cf4e3d0c116e35f7e5c24d7b3030e3b28a6c7f5a624934ac118ae378c9fe66ecf50c7a8d7866075fb866ac6a48c55d2cb2@10.1.11.12:30303",
-  "enode://5e06fffd153f2aea8f0b311a4c4e8c00c8662182cd5ee39aae6a84348005c650f7d83a7f377d33acb21fdf7ff8725fa5670f64c355ea6f437cf83b6a36f375a1@10.1.12.109:30303",
-  "enode://1df2fb4cf9295d7d0c807edc96a5a13c993ee5ea61ece3092b49a57422e081ebfe2821a01dc2963f4c378ab367e1043696ba8018488f274e6c45dfc2d2140e76@10.1.11.96:30303",
-  "enode://66e281791d998642c0c62f65f14aab3ce02668c1e8ea74ad3413ceec91f831da4c840185d3c72949cd5a0a70170e613a6633a10c63dc6290ee368d547fa3a13f@10.1.12.128:30303"
+  "enode://8a19ed7a56c9e13b9a0233d870a95b0c5abf6fbbb02aace0c94fbc61160b9d1f1677e6ac54dc5fb2255646d8abb26d0e8f870bbaa0f69cfe1fd15794c82001fd@10.1.12.109:30303",
+  "enode://6dcf9664b66ed2815304777a2e4d0c008ef9d71dca3deb6188eff6ea495d39b1782887ca20da248eb3fc3a6442f616cb3e55c7078d4e802eb53e88464791ce20@10.1.11.96:30303",
+  "enode://2a4ac0c9305af649fa9a49cd5f3caa8e1c67ca6d639dc3eed58a99977e8ca3cadcd59c89b6eedb4614c0ae57f869a2344581646e4f2252a7a194ef07dc9c2a3b@10.1.12.228:30303",
+  "enode://10d573c084cbc87d81f813985b3228531b015e1474ba9f1346eb6c74c9fa00b7c7964df45f898e28940ecbbfb8708f24ba921f0a0675a1f452e61511059ed336@10.1.11.242:30303"
 ]
 ```
 
+## Add Peer
 ```bash
-admin.addPeer("enode://5e06fffd153f2aea8f0b311a4c4e8c00c8662182cd5ee39aae6a84348005c650f7d83a7f377d33acb21fdf7ff8725fa5670f64c355ea6f437cf83b6a36f375a1@10.1.12.109:30303")
-admin.addPeer("enode://1df2fb4cf9295d7d0c807edc96a5a13c993ee5ea61ece3092b49a57422e081ebfe2821a01dc2963f4c378ab367e1043696ba8018488f274e6c45dfc2d2140e76@10.1.11.96:30303")
+#Geth 1
+admin.addPeer("enode://8a19ed7a56c9e13b9a0233d870a95b0c5abf6fbbb02aace0c94fbc61160b9d1f1677e6ac54dc5fb2255646d8abb26d0e8f870bbaa0f69cfe1fd15794c82001fd@10.1.12.109:30303")
+#Geth 2
+admin.addPeer("enode://6dcf9664b66ed2815304777a2e4d0c008ef9d71dca3deb6188eff6ea495d39b1782887ca20da248eb3fc3a6442f616cb3e55c7078d4e802eb53e88464791ce20@10.1.11.96:30303")
+#Miner 1
+admin.addPeer("enode://2a4ac0c9305af649fa9a49cd5f3caa8e1c67ca6d639dc3eed58a99977e8ca3cadcd59c89b6eedb4614c0ae57f869a2344581646e4f2252a7a194ef07dc9c2a3b@10.1.12.228:30303")
+#Miner 2
+admin.addPeer("enode://7bf33d56becbcb6f479d73b2497bb2b2f6597dbee9bdc04bdd481c6b1fa87d2c698684eb12bc0354da98130407c6c12674433051e34d4208f0dcc36d3450866c@10.1.11.242:30303")
 ```
 
-```bash
-admin.addPeer("enode://88ff2e9837df46b48ee793adbb61e7cf4e3d0c116e35f7e5c24d7b3030e3b28a6c7f5a624934ac118ae378c9fe66ecf50c7a8d7866075fb866ac6a48c55d2cb2@10.1.12.228:30303")
-admin.addPeer("enode://66e281791d998642c0c62f65f14aab3ce02668c1e8ea74ad3413ceec91f831da4c840185d3c72949cd5a0a70170e613a6633a10c63dc6290ee368d547fa3a13f@10.1.11.242:30303")
-```
 
 ## Health Check
 ```bash
