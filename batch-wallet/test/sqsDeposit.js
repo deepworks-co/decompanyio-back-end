@@ -19,24 +19,31 @@ describe('sqsDeposit', () => {
               "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
               "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
               "body": JSON.stringify({
-                "log" : {
-                  "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
-                  "blockHash" : "0x228899fdc5211a615ceb3ea5bf01d35b916293343adae73ae185da31484d92b4",
-                  "blockNumber" : 5346085,
-                  "data" : "0x000000000000000000000000000000000000000000000000002386f26fc10000",
-                  "logIndex" : 1,
-                  "removed" : false,
-                  "topics" : [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-                  ],
-                  "transactionHash" : "0x248fc9ad4e0b4e9f41113c53bcec2caabc9a3e3012b3cde883b9a1c96605b4ae",
-                  "transactionIndex" : 1,
-                  "id" : "log_3eb2f24d"
-                },
-                "decoded" : {
+                "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
+                "blockHash" : "0xe9a019a159a17ca3363cbd31d30839b03b7deb73b6db7c1e76f20602969c36d9",
+                "blockNumber" : 5346782,
+                "logIndex" : 7,
+                "removed" : false,
+                "transactionHash" : "0x2210c452b34c6de5a29b004c15fc17e7888b60db60d1367fa1a68725cc864c9c",
+                "transactionIndex" : 3,
+                "id" : "log_7f27e64d",
+                "returnValues" : {
+                  "0" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                  "1" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+                  "2" : "10000000000000000000",
                   "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
                   "to" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
-                  "value" : "10"
+                  "value" : "10000000000000000000"
+                },
+                "event" : "Transfer",
+                "signature" : "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "raw" : {
+                  "data" : "0x0000000000000000000000000000000000000000000000008ac7230489e80000",
+                  "topics" : [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                    "0x0000000000000000000000004ee128892469e7962e6e617727cb99c59525d7d2",
+                    "0x00000000000000000000000007ab267b6f70940f66eaf519b4a7c050496480d3"
+                  ]
                 }
               })
           },
@@ -44,24 +51,31 @@ describe('sqsDeposit', () => {
             "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
             "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
             "body": JSON.stringify({
-              "log" : {
-                "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
-                "blockHash" : "0x228899fdc5211a615ceb3ea5bf01d35b916293343adae73ae185da31484d92b4",
-                "blockNumber" : 5346085,
-                "data" : "0x000000000000000000000000000000000000000000000000002386f26fc10000",
-                "logIndex" : 1,
-                "removed" : false,
-                "topics" : [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-                ],
-                "transactionHash" : "0x248fc9ad4e0b4e9f41113c53bcec2caabc9a3e3012b3cde883b9a1c96605b4ae",
-                "transactionIndex" : 1,
-                "id" : "log_3eb2f24d"
-              },
-              "decoded" : {
+              "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
+              "blockHash" : "0xe9a019a159a17ca3363cbd31d30839b03b7deb73b6db7c1e76f20602969c36d9",
+              "blockNumber" : 5346782,
+              "logIndex" : 7,
+              "removed" : false,
+              "transactionHash" : "0x2210c452b34c6de5a29b004c15fc17e7888b60db60d1367fa1a68725cc864c9c",
+              "transactionIndex" : 3,
+              "id" : "log_7f27e64d",
+              "returnValues" : {
+                "0" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                "1" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+                "2" : "10000000000000000000",
                 "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
                 "to" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
-                "value" : "10"
+                "value" : "10000000000000000000"
+              },
+              "event" : "Transfer",
+              "signature" : "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "raw" : {
+                "data" : "0x0000000000000000000000000000000000000000000000008ac7230489e80000",
+                "topics" : [
+                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                  "0x0000000000000000000000004ee128892469e7962e6e617727cb99c59525d7d2",
+                  "0x00000000000000000000000007ab267b6f70940f66eaf519b4a7c050496480d3"
+                ]
               }
             })
         }

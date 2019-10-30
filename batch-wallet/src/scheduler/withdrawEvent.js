@@ -96,8 +96,6 @@ function saveWithdraw(tableName, eventLogs){
       //bulk.find({_id: log._id }).upsert().updateOne(log);
       bulk.insert({_id: eventLog.id, psnet: eventLog});
     })
-    
-    //console.log("bulk", bulk);
 
     mongo.execute(bulk)
     .then((data)=>resolve(data))

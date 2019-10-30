@@ -63,7 +63,8 @@ function run(record) {
       resolve(data);
     })
     .catch((err)=>{
-      reject(err)
+      console.error(err);
+      resolve(err);
     })
   })
 
@@ -71,9 +72,9 @@ function run(record) {
 
 async function validate(record){
   const {body} = record;
-  const message =  JSON.parse(body);
-  const {decoded, log} = message;
-  const {from, to, value} = decoded;
+  const parsedBody =  JSON.parse(body);
+  const {returnValues, id} = parsedBody;
+  const {from, to, value} = returnValues;
 
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
@@ -86,7 +87,7 @@ async function validate(record){
   console.log("mainnet address", from, "psnet address", targetUser.address);
   
   return {
-    logId: log.id,
+    logId: id,
     from: foundation.address,
     to: targetUser.address,
     value: value,

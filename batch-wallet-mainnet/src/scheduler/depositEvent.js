@@ -7,35 +7,22 @@ const mongo = new MongoWrapper(mongodb.endpoint);
 
 const MAINNET_DECK_ABI = require(`../../mainnet/${stage}/Deck.json`)
 const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].address;
-const EVENT_SIGNATURES = getEventSignature(MAINNET_DECK_ABI.abi);
-//console.log("EVENT_SIGNATURES", EVENT_SIGNATURES);
+const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
+
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   
   getLatestDepositLog(tables.WALLET_DEPOSIT)
   .then((data)=>{
     //console.log("get latest log", data[0]);
-    return data[0]?data[0].mainnet.log.blockNumber + 1:1;
+    return data[0]?data[0].mainnet.blockNumber + 1:1;
     
   })
   .then((blockNumber)=>{
-    console.log("start block number", blockNumber, "to latest");
-    return getPastLog({
+    return getEventLog(DECK_CONTRACT, {
       fromBlock: blockNumber,
-      toBlock: "latest",
-      address: CONTRACT_ADDRESS,
-      topics: []
+      toBlock: "latest"
     })
-  })
-  .then((pastLogs)=>{
-    console.log("get past logs", pastLogs);
-    const eventLogs = pastLogs.map((log)=>{
-      const eventFunc = EVENT_SIGNATURES[log.topics[0]];
-      const decoded = getDecodedLog(log, eventFunc.inputs, eventFunc.anonymous?log.topics.splice(0):log.topics.splice(1));
-      return {log, eventFunc, decoded};
-    })
-    //console.log("eventLogs", eventLogs);
-    return eventLogs;
   })
   .then(async (eventLogs)=>{
     const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
@@ -74,20 +61,17 @@ function getLatestDepositLog(tableName){
   });
 }
 
-
-function getPastLog(params) {
+function getEventLog(contract, params) {
+  const {fromBlock, toBlock, eventName} = params;
   return new Promise((resolve, reject)=>{
-    const options = {
-      fromBlock: params.fromBlock,
-      toBlock: params.toBlock,
-      address: params.address,
-      topics: params.topics?params.topics:[]
-    }
 
-    console.log("getPastLog options", options);
-    web3.eth.getPastLogs(options)
-    .then((logs)=>{
-      resolve(logs);
+    console.log("getEventLog options", params)
+    contract.getPastEvents(eventName, {
+      fromBlock,
+      toBlock
+    })
+    .then((data)=>{
+      resolve(data);
     })
     .catch((err)=>{
       reject(err);
@@ -96,38 +80,15 @@ function getPastLog(params) {
   
 }
 
-function getEventSignature(abis) {
-  const v = {}
-  abis.forEach((abi)=>{
-    
-    if(abi.type === 'event') {
-      v[abi.signature] = abi;
-    }
-    
-  });
-  return v;
-}
-
-function getDecodedLog(log, inputs, topics) {
-  
-  const decoded = web3.eth.abi.decodeLog(inputs, log.data, topics);
-  
-  return decoded;
-}
-
 function saveDeposit(tableName, eventLogs){
 
   return new Promise((resolve, reject)=>{
     const bulk = mongo.getUnorderedBulkOp(tableName);
 
     eventLogs.forEach((eventLog)=>{
-      const {log, eventFunc, decoded} = eventLog;
-      //bulk.find({_id: log._id }).upsert().updateOne(log);
-      bulk.insert({_id: log.id, mainnet: eventLog});
+      bulk.insert({_id: eventLog.id, mainnet: eventLog});
     })
     
-    //console.log("bulk", bulk);
-
     mongo.execute(bulk)
     .then((data)=>resolve(data))
     .catch((err)=>reject(err));
@@ -138,8 +99,7 @@ function saveDeposit(tableName, eventLogs){
 function sendSQS(region, sqsUrl, eventLogs) {
   const results = eventLogs
   .filter((eventLog)=>{
-    const {eventFunc} = eventLog;
-    return eventFunc.name === "Transfer" && eventFunc.type === 'event'
+    return eventLog.event === "Transfer"
   })
   .map((eventLog)=>{
     //const {log, decoded} = eventLog;
