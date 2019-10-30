@@ -18,7 +18,7 @@ npm install ../decompany-modules/decompany-common-utils
 ## Create Function
 
 ```bash
-sls create function -f eventDeck --handler src/event/deck.handler
+sls create function -f schedulerWithdrawEvent --handler src/scheduler/withdrawEvent.handler
 sls create function -f sqsDeposit --handler src/sqs/deposit.handler
 ```
 

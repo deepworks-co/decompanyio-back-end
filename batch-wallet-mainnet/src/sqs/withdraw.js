@@ -11,6 +11,12 @@ const MAINNET_DECK_ABI = require(`../../mainnet/${stage}/Deck.json`)
 const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].address;
 const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
+
+  /*
+  * 출금의 경우 psnet에 소지한 Deck을 foundation으로 이동시켜 출금 신청을 하면,
+  * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
+  */
+
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -31,25 +37,30 @@ module.exports.handler = (event, context, callback) => {
 };
 
 function run(record) {
-  //console.log("run record", record);
+
   return new Promise((resolve, reject)=>{
     validate(record)
-    .then((params)=>{
+    .then(async (params)=>{
+      console.log("vaildate parameter", params);
+      const {logId} = params;
+      const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
+      console.log("checkWithdrawResult", check)
+      return params;
+    })
+    .then(async (params)=>{
       //console.log("params", params)
-      const {messageId, receiptHandle, message, privateKey} = params;
-      console.log("get message", message);
-      const {from, to, value} = message;
-      return transferDeck(from, to, value, privateKey);
+      const {logId, from, to, value, privateKey} = params;
+      const result = await transferDeck(from, to, value, privateKey);
+      return {
+        logId,
+        result
+      }
     })
     .then(async (data)=>{
-      const {transaction, event} = data;
-      const saveData = {
-        _id: transaction.transactionHash,
-        transaction,
-        event
-      }
-        
-      const r = await saveWithdraw(saveData);
+      const {logId, result} = data;
+      console.log("transaction info", data);
+      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {mainnet: result});
+      console.log("updateWithdrawResult", updateResult)
       return data;
     })
     .then((data)=>{
@@ -64,16 +75,41 @@ function run(record) {
 
 async function validate(record){
   const {messageId, receiptHandle, body} = record;
+  const parsedBody = JSON.parse(body);
+  const {id, returnValues} = parsedBody;
+  const {from, to, value} = returnValues;
 
-  const fouondation = await getWalletAccount(FOUNDATION_ID);
-  const privateKey = await decryptPrivateKey(fouondation);
+  const foundation = await getWalletAccount(FOUNDATION_ID);
+  const privateKey = await decryptPrivateKey(foundation);
+
+  if(foundation.address !== to){
+    throw new Error("this address is not foundation!! : " + to);
+  }
+
+  const withdrawUser = await getUser(from);
+
+  console.log("psnet address", from, "mainnet address", withdrawUser.ethAccount);
 
   return {
-    messageId,
-    receiptHandle,
-    message: JSON.parse(body),
+    logId: id,
+    from: foundation.address,
+    to: withdrawUser.ethAccount,
+    value,
     privateKey
   }
+}
+function getUser(ethAccount){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.USER, {ethAccount: ethAccount})
+    .then((data)=>{
+      if(data) resolve(data);
+      else reject(new Error(`${ethAccount} is not exists in USER Collection`));
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
 }
 
 function getWalletAccount(userId){
@@ -137,7 +173,7 @@ function transferDeck(from, to, value, privateKey) {
       }
 
       const r = await sendTransaction(privateKey, rawTransaction);
-      resolve({transaction: r, event: {from, to, value}});
+      resolve(r);
     } catch (err) {
       reject(err);
     }
@@ -181,6 +217,37 @@ function sendTransaction(privateKey, rawTransaction) {
 function saveWithdraw(data){
   return new Promise((resolve, reject)=>{
     mongo.save(tables.WALLET_WITHDRAW, data)
+    .then((data)=>{
+      resolve(data);
+     })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
+
+function checkWithdrawResult(tableName, query) {
+  return new Promise((resolve, reject)=>{
+    mongo.find(tableName, {query: query})
+    .then((data)=>{
+      if(data[0] && data[0].mainnet){
+        console.log("already withdraw result saved", JSON.stringify(data[0].psnet));
+        reject(new Error("already withdraw result saved"))
+      } else {
+        resolve(true);
+      }
+        
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  });  
+}
+
+function updateWithdrawResult(tableName, query, data){
+  return new Promise(async (resolve, reject)=>{
+    mongo.update(tableName, query, {$set: data})
     .then((data)=>{
       resolve(data);
      })

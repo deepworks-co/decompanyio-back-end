@@ -69,7 +69,7 @@ package:
     - test/**
     
 functions:
-  actionWithdraw:
+  sqsWithdraw:
     handler: src/sqs/withdraw.handler
     timeout: 300
     events:

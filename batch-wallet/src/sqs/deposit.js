@@ -12,6 +12,10 @@ const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[walletConfig.psnet.id].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
+  /*
+  * 입금의 경우 메인넷의 Deck이 user->foundation으로 이동했기때문에,
+  * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
+  */
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -45,8 +49,6 @@ function run(record) {
     .then(async (params)=>{
       //console.log("params", params)
       const {logId, from, to, value, privateKey} = params;
-
-
       const result = await transferDeck(from, to, value, privateKey);
       return {logId, result}
     })
@@ -72,10 +74,7 @@ async function validate(record){
   const message =  JSON.parse(body);
   const {decoded, log} = message;
   const {from, to, value} = decoded;
-  /*
-  * 메인넷의 Deck이 user->foundation으로 이동했기때문에,
-  * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
-  */
+
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
   if(foundation.address !== to){
@@ -102,7 +101,7 @@ function getUser(ethAccount){
     mongo.findOne(tables.USER, {ethAccount: ethAccount})
     .then((data)=>{
       if(data) resolve(data);
-      else reject(new Error(`${userId} is not exists in USER Collection`));
+      else reject(new Error(`${ethAccount} is not exists in USER Collection`));
     })
     .catch((err)=>{
       reject(err);

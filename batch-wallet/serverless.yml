@@ -69,6 +69,8 @@ package:
     - test/**
     
 functions:
+  schedulerWithdrawEvent:
+    handler: src/scheduler/withdrawEvent.handler
   sqsDeposit:
     handler: src/sqs/deposit.handler
     timeout: 300
