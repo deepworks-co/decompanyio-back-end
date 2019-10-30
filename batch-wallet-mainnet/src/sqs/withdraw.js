@@ -67,14 +67,15 @@ function run(record) {
       resolve(data);
     })
     .catch((err)=>{
-      reject(err)
+      console.error(err);
+      resolve(err);
     })
   })
 
 }
 
 async function validate(record){
-  const {messageId, receiptHandle, body} = record;
+  const {body} = record;
   const parsedBody = JSON.parse(body);
   const {id, returnValues} = parsedBody;
   const {from, to, value} = returnValues;

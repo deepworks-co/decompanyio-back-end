@@ -27,32 +27,11 @@ module.exports.handler = (event, context, callback) => {
       eventName: "allEvents"
     })
   })
-  /*
-  .then((blockNumber)=>{
-    console.log("start block number", blockNumber, "to latest");
-    return getPastLog({
-      fromBlock: blockNumber,
-      toBlock: "latest",
-      address: CONTRACT_ADDRESS,
-      topics: []
-    })
-  })
-  .then((pastLogs)=>{
-    console.log("get past logs", pastLogs);
-    const eventLogs = pastLogs.map((log)=>{
-      const eventFunc = EVENT_SIGNATURES[log.topics[0]];
-      const decoded = getDecodedLog(log, eventFunc.inputs, eventFunc.anonymous?log.topics.splice(0):log.topics.splice(1));
-      return {log, eventFunc, decoded};
-    })
-    //console.log("eventLogs", eventLogs);
-    return eventLogs;
-  })
   .then(async (eventLogs)=>{
-    const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
+    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
     const results = await sendSQS(region, sqsUrl, eventLogs);
     return eventLogs;
   })
-   */
   .then((eventLogs)=>{
     console.log("eventLogs", eventLogs.length);
     return saveWithdraw(tables.WALLET_WITHDRAW, eventLogs);
@@ -128,10 +107,8 @@ function saveWithdraw(tableName, eventLogs){
 }
 
 function sendSQS(region, sqsUrl, eventLogs) {
-  const results = eventLogs
-  .filter((eventLog)=>{
-    const {eventFunc} = eventLog;
-    return eventFunc.name === "Transfer" && eventFunc.type === 'event'
+  const results = eventLogs.filter((eventLog)=>{
+    return eventLog.event === "Transfer"
   })
   .map((eventLog)=>{
     //const {log, decoded} = eventLog;

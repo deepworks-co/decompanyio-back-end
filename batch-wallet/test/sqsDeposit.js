@@ -39,7 +39,32 @@ describe('sqsDeposit', () => {
                   "value" : "10"
                 }
               })
-          }
+          },
+          {
+            "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+            "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            "body": JSON.stringify({
+              "log" : {
+                "address" : "0x564323D4DeD9551CCcf69231fBEf7e5701Ab0023",
+                "blockHash" : "0x228899fdc5211a615ceb3ea5bf01d35b916293343adae73ae185da31484d92b4",
+                "blockNumber" : 5346085,
+                "data" : "0x000000000000000000000000000000000000000000000000002386f26fc10000",
+                "logIndex" : 1,
+                "removed" : false,
+                "topics" : [
+                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                ],
+                "transactionHash" : "0x248fc9ad4e0b4e9f41113c53bcec2caabc9a3e3012b3cde883b9a1c96605b4ae",
+                "transactionIndex" : 1,
+                "id" : "log_3eb2f24d"
+              },
+              "decoded" : {
+                "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                "to" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
+                "value" : "10"
+              }
+            })
+        }
       ]
     }
     return wrapped.run(event).then((response) => {
