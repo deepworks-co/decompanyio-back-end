@@ -218,7 +218,7 @@ function checkDepositResult(tableName, query) {
     mongo.find(tableName, {query: query})
     .then((data)=>{
       if(data[0] && data[0].result){
-        console.log("already deposit result saved", JSON.stringify(data[0].psnet));
+        console.log("already deposit result saved", JSON.stringify(data[0].result));
         reject(new Error("already deposit result saved"))
       } else {
         resolve(true);

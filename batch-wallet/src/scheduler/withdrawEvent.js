@@ -9,6 +9,7 @@ const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
 const PSNET_ID = walletConfig.psnet.id;
 const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[PSNET_ID].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
+const FOUNDATION_ID = walletConfig.foundation;
 /*
 * psnet의 DECK 컨트렉트의 이벤트를 수집하고, 
 * 출금(user->foundation) 이벤트일 경우 SQS를 보내어 /src/sqs/withdraw 람다 함수를 호출한다.
@@ -19,8 +20,7 @@ module.exports.handler = (event, context, callback) => {
   getLatestWithdrawLog(tables.WALLET_WITHDRAW)
   .then((data)=>{
     //console.log("get latest log", data[0]);
-    return data[0]?data[0].log.blockNumber + 1:1;
-    
+    return data[0]?data[0].log.blockNumber + 1:1;    
   })
   .then((blockNumber)=>{
     
@@ -31,17 +31,23 @@ module.exports.handler = (event, context, callback) => {
     })
   })
   .then(async (eventLogs)=>{
-    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
-    const results = await sendSQS(region, sqsUrl, eventLogs);
+    console.log("eventLogs count", eventLogs.length);
+    const r = await saveWithdraw(tables.WALLET_WITHDRAW, eventLogs);
+    console.log("saveWithdraw", r);
     return eventLogs;
   })
-  .then((eventLogs)=>{
-    console.log("eventLogs", eventLogs.length);
-    return saveWithdraw(tables.WALLET_WITHDRAW, eventLogs);
+  .then(async (eventLogs)=>{
+    const foundation = await getWalletAccount(FOUNDATION_ID);
+    return getWithdrawEvent(eventLogs, foundation.address);
   })
- 
+  .then(async (eventLogs)=>{
+    console.log("getWithdrawEvent", eventLogs.length);
+    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
+    const results = await sendSQS(region, sqsUrl, eventLogs);
+    return results;
+  })
   .then((data)=>{
-    console.log(data);
+   
     callback(null, {
       success: true,
       data: data
@@ -120,4 +126,35 @@ function sendSQS(region, sqsUrl, eventLogs) {
   console.log("sent sqs message", results.length);
   return Promise.all(results);
   
+}
+
+function getWithdrawEvent(eventLogs, foundationAddress){
+  if(!foundationAddress){
+    throw new Error("foundation address is undefined");
+  }
+  return eventLogs.filter((eventLog)=>{
+    return eventLog.event === "Transfer"
+  }).filter((eventLog)=>{
+    
+    const {returnValues} = eventLog;
+    const {from, to, value} = returnValues;
+
+    return to && to === foundationAddress
+  })
+
+
+}
+
+function getWalletAccount(userId){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    .then((data)=>{
+      if(data) resolve(data);
+      else reject(new Error(`${userId} is not exists`));
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
 }

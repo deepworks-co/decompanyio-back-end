@@ -8,6 +8,7 @@ const mongo = new MongoWrapper(mongodb.endpoint);
 const MAINNET_DECK_ABI = require(`../../mainnet/${stage}/Deck.json`)
 const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].address;
 const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
+const FOUNDATION_ID = walletConfig.foundation;
 /*
 * mainnet의 DECK 컨트렉트의 이벤트를 수집하고, 
 * 입금 이벤트일 경우 SQS를 보내어 /src/sqs/deposit를 람다 함수를 호출한다.
@@ -29,16 +30,24 @@ module.exports.handler = (event, context, callback) => {
     })
   })
   .then(async (eventLogs)=>{
-    console.log("eventLogs", eventLogs.length);
-    const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
-    const results = await sendSQS(region, sqsUrl, eventLogs);
+    console.log("eventLogs count", eventLogs.length);
+    const r = await saveDeposit(tables.WALLET_DEPOSIT, eventLogs)
+    console.log("savewDeposit", r);
     return eventLogs;
   })
-  .then((eventLogs)=>{
-    return saveDeposit(tables.WALLET_DEPOSIT, eventLogs);
+  .then(async (eventLogs)=>{
+    const foundation = await getWalletAccount(FOUNDATION_ID);
+    
+    return getDepositEvent(eventLogs, foundation.address);
+  })
+  .then(async (eventLogs)=>{
+    console.log("getDepositEvent", eventLogs.length);
+    const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
+    const results = await sendSQS(region, sqsUrl, eventLogs);
+    return results;
   })
   .then((data)=>{
-    console.log(data);
+    
     callback(null, {
       success: true,
       data: data
@@ -102,17 +111,43 @@ function saveDeposit(tableName, eventLogs){
 }
 
 function sendSQS(region, sqsUrl, eventLogs) {
-  const results = eventLogs
-  .filter((eventLog)=>{
-    return eventLog.event === "Transfer"
-  })
-  .map((eventLog)=>{
+  const results = eventLogs.map((eventLog)=>{
     //const {log, decoded} = eventLog;
     //const {from, to, value} = decoded;
-    //return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
-    return Promise.resolve(eventLog);
+    return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
   })
   console.log("sent sqs message", results.length);
   return Promise.all(results);
   
+}
+
+function getDepositEvent(eventLogs, foundationAddress){
+  if(!foundationAddress){
+    throw new Error("foundation address is undefined");
+  }
+  return eventLogs.filter((eventLog)=>{
+    return eventLog.event === "Transfer"
+  }).filter((eventLog)=>{
+    
+    const {returnValues} = eventLog;
+    const {from, to, value} = returnValues;
+
+    return to && to === foundationAddress
+  })
+
+
+}
+
+function getWalletAccount(userId){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    .then((data)=>{
+      if(data) resolve(data);
+      else reject(new Error(`${userId} is not exists`));
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
 }
