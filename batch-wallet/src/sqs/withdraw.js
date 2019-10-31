@@ -4,18 +4,19 @@ const {kms, sqs, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 
-const web3 = new Web3(walletConfig.psnet.providerUrl);
+const web3 = new Web3(walletConfig.mainnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
-const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
-const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[walletConfig.psnet.id].address;
-const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
+const MAINNET_DECK_ABI = require(`../../mainnet/${stage}/Deck.json`)
+const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].address;
+const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
   /*
-  * 입금의 경우 메인넷의 Deck이 user->foundation으로 이동했기때문에,
-  * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
+  * 출금의 경우 psnet에 소지한 Deck을 foundation으로 이동시켜 출금 신청을 하면,
+  * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
   */
+
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -30,6 +31,7 @@ module.exports.handler = (event, context, callback) => {
   })
   .catch((err)=>{
     console.error(err);
+    //callback(null, err);
     callback(err);
   })
 
@@ -42,21 +44,24 @@ function run(record) {
     .then(async (params)=>{
       console.log("vaildate parameter", params);
       const {logId} = params;
-      const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
-      console.log("checkDepositResult", check)
+      const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
+      console.log("checkWithdrawResult", check)
       return params;
     })
     .then(async (params)=>{
       //console.log("params", params)
       const {logId, from, to, value, privateKey} = params;
       const result = await transferDeck(from, to, value, privateKey);
-      return {logId, result}
+      return {
+        logId,
+        result
+      }
     })
     .then(async (data)=>{
       const {logId, result} = data;
       console.log("transaction info", data);
-      const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
-      console.log("updateDepositResult", updateResult)
+      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
+      console.log("updateWithdrawResult", updateResult)
       return data;
     })
     .then((data)=>{
@@ -72,30 +77,29 @@ function run(record) {
 
 async function validate(record){
   const {body} = record;
-  const parsedBody =  JSON.parse(body);
-  const {returnValues, id} = parsedBody;
+  const parsedBody = JSON.parse(body);
+  const {id, returnValues} = parsedBody;
   const {from, to, value} = returnValues;
 
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
+
   if(foundation.address !== to){
     throw new Error("this address is not foundation!! : " + to);
   }
 
-  const user = await getUser(from);
-  const targetUser = await getWalletAccount(user._id);
-  console.log("mainnet address", from, "psnet address", targetUser.address);
-  
+  const withdrawUser = await getUser(from);
+
+  console.log("psnet address", from, "mainnet address", withdrawUser.ethAccount);
+
   return {
     logId: id,
     from: foundation.address,
-    to: targetUser.address,
-    value: value,
-    foundation,
+    to: withdrawUser.ethAccount,
+    value,
     privateKey
   }
 }
-
 function getUser(ethAccount){
 
   return new Promise((resolve, reject)=>{
@@ -170,8 +174,6 @@ function transferDeck(from, to, value, privateKey) {
         "data": transferMethod.encodeABI()
       }
 
-      console.log("rawTransaction", rawTransaction);
-
       const r = await sendTransaction(privateKey, rawTransaction);
       resolve(r);
     } catch (err) {
@@ -213,13 +215,27 @@ function sendTransaction(privateKey, rawTransaction) {
 
 }
 
-function checkDepositResult(tableName, query) {
+
+function saveWithdraw(data){
+  return new Promise((resolve, reject)=>{
+    mongo.save(tables.WALLET_WITHDRAW, data)
+    .then((data)=>{
+      resolve(data);
+     })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
+
+function checkWithdrawResult(tableName, query) {
   return new Promise((resolve, reject)=>{
     mongo.find(tableName, {query: query})
     .then((data)=>{
       if(data[0] && data[0].result){
-        console.log("already deposit result saved", JSON.stringify(data[0].psnet));
-        reject(new Error("already deposit result saved"))
+        console.log("already withdraw result saved", JSON.stringify(data[0].psnet));
+        reject(new Error("already withdraw result saved"))
       } else {
         resolve(true);
       }
@@ -231,7 +247,7 @@ function checkDepositResult(tableName, query) {
   });  
 }
 
-function updateDepositResult(tableName, query, data){
+function updateWithdrawResult(tableName, query, data){
   return new Promise(async (resolve, reject)=>{
     mongo.update(tableName, query, {$set: data})
     .then((data)=>{
