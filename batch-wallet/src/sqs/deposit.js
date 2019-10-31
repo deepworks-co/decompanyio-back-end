@@ -18,7 +18,7 @@ const FOUNDATION_ID = walletConfig.foundation;
   */
 module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-
+  console.log("sqs event", event.Records);
   const record = event.Records[0];
 
   const params = await validate(record)
@@ -35,7 +35,7 @@ module.exports.handler = async (event, context, callback) => {
   const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
   console.log("updateDepositResult", updateResult);
 
-  return callback(null, "complate")
+  return callback(null, "complete")
 };
 
 async function validate(record){
@@ -119,16 +119,19 @@ function transferDeck(from, to, value, privateKey) {
     try{
       const transferMethod = DECK_CONTRACT.methods.transfer(to, value);
   
+      const gasPrice = await web3.eth.getGasPrice();
+      console.log("gasPrice", gasPrice);
+
+      const nonce = await web3.eth.getTransactionCount(from);
+      console.log("nonce", nonce);
+
       const estimateGas = await transferMethod.estimateGas({
         from: from
       });
       const gasLimit = Math.round(estimateGas);
       
       console.log("gasLimit", gasLimit);
-      const gasPrice = await web3.eth.getGasPrice();
-
-      const nonce = await web3.eth.getTransactionCount(from);
-        //creating raw tranaction
+      //creating raw tranaction
       const rawTransaction = {
         "nonce": web3.utils.toHex(nonce),
         "gasPrice": web3.utils.toHex(gasPrice),
@@ -143,6 +146,7 @@ function transferDeck(from, to, value, privateKey) {
       const r = await sendTransaction(privateKey, rawTransaction);
       resolve(r);
     } catch (err) {
+      console.log("transferDeck", err);
       reject(err);
     }
   })
