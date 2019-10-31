@@ -35,7 +35,7 @@ module.exports.handler = async (event, context, callback) => {
   const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
   console.log("updateWithdrawResult", updateResult)
   
-  return callback(null, "complate")
+  return callback(null, "complete")
 };
 
 
