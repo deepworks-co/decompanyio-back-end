@@ -30,7 +30,6 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, `deposit result saved ${logId}`);
   }
 
-  const {logId, from, to, value, privateKey} = params;
   const result = await transferDeck(from, to, value, privateKey);
 
   const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
