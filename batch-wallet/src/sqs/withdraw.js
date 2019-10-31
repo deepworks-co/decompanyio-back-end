@@ -19,61 +19,43 @@ const FOUNDATION_ID = walletConfig.foundation;
 
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
+  
+  const record = event.Records[0];
 
-  const procs = event.Records.map((record) => {
-    return run(record);
-  } )
-
-
-  Promise.all(procs)
+  validate(record)
+  .then(async (params)=>{
+    console.log("vaildate parameter", params);
+    const {logId} = params;
+    const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
+    console.log("checkWithdrawResult", check)
+    return params;
+  })
+  .then(async (params)=>{
+    //console.log("params", params)
+    const {logId, from, to, value, privateKey} = params;
+    const result = await transferDeck(from, to, value, privateKey);
+    return {
+      logId,
+      result
+    }
+  })
+  .then(async (data)=>{
+    const {logId, result} = data;
+    console.log("transaction info", data);
+    const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
+    console.log("updateWithdrawResult", updateResult)
+    return data;
+  })
   .then((data)=>{
-    callback(null, data);
+    resolve(data);
   })
   .catch((err)=>{
     console.error(err);
-    //callback(null, err);
-    callback(err);
+    resolve(err);
   })
 
 };
 
-function run(record) {
-
-  return new Promise((resolve, reject)=>{
-    validate(record)
-    .then(async (params)=>{
-      console.log("vaildate parameter", params);
-      const {logId} = params;
-      const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
-      console.log("checkWithdrawResult", check)
-      return params;
-    })
-    .then(async (params)=>{
-      //console.log("params", params)
-      const {logId, from, to, value, privateKey} = params;
-      const result = await transferDeck(from, to, value, privateKey);
-      return {
-        logId,
-        result
-      }
-    })
-    .then(async (data)=>{
-      const {logId, result} = data;
-      console.log("transaction info", data);
-      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
-      console.log("updateWithdrawResult", updateResult)
-      return data;
-    })
-    .then((data)=>{
-      resolve(data);
-    })
-    .catch((err)=>{
-      console.error(err);
-      resolve(err);
-    })
-  })
-
-}
 
 async function validate(record){
   const {body} = record;
