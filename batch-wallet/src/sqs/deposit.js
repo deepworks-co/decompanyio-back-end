@@ -19,12 +19,29 @@ const FOUNDATION_ID = walletConfig.foundation;
 module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const procs = event.Records.map((record) => {
-    return run(record);
-  } )
+  const record = event.Records[0];
 
-
-  Promise.all(procs)
+  validate(record)
+  .then(async (params)=>{
+    console.log("vaildate parameter", params);
+    const {logId} = params;
+    const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
+    console.log("checkDepositResult", check)
+    return params;
+  })
+  .then(async (params)=>{
+    //console.log("params", params)
+    const {logId, from, to, value, privateKey} = params;
+    const result = await transferDeck(from, to, value, privateKey);
+    return {logId, result}
+  })
+  .then(async (data)=>{
+    const {logId, result} = data;
+    console.log("transaction info", data);
+    const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
+    console.log("updateDepositResult", updateResult)
+    return data;
+  })
   .then((data)=>{
     callback(null, data);
   })
@@ -32,43 +49,7 @@ module.exports.handler = (event, context, callback) => {
     console.error(err);
     callback(err);
   })
-
 };
-
-function run(record) {
-
-  return new Promise((resolve, reject)=>{
-    validate(record)
-    .then(async (params)=>{
-      console.log("vaildate parameter", params);
-      const {logId} = params;
-      const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
-      console.log("checkDepositResult", check)
-      return params;
-    })
-    .then(async (params)=>{
-      //console.log("params", params)
-      const {logId, from, to, value, privateKey} = params;
-      const result = await transferDeck(from, to, value, privateKey);
-      return {logId, result}
-    })
-    .then(async (data)=>{
-      const {logId, result} = data;
-      console.log("transaction info", data);
-      const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
-      console.log("updateDepositResult", updateResult)
-      return data;
-    })
-    .then((data)=>{
-      resolve(data);
-    })
-    .catch((err)=>{
-      console.error(err);
-      resolve(err);
-    })
-  })
-
-}
 
 async function validate(record){
   const {body} = record;
