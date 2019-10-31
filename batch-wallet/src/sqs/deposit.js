@@ -16,43 +16,25 @@ const FOUNDATION_ID = walletConfig.foundation;
   * 입금의 경우 메인넷의 Deck이 user->foundation으로 이동했기때문에,
   * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
   */
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const record = event.Records[0];
 
-  validate(record)
-  .then(async (params)=>{
-    console.log("vaildate parameter", params);
-    const {logId} = params;
-    const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
+  const params = validate(record)
+  console.log("vaildate parameter", params);
+  const {logId, from, to, value, privateKey} = params;
+  const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
 
-    if(check){
-      return callback(null, `deposit result saved ${logId}`);
-    }
-    
-    return params;
-  })
-  .then(async (params)=>{
-    //console.log("params", params)
-    const {logId, from, to, value, privateKey} = params;
-    const result = await transferDeck(from, to, value, privateKey);
-    return {logId, result}
-  })
-  .then(async (data)=>{
-    const {logId, result} = data;
-    console.log("transaction info", data);
-    const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
-    console.log("updateDepositResult", updateResult)
-    return data;
-  })
-  .then((data)=>{
-    callback(null, data);
-  })
-  .catch((err)=>{
-    console.error(err);
-    callback(err);
-  })
+  if(check){
+    return callback(null, `deposit result saved ${logId}`);
+  }
+
+  const {logId, from, to, value, privateKey} = params;
+  const result = await transferDeck(from, to, value, privateKey);
+
+  const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
+  console.log("updateDepositResult", updateResult);
 };
 
 async function validate(record){
