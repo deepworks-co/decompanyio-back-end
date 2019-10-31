@@ -27,7 +27,9 @@ module.exports.handler = (event, context, callback) => {
     console.log("vaildate parameter", params);
     const {logId} = params;
     const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
-    console.log("checkWithdrawResult", check)
+    if(check){
+      return callback(null, `withdraw result saved ${logId}`);
+    }
     return params;
   })
   .then(async (params)=>{
@@ -217,9 +219,9 @@ function checkWithdrawResult(tableName, query) {
     .then((data)=>{
       if(data[0] && data[0].result){
         console.log("already withdraw result saved", JSON.stringify(data[0].result));
-        reject(new Error("already withdraw result saved"))
+        resolve(true)
       } else {
-        resolve(true);
+        resolve(false);
       }
         
     })

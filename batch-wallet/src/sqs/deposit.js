@@ -26,7 +26,11 @@ module.exports.handler = (event, context, callback) => {
     console.log("vaildate parameter", params);
     const {logId} = params;
     const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
-    console.log("checkDepositResult", check)
+
+    if(check){
+      return callback(null, `deposit result saved ${logId}`);
+    }
+    
     return params;
   })
   .then(async (params)=>{
@@ -200,9 +204,9 @@ function checkDepositResult(tableName, query) {
     .then((data)=>{
       if(data[0] && data[0].result){
         console.log("already deposit result saved", JSON.stringify(data[0].result));
-        reject(new Error("already deposit result saved"))
-      } else {
         resolve(true);
+      } else {
+        resolve(false);
       }
         
     })
