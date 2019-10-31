@@ -17,45 +17,25 @@ const FOUNDATION_ID = walletConfig.foundation;
   * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
   */
 
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   
   const record = event.Records[0];
 
-  validate(record)
-  .then(async (params)=>{
-    console.log("vaildate parameter", params);
-    const {logId} = params;
-    const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
-    if(check){
-      return callback(null, `withdraw result saved ${logId}`);
-    }
-    return params;
-  })
-  .then(async (params)=>{
-    //console.log("params", params)
-    const {logId, from, to, value, privateKey} = params;
-    const result = await transferDeck(from, to, value, privateKey);
-    return {
-      logId,
-      result
-    }
-  })
-  .then(async (data)=>{
-    const {logId, result} = data;
-    console.log("transaction info", data);
-    const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
-    console.log("updateWithdrawResult", updateResult)
-    return data;
-  })
-  .then((data)=>{
-    resolve(data);
-  })
-  .catch((err)=>{
-    console.error(err);
-    resolve(err);
-  })
+  const params = await validate(record)
 
+  const {logId, from, to, value, privateKey} = params;
+  console.log("vaildate parameter", params);
+    
+  const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
+  if(check){
+    return callback(null, `withdraw result saved ${logId}`);
+  }
+  const result = await transferDeck(from, to, value, privateKey);
+  const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
+  console.log("updateWithdrawResult", updateResult)
+  
+  return callback(null, "complate")
 };
 
 

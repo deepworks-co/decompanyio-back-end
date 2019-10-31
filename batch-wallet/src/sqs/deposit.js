@@ -34,6 +34,8 @@ module.exports.handler = async (event, context, callback) => {
 
   const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
   console.log("updateDepositResult", updateResult);
+
+  return callback(null, "complate")
 };
 
 async function validate(record){
