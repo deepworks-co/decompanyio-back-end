@@ -72,15 +72,17 @@ functions:
   schedulerWithdrawEvent:
     handler: src/scheduler/withdrawEvent.handler
     timeout: 30
+    reservedConcurrency: 1
     events:
       - schedule: rate(1 minute) 
 
   schedulerDepositEvent:
     handler: src/scheduler/depositEvent.handler
     timeout: 30
+    reservedConcurrency: 1
     events:
       - schedule: rate(1 minute)
-      
+
   sqsDeposit:
     handler: src/sqs/deposit.handler
     timeout: 300
