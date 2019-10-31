@@ -21,7 +21,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const record = event.Records[0];
 
-  const params = validate(record)
+  const params = await validate(record)
   console.log("vaildate parameter", params);
   const {logId, from, to, value, privateKey} = params;
   const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
