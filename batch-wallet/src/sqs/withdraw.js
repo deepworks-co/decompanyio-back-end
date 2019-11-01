@@ -27,11 +27,12 @@ module.exports.handler = (event, context, callback) => {
       const r = await run(record);
       console.log(r);
     }catch(err){
-      console.error(err);
+      console.error("run error",  err);
       try{
-        await sns.errorPublish(region, ERROR_TOPIC, {event: "withdraw", record: event.Records[i], error: err.stack.split("\n")});
-      } catch(err){
-        console.error("errorPublish fail", err);
+        const publishResult = await sns.errorPublish(region, ERROR_TOPIC, {event: "withdraw", record: event.Records[i], error: err.stack.split("\n")});
+        console.log("error published!!", publishResult)
+      } catch(e1){
+        console.error("errorPublish fail", e1);
       }
     } finally {
       console.log("job end " + event.Records[i]);
@@ -72,7 +73,7 @@ function run(record) {
     })
     .catch((err)=>{
       console.error(err);
-      resolve(err);
+      reject(err);
     })
   })
 
