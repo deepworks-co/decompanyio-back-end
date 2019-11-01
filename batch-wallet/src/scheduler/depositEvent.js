@@ -20,13 +20,14 @@ module.exports.handler = (event, context, callback) => {
   .then((data)=>{
     //console.log("get latest log", data[0]);
     return data[0]?data[0].log.blockNumber + 1:1;
-    
   })
-  .then((blockNumber)=>{
+  .then(async (blockNumber)=>{
+    const foundation = await getWalletAccount(FOUNDATION_ID);
     return getEventLog(DECK_CONTRACT, {
       fromBlock: blockNumber,
       toBlock: "latest",
-      eventName: "allEvents"
+      eventName: "Transfer",
+      filter: {to: foundation.address}
     })
   })
   .then(async (eventLogs)=>{
@@ -36,18 +37,13 @@ module.exports.handler = (event, context, callback) => {
     return eventLogs;
   })
   .then(async (eventLogs)=>{
-    const foundation = await getWalletAccount(FOUNDATION_ID);
-    
-    return getDepositEvent(eventLogs, foundation.address);
-  })
-  .then(async (eventLogs)=>{
     console.log("getDepositEvent", eventLogs.length);
     const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
     const results = await sendSQS(region, sqsUrl, eventLogs);
     return results;
   })
   .then((data)=>{
-    
+    console.log(data.length);
     callback(null, {
       success: true,
       data: data
@@ -76,11 +72,12 @@ function getLatestDepositLog(tableName){
 }
 
 function getEventLog(contract, params) {
-  const {fromBlock, toBlock, eventName} = params;
+  const {fromBlock, toBlock, eventName, filter} = params;
   return new Promise((resolve, reject)=>{
 
     console.log("getEventLog options", params)
     contract.getPastEvents(eventName, {
+      filter: filter,
       fromBlock,
       toBlock
     })
