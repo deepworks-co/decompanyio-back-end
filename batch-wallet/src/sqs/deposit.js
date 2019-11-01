@@ -22,7 +22,7 @@ module.exports.handler = async (event, context, callback) => {
   try{
     console.log("get sqs event and waiting", event.Records[0]);
 
-    await sleep(60000);
+    await sleep(30000);
     console.log("go go go go");
 
     const record = event.Records[0];
