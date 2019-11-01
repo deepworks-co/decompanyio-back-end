@@ -22,7 +22,6 @@ module.exports.handler = async (event, context, callback) => {
   let i;
   for(i=0;i<event.Records.length;i++){
     try{
-      throw new Error("그냥 내본다.~")
       const record = event.Records[i];
       const r = await run(record);
       console.log(r);
