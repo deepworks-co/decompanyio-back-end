@@ -18,24 +18,33 @@ const FOUNDATION_ID = walletConfig.foundation;
   */
 module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  console.log("sqs event", event.Records);
-  const record = event.Records[0];
 
-  const params = await validate(record)
-  console.log("vaildate parameter", params);
-  const {logId, from, to, value, privateKey} = params;
-  const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
+  try{
+    console.log("sqs event", event.Records);
+    const record = event.Records[0];
 
-  if(check){
-    return callback(null, `deposit result saved ${logId}`);
+    const params = await validate(record)
+    console.log("vaildate parameter", params);
+
+    const {logId, from, to, value, privateKey} = params;
+    const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
+
+    if(check){
+      return callback(null, `deposit result saved ${logId}`);
+    }
+
+    const result = await transferDeck(from, to, value, privateKey);
+
+    const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
+    console.log("updateDepositResult", updateResult);
+
+    
+  } catch(err){
+    console.error(err);
+  } finally {
+    return callback(null, "complete")
   }
-
-  const result = await transferDeck(from, to, value, privateKey);
-
-  const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
-  console.log("updateDepositResult", updateResult);
-
-  return callback(null, "complete")
+  
 };
 
 async function validate(record){
