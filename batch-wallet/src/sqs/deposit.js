@@ -29,8 +29,9 @@ module.exports.handler = async (event, context, callback) => {
       console.error(err);
       try{
         await sns.errorPublish(region, ERROR_TOPIC, {event: "deposit", record: event.Records[i], error: err.stack.split("\n")});
-      } catch(err){
-        console.error("errorPublish fail", err);
+        console.log("error published!!")
+      } catch(e1){
+        console.error("errorPublish fail", e1);
       }
 
     } finally {
