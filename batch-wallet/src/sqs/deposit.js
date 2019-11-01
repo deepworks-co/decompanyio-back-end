@@ -34,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
       }
 
     } finally {
-      console.log("job end " + event.Records[i]);
+      console.log("job end " + JSON.stringify(event.Records[i]));
       callback(null, "complete");
     }
 

@@ -46,6 +46,7 @@ provider:
        - kms:*
        - ses:*
        - codedeploy:*
+       - sns:*
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
