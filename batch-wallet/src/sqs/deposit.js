@@ -20,7 +20,11 @@ module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try{
-    console.log("sqs event", event.Records);
+    console.log("get sqs event and waiting", event.Records[0]);
+
+    await sleep(60000);
+    console.log("go go go go");
+
     const record = event.Records[0];
 
     const params = await validate(record)
@@ -222,4 +226,12 @@ function updateDepositResult(tableName, query, data){
       reject(err);
     })
   })
+}
+
+
+
+function sleep(ms){
+   return new Promise(resolve=>{
+       setTimeout(resolve,ms)
+   })
 }
