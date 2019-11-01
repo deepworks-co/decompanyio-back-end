@@ -85,7 +85,7 @@ functions:
 
   sqsDeposit:
     handler: src/sqs/deposit.handler
-    timeout: 30
+    timeout: 60
     reservedConcurrency: 1
     events:
       - sqs: 
@@ -94,7 +94,7 @@ functions:
 
   sqsWithdraw:
     handler: src/sqs/withdraw.handler
-    timeout: 30
+    timeout: 60
     reservedConcurrency: 1
     events:
       - sqs: 
