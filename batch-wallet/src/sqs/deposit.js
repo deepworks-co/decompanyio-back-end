@@ -12,7 +12,7 @@ const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[walletConfig.psnet.id].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
-const ERROR_TOPIC = "arn:aws:sns:us-west-1:197966029048:lambda-dev-alarm:0cfe1b0d-b776-46ea-9035-f575f1bb07f2"
+const ERROR_TOPIC = "arn:aws:sns:us-west-1:197966029048:lambda-dev-alarm"
   /*
   * 입금의 경우 메인넷의 Deck이 user->foundation으로 이동했기때문에,
   * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
@@ -27,7 +27,12 @@ module.exports.handler = async (event, context, callback) => {
       console.log(r);
     }catch(err){
       console.error(err);
-      await sns.errorPublish(ERROR_TOPIC, {record: event.Records[i], error: err});
+      try{
+        await sns.errorPublish(ERROR_TOPIC, {record: event.Records[i], error: err});
+      } catch(err){
+        console.error("errorPublish fail", err);
+      }
+      
 
     } finally {
       console.log("job end " + event.Records[i]);

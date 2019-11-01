@@ -10,5 +10,5 @@ exports.errorPublish = (topic, params) => {
     return sns.publish({
       Message: JSON.stringify(params),
       TopicArn: topic
-    })
+    }).promise();
  }
