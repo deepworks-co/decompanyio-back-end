@@ -1,4 +1,5 @@
 'use strict';
+const R = require('ramda');
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
 const {kms, sns, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
@@ -36,10 +37,11 @@ module.exports.handler = async (event, context, callback) => {
 
     } finally {
       console.log("job end " + JSON.stringify(event.Records[i]));
-      callback(null, "complete");
+      
     }
 
   }
+  callback(null, "complete");
 };
 
 function run(record) {
@@ -56,7 +58,8 @@ function run(record) {
     .then(async (params)=>{
       //console.log("params", params)
       const {logId, from, to, value, privateKey} = params;
-      const result = await transferDeck(from, to, value, privateKey);
+      const updateCallback = R.curry(updateDepositResult)(tables.WALLET_DEPOSIT, {_id: logId});
+      const result = await transferDeck(from, to, value, privateKey, updateCallback);
       return {logId, result}
     })
     .then(async (data)=>{
@@ -89,21 +92,21 @@ async function validate(record){
     throw new Error("this address is not foundation!! : " + to);
   }
 
-  const user = await getUser(from);
-  const targetUser = await getWalletAccount(user._id);
-  console.log("mainnet address", from, "psnet address", targetUser.address);
+  const user = await getUserFromEthAccount(from);
+  const walletUser = await getWalletAccount(user._id);
+  console.log("psnet address", walletUser.address, "mainnet address", from);
   
   return {
     logId: id,
     from: foundation.address,
-    to: targetUser.address,
+    to: walletUser.address,
     value: value,
     foundation,
     privateKey
   }
 }
 
-function getUser(ethAccount){
+function getUserFromEthAccount(ethAccount){
 
   return new Promise((resolve, reject)=>{
     mongo.findOne(tables.USER, {ethAccount: ethAccount})
@@ -152,7 +155,7 @@ function decryptPrivateKey(walletUser) {
 
 
 
-function transferDeck(from, to, value, privateKey) {
+function transferDeck(from, to, value, privateKey, callback) {
 
   return new Promise(async (resolve, reject)=>{
     try{
@@ -179,7 +182,7 @@ function transferDeck(from, to, value, privateKey) {
 
       console.log("rawTransaction", rawTransaction);
 
-      const r = await sendTransaction(privateKey, rawTransaction);
+      const r = await sendTransaction(privateKey, rawTransaction, callback);
       resolve(r);
     } catch (err) {
       reject(err);
@@ -189,7 +192,7 @@ function transferDeck(from, to, value, privateKey) {
   
 }
 
-function sendTransaction(privateKey, rawTransaction) {
+function sendTransaction(privateKey, rawTransaction, callback) {
 
   return new Promise((resolve, reject)=>{
     if(!privateKey){
@@ -208,9 +211,13 @@ function sendTransaction(privateKey, rawTransaction) {
     transaction.sign(privateKey);
     //sending transacton via web3js module
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
-    .once('transactionHash', function(hash){
+    .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
       //resolve({success: true, transactionHash: hash});
+      if(callback){
+        const updateResult = await callback({result: {transactionHash: hash}});  
+      }
+      
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
       resolve(receipt);

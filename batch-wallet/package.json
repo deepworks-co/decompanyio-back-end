@@ -10,6 +10,7 @@
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "ethereumjs-tx": "^1.3.7",
+    "ramda": "^0.26.1",
     "web3": "^1.2.1"
   },
   "devDependencies": {

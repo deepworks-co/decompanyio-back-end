@@ -51,25 +51,25 @@ describe('sqsWithdraw', () => {
               "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
               "body": JSON.stringify({
                 "address" : "0x95eBC541197B3338D5403F09998Bb53a01c87E84",
-                "blockNumber" : 183642,
-                "transactionHash" : "0xfe4b9dabe9fc1b10bc790e8ee1356fc435c43b560e59b0a922daa91d8fe7ac37",
+                "blockNumber" : 190453,
+                "transactionHash" : "0x5593aff0e04e951c3dfaf6774b288d60c076fd20664292623ce7fface014e751",
                 "transactionIndex" : 0,
-                "blockHash" : "0xe975c2d1a3b9fd034324386fe0d546bf1c5eb7b1fd9cdfc838144e0f98436260",
+                "blockHash" : "0x9aa119ae23831d7c0d6b264431a2e33d0903e3b425c0576f268ce080cd3ece27",
                 "logIndex" : 0,
                 "removed" : false,
-                "id" : "log_6162c10e",
+                "id" : "log_db4a5f3d",
                 "returnValues" : {
                   "0" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
                   "1" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
-                  "2" : "10000000000000000000",
+                  "2" : "1000000000000000000000",
                   "from" : "0x4Ee128892469e7962e6E617727cb99C59525D7D2",
                   "to" : "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
-                  "value" : "10000000000000000000"
+                  "value" : "1000000000000000000000"
                 },
                 "event" : "Transfer",
                 "signature" : "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
                 "raw" : {
-                  "data" : "0x0000000000000000000000000000000000000000000000008ac7230489e80000",
+                  "data" : "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
                   "topics" : [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
                     "0x0000000000000000000000004ee128892469e7962e6e617727cb99c59525d7d2",
