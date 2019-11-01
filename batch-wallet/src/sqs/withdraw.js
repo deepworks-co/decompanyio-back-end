@@ -17,27 +17,61 @@ const FOUNDATION_ID = walletConfig.foundation;
   * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
   */
 
-module.exports.handler = async (event, context, callback) => {
+module.exports.handler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  
-  const record = event.Records[0];
 
-  const params = await validate(record)
-
-  const {logId, from, to, value, privateKey} = params;
-  console.log("vaildate parameter", params);
-    
-  const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
-  if(check){
-    return callback(null, `withdraw result saved ${logId}`);
+  let i;
+  for(i=0;i<event.Records.length;i++) {
+    try{
+      const record = event.Records[i];
+      const r = await run(record);
+      console.log(r);
+    }catch(err){
+      console.error(err);
+    } finally {
+      console.log("job end " + event.Records[i]);
+    }
   }
-  const result = await transferDeck(from, to, value, privateKey);
-  const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
-  console.log("updateWithdrawResult", updateResult)
-  
-  return callback(null, "complete")
+
 };
 
+function run(record) {
+
+  return new Promise((resolve, reject)=>{
+    validate(record)
+    .then(async (params)=>{
+      console.log("vaildate parameter", params);
+      const {logId} = params;
+      const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
+      //console.log("checkWithdrawResult", check)
+      return params;
+    })
+    .then(async (params)=>{
+      //console.log("params", params)
+      const {logId, from, to, value, privateKey} = params;
+      const result = await transferDeck(from, to, value, privateKey);
+      return {
+        logId,
+        result
+      }
+    })
+    .then(async (data)=>{
+      const {logId, result} = data;
+      console.log("transaction info", data);
+      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
+      console.log("updateWithdrawResult", updateResult)
+      return data;
+    })
+    .then((data)=>{
+      resolve(data);
+    })
+    .catch((err)=>{
+      console.error(err);
+      resolve(err);
+    })
+  })
+
+}
 
 async function validate(record){
   const {body} = record;
@@ -199,9 +233,9 @@ function checkWithdrawResult(tableName, query) {
     .then((data)=>{
       if(data[0] && data[0].result){
         console.log("already withdraw result saved", JSON.stringify(data[0].result));
-        resolve(true)
+        reject(new Error("already withdraw result saved"))
       } else {
-        resolve(false);
+        resolve(true);
       }
         
     })

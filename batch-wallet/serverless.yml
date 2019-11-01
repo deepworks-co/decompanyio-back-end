@@ -85,21 +85,23 @@ functions:
 
   sqsDeposit:
     handler: src/sqs/deposit.handler
-    timeout: 60
+    timeout: 300
     reservedConcurrency: 1
+    onError: arn:aws:sns:us-west-1:197966029048:lambda-dev-alarm
     events:
       - sqs: 
           arn: arn:aws:sqs:us-west-1:197966029048:dev-ca-deposit
-          batchSize: 1
+          batchSize: 10
 
   sqsWithdraw:
     handler: src/sqs/withdraw.handler
-    timeout: 60
+    timeout: 300
     reservedConcurrency: 1
+    onError: arn:aws:sns:us-west-1:197966029048:lambda-dev-alarm
     events:
       - sqs: 
           arn: arn:aws:sqs:us-west-1:197966029048:dev-ca-withdraw
-          batchSize: 1
+          batchSize: 10
 
 
 # you can add CloudFormation resource templates here

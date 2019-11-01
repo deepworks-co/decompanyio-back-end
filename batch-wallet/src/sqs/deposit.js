@@ -18,38 +18,55 @@ const FOUNDATION_ID = walletConfig.foundation;
   */
 module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-
-  try{
-    console.log("get sqs event and waiting", event.Records[0]);
-
-    await sleep(30000);
-    console.log("go go go go");
-
-    const record = event.Records[0];
-
-    const params = await validate(record)
-    console.log("vaildate parameter", params);
-
-    const {logId, from, to, value, privateKey} = params;
-    const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
-
-    if(check){
-      return callback(null, `deposit result saved ${logId}`);
+  let i;
+  for(i=0;i<event.Records.length;i++){
+    try{
+      const record = event.Records[i];
+      const r = await run(record);
+      console.log(r);
+    }catch(err){
+      console.error(err);
+    } finally {
+      console.log("job end " + event.Records[i]);
     }
 
-    const result = await transferDeck(from, to, value, privateKey);
-
-    const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
-    console.log("updateDepositResult", updateResult);
-
-    
-  } catch(err){
-    console.error(err);
-  } finally {
-    return callback(null, "complete")
   }
-  
 };
+
+function run(record) {
+
+  return new Promise((resolve, reject)=>{
+    validate(record)
+    .then(async (params)=>{
+      console.log("vaildate parameter", params);
+      const {logId} = params;
+      const check = await checkDepositResult(tables.WALLET_DEPOSIT, {_id: logId});
+      //console.log("checkDepositResult", check)
+      return params;
+    })
+    .then(async (params)=>{
+      //console.log("params", params)
+      const {logId, from, to, value, privateKey} = params;
+      const result = await transferDeck(from, to, value, privateKey);
+      return {logId, result}
+    })
+    .then(async (data)=>{
+      const {logId, result} = data;
+      console.log("transaction info", data);
+      const updateResult = await updateDepositResult(tables.WALLET_DEPOSIT, {_id: logId}, {result: result});
+      console.log("updateDepositResult", updateResult)
+      return data;
+    })
+    .then((data)=>{
+      resolve(data);
+    })
+    .catch((err)=>{
+      console.error(err);
+      resolve(err);
+    })
+  })
+
+}
 
 async function validate(record){
   const {body} = record;
@@ -132,19 +149,16 @@ function transferDeck(from, to, value, privateKey) {
     try{
       const transferMethod = DECK_CONTRACT.methods.transfer(to, value);
   
-      const gasPrice = await web3.eth.getGasPrice();
-      console.log("gasPrice", gasPrice);
-
-      const nonce = await web3.eth.getTransactionCount(from);
-      console.log("nonce", nonce);
-
       const estimateGas = await transferMethod.estimateGas({
         from: from
       });
       const gasLimit = Math.round(estimateGas);
       
       console.log("gasLimit", gasLimit);
-      //creating raw tranaction
+      const gasPrice = await web3.eth.getGasPrice();
+
+      const nonce = await web3.eth.getTransactionCount(from);
+        //creating raw tranaction
       const rawTransaction = {
         "nonce": web3.utils.toHex(nonce),
         "gasPrice": web3.utils.toHex(gasPrice),
@@ -159,7 +173,6 @@ function transferDeck(from, to, value, privateKey) {
       const r = await sendTransaction(privateKey, rawTransaction);
       resolve(r);
     } catch (err) {
-      console.log("transferDeck", err);
       reject(err);
     }
   })
@@ -204,9 +217,9 @@ function checkDepositResult(tableName, query) {
     .then((data)=>{
       if(data[0] && data[0].result){
         console.log("already deposit result saved", JSON.stringify(data[0].result));
-        resolve(true);
+        reject(new Error("already deposit result saved"))
       } else {
-        resolve(false);
+        resolve(true);
       }
         
     })
@@ -226,12 +239,4 @@ function updateDepositResult(tableName, query, data){
       reject(err);
     })
   })
-}
-
-
-
-function sleep(ms){
-   return new Promise(resolve=>{
-       setTimeout(resolve,ms)
-   })
 }
