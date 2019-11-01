@@ -7,6 +7,7 @@ const sqs = require('./src/sqs');
 const kms = require('./src/kms');
 const ses = require('./src/ses');
 const cloudfront = require('./src/cloudfront');
+const sns = require('./src/sns');
 
 module.exports.utils = utils;
 module.exports.s3 = s3Utils;
@@ -18,3 +19,4 @@ module.exports.sqs = sqs;
 module.exports.kms = kms;
 module.exports.ses = ses;
 module.exports.cloudfront = cloudfront;
+module.exports.sns = sns;

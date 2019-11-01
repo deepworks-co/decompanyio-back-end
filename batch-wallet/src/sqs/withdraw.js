@@ -28,6 +28,11 @@ module.exports.handler = (event, context, callback) => {
       console.log(r);
     }catch(err){
       console.error(err);
+      try{
+        await sns.errorPublish(region, ERROR_TOPIC, {event: "withdraw", record: event.Records[i], error: err.stack.split("\n")});
+      } catch(err){
+        console.error("errorPublish fail", err);
+      }
     } finally {
       console.log("job end " + event.Records[i]);
     }
