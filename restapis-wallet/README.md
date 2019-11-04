@@ -47,5 +47,7 @@ sls create function -f createAccount --handler src/account/create.handler --http
 sls create function -f transferDeck --handler src/deck/transfer.handler --httpEvent "post /api/deck/transfer"
 sls create function -f requestGas --handler src/gas/request.handler --httpEvent "post /api/gas/request"
 sls create function -f getBalance --handler src/account/balance.handler --httpEvent "get /account/balance"
+sls create function -f walletDeposit --handler src/wallet/deposit.handler --httpEvent "get /wallet/deposit"
+sls create function -f walletWithdraw --handler src/wallet/withdraw.handler --httpEvent "get /wallet/withdraw"
 
 ```

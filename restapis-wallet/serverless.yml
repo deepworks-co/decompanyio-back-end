@@ -72,6 +72,20 @@ package:
     - test/**
     
 functions:
+  walletWithdraw:
+    handler: src/wallet/withdraw.handler
+    events:
+      - http: 
+          method: post
+          path: /wallet/withdraw
+      
+  walletDeposit:
+    handler: src/wallet/deposit.handler
+    events:
+      - http: 
+          method: post
+          path: /wallet/deposit
+
   getBalance:
     handler: src/account/balance.handler
     events:
