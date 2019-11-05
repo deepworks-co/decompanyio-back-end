@@ -94,6 +94,10 @@ module.exports = class AccountService {
 					newUserInfo.picture = user.picture;
 				}
 
+				if(user.croppedArea){
+					newUserInfo.croppedArea = user.croppedArea;
+				}
+
 				if(user.username){
 					newUserInfo.username = user.username;
 					const dupusername = await mongo.findOne(USER_TALBE, {
