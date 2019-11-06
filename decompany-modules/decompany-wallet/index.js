@@ -16,7 +16,7 @@ const requestGas = require('./src/requestGas');
 const getBalance = require('./src/getBalance');
 const collectBlock = require('./src/collectBlock');
 const foundationTransfer = require('./src/foundationTransfer');
-const collectDepositEventLog = require('./src/collectDepositEventLog');
+
 
 module.exports = {
   newAccount: curry(newAccount)(context),
@@ -25,5 +25,5 @@ module.exports = {
   getBalance: curry(getBalance)(context),
   collectBlock: curry(collectBlock)(context),
   foundationTransfer: curry(foundationTransfer)(context),
-  collectDepositEventLog: curry(collectDepositEventLog)(context),
+
 }
