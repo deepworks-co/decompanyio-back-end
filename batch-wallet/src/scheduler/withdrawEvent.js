@@ -99,9 +99,10 @@ function saveWithdraw(tableName, eventLogs){
     const bulk = mongo.getUnorderedBulkOp(tableName);
 
     eventLogs.forEach((eventLog)=>{
-      const {log, eventFunc, decoded} = eventLog;
+      const {transactionHash, transactionIndex} = eventLog;
       //bulk.find({_id: log._id }).upsert().updateOne(log);
-      bulk.insert({_id: eventLog.id, log: eventLog});
+      const id = `${transactionHash}#${transactionIndex}`;
+      bulk.insert({_id: id, log: eventLog});
     })
 
     mongo.execute(bulk)
@@ -116,10 +117,7 @@ function sendSQS(region, sqsUrl, eventLogs) {
     return eventLog.event === "Transfer"
   })
   .map((eventLog)=>{
-    //const {log, decoded} = eventLog;
-    //const {from, to, value} = decoded;
     return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
-    //return Promise.resolve(eventLog);
   })
   console.log("sent sqs message", results.length);
   return Promise.all(results);

@@ -97,7 +97,8 @@ function saveDeposit(tableName, eventLogs){
     const bulk = mongo.getUnorderedBulkOp(tableName);
 
     eventLogs.forEach((eventLog)=>{
-      bulk.insert({_id: eventLog.id, log: eventLog});
+      const id = `${eventLog.transactionHash}#${eventLog.transactionIndex}`;
+      bulk.insert({_id: id, log: eventLog});
     })
     
     mongo.execute(bulk)

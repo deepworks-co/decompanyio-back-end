@@ -58,8 +58,8 @@ function run(record) {
     .then(async (params)=>{
       //console.log("params", params)
       const {logId, from, to, value, privateKey} = params;
-      const updateCallback = R.curry(updateWithdrawResult)(tables.WALLET_WITHDRAW, {_id: logId});
-      const result = await transferDeck(from, to, value, privateKey, updateCallback);
+      //const updateCallback = R.curry(updateWithdrawResult)(tables.WALLET_WITHDRAW, {_id: logId});
+      const result = await transferDeck(from, to, value, privateKey);
       return {
         logId,
         result
@@ -86,9 +86,9 @@ function run(record) {
 async function validate(record){
   const {body} = record;
   const parsedBody = JSON.parse(body);
-  const {id, returnValues} = parsedBody;
+  const {transactionHash, transactionIndex, returnValues} = parsedBody;
   const {from, to, value} = returnValues;
-
+  const id = `${transactionHash}#${transactionIndex}`;
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
 
@@ -143,7 +143,7 @@ function getWalletAccountFromAddress(walletAddress){
     mongo.findOne(tables.WALLET_USER, {address: walletAddress})
     .then((data)=>{
       if(data) resolve(data);
-      else reject(new Error(`${userId} is not exists`));
+      else reject(new Error(`wallet address(${walletAddress}) is not exists`));
     })
     .catch((err)=>{
       reject(err);
@@ -228,13 +228,13 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      //resolve({success: true, transactionHash: hash});
       if(callback){
         const updateResult = await callback({result: {transactionHash: hash}});  
       }
+      resolve({transactionHash: hash});
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
-      resolve(receipt);
+      //resolve(receipt);
     })
   });
   

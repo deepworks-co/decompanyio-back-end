@@ -58,8 +58,8 @@ function run(record) {
     .then(async (params)=>{
       //console.log("params", params)
       const {logId, from, to, value, privateKey} = params;
-      const updateCallback = R.curry(updateDepositResult)(tables.WALLET_DEPOSIT, {_id: logId});
-      const result = await transferDeck(from, to, value, privateKey, updateCallback);
+      //const updateCallback = R.curry(updateDepositResult)(tables.WALLET_DEPOSIT, {_id: logId});
+      const result = await transferDeck(from, to, value, privateKey);
       return {logId, result}
     })
     .then(async (data)=>{
@@ -83,9 +83,9 @@ function run(record) {
 async function validate(record){
   const {body} = record;
   const parsedBody =  JSON.parse(body);
-  const {returnValues, id} = parsedBody;
+  const {returnValues, transactionHash, transactionIndex} = parsedBody;
   const {from, to, value} = returnValues;
-
+  const id = `${transactionHash}#${transactionIndex}`;
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
   if(foundation.address !== to){
@@ -213,14 +213,15 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      //resolve({success: true, transactionHash: hash});
+      
       if(callback){
         const updateResult = await callback({result: {transactionHash: hash}});  
       }
+      resolve({transactionHash: hash});
       
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
-      resolve(receipt);
+      //resolve(receipt);
     })
   });
   
