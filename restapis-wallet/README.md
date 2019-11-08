@@ -48,6 +48,10 @@ sls create function -f transferDeck --handler src/deck/transfer.handler --httpEv
 sls create function -f requestGas --handler src/gas/request.handler --httpEvent "post /api/gas/request"
 sls create function -f getBalance --handler src/account/balance.handler --httpEvent "get /account/balance"
 sls create function -f walletDeposit --handler src/wallet/deposit.handler --httpEvent "get /wallet/deposit"
-sls create function -f walletWithdraw --handler src/wallet/withdraw.handler --httpEvent "get /wallet/withdraw"
+sls create function -f walletWithdraw --handler src/wallet/withdraw.handler --httpEvent "post /wallet/withdraw"
+sls create function -f walletVote --handler src/wallet/vote.handler --httpEvent "post /wallet/vote"
+sls create function -f walletRegistryDoc --handler src/wallet/registryDoc.handler --httpEvent "post /wallet/registryDoc"
+sls create function -f claimRoyalty --handler src/claim/royalty.handler --httpEvent "post /claim/royalty"
+sls create function -f claimReward --handler src/claim/reward.handler --httpEvent "post /claim/reward"
 
 ```

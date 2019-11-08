@@ -72,19 +72,90 @@ package:
     - test/**
     
 functions:
+  claimReward:
+    handler: src/claim/reward.handler
+    events:
+      - http: 
+          method: post
+          path: /claim/reward
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  claimRoyalty:
+    handler: src/claim/royalty.handler
+    events:
+      - http: 
+          method: post
+          path: /claim/royalty
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  walletRegistryDoc:
+    handler: src/wallet/registryDoc.handler
+    events:
+      - http:
+          method: post
+          path: /wallet/registryDoc
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+                          
+  walletVote:
+    handler: src/wallet/vote.handler
+    events:
+      - http: 
+          method: post
+          path: /wallet/vote
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
   walletWithdraw:
     handler: src/wallet/withdraw.handler
     events:
       - http: 
           method: post
           path: /wallet/withdraw
-      
-  walletDeposit:
-    handler: src/wallet/deposit.handler
-    events:
-      - http: 
-          method: post
-          path: /wallet/deposit
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
 
   getBalance:
     handler: src/account/balance.handler

@@ -1,15 +1,17 @@
 'use strict';
-const R = require('ramda');
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
 const {kms, sns, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 
+
+
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
 const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
-const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[walletConfig.psnet.id].address;
+const NETWORK_ID = walletConfig.psnet.id;
+const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[NETWORK_ID].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
@@ -25,17 +27,43 @@ module.exports.handler = async (event, context, callback) => {
 
 
   const {principalId, body} = event;
+  const {amount} = body;
 
   try{
     const foundation = await getWalletAccount(FOUNDATION_ID)
-
+    console.log("foundation address", foundation.address);
     const user = await getWalletAccount(principalId)
+
+    const balance = await web3.eth.getBalance(user.address);
+    console.log("user ether balance", user.address, balance);
+    const deck = await DECK_CONTRACT.methods.balanceOf(user.address).call();
+    console.log("user deck balance", user.address, deck);
 
     const privateKey = await decryptPrivateKey(user.base64EncryptedEOA);
 
+    const value = web3.utils.toWei(amount + "", "ether");
+    console.log("withdraw amount : ", amount, value)
+    const r = await withdraw({
+      from: user.address,
+      to: foundation.address,
+      value: value,
+      privateKey, privateKey
+    })
+
+    if(!r.transactionHash){
+      throw new Error("Error Withdraw Transaction")
+    }
+
+    console.log("withdraw result", r, `${value}(${amount})` );
+
+    return JSON.stringify({
+      success: true,
+      result: r
+    })
 
   } catch (err){
-
+    console.error(err);
+    return callback(`[500] ${err.toString()}`);
   }
 
 };
@@ -61,7 +89,9 @@ function decryptPrivateKey(base64EncryptedPrivateKey) {
     const encryptedData = Buffer.from(base64EncryptedPrivateKey, 'base64');
     kms.decrypt(region, encryptedData)
     .then((data)=>{
-      const {privateKey} = JSON.parse(data.Plaintext.toString("utf-8"));
+      
+      const {address, privateKey} = JSON.parse(data.Plaintext.toString("utf-8"));
+      console.log("decryptPrivateKey", data.Plaintext.toString("utf-8"));
       const privateKeyBuffer = new Buffer(privateKey.substring(2), 'hex')
       resolve(privateKeyBuffer);
     })
@@ -77,6 +107,7 @@ function decryptPrivateKey(base64EncryptedPrivateKey) {
 function withdraw(params){
 
   const {from, to, value, privateKey} = params;
+  console.log("withdraw parameter", params);
 
   return new Promise(async (resolve, reject)=>{
     try{
@@ -87,10 +118,12 @@ function withdraw(params){
       });
       const gasLimit = Math.round(estimateGas);
       
-      console.log("gasLimit", gasLimit);
       const gasPrice = await web3.eth.getGasPrice();
-
+      
       const nonce = await web3.eth.getTransactionCount(from);
+
+      console.log({gasLimit, gasPrice, nonce});
+
         //creating raw tranaction
       const rawTransaction = {
         "nonce": web3.utils.toHex(nonce),
@@ -130,13 +163,15 @@ function sendTransaction(privateKey, rawTransaction) {
 
     //signing transaction with private key
     transaction.sign(privateKey);
+    console.log("transaction", '0x'+transaction.serialize().toString('hex'));
     //sending transacton via web3js module
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      resolve({transactionHash: hash});      
+      //resolve({transactionHash: hash});      
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
+      resolve(receipt);      
       
     })
   });
