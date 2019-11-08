@@ -10,7 +10,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -43,11 +43,10 @@
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
         "WALLET_USER": "WALLET-USER",
-        "WALLET_BLOCK": "WALLET-BLOCK",
-        "WALLET_TRANSACTION": "WALLET-TRANSACTION",
         "WALLET_DEPOSIT": "WALLET-DEPOSIT",
-        "WALLET_WITHDRAW": "WALLET-WITHDRAW"
-        
+        "WALLET_WITHDRAW": "WALLET-WITHDRAW",
+        "CLAIM_ROYALTY": "CLAIM-ROYALTY",
+        "CLAIM_REWARD": "CLAIM-REWARD"
     },
     "sqsConfig": {
         "region": "us-west-1",
