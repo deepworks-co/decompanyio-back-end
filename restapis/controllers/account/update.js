@@ -28,7 +28,8 @@ module.exports.handler = async (event, context, callback) => {
     id: principalId,
     nickname: body.nickname,
     username: body.username,
-    picture: body.picture
+    picture: body.picture,
+    croppedArea: body.croppedArea
   });
 
   const response = JSON.stringify({

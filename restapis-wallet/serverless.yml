@@ -1,0 +1,270 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: 
+  name: restapis-wallet # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: ${file(./serverlessConfig.js):region}
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+  tags:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:*
+       - s3:*
+       - logs:*
+       - sqs:*
+       - kinesis:*
+       - kms:*
+       - ses:*
+       - codedeploy:*
+      Resource: "*"
+# you can add statements to the Lambda function's IAM Role here
+  vpc:
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
+
+package:
+  individually: false
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
+    - opt/**
+    - test/**
+    
+functions:
+  claimReward:
+    handler: src/claim/reward.handler
+    events:
+      - http: 
+          method: post
+          path: /claim/reward
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  claimRoyalty:
+    handler: src/claim/royalty.handler
+    events:
+      - http: 
+          method: post
+          path: /claim/royalty
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  walletRegistryDoc:
+    handler: src/wallet/registryDoc.handler
+    events:
+      - http:
+          method: post
+          path: /wallet/registryDoc
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+                          
+  walletVote:
+    handler: src/wallet/vote.handler
+    events:
+      - http: 
+          method: post
+          path: /wallet/vote
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  walletWithdraw:
+    handler: src/wallet/withdraw.handler
+    events:
+      - http: 
+          method: post
+          path: /wallet/withdraw
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+
+  getBalance:
+    handler: src/account/balance.handler
+    events:
+      - http: 
+          method: get
+          path: /api/account/balance
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+  requestGas:
+    handler: src/gas/request.handler
+    timeout: 60
+    events:
+      - http: 
+          method: post
+          path: /api/gas/request
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+  transferDeck:
+    handler: src/deck/transfer.handler
+    timeout: 60
+    events:
+      - http: 
+          method: post
+          path: /api/deck/transfer
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')
+  createAccount:
+    handler: src/account/create.handler
+    events:
+      - http: 
+          method: post
+          path: /api/account/create
+          cors: true
+          integration: lambda
+          authorizer: jwt
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+            statusCode:
+              500:
+                template: $input.path('$.errorMessage')  
+  jwt:
+    handler: src/authorizer/jwt.handler
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+  
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+custom:
+  prune:
+    automatic: true
+    number: 5
+  splitStacks:
+    perFunction: false
+    perType: true
+  serverless-offline:
+    port: 4080
+  
+plugins:
+  - serverless-offline
+  - serverless-mocha-plugin
+  - serverless-plugin-split-stacks
+  - serverless-prune-plugin

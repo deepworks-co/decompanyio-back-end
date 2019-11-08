@@ -55,8 +55,8 @@ module.exports.handler = async (event, context, callback) => {
 
     return (null, response);
   } catch(e) {
-    console.error(e);
-    throw e
+    console.error("Error documentInfo", e);
+    throw new Error("[500] " + e.toString());
   }
   
 }

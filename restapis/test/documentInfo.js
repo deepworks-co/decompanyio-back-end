@@ -12,11 +12,26 @@ describe('documentInfo', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('Get Document Doc', () => {
     const event = {
       path: {
         //documentId: "dev-test-ovobik"
-        documentId: "functional-programming-in-javascript-chapter-4-s54sg1"
+        documentId: "test-xaxg51"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log("response");
+      //console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('FAIL_CONVERT Doc', () => {
+    const event = {
+      path: {
+        //documentId: "dev-test-c3nkml"
+        documentId: "dev-test-kdhkfe"
       }
     }
     return wrapped.run(event).then((response) => {

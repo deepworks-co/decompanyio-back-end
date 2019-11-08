@@ -35,7 +35,7 @@
             docker push 197966029048.dkr.ecr.us-west-1.amazonaws.com/decompany/pdf-converter:latest
             ```
 
-    ## Copy!!! & Run
+    ## 이미지 배포하기 (Copy!!! & Run)
     
         ```bash
         docker build -t decompany/pdf-converter .

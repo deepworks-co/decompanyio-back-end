@@ -132,7 +132,7 @@ function convertThumbnail(bucket, key){
       const imagename = keys[3];  // 1, 2, 3
       const sizes = ['thumb', 1024, 640, 320, 2048];
       const promises = sizes.map((size)=>{
-        const toProfix = documentId + "/" + size + "/" + imagename;
+        const toProfix = "thumb/" + documentId + "/" + size + "/" + imagename;
         return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
       });
 

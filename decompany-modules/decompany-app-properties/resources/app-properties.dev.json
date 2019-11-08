@@ -1,5 +1,6 @@
 {
     "region": "us-west-1",
+    "stage": "dev",
     "vpc": {
         "securityGroupIds": "sg-05a13849fc117801b",
         "subnetIds": "subnet-37594850, subnet-38bb9963"
@@ -40,7 +41,12 @@
         "EVENT_BLOCK": "EVENT-BLOCK",
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
-        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
+        "WALLET_WITHDRAW": "WALLET-WITHDRAW",
+        "CLAIM_ROYALTY": "CLAIM-ROYALTY",
+        "CLAIM_REWARD": "CLAIM-REWARD"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -95,17 +101,37 @@
         },
         "index": "4"
     },
+    "walletConfig": {
+        "abis": [
+            {"name": "Deck", "path": "../../psnet/dev/ERC20.json"},
+            {"name": "Ballot", "path": "../../psnet/dev/Ballot.json"},
+            {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
+            {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
+        ],
+        "network": "mygeth", 
+        "providerUrl" : "https://geth.polarishare.com",
+        "index": "931",
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2",
+        "foundation": "miner",
+        "mainnet": {
+            "id": "4",
+            "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c"
+        },
+        "psnet": {
+            "id": "931",
+            "providerUrl" : "https://geth.polarishare.com"
+        },
+        "queueUrls":{
+            "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit",
+            "EVENT_WITHDRAW": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-withdraw"
+        }
+    },
     "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-dev-",
         "functions": [
-            {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "analyticsList", "aliase": "prod"},
-            {"name": "tagList", "aliase": "prod"},
-            {"name": "accountEthereumSync", "aliase": "prod"},
-            {"name": "profileGet", "aliase": "prod"},
-            {"name": "accountGet", "aliase": "prod"},
-            {"name": "documentList", "concurrency": 5, "aliase": "prod"},
+            {"name": "documentMeta", "aliase": "prod"},
+            {"name": "documentList", "concurrency": 1, "aliase": "prod"},
             {"name": "documentInfo", "aliase": "prod"},
             {"name": "trackingCollect", "aliase": "prod"},
             {"name": "trackingList", "aliase": "prod"},

@@ -1,6 +1,5 @@
 # Create Certificate
 
-
 ## share.decompany.io
 
 ```bash
@@ -10,7 +9,6 @@ aws acm request-certificate --domain-name share.decompany.io \
 --subject-alternative-names *.share.decompany.io \
 --region ap-northeast-2
 ```
-
 
 ## polarishare.com
 
