@@ -69,7 +69,7 @@ function isRegistryDocument(documentId){
   return new Promise((resolve, reject)=>{
     mongo.findOne(tables.DOCUMENT, {_id: documentId}).then((data)=>{
 
-      if(data.transactionHash){
+      if(data.registry){
         resolve(true);
       } else {
         resolve(false)

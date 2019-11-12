@@ -47,6 +47,10 @@ module.exports.handler = async (event, context, callback) => {
     const document = await getDocument(documentId);
     console.log("doc", document);
 
+    if(document.registry){
+      throw new Error(`already registry ${documentId}`);
+    }
+
     const transactionResult = await addDocument({
       from: user,
       documentId: documentId
@@ -58,7 +62,7 @@ module.exports.handler = async (event, context, callback) => {
 
     const saveResult = await updateDocumentAddedResult(documentId, transactionResult.transactionHash);
 
-    console.log("vote result", {saveResult, transactionResult});
+    console.log("registry result", {saveResult, transactionResult});
 
     return JSON.stringify({
       success: true,
@@ -125,7 +129,8 @@ function addDocument(params){
       const {dateMillis, creator, hashed} = await getDocumentOnChain(hexOfDocumentId);
 
       if(dateMillis>0){
-        throw new Error(`${documentId} document is already exsits in psnetwork`)
+        const strDateMillis = new Date(dateMillis);
+        throw new Error(`${documentId} document is already exsits in psnetwork ${strDateMillis}`)
       }
       
       const contractAddress = REGISTRY_CONTRACT.address;
@@ -204,7 +209,10 @@ function sendTransaction(privateKey, rawTransaction) {
 function updateDocumentAddedResult(documentId, transactionHash){
   return new Promise((resolve, reject)=>{
     mongo.update(tables.DOCUMENT, {_id: documentId}, {$set: {
-      transactionHash: transactionHash
+      registry: {
+        transactionHash: transactionHash,
+        created: Date.now()
+      }
     }}).then((data)=>{
       resolve(data);
     }).catch((err)=>{
