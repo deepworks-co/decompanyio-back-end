@@ -160,6 +160,7 @@ functions:
 
   walletVote:
     handler: src/wallet/vote.handler
+    timeout: 90
     events:
       - http: 
           method: post
@@ -168,7 +169,6 @@ functions:
           integration: lambda
           authorizer: jwt
           async: true
-          timeout: 90
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
