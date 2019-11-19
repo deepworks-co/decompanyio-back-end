@@ -50,7 +50,19 @@ module.exports.handler = async (event, context, callback) => {
     if(voteAmount > deckBalance){
       throw new Error("The Vote value has exceeded the current deck value.");
     }
-
+    
+    const allowance = await DECK_CONTRACT.methods.allowance(user.address, BALLOT_CONTRACT.address).call({from: user.address});
+    console.log(`${user.address} allowance`, allowance);
+    
+    if(voteAmount>allowance){
+      const approveTransaction = await approveOnChain({
+        from: user,
+        documentId: documentId,
+        voteAmount: deckBalance
+      })
+      console.log("approve", approveTransaction)
+    }
+    
     const transactionResult = await voteOnChain({
       from: user,
       documentId: documentId,
@@ -61,9 +73,11 @@ module.exports.handler = async (event, context, callback) => {
       throw new Error("[500] Error Vote Transaction")
     }
 
-    const saveResult = await voteOnMongoDb(documentId, principalId, value, transactionResult.transactionHash);
+    console.log("voteOnChain transaction", transactionResult);
 
-    console.log("vote result", {saveResult, transactionResult});
+    const saveResult = await voteOnMongoDb(documentId, principalId, Number(voteAmount), transactionResult);
+
+    console.log("vote result", saveResult);
 
     return JSON.stringify({
       success: true,
@@ -113,6 +127,44 @@ function decryptPrivateKey(base64EncryptedPrivateKey) {
   
 }
 
+function approveOnChain(params) {
+  const {from, documentId, voteAmount} = params;
+  console.log("approveOnChain parameter", params);
+
+  return new Promise(async (resolve, reject)=>{
+    try{
+      console.log("ballot address", BALLOT_CONTRACT.address)
+      const approveMethod = DECK_CONTRACT.methods.approve(BALLOT_CONTRACT.address, voteAmount+"");
+      const encodeABI = approveMethod.encodeABI();
+      const estimateGas = await approveMethod.estimateGas({
+        from: from.address
+      });
+      const gasLimit = Math.round(estimateGas);
+      const gasPrice = await web3.eth.getGasPrice();
+      const nonce = await web3.eth.getTransactionCount(from.address);
+      const pendingNonce = await web3.eth.getTransactionCount(from.address, "pending");
+
+      console.log({gasLimit, gasPrice, nonce, pendingNonce});
+
+        //creating raw tranaction
+      const rawTransaction = {
+        "nonce": web3.utils.toHex(nonce),
+        "gasPrice": web3.utils.toHex(gasPrice),
+        "gasLimit": web3.utils.toHex(gasLimit),      
+        "to": DECK_CONTRACT.address,
+        "value": "0x0",
+        "data": encodeABI
+      }
+
+      console.log("rawTransaction", rawTransaction);
+      const privateKey = await decryptPrivateKey(from.base64EncryptedEOA); 
+      const r = await sendTransaction(privateKey, rawTransaction);
+      resolve(r);
+    } catch (err) {
+      reject(err);
+    }
+  })
+}
 /**
  * @name voteOnChain
  * @parameter params {from: object {_id, address, base64EncryptedEOA}, hexOfDocumentId: hex string, value: number}  
@@ -132,7 +184,11 @@ function voteOnChain(params){
       if(!(from.address === creator && dateMillis>0)){
         throw new Error(`${documentId} document is not exsits in psnetwork`)
       }
-      
+      const gasPrice = await web3.eth.getGasPrice();
+      const nonce = await web3.eth.getTransactionCount(from.address);
+      const pendingNonce = await web3.eth.getTransactionCount(from.address, "pending");
+      console.log({gasPrice, nonce, pendingNonce});
+
       const contractAddress = BALLOT_CONTRACT.address;
       const voteMethod = BALLOT_CONTRACT.methods.addVote(hexOfDocumentId, voteAmount+"");
       const encodeABI = voteMethod.encodeABI();
@@ -140,9 +196,7 @@ function voteOnChain(params){
         from: from.address
       });
       const gasLimit = Math.round(estimateGas);
-      const gasPrice = await web3.eth.getGasPrice();
-      const nonce = await web3.eth.getTransactionCount(from.address);
-      const pendingNonce = await web3.eth.getTransactionCount(from.address, "pending");
+      
 
       console.log({gasLimit, gasPrice, nonce, pendingNonce, contractAddress});
 
@@ -190,10 +244,10 @@ function sendTransaction(privateKey, rawTransaction) {
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      resolve({transactionHash: hash});      
+      //resolve({transactionHash: hash});      
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
-      //resolve(receipt);      
+      resolve(receipt);      
     })
   });
   
@@ -206,12 +260,13 @@ function sendTransaction(privateKey, rawTransaction) {
  * @param {string} userId sns id
  * @param {number} value input value * e-18
  */
-function voteOnMongoDb(documentId, userId, value){
+function voteOnMongoDb(documentId, userId, value, transaction){
   return new Promise((resolve, reject)=>{
     mongo.insert(tables.VOTE, {
       documentId: documentId,
       userId: userId,
       deposit: value,
+      transaction: transaction,
       created: Date.now()
     }).then((data)=>{
       resolve(data);
@@ -231,12 +286,17 @@ function getDocument(params){
   const {hexOfDocumentId} = params;
 
   return new Promise(async (resolve, reject)=>{
-    const r = await REGISTRY_CONTRACT.methods.getDocument(hexOfDocumentId).call()
-    resolve({
-      dateMillis: Number(r[0]),
-      creator: r[1],
-      hashed: r[2]
-    });
+    try{
+      const r = await REGISTRY_CONTRACT.methods.getDocument(hexOfDocumentId).call()
+      resolve({
+        dateMillis: Number(r[0]),
+        creator: r[1],
+        hashed: r[2]
+      });
+    }catch(err){
+      reject(err);
+    }
+    
   })
   
 }
