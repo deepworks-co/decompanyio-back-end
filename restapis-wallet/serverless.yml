@@ -212,6 +212,8 @@ functions:
               -
                 name: "Authorization"
                 description: "Auth Header JWT"
+            requestModels:
+                "application/json": "RequestWithdrawModel"
   getBalance:
     handler: src/account/balance.handler
     timeout: 25
@@ -368,7 +370,12 @@ custom:
         name: "RequestDocumentModel"
         description: "document request"
         contentType: "application/json"
-        schema: ${file(models/RequestDocumentModel.json)}        
+        schema: ${file(models/RequestDocumentModel.json)}
+      -
+        name: "RequestWithdrawModel"
+        description: "wallet withdraw"
+        contentType: "application/json"
+        schema: ${file(models/RequestWithdrawModel.json)}       
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
