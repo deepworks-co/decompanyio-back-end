@@ -20,7 +20,7 @@ service:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
@@ -105,6 +105,16 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/claim/royalty"
+            description: "/claim/royalty"
+            requestBody:
+                description: "documentId"
+
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
 
   walletRegistryDoc:
     handler: src/wallet/registryDoc.handler
@@ -122,7 +132,17 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
-                          
+          documentation:
+            summary: "/wallet/registryDoc"
+            description: "/wallet/registryDoc"
+            requestBody:
+                description: "documentId"
+
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+
   walletVote:
     handler: src/wallet/vote.handler
     events:
@@ -139,6 +159,16 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/wallet/vote"
+            description: "/wallet/vote"
+            requestBody:
+                description: "{documentId: documentId, value: value}"
+
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
 
   walletWithdraw:
     handler: src/wallet/withdraw.handler
@@ -156,7 +186,16 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/wallet/withdraw"
+            description: "/wallet/withdraw"
+            requestBody:
+                description: "{documentId: documentId}"
 
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
   getBalance:
     handler: src/account/balance.handler
     events:
@@ -262,9 +301,32 @@ custom:
     perType: true
   serverless-offline:
     port: 4080
-  
+  documentation:
+    api:
+      info:
+        version: '1'
+        title: restapis-wallet
+        description: restapis-wallet
+        contact:
+          name: Jay
+          email: jay@decompany.io
+        license:
+          name: Decompany
+          url: https://www.decompany.io
+    models:
+      -
+        name: "ErrorResponseModel"
+        description: "This is an error"
+        contentType: "application/json"
+        schema: ${file(models/error.json)}
+      -
+        name: "DefaultResponseModel"
+        description: "default response"
+        contentType: "application/json"
+        schema: ${file(models/default_response.json)}
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
   - serverless-plugin-split-stacks
   - serverless-prune-plugin
+  - serverless-aws-documentation
