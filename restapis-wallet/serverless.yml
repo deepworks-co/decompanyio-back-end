@@ -168,13 +168,18 @@ functions:
             summary: "/wallet/vote"
             description: "/wallet/vote"
             requestBody:
-                description: "{documentId: documentId, value: value}"
-
+                description: "request body is json string"
             requestHeaders:
               -
                 name: "Authorization"
                 description: "Auth Header description"
-
+            queryParams:
+              -
+                name: "documentId"
+                description: "documentId"
+              -
+                name: "value"
+                description: "deck amount(1 == e18)"
   walletWithdraw:
     handler: src/wallet/withdraw.handler
     timeout: 25
