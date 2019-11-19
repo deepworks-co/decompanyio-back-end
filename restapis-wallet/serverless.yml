@@ -79,7 +79,7 @@ functions:
     events:
       - http: 
           method: post
-          path: /claim/reward
+          path: /api/claim/reward
           cors: true
           integration: lambda
           authorizer: jwt
@@ -90,6 +90,17 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/api/claim/reward"
+            description: "/api/claim/reward"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+            queryParams:
+              -
+                name: "documentId"
+                description: "documentId"
 
   claimRoyalty:
     handler: src/claim/royalty.handler
@@ -97,7 +108,7 @@ functions:
     events:
       - http: 
           method: post
-          path: /claim/royalty
+          path: /api/claim/royalty
           cors: true
           integration: lambda
           authorizer: jwt
@@ -113,11 +124,14 @@ functions:
             description: "/claim/royalty"
             requestBody:
                 description: "documentId"
-
             requestHeaders:
               -
                 name: "Authorization"
                 description: "Auth Header description"
+            queryParams:
+              -
+                name: "documentId"
+                description: "documentId"
 
   walletRegistryDoc:
     handler: src/wallet/registryDoc.handler
@@ -125,7 +139,7 @@ functions:
     events:
       - http:
           method: post
-          path: /wallet/registryDoc
+          path: /api/document/registry
           cors: true
           integration: lambda
           authorizer: jwt
@@ -137,11 +151,14 @@ functions:
               500:
                 template: $input.path('$.errorMessage')
           documentation:
-            summary: "/wallet/registryDoc"
-            description: "/wallet/registryDoc"
+            summary: "/api/document/registry"
+            description: "/api/document/registry"
             requestBody:
                 description: "documentId"
-
+            queryParams:
+              -
+                name: "documentId"
+                description: "documentId"
             requestHeaders:
               -
                 name: "Authorization"
@@ -153,7 +170,7 @@ functions:
     events:
       - http: 
           method: post
-          path: /wallet/vote
+          path: /api/document/vote
           cors: true
           integration: lambda
           authorizer: jwt
@@ -165,8 +182,8 @@ functions:
               500:
                 template: $input.path('$.errorMessage')
           documentation:
-            summary: "/wallet/vote"
-            description: "/wallet/vote"
+            summary: "/api/document/vote"
+            description: "/api/document/vote"
             requestBody:
                 description: "request body is json string"
             requestHeaders:
@@ -186,7 +203,7 @@ functions:
     events:
       - http: 
           method: post
-          path: /wallet/withdraw
+          path: /api/account/withdraw
           cors: true
           integration: lambda
           authorizer: jwt
@@ -196,13 +213,10 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
-            summary: "/wallet/withdraw"
-            description: "/wallet/withdraw"
-            requestBody:
-                description: "{documentId: documentId}"
-
+            summary: "/api/account/withdraw"
+            description: "/api/account/withdraw"
             requestHeaders:
               -
                 name: "Authorization"
@@ -223,7 +237,15 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+          documentation:
+            summary: "/api/account/balance"
+            description: "/api/account/balance"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+
   requestGas:
     handler: src/gas/request.handler
     timeout: 25
@@ -240,7 +262,8 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+
   transferDeck:
     handler: src/deck/transfer.handler
     timeout: 25
@@ -258,6 +281,7 @@ functions:
             statusCode:
               500:
                 template: $input.path('$.errorMessage')
+
   createAccount:
     handler: src/account/create.handler
     timeout: 25
@@ -274,7 +298,15 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')  
+                template: $input.path('$.errorMessage')
+          documentation:
+            summary: "/api/account/create"
+            description: "/api/account/create"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+
   jwt:
     handler: src/authorizer/jwt.handler
 # you can add CloudFormation resource templates here
