@@ -46,7 +46,10 @@
         "WALLET_DEPOSIT": "WALLET-DEPOSIT",
         "WALLET_WITHDRAW": "WALLET-WITHDRAW",
         "CLAIM_ROYALTY": "CLAIM-ROYALTY",
-        "CLAIM_REWARD": "CLAIM-REWARD"
+        "CLAIM_REWARD": "CLAIM-REWARD",
+        "REWARD_POOL": "REWARD-POOL",
+        "DAILY_ADJUSTMENT_ROYALTY": "DAILY-ADJUSTMENT-ROYALTY",
+        "DAILY_ADJUSTMENT_REWARD": "DAILY-ADJUSTMENT-REWARD"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -108,9 +111,6 @@
             {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
             {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
-        "network": "mygeth", 
-        "providerUrl" : "https://geth.polarishare.com",
-        "index": "931",
         "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2",
         "foundation": "miner",
         "mainnet": {
@@ -119,7 +119,7 @@
         },
         "psnet": {
             "id": "931",
-            "providerUrl" : "https://geth.polarishare.com"
+            "providerUrl" : "https://geth-internal.polarishare.com"
         },
         "queueUrls":{
             "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit",
