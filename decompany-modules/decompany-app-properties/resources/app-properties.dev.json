@@ -119,7 +119,7 @@
         },
         "psnet": {
             "id": "931",
-            "providerUrl" : "https://geth-internal.polarishare.com"
+            "providerUrl" : "https://geth.polarishare.com"
         },
         "queueUrls":{
             "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit",

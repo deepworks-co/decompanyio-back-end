@@ -112,9 +112,6 @@
             {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
             {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
-        "network": "mygeth", 
-        "providerUrl" : "https://geth-internal.polarishare.com",
-        "index": "931",
         "kmsId": "alias/asem-ko-owa-enc-key",
         "foundation": "miner",
         "mainnet": {
@@ -123,7 +120,7 @@
         },
         "psnet": {
             "id": "931",
-            "providerUrl" : "https://geth.polarishare.com"
+            "providerUrl" : "https://geth-internal.polarishare.com"
         },
         "queueUrls":{
             "EVENT_DEPOSIT": "",
