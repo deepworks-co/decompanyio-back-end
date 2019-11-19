@@ -97,10 +97,8 @@ functions:
               -
                 name: "Authorization"
                 description: "Auth Header description"
-            queryParams:
-              -
-                name: "documentId"
-                description: "documentId"
+            requestModels:
+                "application/json": "RequestDocumentModel"
 
   claimRoyalty:
     handler: src/claim/royalty.handler
@@ -128,10 +126,8 @@ functions:
               -
                 name: "Authorization"
                 description: "Auth Header description"
-            queryParams:
-              -
-                name: "documentId"
-                description: "documentId"
+            requestModels:
+                "application/json": "RequestDocumentModel"
 
   walletRegistryDoc:
     handler: src/wallet/registryDoc.handler
@@ -155,10 +151,8 @@ functions:
             description: "/api/document/registry"
             requestBody:
                 description: "documentId"
-            queryParams:
-              -
-                name: "documentId"
-                description: "documentId"
+            requestModels:
+                "application/json": "RequestDocumentModel"
             requestHeaders:
               -
                 name: "Authorization"
@@ -369,6 +363,11 @@ custom:
         description: "vote request"
         contentType: "application/json"
         schema: ${file(models/RequestVoteModel.json)}
+      -
+        name: "RequestDocumentModel"
+        description: "document request"
+        contentType: "application/json"
+        schema: ${file(models/RequestDocumentModel.json)}        
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
