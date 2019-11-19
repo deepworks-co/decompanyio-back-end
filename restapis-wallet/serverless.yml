@@ -191,7 +191,7 @@ functions:
                 name: "Authorization"
                 description: "Auth Header description"
             requestModels:
-              "application/json": "walletVoteRequest"
+                "application/json": "RequestVoteModel"
 
   walletWithdraw:
     handler: src/wallet/withdraw.handler
@@ -308,7 +308,6 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    walletVoteRequest: 
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
