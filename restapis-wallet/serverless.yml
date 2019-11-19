@@ -89,7 +89,7 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
             summary: "/api/claim/reward"
             description: "/api/claim/reward"
@@ -118,7 +118,7 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
             summary: "/claim/royalty"
             description: "/claim/royalty"
@@ -149,7 +149,7 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
             summary: "/api/document/registry"
             description: "/api/document/registry"
@@ -180,23 +180,19 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
             summary: "/api/document/vote"
             description: "/api/document/vote"
             requestBody:
-                description: "request body is json string"
+                description: "documentId, value"
             requestHeaders:
               -
                 name: "Authorization"
                 description: "Auth Header description"
-            queryParams:
-              -
-                name: "documentId"
-                description: "documentId"
-              -
-                name: "value"
-                description: "deck amount(1 == e18)"
+            requestModels:
+              "application/json": "walletVoteRequest"
+
   walletWithdraw:
     handler: src/wallet/withdraw.handler
     timeout: 25
@@ -312,7 +308,7 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-  
+    walletVoteRequest: 
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
@@ -369,6 +365,11 @@ custom:
         description: "default response"
         contentType: "application/json"
         schema: ${file(models/default_response.json)}
+      -
+        name: "RequestVoteModel"
+        description: "vote request"
+        contentType: "application/json"
+        schema: ${file(models/RequestVoteModel.json)}
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
