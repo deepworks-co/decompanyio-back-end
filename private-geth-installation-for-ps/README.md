@@ -136,31 +136,31 @@ eth.sendTransaction({from:eth.accounts[0], to:"0x07Ab267B6F70940f66EAf519b4a7c05
 ## static-nodes.json
 ```json
 [
-  "enode://8a19ed7a56c9e13b9a0233d870a95b0c5abf6fbbb02aace0c94fbc61160b9d1f1677e6ac54dc5fb2255646d8abb26d0e8f870bbaa0f69cfe1fd15794c82001fd@10.1.12.109:30303",
-  "enode://6dcf9664b66ed2815304777a2e4d0c008ef9d71dca3deb6188eff6ea495d39b1782887ca20da248eb3fc3a6442f616cb3e55c7078d4e802eb53e88464791ce20@10.1.11.96:30303",
-  "enode://2a4ac0c9305af649fa9a49cd5f3caa8e1c67ca6d639dc3eed58a99977e8ca3cadcd59c89b6eedb4614c0ae57f869a2344581646e4f2252a7a194ef07dc9c2a3b@10.1.12.228:30303",
-  "enode://10d573c084cbc87d81f813985b3228531b015e1474ba9f1346eb6c74c9fa00b7c7964df45f898e28940ecbbfb8708f24ba921f0a0675a1f452e61511059ed336@10.1.11.242:30303"
+  "enode://40cff7f3ba30a98ebc8a8a62c5f34b7884202599644c013cbc3c1d53560b88563e63696918de34a00396f413203b11e8cdf2d04f717c406a4eacdb31d79542ca@10.1.12.109:30303",
+  "enode://21ddb8d579417c3f6b21438c7fda64d5e3e1be9b92d3e0a11222a97884bbf4e0bbe7cfa182e02ab195fc06e7c85653dfb5d5d5955caefa9e16da38878d8122f2@10.1.11.96:30303",
+  "enode://013ffffb21e21c048ad414e2d868dfe83235fce6bf9ecdb9309064f530e34fc0de4979f8b919c530a678698ab5e427b1d33ace9bfcb344949b56c4efd94ccc59@10.1.12.228:30303"
 ]
 ```
 
 ## Add Peer
 ```bash
 #Geth 1
-admin.addPeer("enode://8a19ed7a56c9e13b9a0233d870a95b0c5abf6fbbb02aace0c94fbc61160b9d1f1677e6ac54dc5fb2255646d8abb26d0e8f870bbaa0f69cfe1fd15794c82001fd@10.1.12.109:30303")
+admin.addPeer("enode://40cff7f3ba30a98ebc8a8a62c5f34b7884202599644c013cbc3c1d53560b88563e63696918de34a00396f413203b11e8cdf2d04f717c406a4eacdb31d79542ca@10.1.12.109:30303")
 #Geth 2
-admin.addPeer("enode://6dcf9664b66ed2815304777a2e4d0c008ef9d71dca3deb6188eff6ea495d39b1782887ca20da248eb3fc3a6442f616cb3e55c7078d4e802eb53e88464791ce20@10.1.11.96:30303")
+admin.addPeer("enode://21ddb8d579417c3f6b21438c7fda64d5e3e1be9b92d3e0a11222a97884bbf4e0bbe7cfa182e02ab195fc06e7c85653dfb5d5d5955caefa9e16da38878d8122f2@10.1.11.96:30303")
 #Miner 1
-admin.addPeer("enode://2a4ac0c9305af649fa9a49cd5f3caa8e1c67ca6d639dc3eed58a99977e8ca3cadcd59c89b6eedb4614c0ae57f869a2344581646e4f2252a7a194ef07dc9c2a3b@10.1.12.228:30303")
+admin.addPeer("enode://013ffffb21e21c048ad414e2d868dfe83235fce6bf9ecdb9309064f530e34fc0de4979f8b919c530a678698ab5e427b1d33ace9bfcb344949b56c4efd94ccc59@10.1.12.228:30303")
 #Miner 2
-admin.addPeer("enode://7bf33d56becbcb6f479d73b2497bb2b2f6597dbee9bdc04bdd481c6b1fa87d2c698684eb12bc0354da98130407c6c12674433051e34d4208f0dcc36d3450866c@10.1.11.242:30303")
+admin.addPeer("enode://cbfc98f2b4ed5cef540437a5e0870d0ed61c4e29b6395a9d1e337661706b4b5399a7a03d9109b5bcb7d7bfb495a7848b172f1642b2811587a504ab9d1d30d5bc@10.1.11.242:30303")
 ```
 
 
 ## Health Check
 ```bash
-curl --head http://ec2-52-8-27-221.us-west-1.compute.amazonaws.com:8547
-
-curl -X POST http://ec2-52-8-27-221.us-west-1.compute.amazonaws.com:8545 --data-binary "{"jsonrpc":"2.0","id":999,"method":"eth_blockNumber"}"
+curl -X POST https://geth.polarishare.com \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+--data-binary '{"jsonrpc":"2.0","id":999,"method":"eth_blockNumber"}'
 ```
 
 ## Target Group Health Check 조회
@@ -173,4 +173,13 @@ aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing
 alpha-ca-geth-graphql
 ```bash
 aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing:us-west-1:197966029048:targetgroup/alpha-ca-geth-graphql/1e54de1be02d7cd7
+```
+
+## EBS Volume 늘리기
+> https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html
+EBS 콘솔에서 Modify Volume 하고 난뒤
+```bash
+lsblk
+sudo growpart /dev/nvme0n1 1
+sudo xfs_growfs -d /
 ```
