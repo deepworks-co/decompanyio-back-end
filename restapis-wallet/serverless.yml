@@ -168,6 +168,7 @@ functions:
           integration: lambda
           authorizer: jwt
           async: true
+          timeout: 90
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
