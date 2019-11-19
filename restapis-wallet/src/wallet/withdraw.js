@@ -122,6 +122,12 @@ function withdraw(params){
       
       const nonce = await web3.eth.getTransactionCount(from);
 
+      const pendingNonce = await web3.eth.getTransactionCount(from, "pending");
+
+      if(pendingNonce > nonce){
+        throw new Error('pending transaction error');
+      }
+
       console.log({gasLimit, gasPrice, nonce});
 
         //creating raw tranaction

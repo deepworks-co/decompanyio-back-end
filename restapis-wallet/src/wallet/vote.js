@@ -189,6 +189,10 @@ function voteOnChain(params){
       const pendingNonce = await web3.eth.getTransactionCount(from.address, "pending");
       console.log({gasPrice, nonce, pendingNonce});
 
+      if(pendingNonce > nonce){
+        throw new Error('pending transaction error');
+      }
+
       const contractAddress = BALLOT_CONTRACT.address;
       const voteMethod = BALLOT_CONTRACT.methods.addVote(hexOfDocumentId, voteAmount+"");
       const encodeABI = voteMethod.encodeABI();
