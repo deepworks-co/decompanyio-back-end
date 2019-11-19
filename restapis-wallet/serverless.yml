@@ -70,10 +70,12 @@ package:
     - install.sh
     - opt/**
     - test/**
+
     
 functions:
   claimReward:
     handler: src/claim/reward.handler
+    timeout: 25
     events:
       - http: 
           method: post
@@ -91,6 +93,7 @@ functions:
 
   claimRoyalty:
     handler: src/claim/royalty.handler
+    timeout: 25
     events:
       - http: 
           method: post
@@ -118,6 +121,7 @@ functions:
 
   walletRegistryDoc:
     handler: src/wallet/registryDoc.handler
+    timeout: 25
     events:
       - http:
           method: post
@@ -145,6 +149,7 @@ functions:
 
   walletVote:
     handler: src/wallet/vote.handler
+    async: true
     events:
       - http: 
           method: post
@@ -172,6 +177,7 @@ functions:
 
   walletWithdraw:
     handler: src/wallet/withdraw.handler
+    timeout: 25
     events:
       - http: 
           method: post
@@ -198,6 +204,7 @@ functions:
                 description: "Auth Header description"
   getBalance:
     handler: src/account/balance.handler
+    timeout: 25
     events:
       - http: 
           method: get
@@ -214,7 +221,7 @@ functions:
                 template: $input.path('$.errorMessage')
   requestGas:
     handler: src/gas/request.handler
-    timeout: 60
+    timeout: 25
     events:
       - http: 
           method: post
@@ -231,7 +238,7 @@ functions:
                 template: $input.path('$.errorMessage')
   transferDeck:
     handler: src/deck/transfer.handler
-    timeout: 60
+    timeout: 25
     events:
       - http: 
           method: post
@@ -248,6 +255,7 @@ functions:
                 template: $input.path('$.errorMessage')
   createAccount:
     handler: src/account/create.handler
+    timeout: 25
     events:
       - http: 
           method: post

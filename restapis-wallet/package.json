@@ -13,7 +13,6 @@
   "dependencies": {
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
-    "decompany-wallet": "file:../decompany-modules/decompany-wallet",
     "ethereumjs-tx": "^1.3.7",
     "jsonwebtoken": "^8.5.1",
     "mongojs": "^2.6.0",

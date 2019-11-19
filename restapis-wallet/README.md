@@ -29,7 +29,6 @@ aws kms create-alias \
 ```bash
 npm install ../decompany-modules/decompany-app-properties
 npm install ../decompany-modules/decompany-common-utils
-npm install ../decompany-modules/decompany-wallet
 
 npm install --save-dev serverless-mocha-plugin
 npm install --save-dev serverless-offline
