@@ -220,7 +220,7 @@ functions:
             requestHeaders:
               -
                 name: "Authorization"
-                description: "Auth Header description"
+                description: "Auth Header JWT"
   getBalance:
     handler: src/account/balance.handler
     timeout: 25
@@ -280,7 +280,7 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
 
   createAccount:
     handler: src/account/create.handler
@@ -298,7 +298,7 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
           documentation:
             summary: "/api/account/create"
             description: "/api/account/create"
@@ -321,7 +321,7 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_4XX
         ResponseTemplates:
-          application/json: $input.path("$.errorMessage")
+          application/json: $input.path("$")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -333,7 +333,7 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_5XX
         ResponseTemplates:
-          application/json: $input.path("$.errorMessage")
+          application/json: $input.path("$")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
