@@ -85,16 +85,10 @@ async function validate(record){
   const parsedBody =  JSON.parse(body);
   const {returnValues, transactionHash, transactionIndex} = parsedBody;
   const {from, to, value} = returnValues;
-  const id = `${transactionHash}#${transactionIndex}`;
+  const id = {transactionHash, transactionIndex};//`${transactionHash}#${transactionIndex}`;
   const foundation = await getWalletAccount(FOUNDATION_ID);
   const privateKey = await decryptPrivateKey(foundation);
-  if(foundation.address !== to){
-    throw new Error("this address is not foundation!! : " + to);
-  }
-
-  const user = await getUserFromEthAccount(from);
-  const walletUser = await getWalletAccount(user._id);
-  console.log("psnet address", walletUser.address, "mainnet address", from);
+  const walletUser = await getWalletUser(to);
   
   return {
     logId: id,
@@ -106,20 +100,6 @@ async function validate(record){
   }
 }
 
-function getUserFromEthAccount(ethAccount){
-
-  return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.USER, {ethAccount: ethAccount})
-    .then((data)=>{
-      if(data) resolve(data);
-      else reject(new Error(`${ethAccount} is not exists in USER Collection`));
-    })
-    .catch((err)=>{
-      reject(err);
-    })
-  })
-}
-
 function getWalletAccount(userId){
 
   return new Promise((resolve, reject)=>{
@@ -127,6 +107,20 @@ function getWalletAccount(userId){
     .then((data)=>{
       if(data) resolve(data);
       else reject(new Error(`${userId} is not exists`));
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
+function getWalletUser(address){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.WALLET_USER, {address: address})
+    .then((data)=>{
+      if(data) resolve(data);
+      else reject(new Error(`${address} is not exists`));
     })
     .catch((err)=>{
       reject(err);

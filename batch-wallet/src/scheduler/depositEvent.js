@@ -22,24 +22,24 @@ module.exports.handler = (event, context, callback) => {
     return data[0]?data[0].log.blockNumber + 1:1;
   })
   .then(async (blockNumber)=>{
-    const foundation = await getWalletAccount(FOUNDATION_ID);
+    
     return getEventLog(DECK_CONTRACT, {
       fromBlock: blockNumber,
       toBlock: "latest",
-      eventName: "Transfer",
-      filter: {to: foundation.address}
+      eventName: "Transfer"
     })
   })
   .then(async (eventLogs)=>{
     console.log("eventLogs count", eventLogs.length);
-    const r = await saveDeposit(tables.WALLET_DEPOSIT, eventLogs)
+    const checkedEventLogs = await checkDepositEvent(eventLogs);
+    const r = await saveDeposit(tables.WALLET_DEPOSIT, checkedEventLogs);
     console.log("savewDeposit", r);
-    return eventLogs;
+    return checkedEventLogs;
   })
-  .then(async (eventLogs)=>{
-    console.log("getDepositEvent", eventLogs.length);
+  .then(async (checkedEventLogs)=>{
+    console.log("getDepositEvent", checkedEventLogs.length);
     const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
-    const results = await sendSQS(region, sqsUrl, eventLogs);
+    const results = await sendSQS(region, sqsUrl, checkedEventLogs);
     return results;
   })
   .then((data)=>{
@@ -91,14 +91,16 @@ function getEventLog(contract, params) {
   
 }
 
-function saveDeposit(tableName, eventLogs){
+function saveDeposit(tableName, checkedEventLogs){
 
   return new Promise((resolve, reject)=>{
     const bulk = mongo.getUnorderedBulkOp(tableName);
 
-    eventLogs.forEach((eventLog)=>{
-      const id = `${eventLog.transactionHash}#${eventLog.transactionIndex}`;
-      bulk.insert({_id: id, log: eventLog});
+    checkedEventLogs.forEach((checkedEventLog)=>{
+      const {eventLog, deposit} = checkedEventLog;
+      const {transactionHash, transactionIndex} = eventLog;
+      const id = {transactionHash, transactionIndex};//`${eventLog.transactionHash}#${eventLog.transactionIndex}`;
+      bulk.insert({_id: id, log: eventLog, deposit: deposit});
     })
     
     mongo.execute(bulk)
@@ -108,41 +110,49 @@ function saveDeposit(tableName, eventLogs){
 
 }
 
-function sendSQS(region, sqsUrl, eventLogs) {
-  const results = eventLogs.map((eventLog)=>{
+async function checkDepositEvent(eventLogs) {
+
+  const results = eventLogs.map(async (eventLog)=>{    
+    const {to} = eventLog.returnValues;
+    const check = await isWalletUser(to)
+    if(check === true){
+      return {eventLog, deposit: true}
+    }
+    
+    return {eventLog, deposit: false};
+  });
+  
+  return await Promise.all(results);
+  
+}
+
+function sendSQS(region, sqsUrl, checkedEventLogs) {
+  const results = checkedEventLogs.map((checkedEventLog)=>{
+    const {eventLog, deposit} = checkedEventLog;
     //const {log, decoded} = eventLog;
     //const {from, to, value} = decoded;
-    return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
+    if(deposit === true){
+      return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
+    } else {
+      return Promise.resolve(false);
+    }
+    
   })
   console.log("sent sqs message", results.length);
   return Promise.all(results);
   
 }
 
-function getDepositEvent(eventLogs, foundationAddress){
-  if(!foundationAddress){
-    throw new Error("foundation address is undefined");
-  }
-  return eventLogs.filter((eventLog)=>{
-    return eventLog.event === "Transfer"
-  }).filter((eventLog)=>{
-    
-    const {returnValues} = eventLog;
-    const {from, to, value} = returnValues;
-
-    return to && to === foundationAddress
-  })
-
-
-}
-
-function getWalletAccount(userId){
+function isWalletUser(address){
 
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    mongo.findOne(tables.WALLET_USER, {_id: {$ne: FOUNDATION_ID}, address: address})
     .then((data)=>{
-      if(data) resolve(data);
-      else reject(new Error(`${userId} is not exists`));
+      if(data){
+        resolve(true);
+      } else{
+        resolve(false);
+      } 
     })
     .catch((err)=>{
       reject(err);
