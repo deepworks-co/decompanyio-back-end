@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "restapis-wallet"
-  version: "2019-11-19T09:18:52Z"
+  version: "2019-11-20T01:02:53Z"
   title: "dev-restapis-wallet"
   contact:
     name: "Jay"
@@ -933,4 +933,9 @@ definitions:
     title: "RequestDocumentModel"
     description: "document request"
   RequestWithdrawModel:
+    type: "object"
+    properties:
+      amount:
+        type: "integer"
+    title: "RequestWithdrawModel"
     description: "wallet withdraw"
