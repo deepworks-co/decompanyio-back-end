@@ -21,14 +21,25 @@ module.exports.handler = async (event, context, callback) => {
 
     const account = await newAccount({principalId});
 
-    const response = JSON.stringify({
-      success: true, 
-      account: account
-    })
+   
+    if(account.exists===true){
+      const response = JSON.stringify({
+        success: false, 
+        message: account.message
+      });
+      return response;
+    } else {
+      const response = JSON.stringify({
+        success: true, 
+        account: account
+      });
+      return response;
+    }
     
-    return response;
   } catch(err){
+    //console.error(err);
     throw new Error(`[500] ${err}`);
+    
   }
   
 };
@@ -37,30 +48,35 @@ function newAccount(params) {
 
   const {principalId} = params;
 
-  return new Promise((resolve, reject)=>{
-
-    isNotExistWalletAccount(mongo, {
-      principalId
-    })
-    .then((user)=>{
-      return createAccount();
-    }).then((data)=>{
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const user = await isNotExistWalletAccount(mongo, {
+        principalId
+      });
+  
+      if(user.exists === true){
+        return resolve({exists: true, message: "user's wallet account already exists"})
+      } 
       
-      return encrypt({
-          region,
-          kmsId: walletConfig.kmsId,
-          createdAccount: data
-        }
-      );
+      const createdAccount = await createAccount();
+          
+      const encryptedAccount = await encrypt({
+        region,
+        kmsId: walletConfig.kmsId,
+        createdAccount: createdAccount
+      });
+  
+      const saveResult = await saveAccount(mongo, Object.assign(encryptedAccount, {principalId}));
 
-    }).then((data)=>{
-      return saveAccount(mongo, Object.assign(data, {principalId}))
-    }).then((data)=>{      
-      resolve(data);
-    }).catch((err)=>{
-      console.error("Error newAccount", err)
+      console.log("newAccount saveResult", saveResult)
+
+      resolve(createdAccount.address);
+    } catch(err){
       reject(err);
-    })
+    }
+    
+
+    
 
   });
 }
@@ -73,9 +89,10 @@ function isNotExistWalletAccount(mongo, params){
       try{
         const user = await mongo.findOne(tables.WALLET_USER, {_id: params.principalId});
         if(user){
-          reject(new Error("User's wallet account is exists"));
+          resolve({exists:true, message: "User's wallet account is exists"});
+          //reject(new Error("User's wallet account is exists"));
         } else {
-          resolve({exists:true});
+          resolve({exists:false});
         }
       } catch(err){
         reject(err);
