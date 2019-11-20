@@ -21,21 +21,13 @@ module.exports.handler = async (event, context, callback) => {
 
     const account = await newAccount({principalId});
 
-   
-    if(account.exists===true){
-      const response = JSON.stringify({
-        success: false, 
-        message: account.message
-      });
-      return response;
-    } else {
-      const response = JSON.stringify({
-        success: true, 
-        account: account
-      });
-      return response;
-    }
-    
+    const response = JSON.stringify({
+      success: true, 
+      address: account.address,
+      message: account.message
+    });
+    return response;
+
   } catch(err){
     //console.error(err);
     throw new Error(`[500] ${err}`);
@@ -53,9 +45,9 @@ function newAccount(params) {
       const user = await isNotExistWalletAccount(mongo, {
         principalId
       });
-  
+      console.log("user", user);
       if(user.exists === true){
-        return resolve({exists: true, message: "user's wallet account already exists"})
+        return resolve({exists: true, address: user.address, message: "user's wallet account already exists"})
       } 
       
       const createdAccount = await createAccount();
@@ -70,7 +62,7 @@ function newAccount(params) {
 
       console.log("newAccount saveResult", saveResult)
 
-      resolve(createdAccount.address);
+      resolve({address: createdAccount.address});
     } catch(err){
       reject(err);
     }
@@ -88,8 +80,9 @@ function isNotExistWalletAccount(mongo, params){
     return new Promise(async (resolve, reject)=>{
       try{
         const user = await mongo.findOne(tables.WALLET_USER, {_id: params.principalId});
+        
         if(user){
-          resolve({exists:true, message: "User's wallet account is exists"});
+          resolve({exists:true, address: user.address, message: "User's wallet account is exists"});
           //reject(new Error("User's wallet account is exists"));
         } else {
           resolve({exists:false});
