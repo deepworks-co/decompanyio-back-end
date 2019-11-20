@@ -20,6 +20,8 @@ npm install ../decompany-modules/decompany-common-utils
 ```bash
 sls create function -f schedulerWithdrawEvent --handler src/scheduler/withdrawEvent.handler
 sls create function -f sqsDeposit --handler src/sqs/deposit.handler
+
+sls create function -f dailySetDateMillis --handler src/scheduler/dailySetDateMillis.handler
 ```
 
 ## CodeBuild
