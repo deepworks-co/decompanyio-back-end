@@ -75,7 +75,7 @@ functions:
     timeout: 60
     reservedConcurrency: 1
     events:
-      - schedule: cron(0 0 0 * * *)
+      - schedule: cron(0 0 * * ? *)
 
 #  schedulerWithdrawEvent:
 #    handler: src/scheduler/withdrawEvent.handler
