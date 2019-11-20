@@ -70,12 +70,19 @@ package:
     - test/**
     
 functions:
-  schedulerWithdrawEvent:
-    handler: src/scheduler/withdrawEvent.handler
-    timeout: 30
+  dailySetDateMillis:
+    handler: src/scheduler/dailySetDateMillis.handler
+    timeout: 60
     reservedConcurrency: 1
     events:
-      - schedule: rate(1 minute) 
+      - schedule: cron(0 0 0 * * *)
+
+#  schedulerWithdrawEvent:
+#    handler: src/scheduler/withdrawEvent.handler
+#    timeout: 30
+#    reservedConcurrency: 1
+#    events:
+#      - schedule: rate(1 minute) 
 
   schedulerDepositEvent:
     handler: src/scheduler/depositEvent.handler
