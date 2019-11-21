@@ -16,7 +16,6 @@
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "ethereumjs-tx": "^1.3.7",
     "jsonwebtoken": "^8.5.1",
-    "mongojs": "^2.6.0",
     "web3": "^1.2.1"
   },
   "devDependencies": {
