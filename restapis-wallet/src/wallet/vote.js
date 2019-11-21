@@ -39,6 +39,11 @@ module.exports.handler = async (event, context, callback) => {
       throw new Error(`[500] User is not found`);
     }
 
+    const doc = await getDocumentFromMongoDB(documentId);
+    if(!doc){
+      throw new Error(`[500] document does not exists. document id ${documentId}`);
+    }
+
     const gasBalance = await web3.eth.getBalance(user.address);
     console.log(`${user.address} gas balance`, gasBalance);
 
@@ -51,7 +56,7 @@ module.exports.handler = async (event, context, callback) => {
       throw new Error("The Vote value has exceeded the current deck value.");
     }
 
-    savedVoteDoc = await voteOnMongoDb({
+    savedVoteDoc = await saveVoteToMongoDB({
       documentId: documentId, 
       userId: principalId, 
       deposit: Number(voteAmount), 
@@ -78,13 +83,19 @@ module.exports.handler = async (event, context, callback) => {
       voteAmount: voteAmount
     })
 
+    if(transactionResult.pendingTransaction && transactionResult.pendingTransaction === true){
+      console.log("pending transaction, remove vote data", savedVoteDoc);
+      await removeVoteFromMongoDB(savedVoteDoc);
+      return JSON.stringify({success: false, transactionResult});
+    }
+
     if(!transactionResult.transactionHash){
       throw new Error("[500] Error Vote Transaction")
     }
 
     console.log("voteOnChain transaction", transactionResult);
 
-    await voteOnMongoDb({
+    await saveVoteToMongoDB({
       _id: savedVoteDoc._id,
       updateData: {
         transaction: transactionResult,
@@ -94,8 +105,6 @@ module.exports.handler = async (event, context, callback) => {
       
     });
 
-    console.log("vote result", saveResult);
-
     return JSON.stringify({
       success: true,
       result: transactionResult
@@ -103,7 +112,7 @@ module.exports.handler = async (event, context, callback) => {
 
   } catch (err){
     console.error(err);
-    await voteOnMongoDb({
+    await saveVoteToMongoDB({
       _id: savedVoteDoc._id,
       updateData: {
         status: "ERROR",
@@ -216,7 +225,10 @@ function voteOnChain(params){
       console.log({gasPrice, nonce, pendingNonce});
 
       if(pendingNonce > nonce){
-        throw new Error('pending transaction error');
+        //throw new Error('pending transaction error');
+        const msg = {pendingTransaction: true, message: 'pending transaction error', nonce, pendingNonce};
+        console.log(msg)
+        return resolve(msg);
       }
 
       const contractAddress = BALLOT_CONTRACT.address;
@@ -242,7 +254,7 @@ function voteOnChain(params){
 
       console.log("rawTransaction", rawTransaction);
       const privateKey = await decryptPrivateKey(from.base64EncryptedEOA); 
-      const r = await sendTransaction(privateKey, rawTransaction);
+      const r = await sendTransaction(privateKey, rawTransaction, true);
       resolve(r);
     } catch (err) {
       reject(err);
@@ -252,7 +264,7 @@ function voteOnChain(params){
 }
 
 
-function sendTransaction(privateKey, rawTransaction) {
+function sendTransaction(privateKey, rawTransaction, onlyTransactionHash) {
 
   return new Promise((resolve, reject)=>{
     if(!privateKey){
@@ -274,9 +286,10 @@ function sendTransaction(privateKey, rawTransaction) {
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      //resolve({transactionHash: hash});      
+      if(onlyTransactionHash===true) resolve({transactionHash: hash});      
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
+  
       resolve(receipt);      
     })
   });
@@ -285,12 +298,12 @@ function sendTransaction(privateKey, rawTransaction) {
 }
 
 /**
- * @name voteOnMongoDb
+ * @name saveVoteToMongoDB
  * @param {string} documentId document Id
  * @param {string} userId sns id
  * @param {number} value input value * e-18
  */
-function voteOnMongoDb(params){
+function saveVoteToMongoDB(params){
   const {_id, updateData} = params;
 
   return new Promise(async (resolve, reject)=>{
@@ -312,6 +325,22 @@ function voteOnMongoDb(params){
 
     
     
+  })
+}
+
+function removeVoteFromMongoDB(vote){
+  const {_id} = vote;
+
+  return new Promise(async (resolve, reject)=>{
+
+    if(_id){
+      mongo.removeOne(tables.VOTE, {_id}).then((data)=>{
+        resolve(data);
+      }).catch((err)=>{
+        reject(err);
+      })
+
+    }
   })
 }
 
@@ -337,4 +366,16 @@ function getDocument(params){
     
   })
   
+}
+
+function getDocumentFromMongoDB(documentId) {
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.DOCUMENT, {_id: documentId}).then((data)=>{
+      
+      resolve(data);
+    }).catch((err)=>{
+      reject(err);
+    })
+    
+  })
 }

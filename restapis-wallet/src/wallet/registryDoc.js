@@ -38,17 +38,23 @@ module.exports.handler = async (event) => {
       throw new Error(`[500] User is not found`);
     }
 
+    const document = await getDocument(documentId);
+
+    if(!document){
+      throw new Error(`[500] document does not exists. document id ${documentId}`);
+    }
+    
     const gasBalance = await web3.eth.getBalance(user.address);
     console.log(`${user.address} gas balance`, gasBalance);
 
     const deckBalance = await DECK_CONTRACT.methods.balanceOf(user.address).call();
     console.log(`${user.address} deck balance`, deckBalance);
 
-    const document = await getDocument(documentId);
-    console.log("doc", document);
-
+    
+    
     if(document.registry){
-      throw new Error(`already registry ${documentId}`);
+      //throw new Error(`already registry ${documentId}`);
+      return JSON.stringify({success: false, message: `already registry ${documentId}`})
     }
 
     const transactionResult = await addDocument({
@@ -57,7 +63,7 @@ module.exports.handler = async (event) => {
     })
 
     if(!transactionResult.transactionHash){
-      throw new Error("[500] Error Vote Transaction")
+      throw new Error("[500] Error Registry Doc Transaction")
     }
 
     const saveResult = await updateDocumentAddedResult(documentId, transactionResult.transactionHash);

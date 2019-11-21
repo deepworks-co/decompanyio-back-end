@@ -12,7 +12,7 @@ describe('walletRegistryDoc', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('feed7f026db54859bec3221dcad47d8f implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
@@ -20,6 +20,26 @@ describe('walletRegistryDoc', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      const parsedRes = JSON.parse(response)
+      
+      if(parsedRes.success) console.log(response);
+
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('asdfasfsadf implement tests here', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "asdfasdfsf"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      const parsedRes = JSON.parse(response)
+      
+      if(parsedRes.success) console.log(response);
+
       expect(response).to.not.be.empty;
     });
   });
