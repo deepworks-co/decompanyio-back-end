@@ -9,15 +9,12 @@ let wrapped = mochaPlugin.getWrapper('getBalance', '/src/account/balance.js', 'h
 
 describe('getBalance', () => {
   before((done) => {
-    console.log("test start!!!");
     done();
   });
 
   after((done, fn) => {
-    console.log("test complete!!");
     done();
-
-    wrapped = undefined;
+    process.exit();
   });
 
   it('miner', () => {
@@ -31,7 +28,10 @@ describe('getBalance', () => {
     });
   });
 
+  
+ 
   it('google-oauth2|101778494068951192848', () => {
+ 
     const event = {
       principalId: "google-oauth2|101778494068951192848"
     }
@@ -42,14 +42,29 @@ describe('getBalance', () => {
     });
   });
 
-  it('linkedin|HpIQ_mxN0N', () => {
+  delay(5000)
+
+  it('linkedin|HpIQ_mxN0N', async () => {
+    
     const event = {
       principalId: "linkedin|HpIQ_mxN0N"
     }
-
+   
     return wrapped.run(event).then((response) => {
       console.log(response)
       expect(response).to.not.be.empty;
     });
   });
+
+
+
 });
+
+function delay(interval) 
+{
+   return it('should delay', done => 
+   {
+      setTimeout(() => done(), interval)
+
+   }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
+}

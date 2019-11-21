@@ -11,7 +11,10 @@ describe('claimReward', () => {
   before((done) => {
     done();
   });
-
+  after((done) => {
+    done();
+    process.exit();
+  });
   it('implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",

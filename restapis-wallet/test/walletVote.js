@@ -11,6 +11,10 @@ describe('walletVote', () => {
   before((done) => {
     done();
   });
+  after((done, fn) => {
+    done();
+    process.exit();
+  });
  /*
   it('e6cf11472a174eb9ba6897136ac1b2b8 implement tests here', () => {
     const event = {

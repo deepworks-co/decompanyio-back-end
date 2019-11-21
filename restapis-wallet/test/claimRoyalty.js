@@ -11,7 +11,10 @@ describe('claimRoyalty', () => {
   before((done) => {
     done();
   });
-
+  after((done, fn) => {
+    done();
+    process.exit();
+  });
   it('implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",

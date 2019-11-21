@@ -11,7 +11,10 @@ describe('createAccount', () => {
   before((done) => {
     done();
   });
-
+  after((done, fn) => {
+    done();
+    process.exit();
+  });
   it('Create Externally Owned Address (EOA), google-oauth2|101778494068951192848', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848"
