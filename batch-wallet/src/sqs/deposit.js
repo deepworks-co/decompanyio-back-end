@@ -19,7 +19,7 @@ const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"
   * psnet에서는 같은 양의 Deck을 foundation->user로 이동시킨다.
   */
 module.exports.handler = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
+  //context.callbackWaitsForEmptyEventLoop = false;
   
   console.log("sqs message count", event.Records.length);
   
@@ -57,7 +57,8 @@ module.exports.handler = async (event, context, callback) => {
     }
 
   }
-  callback(null, "complete");
+  
+  return JSON.stringify({success: true});
 };
 
 function run(record) {
