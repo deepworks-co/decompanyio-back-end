@@ -15,3 +15,14 @@ exports.sendMessage = (region, querueUrl, messageBody) => {
     
     return sqs.sendMessage(params).promise();
  }
+
+
+ exports.deleteMessage = (region, queueUrl, receiptHandle)=>{
+    const sqs = new AWS.SQS({region: region});
+    const params = {
+       QueueUrl: queueUrl,
+       ReceiptHandle: receiptHandle
+    };
+    
+    return sqs.deleteMessage(params).promise();
+ }
