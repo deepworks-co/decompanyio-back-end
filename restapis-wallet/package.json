@@ -7,7 +7,8 @@
     "deploy": "sls deploy",
     "deploy:asem": "sls deploy -s asem",
     "deploy:dev": "sls deploy -s dev",
-    "doc:dev": "sls downloadDocumentation --outputFileName=apidoc.yml -s dev"
+    "doc:dev": "sls downloadDocumentation --outputFileName=apidoc-dev.yml -s dev",
+    "doc:asem": "sls downloadDocumentation --outputFileName=apidoc-prod.yml -s asem"
   },
   "author": "",
   "license": "ISC",
