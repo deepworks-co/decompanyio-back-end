@@ -20,6 +20,16 @@ const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"
   */
 module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
+  
+
+  event.Records.forEach(async (record)=>{
+    if(params.receiptHandle){
+      const sqsUrl = walletConfig.queueUrls.EVENT_DEPOSIT;
+      const deleteMessageResult = await sqs.deleteMessage(region, sqsUrl, record.receiptHandle);
+
+      console.log("deleteMessageResult", deleteMessageResult);
+    }
+  })
   let i;
   for(i=0;i<event.Records.length;i++){
     try{
