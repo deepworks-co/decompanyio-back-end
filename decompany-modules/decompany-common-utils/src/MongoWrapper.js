@@ -31,6 +31,7 @@ module.exports = class MongoWrapper {
 
       this.db.on('connect', function(){
         this.id = Math.random().toString(36).substring(7);
+        this.timestamp = Date.now();
         console.log("mongo connect", this.id);
       })
       
@@ -39,6 +40,10 @@ module.exports = class MongoWrapper {
         console.log("close", this.id);
         MongoWapperSingletonInstance = null;
       })
+
+      this.db.on("timeout", function(){
+        console.log("timeout", this.id)
+      });
 
 
     } else {
