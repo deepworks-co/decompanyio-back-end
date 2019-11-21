@@ -27,7 +27,7 @@ module.exports.handler = async (event, context, callback) => {
     });
   }
 
-  context.callbackWaitsForEmptyEventLoop = false;
+  //context.callbackWaitsForEmptyEventLoop = false;
   console.log("event", event)
   const {principalId} = event;
   try{
