@@ -1,7 +1,7 @@
 'use strict';
 const R = require('ramda');
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
-const {kms, sns, MongoWrapper} = require("decompany-common-utils");
+const {kms, sqs, sns, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 
