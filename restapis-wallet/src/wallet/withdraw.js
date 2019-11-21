@@ -62,6 +62,7 @@ module.exports.handler = async (event, context, callback) => {
     const saveData = {
       _id: r.transactionHash,
       status: "PENDING",
+      fromAddress: user.address,
       toAddress: toAddress,
       created: Date.now()
     }
@@ -186,10 +187,10 @@ function sendTransaction(privateKey, rawTransaction) {
     web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
-      //resolve({transactionHash: hash});      
+      resolve({transactionHash: hash});      
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
-      resolve(receipt);      
+      //resolve(receipt);      
       
     })
   });
