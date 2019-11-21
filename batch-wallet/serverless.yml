@@ -77,16 +77,16 @@ functions:
     events:
       - schedule: cron(0 0 * * ? *)
 
-#  schedulerWithdrawEvent:
-#    handler: src/scheduler/withdrawEvent.handler
-#    timeout: 30
-#    reservedConcurrency: 1
-#    events:
-#      - schedule: rate(1 minute) 
+  schedulerWithdrawEvent:
+    handler: src/scheduler/withdrawEvent.handler
+    timeout: 300
+    reservedConcurrency: 1
+    events:
+      - schedule: rate(1 minute) 
 
   schedulerDepositEvent:
     handler: src/scheduler/depositEvent.handler
-    timeout: 30
+    timeout: 300
     reservedConcurrency: 1
     events:
       - schedule: rate(1 minute)

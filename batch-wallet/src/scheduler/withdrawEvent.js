@@ -19,7 +19,7 @@ module.exports.handler = (event, context, callback) => {
   
   getLatestWithdrawLog(tables.WALLET_WITHDRAW)
   .then((data)=>{
-    //console.log("get latest log", data[0]);
+    console.log("get latest log", data[0]);
     return data[0]?data[0].log.blockNumber + 1:1;
   })
   .then(async (blockNumber)=>{
@@ -28,19 +28,23 @@ module.exports.handler = (event, context, callback) => {
       fromBlock: blockNumber,
       toBlock: "latest",
       eventName: "Transfer",
-      filter: {to: foundation.address}
+      filter: [foundation.address]
     })
   })
-  .then(async (eventLogs)=>{
-    console.log("eventLogs count", eventLogs.length);
-    const r = await saveWithdraw(tables.WALLET_WITHDRAW, eventLogs);
-    console.log("saveWithdraw", r);
-    return eventLogs;
+  .then((eventLogs)=>{
+    //console.log("eventLogs count", eventLogs);
+    return findWithdrawEvent(tables.WALLET_WITHDRAW, eventLogs);
   })
-  .then(async (eventLogs)=>{
-    console.log("getWithdrawEvent", eventLogs.length);
+  .then(async (eventLogsWithFindItem)=>{
+    console.log("find eventLogs count", eventLogsWithFindItem.length);
+    const r = await saveWithdraw(tables.WALLET_WITHDRAW, eventLogsWithFindItem);
+    console.log("saveWithdraw", r);
+    return eventLogsWithFindItem;
+  })
+  .then(async (eventLogsWithFindItem)=>{
+    console.log("getWithdrawEvent", eventLogsWithFindItem.length);
     const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
-    const results = await sendSQS(region, sqsUrl, eventLogs);
+    const results = await sendSQS(region, sqsUrl, eventLogsWithFindItem);
     return results;
   })
   .then((data)=>{
@@ -59,6 +63,9 @@ module.exports.handler = (event, context, callback) => {
 function getLatestWithdrawLog(tableName){
   return new Promise((resolve, reject)=>{
     mongo.find(tableName, {
+      query: {
+        log: {$exists: true}
+      },
       sort: {
         "log.blockNumber": -1
       },
@@ -93,16 +100,42 @@ function getEventLog(contract, params) {
   
 }
 
-function saveWithdraw(tableName, eventLogs){
+
+function findWithdrawEvent(tableName, eventLogs){
+
+  return new Promise(async (resolve, reject)=>{
+    
+    const filterResultPromise = eventLogs.map(async (eventLog)=>{
+      const {transactionHash} = eventLog;
+      
+      const findItem = await mongo.findOne(tableName, { _id: transactionHash});
+      
+      if(findItem) {
+        return {findItem, eventLog}
+      }
+      return {eventLog};
+
+    });
+
+    Promise.all(filterResultPromise)
+    .then((data)=>resolve(data))
+    .catch((err)=>reject(err))    
+  });
+
+}
+
+function saveWithdraw(tableName, eventLogsWithFindItem){
 
   return new Promise((resolve, reject)=>{
     const bulk = mongo.getUnorderedBulkOp(tableName);
 
-    eventLogs.forEach((eventLog)=>{
-      const {transactionHash, transactionIndex} = eventLog;
-      //bulk.find({_id: log._id }).upsert().updateOne(log);
-      const id = `${transactionHash}#${transactionIndex}`;
-      bulk.insert({_id: id, log: eventLog});
+    eventLogsWithFindItem.forEach((eventLogWithFindItem)=>{
+      const {eventLog, findItem} = eventLogWithFindItem;
+      const {transactionHash} = eventLog;      
+      bulk.find({_id: transactionHash}).upsert().updateOne({$set: {log: eventLog, created: Date.now()}});
+      if(findItem){
+        bulk.find({_id: transactionHash}).upsert().updateOne({$set: {status: "EVENT_WITHDRAW", created: findItem.created, updated: Date.now()}});
+      }
     })
 
     mongo.execute(bulk)
@@ -112,12 +145,20 @@ function saveWithdraw(tableName, eventLogs){
 
 }
 
-function sendSQS(region, sqsUrl, eventLogs) {
-  const results = eventLogs.filter((eventLog)=>{
-    return eventLog.event === "Transfer"
+function sendSQS(region, sqsUrl, eventLogsWithFindItem) {
+  const results = eventLogsWithFindItem.filter((eventLogWithFindItem)=>{
+    const {eventLog, findItem} = eventLogWithFindItem;
+    return findItem && findItem.toAddress
   })
-  .map((eventLog)=>{
-    return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
+  .map((eventLogWithFindItem)=>{
+    const {eventLog, findItem} = eventLogWithFindItem;
+    const {to, from , value} = eventLog.returnValues;
+    return sqs.sendMessage(region, sqsUrl, JSON.stringify({
+      fromAddress: findItem.fromAddress,
+      toAddress: findItem.toAddress, 
+      transactionHash: eventLog.transactionHash,
+      value: value
+    }));
   })
   console.log("sent sqs message", results.length);
   return Promise.all(results);
