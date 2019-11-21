@@ -16,8 +16,8 @@ const NETWORK_ID = walletConfig.psnet.id;
 const DECK_CONTRACT = buildContract(web3, PSNET_DECK_ABI, NETWORK_ID);
 const REGISTRY_CONTRACT = buildContract(web3, PSNET_REGISTRY_ABI, NETWORK_ID);
 
-module.exports.handler = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
+module.exports.handler = async (event) => {
+  //context.callbackWaitsForEmptyEventLoop = false;
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({
@@ -71,7 +71,7 @@ module.exports.handler = async (event, context, callback) => {
 
   } catch (err){
     console.error(err);
-    return callback(`[500] ${err.toString()}`);
+    return new Error(`[500] ${err.toString()}`);
   }
 
 };

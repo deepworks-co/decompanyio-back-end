@@ -30,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const {principalId, body} = event;
   const {documentId, amount} = body;
-
+  let savedVoteDoc;
   try{
 
     const user = await getWalletAccount(principalId);
@@ -50,6 +50,15 @@ module.exports.handler = async (event, context, callback) => {
     if(voteAmount > deckBalance){
       throw new Error("The Vote value has exceeded the current deck value.");
     }
+
+    savedVoteDoc = await voteOnMongoDb({
+      documentId: documentId, 
+      userId: principalId, 
+      deposit: Number(voteAmount), 
+      status: "PENDING",
+      created: Date.now()
+    });
+
     
     const allowance = await DECK_CONTRACT.methods.allowance(user.address, BALLOT_CONTRACT.address).call({from: user.address});
     console.log(`${user.address} allowance`, allowance);
@@ -75,7 +84,15 @@ module.exports.handler = async (event, context, callback) => {
 
     console.log("voteOnChain transaction", transactionResult);
 
-    const saveResult = await voteOnMongoDb(documentId, principalId, Number(voteAmount), transactionResult);
+    await voteOnMongoDb({
+      _id: savedVoteDoc._id,
+      updateData: {
+        transaction: transactionResult,
+        status: "COMPLETE",
+        update: Date.now()
+      }
+      
+    });
 
     console.log("vote result", saveResult);
 
@@ -86,7 +103,16 @@ module.exports.handler = async (event, context, callback) => {
 
   } catch (err){
     console.error(err);
-    return callback(`[500] ${err.toString()}`);
+    await voteOnMongoDb({
+      _id: savedVoteDoc._id,
+      updateData: {
+        status: "ERROR",
+        error: err.toString(),
+        update: Date.now()
+      }
+      
+    });
+    return new Error(`[500] ${err.toString()}`);
   }
 
 };
@@ -177,7 +203,7 @@ function voteOnChain(params){
   return new Promise(async (resolve, reject)=>{
     try{
       const hexOfDocumentId = web3.utils.asciiToHex(documentId);
-      console.log("documentId", documentId, "to hex", hexOfDocumentId);
+      console.log("documentId", documentId, "to hex", hexOfDocumentId, "voteAmount", voteAmount);
 
       const {dateMillis, creator, hashed} = await getDocument({hexOfDocumentId});
 
@@ -264,19 +290,27 @@ function sendTransaction(privateKey, rawTransaction) {
  * @param {string} userId sns id
  * @param {number} value input value * e-18
  */
-function voteOnMongoDb(documentId, userId, value, transaction){
-  return new Promise((resolve, reject)=>{
-    mongo.insert(tables.VOTE, {
-      documentId: documentId,
-      userId: userId,
-      deposit: value,
-      transaction: transaction,
-      created: Date.now()
-    }).then((data)=>{
-      resolve(data);
-    }).catch((err)=>{
-      reject(err);
-    })
+function voteOnMongoDb(params){
+  const {_id, updateData} = params;
+
+  return new Promise(async (resolve, reject)=>{
+
+    if(_id){
+      mongo.update(tables.VOTE, {_id}, {$set: updateData}).then((data)=>{
+        resolve(data);
+      }).catch((err)=>{
+        reject(err);
+      })
+
+    } else {
+      mongo.insert(tables.VOTE, params).then((data)=>{
+        resolve(data);
+      }).catch((err)=>{
+        reject(err);
+      })
+    }
+
+    
     
   })
 }
