@@ -16,7 +16,8 @@ describe('walletWithdraw', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
-        amount: 1
+        amount: 1,
+        toAddress: "0xa05b51311397C5552798Ce216250BC0e757c1Aa2"
       }
     }
     return wrapped.run(event).then((response) => {

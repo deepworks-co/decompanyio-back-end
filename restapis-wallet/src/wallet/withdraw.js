@@ -16,7 +16,7 @@ const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS
 const FOUNDATION_ID = walletConfig.foundation;
 
 module.exports.handler = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
+  
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({
@@ -27,9 +27,13 @@ module.exports.handler = async (event, context, callback) => {
 
 
   const {principalId, body} = event;
-  const {amount} = body;
+  const {amount, toAddress} = body;
 
   try{
+
+    if(!amount || !toAddress){
+      throw new Error("[500] parameter is invalid!!");
+    }
     const foundation = await getWalletAccount(FOUNDATION_ID)
     console.log("foundation address", foundation.address);
     const user = await getWalletAccount(principalId)
@@ -55,6 +59,14 @@ module.exports.handler = async (event, context, callback) => {
     }
 
     console.log("withdraw result", r, `${value}(${amount})` );
+    const saveData = {
+      _id: r.transactionHash,
+      status: "PENDING",
+      toAddress: toAddress,
+      created: Date.now()
+    }
+
+    await saveWithdrawToMongoDB(saveData);
 
     return JSON.stringify({
       success: true,
@@ -63,7 +75,7 @@ module.exports.handler = async (event, context, callback) => {
 
   } catch (err){
     console.error(err);
-    return callback(`[500] ${err.toString()}`);
+    return new Error(`[500] ${err.toString()}`);
   }
 
 };
@@ -183,4 +195,16 @@ function sendTransaction(privateKey, rawTransaction) {
   });
   
 
+}
+
+function saveWithdrawToMongoDB(params){
+  return new Promise((resolve, reject)=>{
+    mongo.insert(tables.WALLET_WITHDRAW, params)
+    .then((data)=>{
+      resolve(data);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
 }
