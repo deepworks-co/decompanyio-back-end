@@ -76,7 +76,7 @@ module.exports.handler = async (event, context, callback) => {
 
   } catch (err){
     console.error(err);
-    return new Error(`[500] ${err.toString()}`);
+    throw new Error(`[500] ${err.toString()}`);
   }
 
 };

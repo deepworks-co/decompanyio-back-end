@@ -121,7 +121,7 @@ module.exports.handler = async (event, context, callback) => {
       }
       
     });
-    return new Error(`[500] ${err.toString()}`);
+    throw new Error(`[500] ${err.toString()}`);
   }
 
 };
