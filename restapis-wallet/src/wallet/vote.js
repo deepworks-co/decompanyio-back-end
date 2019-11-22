@@ -291,7 +291,9 @@ function sendTransaction(privateKey, rawTransaction, onlyTransactionHash) {
       console.log("receipt", receipt);
   
       resolve(receipt);      
-    })
+    }).on('error', function(err){
+      reject(err);
+    });
   });
   
 

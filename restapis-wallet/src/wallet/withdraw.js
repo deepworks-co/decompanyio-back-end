@@ -38,6 +38,10 @@ module.exports.handler = async (event, context, callback) => {
     console.log("foundation address", foundation.address);
     const user = await getWalletAccount(principalId)
 
+    if(toAddress.toLowerCase() === user.address.toLowerCase()){
+      throw new Error("[500] parameter is invaild(Incoming and your virtual account is the same.)");
+    }
+
     const balance = await web3.eth.getBalance(user.address);
     console.log("user ether balance", user.address, balance);
     const deck = await DECK_CONTRACT.methods.balanceOf(user.address).call();
@@ -192,7 +196,9 @@ function sendTransaction(privateKey, rawTransaction) {
       console.log("receipt", receipt);
       //resolve(receipt);      
       
-    })
+    }).on('error', function(err){
+      reject(err);
+    });
   });
   
 
