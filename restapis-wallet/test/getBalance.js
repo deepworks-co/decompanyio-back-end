@@ -19,7 +19,7 @@ describe('getBalance', () => {
 
   it('miner', () => {
     const event = {
-      principalId: "miner"
+      body: {userId: "miner"}
     }
 
     return wrapped.run(event).then((response) => {
@@ -33,7 +33,7 @@ describe('getBalance', () => {
   it('google-oauth2|101778494068951192848', () => {
  
     const event = {
-      principalId: "google-oauth2|101778494068951192848"
+      body: {userId: "google-oauth2|101778494068951192848"}
     }
 
     return wrapped.run(event).then((response) => {
@@ -47,7 +47,7 @@ describe('getBalance', () => {
   it('linkedin|HpIQ_mxN0N', async () => {
     
     const event = {
-      principalId: "linkedin|HpIQ_mxN0N"
+      body: {userId: "linkedin|HpIQ_mxN0N"}
     }
    
     return wrapped.run(event).then((response) => {

@@ -219,11 +219,10 @@ functions:
     timeout: 25
     events:
       - http: 
-          method: get
+          method: post
           path: /api/account/balance
           cors: true
           integration: lambda
-          authorizer: jwt
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -234,11 +233,8 @@ functions:
           documentation:
             summary: "/api/account/balance"
             description: "/api/account/balance"
-            requestHeaders:
-              -
-                name: "Authorization"
-                description: "Auth Header description"
-
+            requestModels:
+                "application/json": "RequestBalanceModel"
   requestGas:
     handler: src/gas/request.handler
     timeout: 25
@@ -375,7 +371,11 @@ custom:
         name: "RequestWithdrawModel"
         description: "wallet withdraw"
         contentType: "application/json"
-        schema: ${file(models/RequestWithdrawModel.json)}       
+        schema: ${file(models/RequestWithdrawModel.json)}
+      -
+        name: "RequestBalanceModel"
+        contentType: "application/json"
+        schema: ${file(models/RequestBalanceModel.json)}    
 plugins:
   - serverless-offline
   - serverless-mocha-plugin

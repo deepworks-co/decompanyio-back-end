@@ -28,10 +28,10 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   //context.callbackWaitsForEmptyEventLoop = false;
-  console.log("event", event)
-  const {principalId} = event;
+  console.log("mongo status", JSON.stringify(mongo.status()));
+  const {userId} = event.body;
   try{
-    const balance = await getBalance({principalId});
+    const balance = await getBalance({userId});
 
     if(!balance){
       throw new Error("[500] GetBalnace error");
@@ -41,7 +41,7 @@ module.exports.handler = async (event, context, callback) => {
       success: true, 
       balance: balance
     })
-    
+    //mongo.close();
     return response;
   } catch(err){
     throw new Error(`[500] ${err}`);
@@ -52,11 +52,11 @@ module.exports.handler = async (event, context, callback) => {
 
 function getBalance(params) {
 
-  const {principalId} = params;
+  const {userId} = params;
  
 
   return new Promise((resolve, reject) =>{
-    getWalletAccount(mongo, principalId)
+    getWalletAccount(mongo, userId)
     .then(async (account)=>{
       if(!account || !account.address){
         throw new Error("account is not exists");
