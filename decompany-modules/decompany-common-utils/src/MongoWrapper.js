@@ -2,78 +2,91 @@
 
 const mongojs = require('mongojs');
 
-let MongoWapperSingletonInstance = null;
+let _MongoWapperSingletonInstance = null;
 module.exports = class MongoWrapper {
 
   constructor(connectionString) {
-    if(MongoWapperSingletonInstance==null){
+    if(_MongoWapperSingletonInstance==null){
       this.connectionString = connectionString;
-      this.connect();
-      
-      //console.log("connect", MongoWapperSingletonInstance);
-      
+      this.connect();      
     } 
 
-    return MongoWapperSingletonInstance;
+    return _MongoWapperSingletonInstance;
   }
 
   connect() {
-        
-    if(MongoWapperSingletonInstance==null){
-      
-      this.db = mongojs(this.connectionString);
-      MongoWapperSingletonInstance = this;
 
-      this.db.on('error', function(err){
-        console.error("mongo connection error", err);
-        this.close();
-      })
+    this.db = mongojs(this.connectionString);
+    _MongoWapperSingletonInstance = this;
 
-      this.db.on('connect', function(){
-        this.id = Math.random().toString(36).substring(7);
-        this.timestamp = Date.now();
-        console.log("mongo connect", this.id);
-      })
-      
+    this.db.on('error', function(err){
+      console.error("mongo connection error", err);
+      this.close();
+    })
 
-      this.db.on('close', function(){
-        console.log("close", this.id);
-        MongoWapperSingletonInstance = null;
-      })
+    this.db.on('connect', function(){
+      _MongoWapperSingletonInstance.id = Math.random().toString(36).substring(7);
+      _MongoWapperSingletonInstance.timestamp = Date.now();
+      console.log("mongo connect", _MongoWapperSingletonInstance.id);
+    })
+    
 
-      this.db.on("timeout", function(){
-        console.log("timeout", this.id)
-      });
-
-
-    } else {
-      console.log("MongoWapperSingletonInstance is not null", MongoWapperSingletonInstance)
-    }
-
+    this.db.on('close', function(){
+      console.log("close", _MongoWapperSingletonInstance);
+      _MongoWapperSingletonInstance = null;
+    })
 
   }
 
   status() {
-    console.log("status this", this);
-    console.log("status MongoWapperSingletonInstance", MongoWapperSingletonInstance);
 
-    if(this.db){
-      return {connected: true}
-    } else {
-      return {connected: false}
+    return {
+      connected: _MongoWapperSingletonInstance?true:false, 
+      instance: this, 
+      //ObjectId: this.db.ObjectId, 
+      connString: this.db._connString
     }
     
   }
 
+  getConnection(){
+    return new Promise((resolve, reject) =>{
+      this.db._getConnection(function(err, data){
+        if(err) reject(err)
+        else resolve(data)
+      });
+    });
+  }
+
+  collections(){
+    return new Promise((resolve, reject) =>{
+      this.db.getCollectionNames(function(err, data){
+        if(err) reject(err)
+        else resolve(data)
+      });
+    });
+  }
+
+  database(){
+    return this.db.toString();
+  }
+
+  stats() {
+    return new Promise((resolve, reject)=>{
+      this.db.stats()
+    })
+  }
+
   reconnect() {
-    if(!MongoWapperSingletonInstance || MongoWapperSingletonInstance === null){
+    if(!_MongoWapperSingletonInstance || _MongoWapperSingletonInstance === null){
       this.connect();
     }
   }
 
   close() {
-    //console.log("close()", MongoWapperSingletonInstance);
-    MongoWapperSingletonInstance = null;
+    
+    _MongoWapperSingletonInstance = null;
+    
     if(this.db){
       this.db.close();
     }
@@ -260,6 +273,22 @@ module.exports = class MongoWrapper {
     return new Promise((resolve, reject) => {
 
       this.db.collection(collection).update(query, update, options?options:{}, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        
+      });
+
+    });
+  }
+
+  removeOne(collection, query) {
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).remove(query, { justOne: true }, (err, res)=>{
         
         if(err){
           reject(err);
