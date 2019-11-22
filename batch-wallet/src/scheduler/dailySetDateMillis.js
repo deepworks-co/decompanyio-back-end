@@ -107,7 +107,9 @@ function sendTransaction(privateKey, rawTransaction) {
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
       resolve(receipt);      
-    })
+    }).on('error', function(err){
+      reject(err);
+    });
   });
   
 

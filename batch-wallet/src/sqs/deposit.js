@@ -233,7 +233,9 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     }).once('receipt', function(receipt){
       console.log("receipt", receipt);
       //resolve(receipt);
-    })
+    }).on('error', function(err){
+      reject(err);
+    });
   });
   
 
