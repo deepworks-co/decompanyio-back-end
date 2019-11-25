@@ -53,70 +53,55 @@ module.exports.handler = async (event, context, callback) => {
   return JSON.stringify({success: true});
 };
 
-function run(record) {
+async function run(record) {
+  try{
+    const params = await validate(record);
+    const {from, to, value, privateKey, id} = params;
 
-  return new Promise((resolve, reject)=>{
-    validate(record)
-    .then(async (params)=>{
-      console.log("params", params)
-      const {from, to, value, privateKey, transactionHash} = params;
-      const updateCallback = R.curry(updateWithdrawResult)(tables.WALLET_WITHDRAW, {_id: transactionHash});
-      const result = await transferDeck(from, to, value, privateKey, updateCallback);
-      return {
-        transactionHash,
-        result
-      }
-    })
-    .then(async (data)=>{
-      const {transactionHash, result} = data;
-      console.log("transaction info", data);
-      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: transactionHash}, {result: result, status: "COMPLETE"});
-      console.log("updateWithdrawResult", updateResult)
-      return data;
-    })
-    .then((data)=>{
-      resolve(data);
-    })
-    .catch((err)=>{
-      console.error(err);
-      reject(err);
-    })
-  })
+    const updateCallback = null;//= R.curry(updateTransactionProcess)(tables.WALLET_WITHDRAW, {_id: transactionHash});
+    
+    const result = await transferDeck(from, to, value, privateKey, updateCallback);
 
+    if(updateCallback){
+      await updateCallback({result: result, status: "COMPLETE"});
+    }
+      
+  } catch (err){
+    console.error("run error", err);
+    throw err;
+  }
+  
+     
 }
 
 async function validate(record){
   console.log("validate", record);
   const {body} = record;
   const parsedBody = JSON.parse(body);
-  const {value, fromAddress, toAddress, transactionHash} = parsedBody;
-  const walletUser = await getWalletUserFromAddress(fromAddress);
-  console.log(fromAddress, walletUser);
-  const privateKey = await decryptPrivateKey(walletUser.base64EncryptedEOA);
+  const {value, toAddress, id} = parsedBody;
+  const foundation = await getFoundation(FOUNDATION_ID);
+
+  const privateKey = await decryptPrivateKey(foundation.base64EncryptedEOA);
   
   return {
-    transactionHash: transactionHash,
-    from: fromAddress,
+    from: foundation.address,
     to: toAddress,
     value: value,
     privateKey
   }
 }
-
-function getWalletUserFromAddress(fromAddress){
-
+function getFoundation(id){
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {address: fromAddress})
+    mongo.findOne(tables.WALLET_USER, {_id: id})
     .then((data)=>{
       if(data) resolve(data);
-      else reject(new Error(`${fromAddress} is not exists`));
+      else reject(new Error(`${id} is not exists`));
     })
     .catch((err)=>{
       reject(err);
     })
   })
 }
-
 
 function decryptPrivateKey(base64EncryptedEOA) {
 
@@ -196,7 +181,7 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
       if(callback){
-        const updateResult = await callback({result: {transactionHash: hash}});  
+        await callback({result: {transactionHash: hash}});  
       }
       //resolve({transactionHash: hash});
     }).once('receipt', function(receipt){
@@ -211,38 +196,8 @@ function sendTransaction(privateKey, rawTransaction, callback) {
 }
 
 
-function saveWithdraw(data){
-  return new Promise((resolve, reject)=>{
-    mongo.save(tables.WALLET_WITHDRAW, data)
-    .then((data)=>{
-      resolve(data);
-     })
-    .catch((err)=>{
-      reject(err);
-    })
-  })
-}
 
-
-function checkWithdrawResult(tableName, query) {
-  return new Promise((resolve, reject)=>{
-    mongo.find(tableName, {query: query})
-    .then((data)=>{
-      if(data[0] && data[0].result){
-        console.log("already withdraw result saved", JSON.stringify(data[0].result));
-        reject(new Error("already withdraw result saved"))
-      } else {
-        resolve(true);
-      }
-        
-    })
-    .catch((err)=>{
-      reject(err);
-    })
-  });  
-}
-
-function updateWithdrawResult(tableName, query, data){
+function updateTransactionProcess(tableName, query, data){
   return new Promise(async (resolve, reject)=>{
     mongo.update(tableName, query, {$set: data})
     .then((data)=>{

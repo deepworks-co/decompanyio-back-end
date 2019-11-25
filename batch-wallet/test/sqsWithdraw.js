@@ -17,9 +17,8 @@ describe('sqsWithdraw', () => {
         "Records": [
           {
               "body": JSON.stringify({
-                "fromAddress":"0x4Ee128892469e7962e6E617727cb99C59525D7D2",
+                "id": "asdfasfdsa",
                 "toAddress":"0xa05b51311397C5552798Ce216250BC0e757c1Aa2",
-                "transactionHash":"0x92d50b80666819b0b4bd1834cc8d49b972a1ea6d43667987d9bd07ca3a1cb9b2",
                 "value":"1000000000000000000"
               })
           }
