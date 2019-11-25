@@ -14,11 +14,7 @@ const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRE
 const FOUNDATION_ID = walletConfig.foundation;
 
 const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
-  /*
-  * 출금의 경우 psnet에 소지한 Deck을 foundation으로 이동시켜 출금 신청을 하면,
-  * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
-  */
-
+ 
 module.exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
