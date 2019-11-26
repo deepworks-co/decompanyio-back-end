@@ -61,6 +61,20 @@ async function run(record) {
     const check = await checkRequestWithdraw(tables.WALLET_REQUEST_WITHDRAW, id)
     if(check === true) {    
       const result = await transferDeck(from, to, value, privateKey, updateCallback);
+
+      await saveWalletEvent(tables.WALLET, {
+        _id: result.transactionHash,
+        account: to,
+        type: "WITHDRAW",
+        from: from,
+        to: to,
+        factor: -1,
+        value: MongoWrapper.Decimal128.fromString(value + ""),
+        strValue: value + "",
+        created: Date.now()
+      });
+
+
       console.log("transaction complete", {params, transactionHash: result.transactionHash});
     } else {
       const err =  new Error(`${id} request is not pending status`);
@@ -234,5 +248,11 @@ function checkRequestWithdraw(tableName, id) {
       reject(err);
     }
     
+  })
+}
+
+function saveWalletEvent(tableName, params){
+  return new Promise((resolve, reject)=>{
+    mongo.save(tableName, params).then((data)=>resolve).catch((err)=>reject);
   })
 }
