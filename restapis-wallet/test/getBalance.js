@@ -42,12 +42,12 @@ describe('getBalance', () => {
     });
   });
 
-  delay(5000)
+  //delay(5000)
 
-  it('linkedin|HpIQ_mxN0N', async () => {
+  it('google-oauth2|107070602776474268283', async () => {
     
     const event = {
-      body: {userId: "linkedin|HpIQ_mxN0N"}
+      body: {userId: "google-oauth2|107070602776474268283"}
     }
    
     return wrapped.run(event).then((response) => {

@@ -31,54 +31,38 @@ module.exports.handler = async (event, context, callback) => {
   console.log("mongo status", JSON.stringify(mongo.status()));
   const {userId} = event.body;
   try{
-    const balance = await getBalance({userId});
-
-    if(!balance){
-      throw new Error("[500] GetBalnace error");
+    const user = await getUser(mongo, userId);
+    if(!user){
+      throw new Error("user id is invaild!!");
+    }
+    
+    if(!user.ethAccount){
+      const response = JSON.stringify({
+        success: false, 
+        message: "There is no registered account(EOA)."
+      })
+  
+      return response;
     }
 
+    const balance = await getBalance(mongo, user.ethAccount);
+    console.log("balance", balance)
     const response = JSON.stringify({
       success: true, 
       balance: balance
     })
-    //mongo.close();
+
     return response;
   } catch(err){
+    console.error(err);
     throw new Error(`[500] ${err}`);
   }
   
 };
 
-
-function getBalance(params) {
-
-  const {userId} = params;
- 
-
-  return new Promise((resolve, reject) =>{
-    getWalletAccount(mongo, userId)
-    .then(async (account)=>{
-      if(!account || !account.address){
-        throw new Error("account is not exists");
-      }
-      const gasBalance = await web3.eth.getBalance(account.address);
-      console.log(`${account.address} gas balance`, gasBalance);
-  
-      const deckBalance = await DECK_CONTRACT.methods.balanceOf(account.address).call();
-      console.log(`${account.address} deck balance`, deckBalance);
-
-      resolve({wei: gasBalance, deck: deckBalance})
-    })
-    .catch((err)=>{
-      console.error("getBalance error", err);
-      reject(err);
-    })
-  });
-}
-
-function getWalletAccount(mongo, userId){
+function getUser(mongo, userId) {
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    mongo.findOne(tables.USER, {_id: userId})
     .then((data)=>{
       resolve(data);
     })
@@ -88,3 +72,15 @@ function getWalletAccount(mongo, userId){
   })
 }
 
+function getBalance(mongo, ethAccount) {
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount})
+    .then((data)=>{
+      const balance = data&&data.balance?data.balance.toString():0;
+      resolve(balance);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
