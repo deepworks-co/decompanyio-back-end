@@ -3,7 +3,6 @@
     "title": "RequestWithdrawModel",
     "type": "object",
     "properties": {
-      "amount": { "type": "integer" },
-      "toAddress": { "type": "string"}
+      "amount": { "type": "integer" }
     }
 }
