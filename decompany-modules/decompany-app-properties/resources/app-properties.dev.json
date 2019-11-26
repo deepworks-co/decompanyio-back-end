@@ -50,7 +50,8 @@
         "WALLET": "WALLET",
         "WALLET_USER": "WALLET-USER",
         "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
-        "DECK_TRANSFER": "DECK-TRANSFER"
+        "DECK_TRANSFER": "DECK-TRANSFER",
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
     },
     "sqsConfig": {
         "region": "us-west-1",
