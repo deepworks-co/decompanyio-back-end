@@ -28,7 +28,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   //context.callbackWaitsForEmptyEventLoop = false;
-  console.log("mongo status", JSON.stringify(mongo.status()));
+  //console.log("mongo status", JSON.stringify(mongo.status()));
   const {userId} = event.body;
   try{
     const user = await getUser(mongo, userId);
@@ -51,7 +51,7 @@ module.exports.handler = async (event, context, callback) => {
       success: true, 
       balance: balance
     })
-
+    
     return response;
   } catch(err){
     console.error(err);
@@ -73,14 +73,39 @@ function getUser(mongo, userId) {
 }
 
 function getBalance(mongo, ethAccount) {
-  return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount})
-    .then((data)=>{
-      const balance = data&&data.balance?data.balance.toString():0;
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount});
+      console.log(vwBalance);
+      let balance = 0;
+      if(vwBalance){
+        balance = vwBalance&&vwBalance.balance?vwBalance.balance.toString():0;
+
+        const lastBalance = await mongo.aggregate(tables.WALLET, [
+        {
+          $match:{ 
+            _id: ethAccount,
+            created: {$gt: vwBalance.created}
+          }
+        }, {
+          $group: {
+            _id: "$account",
+            balance: {
+                "$sum": {
+                    "$multiply": ["$value", "$factor"]
+                }
+            }
+          }
+        }]);
+        console.log(lastBalance);
+
+      } else {
+        balance = 0;
+      }
+
       resolve(balance);
-    })
-    .catch((err)=>{
+    } catch(err){
       reject(err);
-    })
+    }    
   })
 }

@@ -11,10 +11,7 @@ describe('walletWithdraw', () => {
   before((done) => {
     done();
   });
-  after((done, fn) => {
-    done();
-    process.exit();
-  });
+
   it('implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
@@ -24,7 +21,8 @@ describe('walletWithdraw', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
-    });
+    }).catch((err)=>console.log);
   });
 });

@@ -1,6 +1,6 @@
 'use strict';
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
-const {kms, sns, MongoWrapper} = require("decompany-common-utils");
+const {sqs, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 
@@ -16,7 +16,7 @@ const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS
 const FOUNDATION_ID = walletConfig.foundation;
 
 module.exports.handler = async (event, context, callback) => {
-  
+
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({
@@ -27,55 +27,51 @@ module.exports.handler = async (event, context, callback) => {
 
 
   const {principalId, body} = event;
-  const {amount, toAddress} = body;
+  const {amount} = body;
 
   try{
 
-    if(!amount || !toAddress){
+    if(!amount || isNaN(amount)){
       throw new Error("[500] parameter is invalid!!");
     }
-    const foundation = await getWalletAccount(FOUNDATION_ID)
-    console.log("foundation address", foundation.address);
-    const user = await getWalletAccount(principalId)
 
-    if(toAddress.toLowerCase() === user.address.toLowerCase()){
-      throw new Error("[500] parameter is invaild(Incoming and your virtual account is the same.)");
+    const checkPendingRequest = await checkPendingRequestWithdraw(principalId)
+    if(checkPendingRequest === true){
+      return JSON.stringify({
+        success: false,
+        message: "There are currently withdrawal requests pending."
+      })
     }
 
-    const balance = await web3.eth.getBalance(user.address);
-    console.log("user ether balance", user.address, balance);
-    const deck = await DECK_CONTRACT.methods.balanceOf(user.address).call();
-    console.log("user deck balance", user.address, deck);
-
-    const privateKey = await decryptPrivateKey(user.base64EncryptedEOA);
+    const user = await getUser(principalId);
+    console.log("user", user);
+    const balance = await getBalance(user.ethAccount);
+    
+    const balanceDeck = web3.utils.fromWei(balance, "ether");
+    console.log("balance", balance, balanceDeck);
+    if(amount>balanceDeck){
+      return JSON.stringify({
+        success: false,
+        message: "You have run out of balance."
+      })
+    }
 
     const value = web3.utils.toWei(amount + "", "ether");
-    console.log("withdraw amount : ", amount, value)
-    const r = await withdraw({
-      from: user.address,
-      to: foundation.address,
+    const savedRequest = await saveRequestWithdrawToMongoDB({
+      userId: principalId,
+      address: user.ethAccount,
       value: value,
-      privateKey, privateKey
-    })
-
-    if(!r.transactionHash){
-      throw new Error("Error Withdraw Transaction")
-    }
-
-    console.log("withdraw result", r, `${value}(${amount})` );
-    const saveData = {
-      _id: r.transactionHash,
       status: "PENDING",
-      fromAddress: user.address,
-      toAddress: toAddress,
       created: Date.now()
-    }
+    });
 
-    await saveWithdrawToMongoDB(saveData);
-
+    console.log("savedRequest", savedRequest);
+    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
+    await sendWithdrawSQS(region, sqsUrl, savedRequest);
+    
     return JSON.stringify({
       success: true,
-      result: r
+      id: savedRequest._id
     })
 
   } catch (err){
@@ -85,11 +81,18 @@ module.exports.handler = async (event, context, callback) => {
 
 };
 
+function sendWithdrawSQS(region, sqsUrl, params) {
+  return new Promise((resolve, reject)=>{
+    sqs.sendMessage(region, sqsUrl, JSON.stringify(params)).then((data)=>resolve(data))
+    .catch((err)=>reject(err));
+  })
+}
 
-function getWalletAccount(userId){
+
+function getUser(userId) {
 
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    mongo.findOne(tables.USER, {_id: userId})
     .then((data)=>{
       if(data) resolve(data);
       else reject(new Error(`${userId} is not exists`));
@@ -100,115 +103,48 @@ function getWalletAccount(userId){
   })
 }
 
-function decryptPrivateKey(base64EncryptedPrivateKey) {
-  
+
+function saveRequestWithdrawToMongoDB(params){
   return new Promise((resolve, reject)=>{
-    const encryptedData = Buffer.from(base64EncryptedPrivateKey, 'base64');
-    kms.decrypt(region, encryptedData)
-    .then((data)=>{
-      
-      const {address, privateKey} = JSON.parse(data.Plaintext.toString("utf-8"));
-      console.log("decryptPrivateKey", data.Plaintext.toString("utf-8"));
-      const privateKeyBuffer = new Buffer(privateKey.substring(2), 'hex')
-      resolve(privateKeyBuffer);
-    })
-    .catch((err)=>{
-      console.log(err);
-      reject(err);
-    })
-    
-  });
-  
-}
-
-function withdraw(params){
-
-  const {from, to, value, privateKey} = params;
-  console.log("withdraw parameter", params);
-
-  return new Promise(async (resolve, reject)=>{
-    try{
-      const transferMethod = DECK_CONTRACT.methods.transfer(to, value);
-  
-      const estimateGas = await transferMethod.estimateGas({
-        from: from
-      });
-      const gasLimit = Math.round(estimateGas);
-      
-      const gasPrice = await web3.eth.getGasPrice();
-      
-      const nonce = await web3.eth.getTransactionCount(from);
-
-      const pendingNonce = await web3.eth.getTransactionCount(from, "pending");
-
-      if(pendingNonce > nonce){
-        throw new Error('pending transaction error');
-      }
-
-      console.log({gasLimit, gasPrice, nonce});
-
-        //creating raw tranaction
-      const rawTransaction = {
-        "nonce": web3.utils.toHex(nonce),
-        "gasPrice": web3.utils.toHex(gasPrice),
-        "gasLimit": web3.utils.toHex(gasLimit),      
-        "to": CONTRACT_ADDRESS,
-        "value": "0x0",
-        "data": transferMethod.encodeABI()
-      }
-
-      console.log("rawTransaction", rawTransaction);
-
-      const r = await sendTransaction(privateKey, rawTransaction);
-      resolve(r);
-    } catch (err) {
-      reject(err);
-    }
-  })
-
-}
-
-
-function sendTransaction(privateKey, rawTransaction) {
-
-  return new Promise((resolve, reject)=>{
-    if(!privateKey){
-      reject(new Error("sender privateKey is undefined"));
-    }
-
-    if(!rawTransaction){
-      reject(new Error("rawTransaction is undefined"));
-    }
-    
-    //creating tranaction via ethereumjs-tx     
-    const transaction = new Transaction(rawTransaction);
-    //console.log(transaction);
-
-    //signing transaction with private key
-    transaction.sign(privateKey);
-    console.log("transaction", '0x'+transaction.serialize().toString('hex'));
-    //sending transacton via web3js module
-    web3.eth.sendSignedTransaction('0x'+transaction.serialize().toString('hex'))
-    .once('transactionHash', async function(hash){
-      console.log("transactionHash", hash);
-      resolve({transactionHash: hash});      
-    }).once('receipt', function(receipt){
-      console.log("receipt", receipt);
-      //resolve(receipt);      
-      
-    }).on('error', function(err){
-      reject(err);
-    });
-  });
-  
-
-}
-
-function saveWithdrawToMongoDB(params){
-  return new Promise((resolve, reject)=>{
-    mongo.insert(tables.WALLET_WITHDRAW, params)
+    mongo.insert(tables.WALLET_REQUEST_WITHDRAW, params)
     .then((data)=>{
       resolve(data);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
+function checkPendingRequestWithdraw(userId){
+  return new Promise((resolve, reject)=>{
+    mongo.find(tables.WALLET_REQUEST_WITHDRAW, {
+      query: {
+        userId: userId,
+        status: "PENDING"
+      }
+    })
+    .then((data)=>{
+      console.log(data);
+      if(data && data.length>0){
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+      
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
+function getBalance(ethAccount) {
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount})
+    .then((data)=>{
+      const balance = data&&data.balance?data.balance.toString():0;
+      resolve(balance);
     })
     .catch((err)=>{
       reject(err);
