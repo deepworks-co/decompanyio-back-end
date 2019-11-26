@@ -17,8 +17,8 @@ module.exports.handler = async (event, context, callback) => {
   
   
   const last = await getLatestTransferLog(tables.DECK_TRANSFER)
-  //const blockNumber = last?last.blockNumber + 1:1;
-  const blockNumber = 1;
+  const blockNumber = last?last.blockNumber + 1:1;
+  //const blockNumber = 1;
   const foundation = await getWalletAccount(FOUNDATION_ID);
 
   const eventLogs = await getEventLog(DECK_CONTRACT, {
