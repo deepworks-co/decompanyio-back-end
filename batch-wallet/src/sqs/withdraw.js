@@ -16,8 +16,7 @@ const FOUNDATION_ID = walletConfig.foundation;
 const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
  
 module.exports.handler = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
-
+  
   event.Records.forEach(async (record)=>{
     try{
       if(record.receiptHandle){
@@ -57,15 +56,19 @@ async function run(record) {
   try{
     const params = await validate(record);
     const {from, to, value, privateKey, id} = params;
+    const updateCallback = R.curry(updateTransactionProcess)(tables.WALLET_REQUEST_WITHDRAW, {_id: new MongoWrapper.ObjectId(id)});
 
-    const updateCallback = null;//= R.curry(updateTransactionProcess)(tables.WALLET_WITHDRAW, {_id: transactionHash});
-    
-    const result = await transferDeck(from, to, value, privateKey, updateCallback);
-
-    if(updateCallback){
-      await updateCallback({result: result, status: "COMPLETE"});
-    }
+    const check = await checkRequestWithdraw(tables.WALLET_REQUEST_WITHDRAW, id)
+    if(check === true) {    
+      const result = await transferDeck(from, to, value, privateKey, updateCallback);
+      console.log("transaction complete", {params, transactionHash: result.transactionHash});
+    } else {
+      const err =  new Error(`${id} request is not pending status`);
+      await updateCallback({status: "ERROR", err})
+      throw err;
       
+    }
+
   } catch (err){
     console.error("run error", err);
     throw err;
@@ -78,14 +81,16 @@ async function validate(record){
   console.log("validate", record);
   const {body} = record;
   const parsedBody = JSON.parse(body);
-  const {value, toAddress, id} = parsedBody;
+  const {value, address, _id, userId} = parsedBody;
   const foundation = await getFoundation(FOUNDATION_ID);
 
   const privateKey = await decryptPrivateKey(foundation.base64EncryptedEOA);
   
   return {
     from: foundation.address,
-    to: toAddress,
+    id: _id, 
+    userId: userId, 
+    to: address,
     value: value,
     privateKey
   }
@@ -181,13 +186,19 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
       if(callback){
-        await callback({result: {transactionHash: hash}});  
+        await callback({status: "SENDTRANSACTION", result: {transactionHash: hash}, updated: Date.now()});  
       }
       //resolve({transactionHash: hash});
-    }).once('receipt', function(receipt){
+    }).once('receipt', async function(receipt){
       console.log("receipt", receipt);
+      if(callback){
+        await callback({status: "COMPLETE", result: receipt, updated: Date.now()});  
+      }
       resolve(receipt);
-    }).on('error', function(err){
+    }).on('error', async function(err){
+      if(callback){
+        await callback({status: "ERROR", error: err, updated: Date.now()});  
+      }
       reject(err);
     });
   });
@@ -206,5 +217,22 @@ function updateTransactionProcess(tableName, query, data){
     .catch((err)=>{
       reject(err);
     })
+  })
+}
+
+function checkRequestWithdraw(tableName, id) {
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const request = await mongo.findOne(tableName, {_id: new MongoWrapper.ObjectId(id)});
+      
+      if(request && request.status === "PENDING"){
+        resolve(true);
+      } else {
+        resolve(false)
+      }
+    } catch(err){
+      reject(err);
+    }
+    
   })
 }

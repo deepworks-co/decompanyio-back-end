@@ -17,9 +17,12 @@ describe('sqsWithdraw', () => {
         "Records": [
           {
               "body": JSON.stringify({
-                "id": "asdfasfdsa",
-                "toAddress":"0xa05b51311397C5552798Ce216250BC0e757c1Aa2",
-                "value":"1000000000000000000"
+                "_id" : "5ddcbba766be160a8603350c",
+                "userId" : "google-oauth2|101778494068951192848",
+                "address" : "0xa05b51311397C5552798Ce216250BC0e757c1Aa2",
+                "value" : "1000000000000000000",
+                "status" : "PENDING",
+                "created" : 1574747047387
               })
           }
         ]
