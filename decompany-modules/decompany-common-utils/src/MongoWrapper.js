@@ -327,3 +327,21 @@ module.exports = class MongoWrapper {
   }
 
 };
+
+
+module.exports.Binary = mongojs.Binary
+module.exports.Code = mongojs.Code
+module.exports.DBRef = mongojs.DBRef
+module.exports.Double = mongojs.Double
+module.exports.Int32 = mongojs.Int32
+module.exports.Long = mongojs.Long
+module.exports.MaxKey = mongojs.MaxKey
+module.exports.MinKey = mongojs.MinKey
+module.exports.NumberLong = mongojs.Long // Alias for shell compatibility
+module.exports.ObjectId = mongojs.ObjectId
+module.exports.ObjectID = mongojs.ObjectID
+module.exports.Symbol = mongojs.Symbol
+module.exports.Timestamp = mongojs.Timestamp
+module.exports.Map = mongojs.Map
+module.exports.Decimal128 = mongojs.Decimal128
+module.exports.NumberDecimal = mongojs.NumberDecimal
