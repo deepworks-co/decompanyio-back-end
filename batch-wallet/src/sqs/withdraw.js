@@ -61,8 +61,8 @@ async function run(record) {
     const check = await checkRequestWithdraw(tables.WALLET_REQUEST_WITHDRAW, id)
     if(check === true) {    
       const result = await transferDeck(from, to, value, privateKey, updateCallback);
-
-      await saveWalletEvent(tables.WALLET, {
+      console.log("transaction complete", {params, transactionHash: result.transactionHash});
+      const saveResult = await saveWalletEvent(tables.WALLET, {
         _id: result.transactionHash,
         account: to,
         type: "WITHDRAW",
@@ -74,13 +74,16 @@ async function run(record) {
         created: Date.now()
       });
 
+      console.log("saveWalletEvent ok", saveResult);
 
-      console.log("transaction complete", {params, transactionHash: result.transactionHash});
+      return JSON.stringify({
+        success: true
+      })
+      
     } else {
       const err =  new Error(`${id} request is not pending status`);
       await updateCallback({status: "ERROR", err})
       throw err;
-      
     }
 
   } catch (err){
@@ -253,6 +256,10 @@ function checkRequestWithdraw(tableName, id) {
 
 function saveWalletEvent(tableName, params){
   return new Promise((resolve, reject)=>{
-    mongo.save(tableName, params).then((data)=>resolve).catch((err)=>reject);
+    mongo.save(tableName, params).then((data)=>{
+      resolve(data);
+    }).catch((err)=>{
+      reject(err)
+    });
   })
 }
