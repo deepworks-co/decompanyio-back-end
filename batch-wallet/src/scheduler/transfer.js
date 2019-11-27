@@ -9,16 +9,13 @@ const MAINNET_DECK_ABI = require(`../../mainnet/${stage}/Deck.json`)
 const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].address;
 const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
-/*
-* mainnet의 DECK 컨트렉트의 이벤트를 수집하고, 
-* 입금 이벤트일 경우 SQS를 보내어 /src/sqs/deposit를 람다 함수를 호출한다.
-*/
+
 module.exports.handler = async (event, context, callback) => {
   
   
   const last = await getLatestTransferLog(tables.DECK_TRANSFER)
   const blockNumber = last?last.blockNumber + 1:1;
-  //const blockNumber = 1;
+  //const blockNumber = 1;//5508236;
   const foundation = await getWalletAccount(FOUNDATION_ID);
 
   const eventLogs = await getEventLog(DECK_CONTRACT, {
@@ -110,7 +107,7 @@ function saveTransfer(tableName, eventLogs){
 }
 function saveWalletLogs(tableName, incomings){
   return new Promise((resolve, reject)=>{
-    const bulk = mongo.getUnorderedBulkOp(tableName);
+    const bulk = mongo.getOrderedBulkOp(tableName);
 
     incomings.forEach((incoming)=>{
       const {transactionHash, account, from, to, value, type, factor} = incoming;
@@ -132,39 +129,6 @@ function saveWalletLogs(tableName, incomings){
     mongo.execute(bulk)
     .then((data)=>resolve(data))
     .catch((err)=>reject(err));
-  })
-}
-function sendSQS(region, sqsUrl, checkedEventLogs) {
-  const results = checkedEventLogs.map((checkedEventLog)=>{
-    const {eventLog, deposit} = checkedEventLog;
-    //const {log, decoded} = eventLog;
-    //const {from, to, value} = decoded;
-    if(deposit === true){
-      return sqs.sendMessage(region, sqsUrl, JSON.stringify(eventLog));
-    } else {
-      return Promise.resolve(false);
-    }
-    
-  })
-  console.log("sent sqs message", results.length);
-  return Promise.all(results);
-  
-}
-
-function isWalletUser(address){
-
-  return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {_id: {$ne: FOUNDATION_ID}, address: address})
-    .then((data)=>{
-      if(data){
-        resolve(true);
-      } else{
-        resolve(false);
-      } 
-    })
-    .catch((err)=>{
-      reject(err);
-    })
   })
 }
 
