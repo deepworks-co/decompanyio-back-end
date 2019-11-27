@@ -77,32 +77,8 @@ function getBalance(mongo, ethAccount) {
     try{
       const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount});
       console.log(vwBalance);
-      let balance = 0;
-      if(vwBalance){
-        balance = vwBalance&&vwBalance.balance?vwBalance.balance.toString():0;
-
-        const lastBalance = await mongo.aggregate(tables.WALLET, [
-        {
-          $match:{ 
-            _id: ethAccount,
-            created: {$gt: vwBalance.created}
-          }
-        }, {
-          $group: {
-            _id: "$account",
-            balance: {
-                "$sum": {
-                    "$multiply": ["$value", "$factor"]
-                }
-            }
-          }
-        }]);
-        console.log(lastBalance);
-
-      } else {
-        balance = 0;
-      }
-
+      let balance = vwBalance&&vwBalance.balance?vwBalance.balance.toString():0;
+      
       resolve(balance);
     } catch(err){
       reject(err);
