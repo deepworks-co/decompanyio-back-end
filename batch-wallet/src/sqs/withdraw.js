@@ -64,7 +64,7 @@ async function run(record) {
       console.log("transaction complete", {params, transactionHash: result.transactionHash});
       const saveResult = await saveWalletEvent(tables.WALLET, {
         _id: result.transactionHash,
-        account: to,
+        address: to,
         type: "WITHDRAW",
         from: from,
         to: to,

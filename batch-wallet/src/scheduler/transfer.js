@@ -38,10 +38,10 @@ module.exports.handler = async (event, context, callback) => {
     const {from, to, value} = log.returnValues;
     if(foundation.address === from){
       //출금
-      return {transactionHash, account: to, type: "WITHDRAW", from, to, value: value, factor: -1}
+      return {transactionHash, address: to, type: "WITHDRAW", from, to, value: value, factor: -1}
     } 
       //입금
-    return {transactionHash, account: from, type: "DEPOSIT", from, to, value: value, factor: 1}
+    return {transactionHash, address: from, type: "DEPOSIT", from, to, value: value, factor: 1}
   });
 
   console.log("incomings", incomings.length);
@@ -110,12 +110,12 @@ function saveWalletLogs(tableName, incomings){
     const bulk = mongo.getOrderedBulkOp(tableName);
 
     incomings.forEach((incoming)=>{
-      const {transactionHash, account, from, to, value, type, factor} = incoming;
+      const {transactionHash, address, from, to, value, type, factor} = incoming;
       //const ether = web3.utils.fromWei(value, "ether");
 
       bulk.insert({
         _id: transactionHash,
-        account: account,
+        address: address,
         type,
         from,
         to,
