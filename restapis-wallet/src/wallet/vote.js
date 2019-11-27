@@ -59,14 +59,15 @@ module.exports.handler = async (event, context, callback) => {
       created: Date.now()
     });
     console.log("saveVote", savedVote)
-
+    const created = Date.now();
     const savedWallet = await saveWallet({
       address: user.ethAccount,
       type: "VOTE",
       factor: -1,
       value: MongoWrapper.Decimal128.fromString(voteAmount + ""),
-      created: Date.now(),
-      voteId: savedVote._id
+      voteId: savedVote._id,
+      blockchainTimestamp: utils.getBlockchainTimestamp(created),
+      created: created
     });
     console.log("saveWallet", savedWallet);
 
