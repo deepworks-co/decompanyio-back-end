@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "restapis-wallet"
-  version: "2019-11-21T06:24:14Z"
+  version: "2019-11-26T08:13:10Z"
   title: "dev-restapis-wallet"
   contact:
     name: "Jay"
@@ -16,7 +16,7 @@ schemes:
 - "https"
 paths:
   /api/account/balance:
-    get:
+    post:
       summary: "/api/account/balance"
       description: "/api/account/balance"
       consumes:
@@ -25,11 +25,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "Authorization"
-        in: "header"
-        description: "Auth Header description"
-        required: false
-        type: "string"
+      - in: "body"
+        name: "RequestBalanceModel"
+        required: true
+        schema:
+          $ref: "#/definitions/RequestBalanceModel"
       responses:
         200:
           description: "200 response"
@@ -94,8 +94,6 @@ paths:
               type: "string"
             Content-Type:
               type: "string"
-      security:
-      - jwt: []
     options:
       consumes:
       - "application/json"
@@ -916,6 +914,12 @@ securityDefinitions:
     in: "header"
     x-amazon-apigateway-authtype: "custom"
 definitions:
+  RequestBalanceModel:
+    type: "object"
+    properties:
+      userId:
+        type: "string"
+    title: "RequestRequestModel"
   RequestVoteModel:
     type: "object"
     properties:
@@ -937,7 +941,5 @@ definitions:
     properties:
       amount:
         type: "integer"
-      toAddress:
-        type: "string"
     title: "RequestWithdrawModel"
     description: "wallet withdraw"
