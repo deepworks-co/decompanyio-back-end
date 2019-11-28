@@ -91,6 +91,11 @@ sls create function -f recentlyPageview --handler functions/cron/recentlyPagevie
 
 
 sls create function -f pageviewWriteOnChainTrigger --handler functions/onchain/pageviewWriteOnChainTrigger.handler
+
+sls create function -f calculateRoyalty --handler functions/cron/calculateRoyalty.handler
+
+
+sls create function -f makeRewardPool --handler functions/mgr/makeRewardPool.handler
 ```
 
 ## Test

@@ -1,46 +1,34 @@
 'use strict';
-const {utils, MongoWrapper} = require('decompany-common-utils');
-const { mongodb, tables} = require('decompany-app-properties');
+const {utils, MongoWrapper, sqs} = require('decompany-common-utils');
+const { mongodb, tables, sqsConfig } = require('decompany-app-properties');
+
 
 
 /**
- * @description 전날 하루동안의 pageview를 집계
+ * @description 오늘 (00:00) 현재까지 (최대 24:00) pageview, totalpage, totalpageviewsquare 갱신작업
  *  - STAT-PAGEVIEW-DAILY, STAT-PAGEVIEW-TOTALCOUNT-DAILY 갱신
- *  - 하루에 한번 UTC 00:50분에 동작 (Step function)
+ *  - 5분마다 동작
  * @function
  * @cron 
  */
 module.exports.handler = async (event, context, callback) => {
-  
-  const {start, end} = event;
 
   const now = new Date();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * 1);
+  const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24);
+  const start = utils.getBlockchainTimestamp(now);
+  const end = utils.getBlockchainTimestamp(tomorrow);
+
+  console.log("query startDate", new Date(start), "~", new Date(end));
+    
+  const resultList = await aggregatePageviewAndSave(start, end);
+  console.log("Recently", new Date(start), "aggregatePageview Count", resultList?resultList.length:0);
+  console.log("aggregatePageview resultList count", resultList.length);
+
+  const totalpageview = await aggregatePageviewTotalCountForOnchainAndSave(start, end);
+  console.log("aggregatePageviewTotalCountForOnchainAndSave Result", totalpageview);
   
-  let startTimestamp = utils.getBlockchainTimestamp(startDate);
-  let endTimestamp = utils.getBlockchainTimestamp(now);
 
-  if(start && end){
-    console.log("input start, end", start, end);
-    startTimestamp = start;
-    endTimestamp = end;
-  }
-
-  console.log("aggregate pageview condition : startDate", new Date(startTimestamp), "~ endDate(exclude)", new Date(endTimestamp));
-  
-  const resultList = await aggregatePageviewAndSave(startTimestamp, endTimestamp);
-  console.log("aggregatePageviewAndSave", startTimestamp, new Date(startTimestamp), "length", resultList?resultList.length:0);
-
-  const pageviewTotalCountForOnchain = await aggregatePageviewTotalCountForOnchainAndSave(startTimestamp);
-  console.log("aggregatePageviewTotalCountForOnchainAndSave", pageviewTotalCountForOnchain);
-
-  return {
-    count: resultList?resultList.length:0,
-    blockchainTimestamp: startTimestamp,
-    year: startDate.getUTCFullYear(),
-    month: startDate.getUTCMonth() + 1,
-    dayOfMonth: startDate.getUTCDate()
-  };
+  return "success";
 }
 
 /**
