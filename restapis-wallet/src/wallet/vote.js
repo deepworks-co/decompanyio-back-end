@@ -1,6 +1,6 @@
 'use strict';
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
-const {kms, sns, MongoWrapper} = require("decompany-common-utils");
+const {kms, sns, MongoWrapper, utils} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 const {buildContract} = require('../ContractUtils');
@@ -46,27 +46,28 @@ module.exports.handler = async (event, context, callback) => {
     
     const voteAmount = Number(web3.utils.toWei(amount + "", "ether"));
 
-    const deckBalance = await getBalance(user.ethAccount);
+    const deckBalance = await getBalance(user._id);
 
     if(voteAmount > deckBalance){
       throw new Error(`The Vote value has exceeded the current deck value.${voteAmount}/${deckBalance}`);
     }
 
+    const created = Date.now();
     const savedVote = await saveVote({
       documentId: documentId, 
-      userId: principalId, 
+      userId: user._id, 
       deposit: MongoWrapper.Decimal128.fromString(voteAmount + ""),
-      created: Date.now()
+      blockchainTimestamp: utils.getBlockchainTimestamp(created),
+      created: created
     });
     console.log("saveVote", savedVote)
-    const created = Date.now();
+    
     const savedWallet = await saveWallet({
-      address: user.ethAccount,
+      userId: user._id,
       type: "VOTE",
       factor: -1,
       value: MongoWrapper.Decimal128.fromString(voteAmount + ""),
       voteId: savedVote._id,
-      blockchainTimestamp: utils.getBlockchainTimestamp(created),
       created: created
     });
     console.log("saveWallet", savedWallet);
@@ -115,24 +116,14 @@ function saveWallet(params) {
  * @param {number} value input value * e-18
  */
 function saveVote(params){
-  const {_id, updateData} = params;
 
   return new Promise(async (resolve, reject)=>{
 
-    if(_id){
-      mongo.update(tables.VOTE, {_id}, {$set: updateData}).then((data)=>{
-        resolve(data);
-      }).catch((err)=>{
-        reject(err);
-      })
-
-    } else {
-      mongo.insert(tables.VOTE, params).then((data)=>{
-        resolve(data);
-      }).catch((err)=>{
-        reject(err);
-      })
-    }
+    mongo.insert(tables.VOTE, params).then((data)=>{
+      resolve(data);
+    }).catch((err)=>{
+      reject(err);
+    })
 
   })
 }
@@ -149,10 +140,10 @@ function getDocument(documentId) {
   })
 }
 
-function getBalance(ethAccount) {
+function getBalance(userId) {
   return new Promise(async (resolve, reject)=>{
     try{
-      const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount});
+      const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: userId});
       let balance = vwBalance&&vwBalance.balance?vwBalance.balance.toString():0;
       
       resolve(balance);

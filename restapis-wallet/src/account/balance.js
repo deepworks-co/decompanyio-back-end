@@ -35,17 +35,8 @@ module.exports.handler = async (event, context, callback) => {
     if(!user){
       throw new Error("user id is invaild!!");
     }
-    
-    if(!user.ethAccount){
-      const response = JSON.stringify({
-        success: false, 
-        message: "There is no registered account(EOA)."
-      })
-  
-      return response;
-    }
 
-    const balance = await getBalance(mongo, user.ethAccount);
+    const balance = await getBalance(mongo, userId);
     console.log("balance", balance)
     const response = JSON.stringify({
       success: true, 
@@ -72,10 +63,10 @@ function getUser(mongo, userId) {
   })
 }
 
-function getBalance(mongo, ethAccount) {
+function getBalance(mongo, userId) {
   return new Promise(async (resolve, reject)=>{
     try{
-      const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount});
+      const vwBalance = await mongo.findOne(tables.VW_WALLET_BALANCE, {_id: userId});
       console.log(vwBalance);
       let balance = vwBalance&&vwBalance.balance?vwBalance.balance.toString():0;
       
