@@ -62,15 +62,21 @@ async function run(record) {
     if(check === true) {    
       const result = await transferDeck(from, to, value, privateKey, updateCallback);
       console.log("transaction complete", {params, transactionHash: result.transactionHash});
+
+      const user  = await getUser(to);
+      if(user){
+        throw new Error(`user is not exists : ${to}`);
+      }
+
       const saveResult = await saveWalletEvent(tables.WALLET, {
         _id: result.transactionHash,
+        userId: user._id,
         address: to,
         type: "WITHDRAW",
         from: from,
         to: to,
         factor: -1,
         value: MongoWrapper.Decimal128.fromString(value + ""),
-        strValue: value + "",
         created: Date.now()
       });
 
@@ -112,6 +118,18 @@ async function validate(record){
     privateKey
   }
 }
+function getUser(ethAccount){
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.WALLET_USER, {ethAccount: ethAccount})
+    .then((data)=>{
+      resolve(data);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
+  })
+}
+
 function getFoundation(id){
   return new Promise((resolve, reject)=>{
     mongo.findOne(tables.WALLET_USER, {_id: id})

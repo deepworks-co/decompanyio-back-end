@@ -14,8 +14,8 @@ module.exports.handler = async (event, context, callback) => {
   
   
   const last = await getLatestTransferLog(tables.DECK_TRANSFER)
-  const blockNumber = last?last.blockNumber + 1:1;
-  //const blockNumber = 1;//5508236;
+  //const blockNumber = last?last.blockNumber + 1:1;
+  const blockNumber = 1;//5508236;
   const foundation = await getWalletAccount(FOUNDATION_ID);
 
   const eventLogs = await getEventLog(DECK_CONTRACT, {
@@ -32,21 +32,27 @@ module.exports.handler = async (event, context, callback) => {
   const incomings = eventLogs.filter((log)=>{
     const {transactionHash, returnValues} = log;
     return (foundation.address === returnValues.from || foundation.address === returnValues.to)
-  }).map((log)=>{
+  }).map(async (log)=>{
     //console.log("filted", log)
-    const {transactionHash } = log
+    const {transactionHash } = log;
     const {from, to, value} = log.returnValues;
     if(foundation.address === from){
       //출금
-      return {transactionHash, address: to, type: "WITHDRAW", from, to, value: value, factor: -1}
-    } 
+      const user = await getUser(to);
+      const userId = user?user._id:undefined;
+      return {transactionHash, userId: userId, address: to, type: "WITHDRAW", from, to, value, factor: -1}
+    } else {
       //입금
-    return {transactionHash, address: from, type: "DEPOSIT", from, to, value: value, factor: 1}
+      const user = await getUser(from);
+      const userId = user?user._id:undefined;
+      return {transactionHash, userId: userId, address: from, type: "DEPOSIT", from, to, value, factor: 1}
+    }
+    
   });
 
   console.log("incomings", incomings.length);
 
-  const r2 = await saveWalletLogs(tables.WALLET, incomings);
+  const r2 = await saveWalletLogs(tables.WALLET, await Promise.all(incomings));
   console.log("saveWalletLogs", r2)
 
   return JSON.stringify({success: true});
@@ -110,18 +116,18 @@ function saveWalletLogs(tableName, incomings){
     const bulk = mongo.getOrderedBulkOp(tableName);
 
     incomings.forEach((incoming)=>{
-      const {transactionHash, address, from, to, value, type, factor} = incoming;
+      const {transactionHash, address, from, to, value, type, factor, userId} = incoming;
       //const ether = web3.utils.fromWei(value, "ether");
-
-      bulk.insert({
-        _id: transactionHash,
-        address: address,
+      //console.log("saveWalletLogs", incoming)
+      bulk.find({transactionHash: transactionHash}).upsert().updateOne({
+        userId,
+        address,
         type,
         from,
         to,
         factor,
         value: MongoWrapper.Decimal128.fromString(value + ""),
-        strValue: value + "",
+        transactionHash: transactionHash,
         created: Date.now()
       });
     })
@@ -129,6 +135,19 @@ function saveWalletLogs(tableName, incomings){
     mongo.execute(bulk)
     .then((data)=>resolve(data))
     .catch((err)=>reject(err));
+  })
+}
+
+function getUser(ethAccount){
+
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.USER, {ethAccount: ethAccount})
+    .then((data)=>{
+      resolve(data);
+    })
+    .catch((err)=>{
+      reject(err);
+    })
   })
 }
 
