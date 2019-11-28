@@ -129,35 +129,6 @@ functions:
             requestModels:
                 "application/json": "RequestDocumentModel"
 
-  walletRegistryDoc:
-    handler: src/wallet/registryDoc.handler
-    timeout: 25
-    events:
-      - http:
-          method: post
-          path: /api/document/registry
-          cors: true
-          integration: lambda
-          authorizer: jwt
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-            statusCode:
-              500:
-                template: $input.path('$')
-          documentation:
-            summary: "/api/document/registry"
-            description: "/api/document/registry"
-            requestBody:
-                description: "documentId"
-            requestModels:
-                "application/json": "RequestDocumentModel"
-            requestHeaders:
-              -
-                name: "Authorization"
-                description: "Auth Header description"
-
   walletVote:
     handler: src/wallet/vote.handler
     timeout: 90
