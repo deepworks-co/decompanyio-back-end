@@ -8,7 +8,7 @@ module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
   if (event.source && event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
-    return callback(null, 'Lambda is warm!')
+    return JSON.stringify({success: true, message: 'Lambda is warm!'});
   }
   
   console.log(JSON.stringify(event));
@@ -40,7 +40,12 @@ module.exports.handler = async (event, context, callback) => {
   headers = utils.convertKeysToLowerCase(headers)
 
   body.referer = headers.Referer?headers.Referer:headers.referer;
-  body.useragent = headers && headers["User-Agent"]?headers["User-Agent"]:undefined;
+  if(headers["user-agent"]){
+    body.useragent = headers["user-agent"];
+  } else if(headers["useragent"]){
+    body.useragent = headers["useragent"];
+  }
+
   body.xforwardedfor = ips;
   /*
   if(ips && ips.length>0){
@@ -71,12 +76,10 @@ module.exports.handler = async (event, context, callback) => {
     console.log("tracking user is not exists", body.cid);
   }
   
-  const expires = new Date(Date.now() + 1000 * 60 * 30);// 30 mins
-  const sid = getSid(event.headers)
-  const domain = process.env.stage === 'alpha'?"polarishare.com":"decompany.io";
+  
   const response = {
     statusCode: 200,
-    Cookie: `_sid=${sid}; domain=${domain}; expires=${expires.toGMTString()}; path=/; Secure;`,
+    Cookie: getCookie(process.env.stage),
     body: JSON.stringify({
       success: true,
       message: "ok",
@@ -86,14 +89,13 @@ module.exports.handler = async (event, context, callback) => {
   return response;
 };
 
-function getSid(header){
-  let sid = header && header._sid?header._sid:"";
-
-  if(sid && sid!=="") return sid;
-
-  return utils.randomId();
+function getCookie(stage, cookie){
+  const timestamp = Date.now()
+  const maxAge = 60 * 30;// 30 mins
+  const sid = cookie && cookie._sid?cookie._sid:utils.randomId();
+  const domain = stage === ('alpha'||'asem')?"polarishare.com":"decompany.io";
+  return `_sid=${sid}.${timestamp}; domain=${domain}; Max-Age=${maxAge}; path=/; Secure; HttpOnly;`
 }
-
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...

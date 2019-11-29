@@ -12,7 +12,7 @@ module.exports.handler = async (event, context, callback) => {
   console.log(event);
   const {principalId, body} = event;
   if(!principalId || !body ){
-    return new Error(JSON.stringify({
+    throw new Error(JSON.stringify({
       success: false,
       message: 'principalId or parameters is invalid!'
     }));
