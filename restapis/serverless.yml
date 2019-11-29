@@ -721,7 +721,7 @@ functions:
           path: api/tracking/collect
           method: get
           cors:
-            origins
+            origins:
               - https://polarishare.com
               - https://*.polarishare.com
               - https://*.decompany.io
