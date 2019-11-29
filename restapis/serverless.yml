@@ -720,12 +720,17 @@ functions:
       - http: 
           path: api/tracking/collect
           method: get
-          cors: true
+          cors:
+            origins
+              - https://polarishare.com
+              - https://*.polarishare.com
+              - https://*.decompany.io
+            allowCredentials: true
           integration: lambda
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-              Set-Cookie: integration.response.body
+              Set-Cookie: integration.response.body.Cookie
             template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
