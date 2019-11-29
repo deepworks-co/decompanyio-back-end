@@ -721,7 +721,9 @@ functions:
           path: api/tracking/collect
           method: get
           cors:
-            origin: "*"
+            origins:
+              - https://share.decompany.io
+              - https://api.share.decompany.io
             allowCredentials: true
           integration: lambda
           response:
