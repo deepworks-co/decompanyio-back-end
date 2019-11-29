@@ -61,7 +61,7 @@
         }
     },
     "applicationLogAppender": {
-        "enable": true,
+        "enable": false,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
     },
