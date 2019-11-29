@@ -725,6 +725,7 @@ functions:
               - https://polarishare.com
               - https://*.polarishare.com
               - https://*.decompany.io
+              - https://*.share.decompany.io
             allowCredentials: true
           integration: lambda
           response:
