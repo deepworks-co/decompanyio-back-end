@@ -721,11 +721,7 @@ functions:
           path: api/tracking/collect
           method: get
           cors:
-            origins:
-              - https://polarishare.com
-              - https://*.polarishare.com
-              - https://*.decompany.io
-              - https://*.share.decompany.io
+            origin: "*"
             allowCredentials: true
           integration: lambda
           response:
