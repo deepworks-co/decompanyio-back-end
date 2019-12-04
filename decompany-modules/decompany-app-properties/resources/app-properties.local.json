@@ -10,7 +10,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -42,14 +42,16 @@
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
-        "WALLET_USER": "WALLET-USER",
-        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
-        "WALLET_WITHDRAW": "WALLET-WITHDRAW",
         "CLAIM_ROYALTY": "CLAIM-ROYALTY",
         "CLAIM_REWARD": "CLAIM-REWARD",
         "REWARD_POOL": "REWARD-POOL",
         "DAILY_ADJUSTMENT_ROYALTY": "DAILY-ADJUSTMENT-ROYALTY",
-        "DAILY_ADJUSTMENT_REWARD": "DAILY-ADJUSTMENT-REWARD"
+        "DAILY_ADJUSTMENT_REWARD": "DAILY-ADJUSTMENT-REWARD",
+        "WALLET": "WALLET",
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
+        "DECK_TRANSFER": "DECK-TRANSFER",
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
     },
     "sqsConfig": {
         "region": "us-west-1",
