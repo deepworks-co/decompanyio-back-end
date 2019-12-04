@@ -46,8 +46,8 @@ describe('trackingCollect', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(JSON.parse(response));
-      expect(JSON.parse(response).success).to.equal(true);
+      console.log(response);
+      expect(JSON.parse(response.body).success).to.equal(true);
     });
   });
 });

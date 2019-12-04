@@ -12,7 +12,7 @@ describe('claimReward', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('feed7f026db54859bec3221dcad47d8f implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
@@ -20,7 +20,22 @@ describe('claimReward', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });
+
+  it('e6cf11472a174eb9ba6897136ac1b2b8 implement tests here', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "e6cf11472a174eb9ba6897136ac1b2b8"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
 });

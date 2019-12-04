@@ -11,7 +11,7 @@ module.exports.handler = async (event, context, callback) => {
       message: 'Lambda is warm!'
     });
   }
-  context.callbackWaitsForEmptyEventLoop = false;
+  //context.callbackWaitsForEmptyEventLoop = false;
   const {principalId, body} = event;
   const {to, deck} = body;
   try{

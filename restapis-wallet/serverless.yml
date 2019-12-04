@@ -20,7 +20,7 @@ service:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
@@ -70,14 +70,16 @@ package:
     - install.sh
     - opt/**
     - test/**
+
     
 functions:
   claimReward:
     handler: src/claim/reward.handler
+    timeout: 25
     events:
       - http: 
           method: post
-          path: /claim/reward
+          path: /api/claim/reward
           cors: true
           integration: lambda
           authorizer: jwt
@@ -87,14 +89,24 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+          documentation:
+            summary: "/api/claim/reward"
+            description: "/api/claim/reward"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+            requestModels:
+                "application/json": "RequestDocumentModel"
 
   claimRoyalty:
     handler: src/claim/royalty.handler
+    timeout: 25
     events:
       - http: 
           method: post
-          path: /claim/royalty
+          path: /api/claim/royalty
           cors: true
           integration: lambda
           authorizer: jwt
@@ -104,48 +116,56 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+          documentation:
+            summary: "/claim/royalty"
+            description: "/claim/royalty"
+            requestBody:
+                description: "documentId"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+            requestModels:
+                "application/json": "RequestDocumentModel"
 
-  walletRegistryDoc:
-    handler: src/wallet/registryDoc.handler
-    events:
-      - http:
-          method: post
-          path: /wallet/registryDoc
-          cors: true
-          integration: lambda
-          authorizer: jwt
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-            statusCode:
-              500:
-                template: $input.path('$.errorMessage')
-                          
   walletVote:
     handler: src/wallet/vote.handler
+    timeout: 90
     events:
       - http: 
           method: post
-          path: /wallet/vote
+          path: /api/document/vote
           cors: true
           integration: lambda
           authorizer: jwt
+          async: true
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+          documentation:
+            summary: "/api/document/vote"
+            description: "/api/document/vote"
+            requestBody:
+                description: "documentId, value"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+            requestModels:
+                "application/json": "RequestVoteModel"
 
   walletWithdraw:
     handler: src/wallet/withdraw.handler
+    timeout: 25
     events:
       - http: 
           method: post
-          path: /wallet/withdraw
+          path: /api/account/withdraw
           cors: true
           integration: lambda
           authorizer: jwt
@@ -155,27 +175,40 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
-
+                template: $input.path('$')
+          documentation:
+            summary: "/api/account/withdraw"
+            description: "/api/account/withdraw"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header JWT"
+            requestModels:
+                "application/json": "RequestWithdrawModel"
   getBalance:
     handler: src/account/balance.handler
+    timeout: 25
     events:
       - http: 
-          method: get
+          method: post
           path: /api/account/balance
           cors: true
           integration: lambda
-          authorizer: jwt
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+          documentation:
+            summary: "/api/account/balance"
+            description: "/api/account/balance"
+            requestModels:
+                "application/json": "RequestBalanceModel"
   requestGas:
     handler: src/gas/request.handler
-    timeout: 60
+    timeout: 25
     events:
       - http: 
           method: post
@@ -189,10 +222,11 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+
   transferDeck:
     handler: src/deck/transfer.handler
-    timeout: 60
+    timeout: 25
     events:
       - http: 
           method: post
@@ -206,9 +240,11 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')
+                template: $input.path('$')
+
   createAccount:
     handler: src/account/create.handler
+    timeout: 25
     events:
       - http: 
           method: post
@@ -222,13 +258,20 @@ functions:
             template: $input.path('$')
             statusCode:
               500:
-                template: $input.path('$.errorMessage')  
+                template: $input.path('$')
+          documentation:
+            summary: "/api/account/create"
+            description: "/api/account/create"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "Auth Header description"
+
   jwt:
     handler: src/authorizer/jwt.handler
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-  
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
@@ -237,7 +280,7 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_4XX
         ResponseTemplates:
-          application/json: $input.path("$.errorMessage")
+          application/json: $input.path("$")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -249,7 +292,7 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_5XX
         ResponseTemplates:
-          application/json: $input.path("$.errorMessage")
+          application/json: $input.path("$")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -262,9 +305,51 @@ custom:
     perType: true
   serverless-offline:
     port: 4080
-  
+  documentation:
+    api:
+      info:
+        version: '1'
+        title: restapis-wallet
+        description: restapis-wallet
+        contact:
+          name: Jay
+          email: jay@decompany.io
+        license:
+          name: Decompany
+          url: https://www.decompany.io
+    models:
+      -
+        name: "ErrorResponseModel"
+        description: "This is an error"
+        contentType: "application/json"
+        schema: ${file(models/error.json)}
+      -
+        name: "DefaultResponseModel"
+        description: "default response"
+        contentType: "application/json"
+        schema: ${file(models/default_response.json)}
+      -
+        name: "RequestVoteModel"
+        description: "vote request"
+        contentType: "application/json"
+        schema: ${file(models/RequestVoteModel.json)}
+      -
+        name: "RequestDocumentModel"
+        description: "document request"
+        contentType: "application/json"
+        schema: ${file(models/RequestDocumentModel.json)}
+      -
+        name: "RequestWithdrawModel"
+        description: "wallet withdraw"
+        contentType: "application/json"
+        schema: ${file(models/RequestWithdrawModel.json)}
+      -
+        name: "RequestBalanceModel"
+        contentType: "application/json"
+        schema: ${file(models/RequestBalanceModel.json)}    
 plugins:
   - serverless-offline
   - serverless-mocha-plugin
   - serverless-plugin-split-stacks
   - serverless-prune-plugin
+  - serverless-aws-documentation

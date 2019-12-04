@@ -42,11 +42,16 @@
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
-        "WALLET_USER": "WALLET-USER",
-        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
-        "WALLET_WITHDRAW": "WALLET-WITHDRAW",
         "CLAIM_ROYALTY": "CLAIM-ROYALTY",
-        "CLAIM_REWARD": "CLAIM-REWARD"
+        "CLAIM_REWARD": "CLAIM-REWARD",
+        "REWARD_POOL": "REWARD-POOL",
+        "DAILY_ADJUSTMENT_ROYALTY": "DAILY-ADJUSTMENT-ROYALTY",
+        "DAILY_ADJUSTMENT_REWARD": "DAILY-ADJUSTMENT-REWARD",
+        "WALLET": "WALLET",
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
+        "DECK_TRANSFER": "DECK-TRANSFER",
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -56,7 +61,7 @@
         }
     },
     "applicationLogAppender": {
-        "enable": true,
+        "enable": false,
         "region": "us-west-1",
         "streamName": "TrackingDataStream"
     },
@@ -108,9 +113,6 @@
             {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
             {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
-        "network": "mygeth", 
-        "providerUrl" : "https://geth.polarishare.com",
-        "index": "931",
         "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2",
         "foundation": "miner",
         "mainnet": {

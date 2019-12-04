@@ -5,15 +5,21 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('schedulerDepositEvent', '/src/scheduler/depositEvent.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('schedulerTransfer', '/src/scheduler/transfer.js', 'handler');
 
-describe('schedulerDepositEvent', () => {
+describe('schedulerTransfer', () => {
   before((done) => {
     done();
   });
-
+/*
+  after((done)=>{
+    done();
+    process.exit();
+  })
+*/
   it('implement tests here', () => {
     return wrapped.run({}).then((response) => {
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

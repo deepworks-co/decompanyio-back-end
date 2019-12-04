@@ -24,12 +24,17 @@ aws kms create-alias \
 --region ap-northeast-2
 ```
 
-## decompany modules
+## wallet dependence
 
 ```bash
 npm install ../decompany-modules/decompany-app-properties
 npm install ../decompany-modules/decompany-common-utils
-npm install ../decompany-modules/decompany-wallet
+
+npm install --save-dev serverless-mocha-plugin
+npm install --save-dev serverless-offline
+npm install --save-dev serverless-aws-documentation
+npm install --save-dev serverless-plugin-split-stacks
+npm install --save-dev serverless-prune-plugin
 ```
 
 ## ethereum npm

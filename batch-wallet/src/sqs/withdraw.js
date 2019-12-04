@@ -1,7 +1,7 @@
 'use strict';
 const R = require('ramda');
 const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
-const {kms, sns, MongoWrapper} = require("decompany-common-utils");
+const {kms, sqs, sns, MongoWrapper} = require("decompany-common-utils");
 const Web3 = require('web3');
 const Transaction = require('ethereumjs-tx');
 
@@ -14,13 +14,21 @@ const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRE
 const FOUNDATION_ID = walletConfig.foundation;
 
 const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
-  /*
-  * 출금의 경우 psnet에 소지한 Deck을 foundation으로 이동시켜 출금 신청을 하면,
-  * mainnet의 foundation은 출금신청된 DECK을 해당 USER의 계정으로 이동시킨다.
-  */
-
+ 
 module.exports.handler = async (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
+  
+  event.Records.forEach(async (record)=>{
+    try{
+      if(record.receiptHandle){
+        const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
+        const deleteMessageResult = await sqs.deleteMessage(region, sqsUrl, record.receiptHandle);
+
+        console.log("deleteMessageResult", deleteMessageResult);
+      }
+    } catch(err){
+      console.log("deleteMessageResult error", err, JSON.stringify(record));
+    }
+  })
 
   let i;
   for(i=0;i<event.Records.length;i++) {
@@ -41,94 +49,93 @@ module.exports.handler = async (event, context, callback) => {
       
     }
   }
-  return callback(null, "complete")
+  return JSON.stringify({success: true});
 };
 
-function run(record) {
+async function run(record) {
+  try{
+    const params = await validate(record);
+    const {from, to, value, privateKey, id} = params;
+    const updateCallback = R.curry(updateTransactionProcess)(tables.WALLET_REQUEST_WITHDRAW, {_id: new MongoWrapper.ObjectId(id)});
 
-  return new Promise((resolve, reject)=>{
-    validate(record)
-    .then(async (params)=>{
-      console.log("vaildate parameter", params);
-      const {logId} = params;
-      const check = await checkWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId});
-      //console.log("checkWithdrawResult", check)
-      return params;
-    })
-    .then(async (params)=>{
-      //console.log("params", params)
-      const {logId, from, to, value, privateKey} = params;
-      //const updateCallback = R.curry(updateWithdrawResult)(tables.WALLET_WITHDRAW, {_id: logId});
-      const result = await transferDeck(from, to, value, privateKey);
-      return {
-        logId,
-        result
+    const check = await checkRequestWithdraw(tables.WALLET_REQUEST_WITHDRAW, id)
+    if(check === true) {    
+      const result = await transferDeck(from, to, value, privateKey, updateCallback);
+      console.log("transaction complete", {params, transactionHash: result.transactionHash});
+
+      const user  = await getUser(to);
+      if(user){
+        throw new Error(`user is not exists : ${to}`);
       }
-    })
-    .then(async (data)=>{
-      const {logId, result} = data;
-      console.log("transaction info", data);
-      const updateResult = await updateWithdrawResult(tables.WALLET_WITHDRAW, {_id: logId}, {result: result});
-      console.log("updateWithdrawResult", updateResult)
-      return data;
-    })
+
+      const saveResult = await saveWalletEvent(tables.WALLET, {
+        _id: result.transactionHash,
+        userId: user._id,
+        address: to,
+        type: "WITHDRAW",
+        from: from,
+        to: to,
+        factor: -1,
+        value: MongoWrapper.Decimal128.fromString(value + ""),
+        created: Date.now()
+      });
+
+      console.log("saveWalletEvent ok", saveResult);
+
+      return JSON.stringify({
+        success: true
+      })
+      
+    } else {
+      const err =  new Error(`${id} request is not pending status`);
+      await updateCallback({status: "ERROR", err})
+      throw err;
+    }
+
+  } catch (err){
+    console.error("run error", err);
+    throw err;
+  }
+  
+     
+}
+
+async function validate(record){
+  console.log("validate", record);
+  const {body} = record;
+  const parsedBody = JSON.parse(body);
+  const {value, address, _id, userId} = parsedBody;
+  const foundation = await getFoundation(FOUNDATION_ID);
+
+  const privateKey = await decryptPrivateKey(foundation.base64EncryptedEOA);
+  
+  return {
+    from: foundation.address,
+    id: _id, 
+    userId: userId, 
+    to: address,
+    value: value,
+    privateKey
+  }
+}
+function getUser(ethAccount){
+  return new Promise((resolve, reject)=>{
+    mongo.findOne(tables.WALLET_USER, {ethAccount: ethAccount})
     .then((data)=>{
       resolve(data);
     })
     .catch((err)=>{
-      console.error(err);
-      reject(err);
-    })
-  })
-
-}
-
-async function validate(record){
-  const {body} = record;
-  const parsedBody = JSON.parse(body);
-  const {transactionHash, transactionIndex, returnValues} = parsedBody;
-  const {from, to, value} = returnValues;
-  const id = `${transactionHash}#${transactionIndex}`;
-  const foundation = await getWalletAccount(FOUNDATION_ID);
-  const privateKey = await decryptPrivateKey(foundation);
-
-  if(foundation.address !== to){
-    throw new Error("this address is not foundation!! : " + to);
-  }
-  const walletUser = await getWalletAccountFromAddress(from);
-  const withdrawUser = await getUser(walletUser._id);
-
-  console.log("psnet address", from, "mainnet address", withdrawUser.ethAccount);
-
-  return {
-    logId: id,
-    from: foundation.address,
-    to: withdrawUser.ethAccount,
-    value,
-    privateKey
-  }
-}
-function getUser(userId){
-
-  return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.USER, {_id: userId})
-    .then((data)=>{
-      if(data && data.ethAccount) resolve(data);
-      else reject(new Error(`${userId} is not exists or ethAccount in USER Collection`));
-    })
-    .catch((err)=>{
       reject(err);
     })
   })
 }
 
-function getWalletAccount(userId){
-
+function getFoundation(id){
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {_id: userId})
+    mongo.findOne(tables.WALLET_USER, {_id: id})
     .then((data)=>{
       if(data) resolve(data);
-      else reject(new Error(`${userId} is not exists`));
+      else reject(new Error(`${id} is not exists`));
     })
     .catch((err)=>{
       reject(err);
@@ -136,23 +143,8 @@ function getWalletAccount(userId){
   })
 }
 
+function decryptPrivateKey(base64EncryptedEOA) {
 
-function getWalletAccountFromAddress(walletAddress){
-
-  return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.WALLET_USER, {address: walletAddress})
-    .then((data)=>{
-      if(data) resolve(data);
-      else reject(new Error(`wallet address(${walletAddress}) is not exists`));
-    })
-    .catch((err)=>{
-      reject(err);
-    })
-  })
-}
-
-function decryptPrivateKey(walletUser) {
-  const {base64EncryptedEOA} = walletUser;
   return new Promise((resolve, reject)=>{
     const encryptedData = Buffer.from(base64EncryptedEOA, 'base64');
     kms.decrypt(region, encryptedData)
@@ -229,22 +221,31 @@ function sendTransaction(privateKey, rawTransaction, callback) {
     .once('transactionHash', async function(hash){
       console.log("transactionHash", hash);
       if(callback){
-        const updateResult = await callback({result: {transactionHash: hash}});  
+        await callback({status: "SENDTRANSACTION", result: {transactionHash: hash}, updated: Date.now()});  
       }
-      resolve({transactionHash: hash});
-    }).once('receipt', function(receipt){
+      //resolve({transactionHash: hash});
+    }).once('receipt', async function(receipt){
       console.log("receipt", receipt);
-      //resolve(receipt);
-    })
+      if(callback){
+        await callback({status: "COMPLETE", result: receipt, updated: Date.now()});  
+      }
+      resolve(receipt);
+    }).on('error', async function(err){
+      if(callback){
+        await callback({status: "ERROR", error: err, updated: Date.now()});  
+      }
+      reject(err);
+    });
   });
   
 
 }
 
 
-function saveWithdraw(data){
-  return new Promise((resolve, reject)=>{
-    mongo.save(tables.WALLET_WITHDRAW, data)
+
+function updateTransactionProcess(tableName, query, data){
+  return new Promise(async (resolve, reject)=>{
+    mongo.update(tableName, query, {$set: data})
     .then((data)=>{
       resolve(data);
      })
@@ -254,33 +255,29 @@ function saveWithdraw(data){
   })
 }
 
-
-function checkWithdrawResult(tableName, query) {
-  return new Promise((resolve, reject)=>{
-    mongo.find(tableName, {query: query})
-    .then((data)=>{
-      if(data[0] && data[0].result){
-        console.log("already withdraw result saved", JSON.stringify(data[0].result));
-        reject(new Error("already withdraw result saved"))
-      } else {
+function checkRequestWithdraw(tableName, id) {
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const request = await mongo.findOne(tableName, {_id: new MongoWrapper.ObjectId(id)});
+      
+      if(request && request.status === "PENDING"){
         resolve(true);
+      } else {
+        resolve(false)
       }
-        
-    })
-    .catch((err)=>{
+    } catch(err){
       reject(err);
-    })
-  });  
+    }
+    
+  })
 }
 
-function updateWithdrawResult(tableName, query, data){
-  return new Promise(async (resolve, reject)=>{
-    mongo.update(tableName, query, {$set: data})
-    .then((data)=>{
+function saveWalletEvent(tableName, params){
+  return new Promise((resolve, reject)=>{
+    mongo.save(tableName, params).then((data)=>{
       resolve(data);
-     })
-    .catch((err)=>{
-      reject(err);
-    })
+    }).catch((err)=>{
+      reject(err)
+    });
   })
 }

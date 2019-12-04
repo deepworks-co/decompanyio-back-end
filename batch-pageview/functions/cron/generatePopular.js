@@ -1,5 +1,5 @@
 'use strict';
-const {utils, MongoWapper} = require('decompany-common-utils');
+const {utils, MongoWrapper} = require('decompany-common-utils');
 const { mongodb, tables } = require('decompany-app-properties');
 
 const TB_STAT_PAGEVIEW_DAILY = tables.STAT_PAGEVIEW_DAILY;
@@ -12,7 +12,7 @@ const period = 7; //days
  * 현재 + 이전 7일  집계
  */
 module.exports.handler = async (event, context, callback) => {
-  const wapper = new MongoWapper(mongodb.endpoint);
+  const wapper = new MongoWrapper(mongodb.endpoint);
   try{
     const now = new Date();
     const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);

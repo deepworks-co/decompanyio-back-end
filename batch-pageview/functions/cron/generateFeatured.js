@@ -1,13 +1,13 @@
 'use strict';
-const {utils, MongoWapper, sqs} = require('decompany-common-utils');
+const {utils, MongoWrapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig, applicationConfig} = require('decompany-app-properties');
 
 const TB_DOCUMENT = tables.DOCUMENT;
 const period = applicationConfig.activeVoteDays;
 /**
  * @description 
- * 1시간마다 전체 문서의 VoteAmount를 가져오기 위한 SQS생성함
- * 
+ * 5분 주기로 DOCUMENT-FEATURED 갱신
+ * 현재 + 이전 activeVoteDays일  집계
  */
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
@@ -15,7 +15,7 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("Query period", beforeDays, "(include) between (exclude)", now);
 
-  const wapper = new MongoWapper(mongodb.endpoint);
+  const wapper = new MongoWrapper(mongodb.endpoint);
 
   try{
     const queryPipeline = getQueryPipeline(beforeDays.getTime(), tables.DOCUMENT_FEATURED);

@@ -58,6 +58,11 @@ provider:
     - .env
 
 functions:
+  makeRewardPool:
+    handler: functions/mgr/makeRewardPool
+  calculateRoyalty:
+    handler: functions/cron/calculateRoyalty.handler
+    timeout: 300
 
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
@@ -75,49 +80,45 @@ functions:
     handler: functions/cron/recentlyPageview.handler
     timeout: 30
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
       
   generatePopular:
     handler: functions/cron/generatePopular.handler
     timeout: 300
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
   
   generateFeatured:
     handler: functions/cron/generateFeatured.handler
     timeout: 300
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
 
   generateTopTag:
     handler: functions/cron/generateTopTag.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
+    timeout: 300
     events:
-      - schedule: rate(5 minutes) # 10min, hourly
-
-  voteCollector:
-    handler: functions/cron/voteCollector.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
+      - schedule: rate(5 minutes)
       
-  pageviewCollector:
-    handler: functions/cron/pageviewCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
+stepFunctions:
+  validate: true
+  stateMachines:
+    dailyAggregateRoyalty:
+      events:
+        - schedule: 
+            rate: cron(30 0 * * ? *)
+      definition:
+        StartAt: aggregatePageviewState
+        States:
+          aggregatePageviewState:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyPageview
+                - Arn
+            End: true
 
-  registryCollector:
-    handler: functions/cron/registryCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
-      
-  blockCollector:
-    handler: functions/cron/blockCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
 
 plugins:
   - serverless-mocha-plugin
+  - serverless-step-functions

@@ -12,19 +12,7 @@ describe('walletVote', () => {
     done();
   });
 
-  it('e6cf11472a174eb9ba6897136ac1b2b8 implement tests here', () => {
-    const event = {
-      principalId: "google-oauth2|101778494068951192848",
-      body: {
-        documentId: "e6cf11472a174eb9ba6897136ac1b2b8",
-        amount: 10
-      }
-    }
-    return wrapped.run(event).then((response) => {
-      expect(response).to.not.be.empty;
-    });
-  });
-  /*
+
   it('feed7f026db54859bec3221dcad47d8f implement tests here', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
@@ -36,6 +24,19 @@ describe('walletVote', () => {
     return wrapped.run(event).then((response) => {
       expect(response).to.not.be.empty;
     });
-  });
-  */
+  }).timeout(60000);
+  
+
+  it('e6cf11472a174eb9ba6897136ac1b2b8 implement tests here', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "e6cf11472a174eb9ba6897136ac1b2b8",
+        amount: 2
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+  }).timeout(60000);
 });

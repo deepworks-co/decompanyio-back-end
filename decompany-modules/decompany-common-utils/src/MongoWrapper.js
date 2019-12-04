@@ -2,77 +2,73 @@
 
 const mongojs = require('mongojs');
 
-let MongoWapperSingletonInstance = null;
 module.exports = class MongoWrapper {
 
   constructor(connectionString) {
-    if(MongoWapperSingletonInstance==null){
-      this.connectionString = connectionString;
-      this.connect();
-      
-      //console.log("connect", MongoWapperSingletonInstance);
-      
-    } 
-
-    return MongoWapperSingletonInstance;
-  }
-
-  connect() {
-        
-    if(MongoWapperSingletonInstance==null){
-      
-      this.db = mongojs(this.connectionString);
-      MongoWapperSingletonInstance = this;
-
-      this.db.on('error', function(err){
-        console.error("mongo connection error", err);
-        this.close();
-      })
-
-      this.db.on('connect', function(){
-        this.id = Math.random().toString(36).substring(7);
-        console.log("mongo connect", this.id);
-      })
-      
-
-      this.db.on('close', function(){
-        console.log("close", this.id);
-        MongoWapperSingletonInstance = null;
-      })
+    const self = this;
+    this.connectionString = connectionString;
+    this.db = mongojs(this.connectionString);
 
 
-    } else {
-      console.log("MongoWapperSingletonInstance is not null", MongoWapperSingletonInstance)
-    }
+    this.db.on('error', function(err){
+      console.error("mongo connection error", err);
+      self.close();
+    })
 
+    this.db.on('connect', function(){
+      self.id = Math.random().toString(36).substring(7);
+      self.timestamp = Date.now();
+      console.log("mongo connect", self.id);
+    })
+    
+
+    this.db.on('close', function(){
+      console.log("close", self);
+    })
 
   }
 
   status() {
-    console.log("status this", this);
-    console.log("status MongoWapperSingletonInstance", MongoWapperSingletonInstance);
 
-    if(this.db){
-      return {connected: true}
-    } else {
-      return {connected: false}
+    return {
+      instance: this, 
+      connString: this.db._connString
     }
     
   }
 
-  reconnect() {
-    if(!MongoWapperSingletonInstance || MongoWapperSingletonInstance === null){
-      this.connect();
-    }
+  getConnection(){
+    return new Promise((resolve, reject) =>{
+      this.db._getConnection(function(err, data){
+        if(err) reject(err)
+        else resolve(data)
+      });
+    });
   }
 
-  close() {
-    //console.log("close()", MongoWapperSingletonInstance);
-    MongoWapperSingletonInstance = null;
+  collections(){
+    return new Promise((resolve, reject) =>{
+      this.db.getCollectionNames(function(err, data){
+        if(err) reject(err)
+        else resolve(data)
+      });
+    });
+  }
+
+  database(){
+    return this.db.toString();
+  }
+
+  stats() {
+    return new Promise((resolve, reject)=>{
+      this.db.stats()
+    })
+  }
+
+  close() {   
     if(this.db){
       this.db.close();
     }
-    
   }
 
   findOne(collection, query, projection) {
@@ -267,6 +263,22 @@ module.exports = class MongoWrapper {
     });
   }
 
+  removeOne(collection, query) {
+    return new Promise((resolve, reject) => {
+
+      this.db.collection(collection).remove(query, { justOne: true }, (err, res)=>{
+        
+        if(err){
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        
+      });
+
+    });
+  }
+
   distinct(collection, field, query) {
     return new Promise((resolve, reject) => {
 
@@ -315,3 +327,21 @@ module.exports = class MongoWrapper {
   }
 
 };
+
+
+module.exports.Binary = mongojs.Binary
+module.exports.Code = mongojs.Code
+module.exports.DBRef = mongojs.DBRef
+module.exports.Double = mongojs.Double
+module.exports.Int32 = mongojs.Int32
+module.exports.Long = mongojs.Long
+module.exports.MaxKey = mongojs.MaxKey
+module.exports.MinKey = mongojs.MinKey
+module.exports.NumberLong = mongojs.Long // Alias for shell compatibility
+module.exports.ObjectId = mongojs.ObjectId
+module.exports.ObjectID = mongojs.ObjectID
+module.exports.Symbol = mongojs.Symbol
+module.exports.Timestamp = mongojs.Timestamp
+module.exports.Map = mongojs.Map
+module.exports.Decimal128 = mongojs.Decimal128
+module.exports.NumberDecimal = mongojs.NumberDecimal

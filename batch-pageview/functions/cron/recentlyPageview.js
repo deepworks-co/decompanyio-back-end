@@ -1,5 +1,5 @@
 'use strict';
-const {utils, MongoWapper, sqs} = require('decompany-common-utils');
+const {utils, MongoWrapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig } = require('decompany-app-properties');
 
 
@@ -20,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("query startDate", new Date(start), "~", new Date(end));
     
-  const resultList = await aggregatePageview(start, end);
+  const resultList = await aggregatePageviewAndSave(start, end);
   console.log("Recently", new Date(start), "aggregatePageview Count", resultList?resultList.length:0);
   console.log("aggregatePageview resultList count", resultList.length);
 
@@ -43,73 +43,73 @@ function getQueryPipeline(startTimestamp, endTimestamp){
     $match: {
       $and: [
         {t: {$gte: startTimestamp, $lt: endTimestamp}},
-        {n: {$gt: 1}
-      }]
-    }
-  }, {
-    $sort: {
-      t: 1
+        {n: {$gt: 1}}, 
+        {referer: {$ne: null}}
+      ]
     }
   }, {
     $group: {
-      _id: {
-        year: {$year: {$add: [new Date(0), "$t"]}}, 
-        month: {$month: {$add: [new Date(0), "$t"]}}, 
-        dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}},
-        id: "$id",
-        cid: "$cid",
-        sid: "$sid"
+      '_id': {
+        'year': {
+          '$year': {
+            '$add': [
+              new Date(0), '$t'
+            ]
+          }
+        }, 
+        'month': {
+          '$month': {
+            '$add': [
+              new Date(0), '$t'
+            ]
+          }
+        }, 
+        'dayOfMonth': {
+          '$dayOfMonth': {
+            '$add': [
+              new Date(0), '$t'
+            ]
+          }
+        }, 
+        'id': '$id', 
+        'cid': '$cid', 
+        'sid': '$sid'
       }
     }
-
+  }, {
+    $group: {
+      '_id': {
+        'year': '$_id.year', 
+        'month': '$_id.month', 
+        'dayOfMonth': '$_id.dayOfMonth', 
+        'id': '$_id.id'
+      }, 
+      'pageview': {
+        '$sum': 1
+      }
+    }
   }, {
     $lookup: {
-      from: "DOCUMENT",
-        foreignField: "_id",
-        localField: "_id.id",
-        as: "documentAs"
-    }
-  }, {
-    $addFields: {
-      "publicDoc": {
-        "$arrayElemAt": [
-            {
-                "$filter": {
-                    "input": "$documentAs",
-                    "as": "doc",
-                    "cond": {
-                        $and: [
-                          {"$eq": [ "$$doc.isPublic", true]},
-                          {"$eq": [ "$$doc.isDeleted", false]},
-                          {"$eq": [ "$$doc.isBlocked", false]},
-                        ]
-                    }
-                }
-            }, 0
-        ]
-      }
+      'from': tables.DOCUMENT, 
+      'foreignField': '_id', 
+      'localField': '_id.id', 
+      'as': 'document'
     }
   }, {
     $unwind: {
-      path: "$publicDoc",
-      preserveNullAndEmptyArrays: false
+      'path': '$document'
     }
   }, {
-    $group: {
-      _id: {
-        year: "$_id.year", 
-        month: "$_id.month", 
-        dayOfMonth: "$_id.dayOfMonth",
-        id: "$_id.id",
-      },
-      pageview: {$sum: 1},
+    $match: {
+      'document.isPublic': true, 
+      'document.isDeleted': false, 
+      'document.isBlocked': false
     }
   }, {
-    $addFields: {
-      year:"$_id.year",
-      month:"$_id.month",
-      dayOfMonth:"$_id.dayOfMonth",
-      documentId:"$_id.id",
+    $project: {
+      documentId: "$_id.id",
+      pageview: 1,
+      isRegistry: 1
     }
   }] 
 
@@ -121,117 +121,150 @@ function getQueryPipeline(startTimestamp, endTimestamp){
  * @param  {} startTimestamp
  * @param  {} endTimestamp
  */
-async function aggregatePageview(startTimestamp, endTimestamp){
-  const wapper = new MongoWapper(mongodb.endpoint);
+async function aggregatePageviewAndSave(startTimestamp, endTimestamp){
+  const wrapper = new MongoWrapper(mongodb.endpoint);
   try{
     const queryPipeline = getQueryPipeline(startTimestamp, endTimestamp);
+    console.log("aggregatePageview queryPipeline", JSON.stringify(queryPipeline));
 
-    const resultList = await wapper.aggregate(tables.TRACKING, queryPipeline);
+    const resultList = await wrapper.aggregate(tables.TRACKING, queryPipeline);
 
-    const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
-    resultList.forEach((item, index)=>{
+    const bulk = wrapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_DAILY);
+    resultList.forEach((item)=>{
       item.created = Date.now();
-      item.blockchainTimestamp = startTimestamp;
-      item.blockchainDate = new Date(item.blockchainTimestamp);
-         
-      console.log("updateStatPageviewDaily bulk index", index, JSON.stringify(item));
+      const {year, month, dayOfMonth} = item._id;
+      const blockchainDate = new Date(Date.UTC(year, month-1, dayOfMonth));
+      item.blockchainDate = blockchainDate;
+      item.blockchainTimestamp = utils.getBlockchainTimestamp(blockchainDate);    
       bulk.find({_id: item._id}).upsert().updateOne({$set: item});
     });
-    console.log("bulk ops", bulk.tojson());
-    const executeResults = await wapper.execute(bulk);
-    console.log("executeResults", executeResults);
-
+    
+    const executeResults = await wrapper.execute(bulk);
+    console.log("daily aggregation pageview save result", executeResults);
+    
     return resultList;
+
   } catch(ex){
-    console.log(ex);
-    throw ex;
-  } finally{
-    wapper.close();
+    console.log(ex)
+    throw ex
+  } finally {
+    wrapper.close();
   }
   
 }
 
 
-async function aggregatePageviewTotalCountForOnchainAndSave(startTimestamp, endTimestamp){
 
-  const wapper = new MongoWapper(mongodb.endpoint);
+async function aggregatePageviewTotalCountForOnchainAndSave(blockchainTimestamp){
+
+  const date = new Date(blockchainTimestamp);
+
+  const wrapper = new MongoWrapper(mongodb.endpoint);
   try{
-    const queryPipeline = [{
-      $match: { 
-        blockchainTimestamp: {$gte: startTimestamp, $lt: endTimestamp}
-      }
-    }, {
+    const queryPipeline = [
+      {
+          $match: {"_id.year": date.getUTCFullYear(), "_id.month": date.getUTCMonth() + 1, "_id.dayOfMonth": date.getUTCDate()}
+      },{
       $lookup: {
-        from: tables.EVENT_REGISTRY,
-        localField: "documentId",
-        foreignField: "documentId",
-        as: "RegistryAs"
+        'from': "DOCUMENT",
+        'foreignField': '_id', 
+        'localField': '_id.id', 
+        'as': 'document'
       }
     }, {
       $unwind: {
-        path: "$RegistryAs",
-        "preserveNullAndEmptyArrays": true
-      }
-    }, {
-      $match: {
-        "RegistryAs": { "$exists": true, "$ne": null }
+        'path': '$document'
       }
     }, {
       $addFields: {
-        blockNumber: "$RegistryAs.blockNumber"
-      }
-    }, {
-      $lookup: {
-        from: 'EVENT-BLOCK',
-        localField: 'RegistryAs.blockNumber',
-        foreignField: '_id',
-        as: 'BlockAs'
-      }
-    }, {
-      $unwind: {
-        path: '$BlockAs',
-        preserveNullAndEmptyArrays: true
+        'registryDate': {
+          '$dateFromParts': {
+            'year': {
+              '$year': {
+                '$add': [
+                  new Date(0), '$document.registry.created'
+                ]
+              }
+            }, 
+            'month': {
+              '$month': {
+                '$add': [
+                  new Date(0), '$document.registry.created'
+                ]
+              }
+            }, 
+            'day': {
+              '$dayOfMonth': {
+                '$add': [
+                  new Date(0), '$document.registry.created'
+                ]
+              }
+            }
+          }
+        }, 
+        'statDate': {
+          '$dateFromParts': {
+            'year': '$_id.year', 
+            'month': '$_id.month', 
+            'day': '$_id.dayOfMonth'
+          }
+        }
       }
     }, {
       $addFields: {
-        minus: {
-          $subtract: ["$blockchainTimestamp", "$BlockAs.created"]
-        },
-        blockCreated: "$BlockAs.created",
-        blockCreatedDate: "$BlockAs.createdDate"
+        'isRegistry': {
+          '$cond': [
+            {
+              '$and': [
+                {
+                  '$ne': [
+                    '$registryDate', null
+                  ]
+                }, {
+                  '$gte': [
+                    '$statDate', '$registryDate'
+                  ]
+                }
+              ]
+            }, true, false
+          ]
+        }
       }
     }, {
       $match: {
-        minus: {$gt: -86400000}
+        'document.isPublic': true, 
+        'document.isDeleted': false, 
+        'document.isBlocked': false
       }
     }, {
-      $group: {
-        _id: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth"},
-        totalPageview: {$sum: "$pageview"},
-        totalPageviewSquare: {$sum: {$pow: ["$pageview", 2]}},
-        count: {$sum: 1}
+        $group: {
+          _id: {year: "$_id.year", month: "$_id.month", dayOfMonth: "$_id.dayOfMonth"},
+          totalPageview: {$sum: "$pageview"},
+          totalPageviewSquare: {$sum: {$pow: ["$pageview", 2]}},
+          count: {$sum: 1}
+        }
       }
-    }]
+    ]
     console.log(tables.STAT_PAGEVIEW_DAILY, JSON.stringify(queryPipeline));
-    const resultList = await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+    const resultList = await wrapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+    console.log("resultList", resultList);
 
-
-    const bulk = wapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
+    const bulk = wrapper.getUnorderedBulkOp(tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY);
     resultList.forEach((item, index)=>{
       
-      item.blockchainTimestamp = startTimestamp;
+      item.blockchainTimestamp = blockchainTimestamp;
       item.blockchainDate = new Date(item.blockchainTimestamp);
       item.created = Date.now();
-      bulk.find({_id: item._id}).upsert().updateOne({$set: item});
+      bulk.find({_id: item._id}).upsert().updateOne(item);
     });
     console.log("aggregatePageviewTotalCountForOnchain bulk ops", bulk.tojson());
-    const bulkResult = await wapper.execute(bulk); 
+    const bulkResult = await wrapper.execute(bulk); 
     console.log("aggregatePageviewTotalCountForOnchain bulk result", tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, JSON.stringify(bulkResult));
     return resultList
   } catch(err){
     console.log(err);
     throw err;
   } finally{
-    wapper.close();
+    wrapper.close();
   }
 }

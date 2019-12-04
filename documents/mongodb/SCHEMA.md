@@ -180,3 +180,4 @@ db["SEND-EMAIL"].createIndex( { email: 1, emailType: 1 }, {unique: true});
 db.createCollection("BOUNTY");
 db["BOUNTY"].createIndex( { accountId: 1, ethAccount: 1, bountyType: 1, created: -1});
 ```
+

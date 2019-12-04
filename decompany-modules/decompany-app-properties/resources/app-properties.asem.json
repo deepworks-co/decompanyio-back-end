@@ -10,7 +10,7 @@
         "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:5"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany"
+        "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany?connectTimeoutMS=1800000&socketTimeoutMS=1800000"
     },
     "s3Config":{
         "document": "asem-ko-document",
@@ -42,11 +42,16 @@
         "SITEMAP": "SITEMAP",
         "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
         "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
-        "WALLET_USER": "WALLET-USER",
-        "WALLET_DEPOSIT": "WALLET-DEPOSIT",
-        "WALLET_WITHDRAW": "WALLET-WITHDRAW",
         "CLAIM_ROYALTY": "CLAIM-ROYALTY",
-        "CLAIM_REWARD": "CLAIM-REWARD"
+        "CLAIM_REWARD": "CLAIM-REWARD",
+        "REWARD_POOL": "REWARD-POOL",
+        "DAILY_ADJUSTMENT_ROYALTY": "DAILY-ADJUSTMENT-ROYALTY",
+        "DAILY_ADJUSTMENT_REWARD": "DAILY-ADJUSTMENT-REWARD",
+        "WALLET": "WALLET",
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
+        "DECK_TRANSFER": "DECK-TRANSFER",
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
     },
     "sqsConfig": {
         "region": "ap-northeast-2",
@@ -109,9 +114,6 @@
             {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
             {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
         ],
-        "network": "mygeth", 
-        "providerUrl" : "https://geth-internal.polarishare.com",
-        "index": "931",
         "kmsId": "alias/asem-ko-owa-enc-key",
         "foundation": "miner",
         "mainnet": {
@@ -120,7 +122,7 @@
         },
         "psnet": {
             "id": "931",
-            "providerUrl" : "https://geth.polarishare.com"
+            "providerUrl" : "https://geth-internal.polarishare.com"
         },
         "queueUrls":{
             "EVENT_DEPOSIT": "",

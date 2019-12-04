@@ -16,7 +16,8 @@
     "web3": "^1.0.0-beta.55"
   },
   "devDependencies": {
-    "serverless-mocha-plugin": "^1.10.0"
+    "serverless-mocha-plugin": "^1.10.0",
+    "serverless-step-functions": "^2.11.0"
   },
   "scripts": {
     "preinstall": "echo starting && sh install.sh",

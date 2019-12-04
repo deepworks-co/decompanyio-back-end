@@ -11,12 +11,6 @@ module.exports.handler = async (event, context, callback) => {
   console.log("authorizationToken", event.authorizationToken);
   console.log("stage", process.env.stage)
 
-  if("local" === process.env.stage){
-    console.log("event", event);
-    const principalId = "0x8B1D39Cd838B6ceBA4ef2475994c6fc66fD1E100";
-    return callback(null, generatePolicy(principalId, 'Allow', event.methodArn));
-  }
-
   if (!event.authorizationToken) {
     return callback("Unauthorized");
   }
