@@ -20,6 +20,7 @@ describe('claimRoyalty', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      //console.log(response);
       expect(response).to.not.be.empty;
     });
   });

@@ -49,46 +49,48 @@ module.exports.handler = async (event, context, callback) => {
     console.log("lastClaim", lastClaim);
     const start = lastClaim&&lastClaim.created?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
     const end = new Date();
-    const statists = await getPageview(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end));
-    const statistsWithRewardPromises = statists.map(async (stat)=>{
-      //console.log("stat", stat)
-      const {totalpageview, _id} = stat;
-      const rewardPool = await getRewardPool({year: _id.year, month: _id.month, dayOfMonth: _id.dayOfMonth});
-      if(rewardPool){
-        const royalty = (stat.pageview / totalpageview.totalPageview)  * (rewardPool.creatorRewaryDaily * 0.7);
-        const strValue = web3.utils.toWei(royalty + "", "ether");
-        stat.value = MongoWrapper.Decimal128.fromString(strValue);
-      } 
-      
+    const pageviews = await getPageview(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end));
+    
+    const pageviewWithRewardPromises = pageviews.map(async (pageviewInfo)=>{
+
+      const reward = await calcReward({
+        year: pageviewInfo._id.year,
+        month: pageviewInfo._id.month,
+        dayOfMonth: pageviewInfo._id.dayOfMonth,
+        blockchainTimestamp: pageviewInfo.blockchainTimestamp,
+        principalId, 
+        documentId,
+        pageview: pageviewInfo.pageview,
+        totalPageview: pageviewInfo.totalpageviewInfo.totalPageview
+      });
+
       return {
         _id: {
-          year: _id.year, 
-          month: _id.month, 
-          dayOfMonth: _id.dayOfMonth, 
+          year: pageviewInfo._id.year, 
+          month: pageviewInfo._id.month, 
+          dayOfMonth: pageviewInfo._id.dayOfMonth, 
           userId: principalId, 
           documentId: documentId
         }, 
-        blockchainTimestamp: stat.blockchainTimestamp, 
-        value: stat.value,
-        created: Date.now()
-      };
+        blockchainTimestamp: pageviewInfo.blockchainTimestamp, 
+        value: reward
+      }
     })
-    const statistsWithReward = await Promise.all(statistsWithRewardPromises);
-    //console.log("royalties", statistsWithReward);
-
-    const savePromises = statistsWithReward.filter((it)=>{
+    const pageviewWithReward = await Promise.all(pageviewWithRewardPromises);
+    console.log("royalties", pageviewWithReward);
+    
+    //save
+    const savePromises = pageviewWithReward.filter((it)=>{
       if(it.value)
         return true;
       else
         return false;
     }).map(async (it)=>{
-      try{
-        await saveClaimReward(it);
-        await saveWallet({royaltyId: it._id, value: it.value});
-      } catch(err){
-        return err;
-      }
-      return Promise.resolve(true)
+
+      await saveClaimReward(it);
+      await saveWallet({royaltyId: it._id, value: it.value});
+
+      return it;
     })
     const savePromisesComplete = await Promise.all(savePromises);
 
@@ -96,7 +98,13 @@ module.exports.handler = async (event, context, callback) => {
 
     return JSON.stringify({
       success: true,
-      royalties: statistsWithReward
+      royalties: pageviewWithReward.map((it)=>{
+        return {
+          _id: it._id,
+          blockchainTimestamp: it.blockchainTimestamp,
+          value: it.value.toString()
+        }
+      })
     })
   } catch (err){
     console.error(err);
@@ -104,6 +112,29 @@ module.exports.handler = async (event, context, callback) => {
   }
 
 };
+
+async function calcReward(args){
+
+  const {totalPageview, pageview, year, month, dayOfMonth, blockchainTimestamp} = args;
+  const date = new Date(Date.UTC(year, month-1, dayOfMonth));
+  const rewardPool = await getRewardPool(date);
+  let reward = 0;
+  
+  if(rewardPool){
+    //console.log("calcReward : ", JSON.stringify(_id), stat.pageview, totalpageview.totalPageview, rewardPool.creatorDailyReward);
+
+    let royalty = (pageview / totalPageview)  * rewardPool.creatorDailyReward;
+    royalty  = Math.floor(royalty * 100000) / 100000;
+    const strValue = web3.utils.toWei(royalty + "", "ether");
+
+    reward = MongoWrapper.Decimal128.fromString(strValue);
+  } else {
+    //console.log("calcReward : 0");
+    reward = MongoWrapper.Decimal128.fromString("0");
+  }
+  
+  return reward;
+}
 
 function getDocument(documentId){
   return new Promise((resolve, reject)=>{
@@ -130,11 +161,11 @@ function getPageview(documentId, startTimestamp, endTimestamp){
         from: tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY,
         localField: 'blockchainTimestamp',
         foreignField: 'blockchainTimestamp',
-        as: 'totalpageview'
+        as: 'totalpageviewInfo'
       }
     }, {
       $unwind: {
-        path: "$totalpageview",
+        path: "$totalpageviewInfo",
         preserveNullAndEmptyArrays: true
       }
     }, {
@@ -154,7 +185,12 @@ function getPageview(documentId, startTimestamp, endTimestamp){
  */
 function saveClaimReward(params){
   return new Promise(async (resolve, reject)=>{
-    mongo.save(tables.CLAIM_ROYALTY, params).then((data)=>{
+    mongo.save(tables.CLAIM_ROYALTY, {
+      _id: params._id,
+      blockchainTimestamp: params.blockchainTimestamp,
+      value: params.value,
+      created: Date.now()
+    }).then((data)=>{
       resolve(data);
     }).catch((err)=>{
       reject(err);
@@ -209,9 +245,8 @@ function getLastClaimRoyalty(params){
   });
 }
 
-function getRewardPool({year, month, dayOfMonth}){
-  const date = new Date(Date.UTC(year, month, dayOfMonth));
-  
+function getRewardPool(date){
+ 
   return new Promise((resolve, reject)=>{
     mongo.find(tables.REWARD_POOL, {
       query: {
