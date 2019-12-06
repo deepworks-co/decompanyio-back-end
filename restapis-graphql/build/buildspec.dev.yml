@@ -8,4 +8,4 @@ phases:
     commands:
       - cd restapis-graphql
       - npm install
-      - npm run deploy -s dev
+      - npm run deploy:dev
