@@ -1,6 +1,6 @@
 const { schemaComposer } = require('graphql-compose');
 const {VWDailyPageview, RewardPool} = require('../mongoose/model')
-
+const {utils} = require('decompany-common-utils');
 schemaComposer.createObjectTC({
   name: 'DailyPageviewId',
   fields: {
@@ -27,14 +27,26 @@ schemaComposer.createObjectTC({
 schemaComposer.Query.addNestedFields({
   "DailyPageview.getList": {
     type: '[DailyPageview]',
-    args: { userId: 'String!', timestamp: 'Int!' },
+    args: { userId: 'String!', timestamp: 'Float!' },
     resolve: async (_, {userId, timestamp}) => {
       const rewardPoolList = await RewardPool.find({});
-      const list = await VWDailyPageview.find({blockchainTimestamp: {$gte: timestamp}, userId: userId}).sort({blockchainTimestamp: -1}).limit(2);
+      const list = await VWDailyPageview.find({blockchainTimestamp: {$gte: timestamp}, userId: userId}).sort({blockchainTimestamp: -1});
       const resultList = await calcRewardList(list, rewardPoolList);
       return resultList
     }
-  }
+  },
+  "DailyPageview.getTodayEstimateCreatorReward": {
+    type: 'DailyPageview',
+    args: { userId: 'String!', timestamp: 'Float' },
+    resolve: async (_, {userId, timestamp}) => {
+      const t = timestamp?timestamp:utils.getBlockchainTimestamp(new Date());
+      const rewardPoolList = await RewardPool.find({});
+      const list = await VWDailyPageview.find({blockchainTimestamp: t, userId: userId});
+      const resultList = await calcRewardList(list, rewardPoolList);
+
+      return resultList?resultList[0]:null;
+    }
+  },
 });
 
 

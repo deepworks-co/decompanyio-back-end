@@ -24,7 +24,7 @@ function connectToMongoDB(){
     });
     db.once('open', function() {
         // we're connected!
-        console.log("mongodb connected");
+        //console.log("mongodb connected");
         resolve(db);
     });
     db.once('close', function() {
