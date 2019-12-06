@@ -86,7 +86,7 @@ package:
     
 functions:
   graphql:
-    handler: src/graphql/graphql.handler
+    handler: src/index.handler
     events:
       - http: 
           method: ANY

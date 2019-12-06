@@ -6,10 +6,13 @@ const DocumentPopularSchema = require('./DocumentPopularSchema')
 const UserSchema = require('./UserSchema')
 const UserDocumentFavorite = require('./UserDocumentFavorite')
 const UserDocumentHistory = require('./UserDocumentHistory')
+const VWDailyPageviewSchema = require('./VWDailyPageviewSchema')
+const TestSchema = require('./TestSchema')
 
 const customizationOptions = {}; // left it empty for simplicity, described below
 //schemaComposer.merge(DocumentSchema);
 //schemaComposer.merge(UserSchema);
+//schemaComposer.merge(TestSchema);
 const schema = schemaComposer.buildSchema();
 module.exports = {
   schema: schema

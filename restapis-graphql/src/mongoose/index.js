@@ -8,7 +8,7 @@ const console = require('../common/logger');
 function connectToMongoDB(){
 
   return new Promise((resolve, reject)=>{
-    console.log("mongodb connecting!!", mongodb.endpoint)
+    //console.log("mongodb connecting!!", mongodb.endpoint)
     mongoose.connect(mongodb.endpoint, {useNewUrlParser: true});
     
     if(process.env.local){
