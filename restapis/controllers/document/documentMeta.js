@@ -36,6 +36,6 @@ module.exports.handler = async (event, context, callback) => {
     }
   );
 
-  return (null, response);
+  return response;
 
 }
