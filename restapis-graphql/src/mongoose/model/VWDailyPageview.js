@@ -24,10 +24,6 @@ const VWDailyPageviewSchema = new Schema({
     },
     totalPageviewSquare: {
       type: Number
-    },
-    created: {
-        type: Number,
-        default: Date.now
     }
 }, { collection: "VW-DAILY-PAGEVIEW" });
 

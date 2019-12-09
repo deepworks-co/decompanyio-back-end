@@ -5,6 +5,7 @@ const User = require('./User');
 const UserDocumentFavorite = require('./UserDocumentFavorite');
 const UserDocumentHistory = require('./UserDocumentHistory');
 const VWDailyPageview = require('./VWDailyPageview');
+const VWDailyVote = require('./VWDailyVote');
 const RewardPool = require('./RewardPool');
 
 module.exports = {
@@ -15,5 +16,6 @@ module.exports = {
     UserDocumentFavorite,
     UserDocumentHistory,
     VWDailyPageview,
+    VWDailyVote,
     RewardPool
 }

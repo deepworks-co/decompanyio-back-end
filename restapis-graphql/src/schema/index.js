@@ -7,6 +7,7 @@ const UserSchema = require('./UserSchema')
 const UserDocumentFavorite = require('./UserDocumentFavorite')
 const UserDocumentHistory = require('./UserDocumentHistory')
 const VWDailyPageviewSchema = require('./VWDailyPageviewSchema')
+const VWDailyVoteSchema = require('./VWDailyVoteSchema')
 const TestSchema = require('./TestSchema')
 
 const customizationOptions = {}; // left it empty for simplicity, described below
