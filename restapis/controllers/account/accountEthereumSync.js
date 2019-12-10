@@ -21,7 +21,11 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   if(user.ethAccount){
-    throw new Error(`The ethereum account has already been registered. ${user.ethAccount}`);
+    //throw new Error(`The ethereum account has already been registered. ${user.ethAccount}`);
+    const response = JSON.stringify({
+      success: true,
+      user: user
+    })
   } 
   
   const result = await accountService.updateUserEthAccount(principalId, ethAccount);
@@ -34,6 +38,6 @@ module.exports.handler = async (event, context, callback) => {
     user: user
   })
 
-  return callback(null, response);
+  return response;
 
 };
