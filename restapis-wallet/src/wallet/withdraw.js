@@ -47,7 +47,7 @@ module.exports.handler = async (event, context, callback) => {
     console.log("user", user);
     const balance = await getBalance(user.ethAccount);
     
-    const balanceDeck = web3.utils.fromWei(balance, "ether");
+    const balanceDeck = web3.utils.fromWei(balance + "", "ether");
     console.log("balance", balance, balanceDeck);
     if(amount>balanceDeck){
       return JSON.stringify({
