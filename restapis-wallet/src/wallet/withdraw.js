@@ -44,8 +44,8 @@ module.exports.handler = async (event, context, callback) => {
     }
 
     const user = await getUser(principalId);
-    console.log("user", user);
-    const balance = await getBalance(user.ethAccount);
+
+    const balance = await getBalance(principalId);
     
     const balanceDeck = web3.utils.fromWei(balance + "", "ether");
     console.log("balance", balance, balanceDeck);
@@ -139,9 +139,9 @@ function checkPendingRequestWithdraw(userId){
   })
 }
 
-function getBalance(ethAccount) {
+function getBalance(userId) {
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount})
+    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: userId})
     .then((data)=>{
       const balance = data&&data.balance?data.balance.toString():0;
       resolve(balance);
