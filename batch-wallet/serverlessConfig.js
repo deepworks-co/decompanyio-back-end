@@ -108,3 +108,14 @@ module.exports.getSharpLayer = (serverless)=>{
   console.log("load layer", layer.sharp);
   return layer.sharp;
 }
+
+
+module.exports.getWithdrawSQSUrl = (serverless)=>{
+  const stage = serverless.processedInput.options.stage;
+  if(stage){
+      process.env.stage = stage;
+  }    
+  const { walletConfig } = require('decompany-app-properties');    
+  console.log("getWithdrawSQSUrl", walletConfig.queueUrls["EVENT_WITHDRAW"])
+  return walletConfig.queueUrls["EVENT_WITHDRAW"];
+}
