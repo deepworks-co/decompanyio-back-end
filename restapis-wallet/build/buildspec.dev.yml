@@ -11,4 +11,4 @@ phases:
       - npm install ../decompany-modules/decompany-common-utils
       - npm install ../decompany-modules/decompany-wallet
       - npm install
-      - npm run deploy
+      - npm run deploy:dev
