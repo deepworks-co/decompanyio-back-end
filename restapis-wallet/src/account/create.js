@@ -6,8 +6,6 @@ const {kms, MongoWrapper} = require("decompany-common-utils");
 const web3 = new Web3(walletConfig.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 module.exports.handler = async (event, context, callback) => {
-  
-  //context.callbackWaitsForEmptyEventLoop = false;
 
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
@@ -20,7 +18,7 @@ module.exports.handler = async (event, context, callback) => {
   
   const {principalId} = event;
   try{
-
+    console.log("mongo.status", mongo.status());
     const account = await newAccount({principalId});
 
     const response = JSON.stringify({
