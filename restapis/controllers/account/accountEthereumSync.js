@@ -21,6 +21,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   if(user.ethAccount){
+    console.log(`The ethereum account has already been registered. ${user.ethAccount}`);
     //throw new Error(`The ethereum account has already been registered. ${user.ethAccount}`);
     const response = JSON.stringify({
       success: true,
