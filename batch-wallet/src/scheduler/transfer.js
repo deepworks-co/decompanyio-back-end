@@ -14,8 +14,9 @@ module.exports.handler = async (event, context, callback) => {
   
   
   const last = await getLatestTransferLog(tables.DECK_TRANSFER)
-  //const blockNumber = last?last.blockNumber + 1:1;
-  const blockNumber = 1;//5508236;
+  const blockNumber = last?last.blockNumber + 1:1;
+  //const blockNumber = 1;//5508236;
+  
   const foundation = await getWalletAccount(FOUNDATION_ID);
 
   const eventLogs = await getEventLog(DECK_CONTRACT, {
@@ -33,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
     const {transactionHash, returnValues} = log;
     return (foundation.address === returnValues.from || foundation.address === returnValues.to)
   }).map(async (log)=>{
-    //console.log("filted", log)
+    //console.log("filted", log.returnValues)
     const {transactionHash } = log;
     const {from, to, value} = log.returnValues;
     if(foundation.address === from){
@@ -112,6 +113,7 @@ function saveTransfer(tableName, eventLogs){
   })
 }
 function saveWalletLogs(tableName, incomings){
+  console.log("saveWalletLogs", incomings);
   return new Promise((resolve, reject)=>{
     const bulk = mongo.getOrderedBulkOp(tableName);
 
