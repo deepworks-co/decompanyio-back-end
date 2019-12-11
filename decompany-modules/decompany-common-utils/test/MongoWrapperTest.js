@@ -1,4 +1,4 @@
-const MongoWrapper = require("./src/MongoWrapper");
+const MongoWrapper = require("../src/MongoWrapper");
 
 const mongo = new MongoWrapper("mongodb://decompany:decompany1234@52.53.208.45:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000");
 
