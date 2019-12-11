@@ -90,7 +90,7 @@ functions:
     reservedConcurrency: 1
     events:
       - sqs: 
-          arn: ${file(./serverlessConfig.js):getWithdrawSQSUrl}
+          arn: ${file(./serverlessConfig.js):getWithdrawSQSArns}
           batchSize: 10
 
 

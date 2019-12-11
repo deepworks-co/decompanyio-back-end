@@ -127,6 +127,9 @@
         "queueUrls":{
             "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit",
             "EVENT_WITHDRAW": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-withdraw"
+        },
+        "queueArns": {
+            "EVENT_WITHDRAW": "arn:aws:sqs:us-west-1:197966029048:dev-ca-withdraw"
         }
     },
     "warmupConfig": [{
