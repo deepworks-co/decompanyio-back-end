@@ -58,7 +58,6 @@
         "queueUrls": {
             "CONVERT_IMAGE": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-convert-image",
             "CONVERT_PDF": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-pdf-converter"
-
         }
     },
     "applicationLogAppender": {
@@ -126,6 +125,9 @@
         },
         "queueUrls":{
             "EVENT_WITHDRAW": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-withdraw"
+        },
+        "queueArns": {
+            "EVENT_WITHDRAW": "arn:aws:sqs:ap-northeast-2:197966029048:asem-ko-withdraw"
         }
     },
     "warmupConfig": [{
