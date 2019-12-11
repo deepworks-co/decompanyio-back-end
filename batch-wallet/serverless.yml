@@ -88,7 +88,6 @@ functions:
     handler: src/sqs/withdraw.handler
     timeout: 300
     reservedConcurrency: 1
-    onError: arn:aws:sns:us-west-1:197966029048:lambda-dev-alarm
     events:
       - sqs: 
           arn: ${file(./serverlessConfig.js):getWithdrawSQSUrl}
