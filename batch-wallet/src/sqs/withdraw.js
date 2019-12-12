@@ -13,7 +13,7 @@ const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].addr
 const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
-const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
+const ERROR_TOPIC = `arn:aws:sns:${region}:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
  
 module.exports.handler = async (event, context, callback) => {
   
