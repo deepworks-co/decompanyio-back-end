@@ -96,3 +96,20 @@ exports.convertKeysToLowerCase = (obj) => {
   }
   return output;
 };
+
+/**
+ * @param totalPageview
+ * @param pageview
+ * @param creatorDailyReward
+ */
+exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
+  
+  if(isNaN(totalPageview) || isNaN(pageview) || isNaN(creatorDailyReward)){
+    
+    return -1;
+  }
+  let royalty = (pageview / totalPageview)  * creatorDailyReward;
+  royalty  = Math.floor(royalty * 100000) / 100000;     
+
+  return royalty;
+}
