@@ -8,6 +8,7 @@ const {buildContract} = require('../ContractUtils');
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
+/*
 const PSNET_BALLOT_ABI = require(`../../psnet/${stage}/Ballot.json`)
 const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
 const PSNET_REGISTRY_ABI = require(`../../psnet/${stage}/Registry.json`)
@@ -16,7 +17,7 @@ const NETWORK_ID = walletConfig.psnet.id;
 const DECK_CONTRACT = buildContract(web3, PSNET_DECK_ABI, NETWORK_ID);
 const BALLOT_CONTRACT = buildContract(web3, PSNET_BALLOT_ABI, NETWORK_ID);
 const REGISTRY_CONTRACT = buildContract(web3, PSNET_REGISTRY_ABI, NETWORK_ID);
-
+*/
 module.exports.handler = async (event, context, callback) => {
   //context.callbackWaitsForEmptyEventLoop = false;
   if (event.source === 'lambda-warmup') {

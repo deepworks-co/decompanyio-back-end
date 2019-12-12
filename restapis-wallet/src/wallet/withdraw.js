@@ -9,12 +9,13 @@ const Transaction = require('ethereumjs-tx');
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
+/*
 const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
 const NETWORK_ID = walletConfig.psnet.id;
 const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[NETWORK_ID].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
-
+*/
 module.exports.handler = async (event, context, callback) => {
 
   if (event.source === 'lambda-warmup') {
