@@ -145,7 +145,8 @@
             {"name": "documentMeta", "concurrency": 2},
             {"name": "trackingCollect", "concurrency": 2},
             {"name": "trackingList"},
-            {"name": "trackingInfo"}
+            {"name": "trackingInfo"},
+            {"name": "oembedDocument"}
         ]
     }, 
     {
