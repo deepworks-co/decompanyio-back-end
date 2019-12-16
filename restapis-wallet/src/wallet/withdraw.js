@@ -67,8 +67,10 @@ module.exports.handler = async (event, context, callback) => {
     });
 
     console.log("savedRequest", savedRequest);
-    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
+
+    /*const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
     await sendWithdrawSQS(region, sqsUrl, savedRequest);
+    */
     
     return JSON.stringify({
       success: true,
