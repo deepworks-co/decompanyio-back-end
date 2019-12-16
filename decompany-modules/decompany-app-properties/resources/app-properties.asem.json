@@ -122,12 +122,6 @@
         "psnet": {
             "id": "931",
             "providerUrl" : "https://geth-internal.polarishare.com"
-        },
-        "queueUrls":{
-            "EVENT_WITHDRAW": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-withdraw"
-        },
-        "queueArns": {
-            "EVENT_WITHDRAW": "arn:aws:sqs:ap-northeast-2:197966029048:asem-ko-withdraw"
         }
     },
     "warmupConfig": [{
