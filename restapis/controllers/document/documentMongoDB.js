@@ -92,7 +92,7 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
           isRegistry: {
             $cond: [
               { $ifNull: [ '$registry', false ]}, true, false
@@ -184,7 +184,7 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
           isRegistry: {
             $cond: [
               { $ifNull: [ '$registry', false ]}, true, false
@@ -317,7 +317,7 @@ async function queryDocumentListByLatest (params) {
       }
     }, {
       $addFields: {
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         isRegistry: {
@@ -414,7 +414,7 @@ async function queryDocumentListByPopular (params) {
       $addFields: {
         documentId: "$_id",
         author: "$author",
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         totalPages: "$document.totalPageview",
         ethAccount: "$document.ethAccount",
         documentName: "$document.documentName",
@@ -525,6 +525,7 @@ async function queryDocumentListByFeatured (params) {
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
         shortUrl: "$document.shortUrl",
+        latestVoteAmount: {$toString: "$latestVoteAmount"},
         cc: "$document.cc",
         isRegistry: {
           $cond: [
@@ -975,40 +976,6 @@ async function getRecentlyPageViewTotalCount () {
   }
   
 
-}
-/**
- * @param  {} item
- */
-async function putVote (item) {
-  const timestamp = Date.now();
-  const today = new Date(timestamp);
-
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-
-    console.log("Put Vote Item", item, "timestamp", timestamp);
-
-    const curatorId = item.curatorId;
-    const voteAmount = item.voteAmount;
-    const documentId = item.documentId;
-    const transactionInfo = item.transactionInfo;
-    const ethAccount = item.ethAccount;
-    if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
-      return Promise.reject({msg:"Parameter is invaild", detail:item});
-    }
-
-    const newItem = {
-      id: curatorId,
-      created: timestamp,
-      blockchainTimestamp: blockchainTimestamp,
-      documentId: documentId,
-      voteAmount: Number(voteAmount),
-      ethAccount: ethAccount,
-      transactionInfo: transactionInfo
-    }
-    console.log("new vote", newItem);
-    const wapper = new MongoWapper(connectionString);
-    return await wapper.insert(TB_VOTE, newItem);
-    //return docClient.put(params).promise();
 }
 
 
