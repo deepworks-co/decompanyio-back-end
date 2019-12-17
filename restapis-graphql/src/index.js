@@ -20,12 +20,12 @@ const server = new ApolloServer({
   introspection: process.env.stage==='dev' || process.env.stage==='local'?true:false,
   debug: true,
   formatError: (err)=>{
-    if(err) console.error("formatError", JSON.stringify(err));
+    //if(err) console.error("formatError", JSON.stringify(err));
+    return err;
   },
-  formatResponse: (response, request)=>{
+  formatResponse: (response)=>{
     //console.log("formatResponse", response);
-
-    //console.log("formatResponse", data);
+    return response;
   },
   engine: {
     rewriteError(err) {

@@ -7,6 +7,8 @@ const UserDocumentHistory = require('./UserDocumentHistory');
 const VWDailyPageview = require('./VWDailyPageview');
 const VWDailyVote = require('./VWDailyVote');
 const RewardPool = require('./RewardPool');
+const ClaimReward = require('./ClaimReward');
+const ClaimRoyalty = require('./ClaimRoyalty');
 
 module.exports = {
     Document,
@@ -17,5 +19,7 @@ module.exports = {
     UserDocumentHistory,
     VWDailyPageview,
     VWDailyVote,
-    RewardPool
+    RewardPool,
+    ClaimReward,
+    ClaimRoyalty
 }

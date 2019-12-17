@@ -17,7 +17,7 @@ schemaComposer.createObjectTC({
 });
 
 schemaComposer.createObjectTC({
-  name: 'DailyVoteReward',
+  name: 'DailyCuratorReward',
   fields: {
     blockchainTimestamp: 'Float',
     blockchainDate: 'Date',
@@ -42,12 +42,12 @@ schemaComposer.Query.addNestedFields({
     resolve: async (_, args) => getTodayEstimatedCreatorReward(args)
   },
   "ProfileSummary.getLast7CuratorReward": {
-    type: '[DailyVoteReward]',
+    type: '[DailyCuratorReward]',
     args: { userId: 'String!'},
     resolve: async (_, args) => getLast7CuratorReward(args)
   },
   "ProfileSummary.getTodayEstimatedCuratorReward": {
-    type: 'DailyVoteReward',
+    type: 'DailyCuratorReward',
     args: { userId: 'String!'},
     resolve: async (_, args) => getTodayEstimatedCuratorReward(args)
   }
