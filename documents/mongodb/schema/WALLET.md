@@ -1,6 +1,7 @@
 # WALLET
 
 ```javascript
+db.createCollection("WALLET");
 db.runCommand( {
   collMod: "WALLET",
   validator: {

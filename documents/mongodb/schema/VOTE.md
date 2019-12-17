@@ -1,6 +1,7 @@
 # VOTE
 
 ```javascript
+db.createCollection("VOTE");
 db.runCommand({
   collMod: "VOTE",
   validator: {
