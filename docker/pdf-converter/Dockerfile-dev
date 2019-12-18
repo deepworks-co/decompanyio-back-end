@@ -9,4 +9,4 @@ ENV APPLICATION_DIR /batch-application
 
 WORKDIR ${APPLICATION_DIR}
 EXPOSE 8080
-CMD ["npm", "start"]
+#CMD ["npm", "start"]
