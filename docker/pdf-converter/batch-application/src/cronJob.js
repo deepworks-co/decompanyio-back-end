@@ -1,5 +1,7 @@
 'use strict';
 const pdfconverter = require('./pdf-converter-wrapper');
+const textconverter = require('./text-converter-wrapper');
+const imageconverter = require('./image-converter-wrapper');
 const getsqsmessageWrapper = require('./get-convert-message');
 const filewrapper = require('./file-wrapper');
 const cron = require('node-cron');
@@ -16,6 +18,22 @@ module.exports.init = () => {
   return this;    
 }
 
+module.exports.test = async (args) => {
+  console.log("cron test start", args.constructor === Array);
+
+  if(args.constructor === Array){
+    const results = [];
+    for(let i=0;i<args.length;i++){
+      results[i]= await cronJob(args[i]);
+    }
+
+    return results;
+  } else if(args.constructor === Object){
+    return await cronJob(args);
+  }
+  
+}
+
 module.exports.stop = () => {
   status.stop();
   if(task) task.stop();
@@ -26,220 +44,305 @@ module.exports.status = () => {
 }
 
 async function cronJob(args) {
-    //console.log("current status", status);
+  let response = {};
+  const startAt = Date.now();
+  const jobId = `job_${startAt}`;
+  const workDir = `${WORK_DIR_PREFIX}/${jobId}`;
+  let params = {
+    startAt,
+    jobId,
+    workDir
+  }
+
+  const GetMessage = args?()=>Promise.resolve(args):getsqsmessageWrapper;
+
+  try{
     if(status.isStop() === true && status.jobCount() === 0) {
       console.log("stopping pdf converter");
+      return {stopping: true, message: "stopping pdf converter"}
     } else if(status.jobCount() < 1 && status.isStop() === false){
-      
-      const jobId = `job_${Date.now()}`;
-      const workDir = `${WORK_DIR_PREFIX}/${jobId}`;
-      //console.log(jobId, workDir);
-      
-      makeParameter(getsqsmessageWrapper, jobId, workDir)
-      .then((data) => downloadFile(data))
-      .then((data)=>convertPdf(data))
-      //.then((data)=>uploadPdf(data))
-      .then((data)=>uploadPdfBase64(data))
-      .then((data)=>completeJob(data))
-      .catch((err)=>clearErrorJob(err))
 
+      params = await makeParameter(GetMessage, params);
+      console.log("make parameter", JSON.stringify(params));
 
-      /*
-      try{
-        const inputParameterFromSQS = R.curry(function(getsqsmessageFunc, jobId, workDir){
-          console.log("inputParameterFromSQS");
-          return makeParameter(getsqsmessageFunc, jobId, workDir);
-        })
+      const result1 = await downloadFile(params);
+      console.log("download file", result1);
 
-        const inputParameterFromArgs = R.curry(function(args, jobId, workDir){
-          console.log("inputParameterFromArgs");
-          return function(args, jobId, workDir) {
-            
-            return {
-              jobId, workDir,
-              sqsmessage: args
-            }
-          };
-        })
-        
-        let inputParameter = args?inputParameterFromArgs(args):inputParameterFromSQS(getsqsmessageWrapper);
-
-        const converter = R.composeP(completeJob, uploadPdfBase64, convertPdf, downloadFile, inputParameter);
-        
-        const r = await converter(jobId, workDir)
-        console.log("r", r);
-      } catch(err){
-        if(err && err.err) console.error("err", err.err);
-        clearErrorJob(err);
+      const inputParams = {
+        workDir,
+        jobId,
+        target: params.target,
+        documentId: params.documentId,
+        userId: params.userId,
+        downloadPath: result1.downloadPath,
+        extname: result1.extname
       }
-      */
-      //console.log("cron end");
+
+      const result2 = await convert(inputParams);
+      console.log("convert complete", result2);
+      inputParams.pdfPath = result2.pdfPath;
+      inputParams.textPath = result2.textPath;
+      inputParams.imagePaths = result2.imagePaths;
+      const totalPages = result2.imagePaths.length;
+      const result3 = await uploadTextJson(inputParams);
+      console.log("uploadTextJson", result3)
+      
+      /**
+       * 주의 이미지가 업로드 되면 lambda에 의해 resize가 발생함(비용발생)
+       * 테스트시 유의할것
+       */
+      const result4 = await uploadThumbnails(inputParams);
+      console.log("uploadThumbnails", result4)
+   
+      const result5 = await uploadPdfBase64(inputParams);
+      console.log("uploadPdfBase64", result5);
+
+      response = Object.assign({totalPages: totalPages}, inputParams);
+      
+      const result6 = await uploadCompleteJson({
+        json: JSON.stringify(response),
+        documentId: inputParams.documentId,
+        target: inputParams.target
+      })
+
+      console.log("uploadCompleteJson", result6);
+
+    } else {
+      return Promise.reject(new Error("Error 동시에 변환 프로세스가 동작할수 없습니다."));
     }
-  }
+  } catch(err){
+    response = Object.assign(response, {error: {message: err.message, stack: err.stack}});
+    await clearErrorJob({jobId, workDir, err})
+  } finally{
+    await completeJob(params);
+  }  
+  return Promise.resolve(response)
+}
+    
   
-  function parseMessage(Body){
+function parseMessage(Body){
+  try{
+    return JSON.parse(Body);
+  } catch(e){
+    console.error("Error parseMessage", e);
+  }
+  return {}
+}
+
+async function makeParameter(getsqsmessageFunc, {jobId, workDir, startAt}){
+  return new Promise(async (resolve, reject)=>{
     try{
-      return JSON.parse(Body);
-    } catch(e){
-      console.error("Error parseMessage", e);
+      status.addJob(jobId);
+      const msg = await getsqsmessageFunc();
+      const {MessageId, ReceiptHandle, Body, MD5OfBody} = msg;
+      const parsedMessage = parseMessage(Body)
+      const userId = parsedMessage.source.key.split("/")[1];
+      const filename = parsedMessage.source.key.split("/")[2];
+      const documentId = filename.substring(0, filename.lastIndexOf("."));
+      return resolve({
+        startAt,
+        jobId,
+        workDir,
+        sqsmessage: parsedMessage, 
+        documentId: documentId,
+        userId: userId,
+        target: parsedMessage.target
+      })
+    }catch(err){
+      if(err) console.error("Error makeParameter", err);
+      return reject({jobId, workDir, err})
     }
-    return {}
-  }
-
-  async function makeParameter(getsqsmessageFunc, jobId, workDir){
-    return new Promise(async (resolve, reject)=>{
-      try{
-        status.addJob(jobId);
-        const msg = await getsqsmessageFunc();
-        const {MessageId, ReceiptHandle, Body, MD5OfBody} = msg;
-        const parsedMessage = parseMessage(Body)
-        console.log("[GET_MESSAGE]", JSON.stringify(parsedMessage));
-        return resolve({
-          startAt: Date.now(),
-          jobId,
-          workDir,
-          sqsmessage: parsedMessage
-        })
-      }catch(err){
-        if(err) console.error("Error makeParameter", err);
-        return reject({jobId, workDir, err})
-      }
-      
-    });
     
-  }
+  });
   
-  async function downloadFile(data) {
-    console.log("[DOWNLOAD_FILE]", JSON.stringify(data));
-    const {workDir, jobId, sqsmessage} = data; 
-    const {source} = sqsmessage;
-    
-    return new Promise(async (resolve, reject)=>{
-      try{
-        const result = await filewrapper.dowloadFromS3(workDir, source.bucket, source.key)
+}
 
-        resolve(Object.assign({  
-          downloadPath: result.downloadPath,
-          extname: result.extname,
-          filename: result.filename,
-        }, data))
-      }catch(err){
-        console.error("Error downloadFile", err);
-        reject({err, workDir, jobId});
+async function downloadFile(data) {
+
+  const {workDir, jobId, sqsmessage} = data; 
+  const {source} = sqsmessage;
+  
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const result = await filewrapper.dowloadFromS3(workDir, source.bucket, source.key)
+
+      resolve(Object.assign({  
+        downloadPath: result.downloadPath,
+        extname: result.extname,
+        filename: result.filename,
+      }, data))
+    }catch(err){
+      console.error("Error downloadFile", err);
+      reject({err, workDir, jobId});
+    }
+    
+  })
+  
+
+}
+
+/**
+ * @param downloadPath
+ * @param extname
+ * @param workDir
+ * @param jobId
+ */
+
+async function convert({downloadPath, extname, workDir, jobId}){
+
+  return new Promise(async (resolve, reject)=>{
+    try{ 
+      let response = {}
+      const params = {w: "1280", h: "1280", downloadPath, extname, workDir, jobId};
+      if(extname && extname.toLowerCase() === ".pdf" ){
+        response.pdfPath = downloadPath;
+      } else {
+        const outputPath = `${workDir}/temp.pdf`;
+        params.outputPath = outputPath;
+        const r = await pdfconverter(params);
+        console.log("pdfconverting complete", r);
+        response.pdfPath = r.outputPath;
       }
       
+      response.textPath = await textconverter(params);
+
+      response.imagePaths = await imageconverter(params);
+
+      resolve(response);
+      
+    } catch(err){
+      console.error("Error convertPdf", err);
+      reject({err, jobId, workDir});
+    }
+  });
+  
+  
+}
+
+async function uploadPdf({workDir, jobId, outputPath, targetBucket, targetKey}){
+  //upload pdf
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const r = await filewrapper.uploadToS3(outputPath, targetBucket, targetKey)
+      resolve(r);
+    } catch(err){
+      console.log(err);
+      reject({workDir, jobId, err});
+    }
+    
+  })
+  
+}
+
+/**
+ * 
+ * @param {*} param0 
+ */
+async function uploadPdfBase64({workDir, jobId, documentId, pdfPath, target}){
+
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const targetKey = `PDF/${documentId}/${documentId}`
+      const r = await filewrapper.uploadToS3(pdfPath, target.bucket, targetKey, true);
+      resolve(r);
+    }catch(err){
+      reject({jobId, workDir, err});
+    }
+  })
+  
+  
+}
+
+/**
+ * 
+ * @param {*} param0 
+ */
+function uploadTextJson({documentId, target, textPath}){
+  
+  return new Promise((resolve, reject)=>{
+    const targetKey = `THUMBNAIL/${documentId}/text.json`;
+    filewrapper.uploadToS3(textPath, target.bucket, targetKey)
+    .then((data)=>{
+      resolve(data);
     })
-    
-
-  }
-
-  async function convertPdf(data){
-    
-    const {downloadPath, extname, filename, sqsmessage, workDir, jobId} = data;
-
-    return new Promise(async (resolve, reject)=>{
-      try{
-        console.log("[CONVERT_PDF_BASE64]", JSON.stringify(data));
-        
-        let outputPath = `${workDir}/temp.pdf`;
-        
-        if(extname && extname.toLowerCase() === ".pdf" ){
-          outputPath = downloadPath;
-          const response = Object.assign({
-              success: true,
-              outputPath,
-              downloadPath
-          }, data);
-          
-          resolve(response);
-        } else {
-           //const outputPath = `${workDir}/temp.pdf`;
-          const payload = {w: "1280", h: "1280", outputPath, downloadPath};
-          const params = Object.assign(payload, data);
-      
-          const r = await pdfconverter(params);
-          
-          resolve(params);
-        }
-       
-      } catch(err){
-        console.error("Error convertPdf", err);
-        reject({err, jobId, workDir});
-      }
+    .catch((err)=>{
+      reject(err);
     });
-    
-    
-  }
 
-  async function uploadPdf(data){
-    console.log("[UPLOAD_PDF]", JSON.stringify(data));
-    
-    const {workDir, jobId, outputPath, sqsmessage} = data
-    //upload pdf
-    return new Promise(async (resolve, reject)=>{
-      try{
-        const {target} = sqsmessage;
-        const r = await filewrapper.uploadToS3(outputPath, target.bucket, target.key)
-        resolve(data);
-      } catch(err){
-        console.log(err);
-        reject({workDir, jobId, err});
-      }
+  })
+}
+
+/**
+ * 
+ * @param {*} param0 
+ */
+function uploadThumbnails({documentId, target, imagePaths}){
+
+  return new Promise((resolve, reject)=>{
+    if(!documentId){
+      return reject(new Error("document id is undefined"));
+    }
+    if(!imagePaths){
+      return reject(new Error("imagePaths are undefined"));
+    }
+
+    Promise.all(imagePaths.map((file)=>{
       
-    })
-    
-  }
+      const splits = file.split("/");
+      const key = `THUMBNAIL/${documentId}/1200X1200/${splits[splits.length - 1]}`;
 
-  async function uploadPdfBase64(data){
-    
-    //upload base64 pdf
-    const {workDir, jobId, outputPath, sqsmessage, success} = data
-    const {target} = sqsmessage;
-    return new Promise(async (resolve, reject)=>{
-      try{
-        if(success === true){
-          console.log("[UPLOAD_PDF_BASE64]", JSON.stringify(data));
-          const targetBase64Key = target.key.substring(0, target.key.lastIndexOf("."));
-          const r = await filewrapper.uploadToS3(outputPath, target.bucket, targetBase64Key, true);
-        } else {
-          console.log("[UPLOAD_PDF_BASE64_FALSE]", JSON.stringify(data));
-          const falseKey = target.key.substring(0, target.key.lastIndexOf("/") + 1) + "false";
-          console.log(falseKey);
-          const r = await filewrapper.uploadToS3(outputPath, target.bucket, falseKey);
-        }
-        
-        resolve(data);
-      }catch(err){
-        reject({jobId, workDir, err});
-      }
-    })
-    
-    
-  }
-  async function completeJob(data){
-    const {startAt, jobId, workDir} = data
-    return new Promise((resolve, reject)=>{
-      clearJob(data);
+      return filewrapper.uploadToS3(file, target.bucket, key)
       
-      const workingDuration = startAt?(Date.now() - startAt): -1;
-      console.log(`[COMPLETE] ${jobId} ${workingDuration}ms`);
+    })).then((results)=>{
+      resolve(results);
+    }).catch((errs)=>{
+      reject(errs);
     })
 
-  }
+  })
+}
 
+/**
+ * 
+ * @param {*} param0 
+ */
+function uploadCompleteJson({json, target, documentId}){
+  return new Promise((resolve, reject)=>{
+    const key = `THUMBNAIL/${documentId}/result.json`;
+    filewrapper.uploadJsonToS3(json, target.bucket, key)
+    .then((data)=>{
+      resolve(data);
+    }).catch((err)=>{
+      reject(err);
+    })
 
-  async function clearErrorJob(data){
-    
-    const {jobId, workDir, err} = data
+  })
+}
+
+function completeJob(data){
+  const {startAt, jobId, workDir} = data
+  return new Promise((resolve, reject)=>{
     clearJob(data);
-    if(err) console.error("[ERROR_JOB]", err);
-  }
+    
+    const workingDuration = startAt?(Date.now() - startAt): -1;
+    console.log(`[COMPLETE] ${jobId} ${workingDuration}ms`);
+    resolve(true);
+  })
 
-  async function clearJob(data){
-    
-    const {jobId, workDir} = data
-    //if(jobId && workDir) console.log("[CLEAR_JOB]", JSON.stringify(data));
-    if(jobId) status.removeJob(jobId);
-    if(workDir) filewrapper.deleteDir(workDir);
-    
-  }
+}
+
+
+async function clearErrorJob(data){
+  
+  const {jobId, workDir, err} = data
+  clearJob(data);
+  if(err) console.error("[ERROR_JOB]", err);
+}
+
+function clearJob(data){
+  
+  const {jobId, workDir} = data
+  if(jobId) status.removeJob(jobId);
+  if(workDir) filewrapper.deleteDir(workDir);
+  
+}

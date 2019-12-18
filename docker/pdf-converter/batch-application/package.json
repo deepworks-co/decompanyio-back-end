@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npm install && node index.js",
     "start:local": "npm install && node index.js local",
-    "test": "mocha test"
+    "test": "node ./test/index.test.js",
+    "debug": "node --nolazy --inspect-brk=9229 index.local.js"
   },
   "author": "",
   "license": "ISC",

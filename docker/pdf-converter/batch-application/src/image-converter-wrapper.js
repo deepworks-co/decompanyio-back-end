@@ -6,43 +6,38 @@ module.exports = (event) => {
     
 
     return new Promise((resolve, reject)=>{
-
+        //java -jar PolarisConverter8.jar TEXT rsa.ppt ./temp 1280 1280 ~/temp
         const {downloadPath, outputPath, w, h, extname} = event;
-        if(extname && extname.toLowerCase() === ".pdf" ){            
-            reject(new Error(`source is pdf file : ${downloadPath}`));
-        } else {
-            const tempPath = `${path.join(downloadPath, "..")}/temp`;
-            const args = [downloadPath, outputPath, w, h, tempPath];
-            execEngine(args)
-            .then((result)=>{
-                const response = Object.assign(event, {
-                    success: result.stderr?false:true,
-                    outputPath: outputPath
-                });
-                
-                resolve(response);
-            })
-            .catch((err)=>{
-                console.error(`Error Executing Engine ${JSON.stringify(err)}`);
-                
-                writeFalseFile(outputPath);
-                const response = Object.assign(event, {
-                    success: false
-                });
-                resolve(response)
-            });
-        }
+        const outputDir = `${path.join(downloadPath, "..")}/image`;
+        const tempPath = `${path.join(downloadPath, "..")}/image_temp`;
 
-        
+        fs.mkdirSync(outputDir);
+        fs.mkdirSync(tempPath);
+
+        const args = [downloadPath, outputDir, 4096, 4096, tempPath];
+        execEngine(args)
+        .then(async (result)=>{
+            const paths = await getImagePaths(outputDir);            
+            resolve(paths);
+        })
+        .catch((err)=>{
+            console.error(`Error Executing Engine ${JSON.stringify(err)}`);
+            
+            const response = Object.assign(event, {
+                success: false
+            });
+            resolve(response)
+        });
+
     });
     
 }
 
 
 function execEngine(payload){
-
+    //java -jar PolarisConverter8.jar TEXT rsa.ppt ./temp 1280 1280 ~/temp
     return new Promise((resolve, reject)=>{
-        let options = ["-jar", "PolarisConverter8.jar", "PDF"].concat(payload);
+        let options = ["-jar", "PolarisConverter8.jar", "PNG"].concat(payload);
             
         console.log("execEngine", "java", options.join(" "));
         const cp = childProcess.execFile(
@@ -66,9 +61,10 @@ function execEngine(payload){
         //console.log("cp", cp);
         /*cp.stderr.on('data', (data) => console.error("[exec error]", data))
         cp.stdout.on('data', (data) => console.log("[exec]", data))
-       
+        
         cp.on('close', (code) => console.log("exec close", code));//process.exit(code))
-             */
+        */
+ 
     })
     
 }
@@ -86,4 +82,17 @@ function writeFalseFile(filepath){
     } catch (err) {
         throw err;
     }
+}
+
+function getImagePaths(dir){
+    return new Promise((resolve, reject)=>{
+        fs.readdir(dir, async (err, files) => {
+            if(err) {
+                reject(err);
+            }
+            else {
+                resolve(files.map((file)=>dir + "/" + file))
+            };
+        });
+    })
 }
