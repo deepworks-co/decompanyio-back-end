@@ -26,10 +26,10 @@ module.exports.handler = async (event, context, callback) => {
     throw new Error("[404] document is not exists!!!");
   }
 
-  if(document.isDeleted === true || document.isBlocked === true || document.isPublic === false){
+  if(document.isDeleted === true || document.isBlocked === true){
     return JSON.stringify({
       success: true,
-      message: "Not Permission."
+      message: "[403] Locked Document"
     })
   }
 
