@@ -11,20 +11,23 @@ module.exports = () => {
             return reject(new Error("QUEUE_URL is not defined"));
         }
         getMessage(QUEUE_URL)
-        .then((message)=>{
-            return message
-        })
         .then(async (message)=>{
+            let body;
+            if(message){
+                if(message.ReceiptHandle){
+                    await removeMessage({
+                        queueUrl: QUEUE_URL,
+                        ReceiptHandle: message.ReceiptHandle
+                    });
+                }
 
-            await removeMessage({
-                queueUrl: QUEUE_URL,
-                ReceiptHandle: message.ReceiptHandle
-            });
-            //console.log("message", message);
-            return message;
-        })
-        .then((message)=>{
-            resolve(message);
+                if(message.Body){
+                    body = message.Body
+                }
+            }
+            
+                      
+            resolve(body);
         })
         .catch((err)=>{
             reject(err);
@@ -47,7 +50,7 @@ function getMessage(queueURL){
                 //console.log("Receive message", data.Messages);
                 resolve(data.Messages[0]?data.Messages[0]:undefined);
             }  else {
-                reject(undefined);
+                resolve(undefined);
             }
         });
 

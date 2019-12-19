@@ -1,29 +1,24 @@
 'use strict';
 const cronjob = require('../src/cronJob');
 const cron = cronjob.test([
-  {
-    Body: JSON.stringify({
-      "source":{
+  JSON.stringify({
+    "source":{
+      "bucket": "dev-ca-document",
+      "key": "FILE/google-oauth2|108970746394534108508/550cb188c51f458dafe8eb53318e26a2.pdf"
+    },
+    "target": {
+      "bucket": "dev-ca-document"
+    }
+  }),JSON.stringify({
+    "source": {
         "bucket": "dev-ca-document",
-        "key": "FILE/google-oauth2|108970746394534108508/550cb188c51f458dafe8eb53318e26a2.pdf"
-      },
-      "target": {
-        "bucket": "dev-ca-document"
-      }
-    })
-  }/*,
-  {
-    Body: JSON.stringify({
-      "source": {
-          "bucket": "dev-ca-document",
-          "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx"
-      },
-      "target": {
-          "bucket": "dev-ca-document",
-          "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
-      }
-    })
-  }*/
+        "key": "FILE/google-oauth2|101778494068951192848/07637479b9874749a7e723fe949d3dad.pptx"
+    },
+    "target": {
+        "bucket": "dev-ca-document",
+        "key": "PDF/07637479b9874749a7e723fe949d3dad/07637479b9874749a7e723fe949d3dad.pdf"
+    }
+  })
 ]).then((data)=>{
   console.log("test complete", data)
 }).catch((err)=>{

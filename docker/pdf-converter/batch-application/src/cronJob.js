@@ -14,7 +14,9 @@ const WORK_DIR_PREFIX = process.env.WORK_DIR_PREFIX?process.env.WORK_DIR_PREFIX:
 
 module.exports.init = () => {
   console.log("cron start", expression)
-  task = cron.schedule(expression, cronJob);
+  task = cron.schedule(expression, async ()=>{
+    await cronJob();
+  });
   return this;    
 }
 
@@ -62,59 +64,61 @@ async function cronJob(args) {
       return {stopping: true, message: "stopping pdf converter"}
     } else if(status.jobCount() < 1 && status.isStop() === false){
 
-      params = await makeParameter(GetMessage, params);
-      console.log("make parameter", JSON.stringify(params));
+      params = await makeParameter(GetMessage, params)
+      if(params){
+        console.log("get parameter", JSON.stringify(params));
 
-      const result1 = await downloadFile(params);
-      console.log("download file", result1);
+        const downloadResult = await downloadFile(params);
+        console.log("download file", downloadResult);
 
-      const inputParams = {
-        workDir,
-        jobId,
-        target: params.target,
-        documentId: params.documentId,
-        userId: params.userId,
-        downloadPath: result1.downloadPath,
-        extname: result1.extname
-      }
+        const inputParams = {
+          workDir,
+          jobId,
+          target: params.target,
+          documentId: params.documentId,
+          userId: params.userId,
+          downloadPath: downloadResult.downloadPath,
+          extname: downloadResult.extname
+        }
 
-      const result2 = await convert(inputParams);
-      console.log("convert complete", result2);
-      inputParams.pdfPath = result2.pdfPath;
-      inputParams.textPath = result2.textPath;
-      inputParams.imagePaths = result2.imagePaths;
-      const totalPages = result2.imagePaths.length;
-      const result3 = await uploadTextJson(inputParams);
-      console.log("uploadTextJson", result3)
-      
-      /**
-       * 주의 이미지가 업로드 되면 lambda에 의해 resize가 발생함(비용발생)
-       * 테스트시 유의할것
-       */
-      const result4 = await uploadThumbnails(inputParams);
-      console.log("uploadThumbnails", result4)
-   
-      const result5 = await uploadPdfBase64(inputParams);
-      console.log("uploadPdfBase64", result5);
+        const convertResult = await convert(inputParams);
+        console.log("convert complete", convertResult);
+        inputParams.pdfPath = convertResult.pdfPath;
+        inputParams.textPath = convertResult.textPath;
+        inputParams.imagePaths = convertResult.imagePaths;
+        const totalPages = convertResult.imagePaths.length;
 
-      response = Object.assign({totalPages: totalPages}, inputParams);
-      
-      const result6 = await uploadCompleteJson({
-        json: JSON.stringify(response),
-        documentId: inputParams.documentId,
-        target: inputParams.target
-      })
+        const uploadTextJsonResult = await uploadTextJson(inputParams);
+        console.log("uploadTextJson", uploadTextJsonResult)
+        
+        /**
+         * 주의 이미지가 업로드 되면 lambda에 의해 resize가 발생함(비용발생)
+         * 테스트시 유의할것
+         */
+        const uploadThumbnailResult = await uploadThumbnails(inputParams);
+        console.log("uploadThumbnails", uploadThumbnailResult)
+    
+        const uploadPdfResult = await uploadPdfBase64(inputParams);
+        console.log("uploadPdfBase64", uploadPdfResult);
 
-      console.log("uploadCompleteJson", result6);
+        response = Object.assign({totalPages: totalPages}, inputParams);
+        
+        const uploadCompleteResult = await uploadCompleteJson({
+          json: JSON.stringify(response),
+          documentId: inputParams.documentId,
+          target: inputParams.target
+        })
 
-    } else {
-      return Promise.reject(new Error("Error 동시에 변환 프로세스가 동작할수 없습니다."));
-    }
+        const workingDuration = startAt?(Date.now() - startAt): -1;
+        console.log(`[COMPLETE] ${jobId} ${workingDuration}ms`);
+      } //if(params)
+    } 
   } catch(err){
+    console.error("error", err);
     response = Object.assign(response, {error: {message: err.message, stack: err.stack}});
     await clearErrorJob({jobId, workDir, err})
   } finally{
-    await completeJob(params);
+    await completeJob({startAt, jobId, workDir});
   }  
   return Promise.resolve(response)
 }
@@ -129,48 +133,56 @@ function parseMessage(Body){
   return {}
 }
 
-async function makeParameter(getsqsmessageFunc, {jobId, workDir, startAt}){
+function makeParameter(getsqsmessageFunc, {jobId, workDir, startAt}){
+ 
   return new Promise(async (resolve, reject)=>{
     try{
       status.addJob(jobId);
-      const msg = await getsqsmessageFunc();
-      const {MessageId, ReceiptHandle, Body, MD5OfBody} = msg;
-      const parsedMessage = parseMessage(Body)
-      const userId = parsedMessage.source.key.split("/")[1];
-      const filename = parsedMessage.source.key.split("/")[2];
-      const documentId = filename.substring(0, filename.lastIndexOf("."));
-      return resolve({
-        startAt,
-        jobId,
-        workDir,
-        sqsmessage: parsedMessage, 
-        documentId: documentId,
-        userId: userId,
-        target: parsedMessage.target
-      })
+      const body = await getsqsmessageFunc();
+
+      if(body){
+        const parsedMessage = parseMessage(body)
+        const userId = parsedMessage.source.key.split("/")[1];
+        const filename = parsedMessage.source.key.split("/")[2];
+        const documentId = filename.substring(0, filename.lastIndexOf("."));
+        resolve({
+          startAt,
+          jobId,
+          workDir,
+          sqsmessage: parsedMessage, 
+          documentId: documentId,
+          userId: userId,
+          target: parsedMessage.target
+        })
+      } else {
+        resolve(undefined)
+      }
+      
     }catch(err){
       if(err) console.error("Error makeParameter", err);
-      return reject({jobId, workDir, err})
+      reject(err);
     }
     
   });
   
 }
 
-async function downloadFile(data) {
-
-  const {workDir, jobId, sqsmessage} = data; 
+/**
+ * 
+ * @param {*} param0 
+ */
+function downloadFile({workDir, jobId, sqsmessage}) {
   const {source} = sqsmessage;
   
   return new Promise(async (resolve, reject)=>{
     try{
       const result = await filewrapper.dowloadFromS3(workDir, source.bucket, source.key)
 
-      resolve(Object.assign({  
+      resolve({  
         downloadPath: result.downloadPath,
         extname: result.extname,
         filename: result.filename,
-      }, data))
+      })
     }catch(err){
       console.error("Error downloadFile", err);
       reject({err, workDir, jobId});
@@ -319,29 +331,30 @@ function uploadCompleteJson({json, target, documentId}){
   })
 }
 
-function completeJob(data){
-  const {startAt, jobId, workDir} = data
+/**
+ * 
+ * @param {*} param0 
+ */
+function completeJob({jobId, workDir} ){
   return new Promise((resolve, reject)=>{
-    clearJob(data);
-    
-    const workingDuration = startAt?(Date.now() - startAt): -1;
-    console.log(`[COMPLETE] ${jobId} ${workingDuration}ms`);
+    clearJob({jobId, workDir});
     resolve(true);
   })
 
 }
 
-
-async function clearErrorJob(data){
+/**
+ * 
+ * @param {*} param0 
+ */
+async function clearErrorJob({jobId, workDir, err}){
   
-  const {jobId, workDir, err} = data
-  clearJob(data);
+  clearJob({jobId, workDir});
   if(err) console.error("[ERROR_JOB]", err);
 }
 
-function clearJob(data){
+function clearJob({jobId, workDir}){
   
-  const {jobId, workDir} = data
   if(jobId) status.removeJob(jobId);
   if(workDir) filewrapper.deleteDir(workDir);
   
