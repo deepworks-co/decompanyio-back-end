@@ -59,7 +59,7 @@ docker build -t app .
 
 background 실행하기
 
-```shell
+```bash
 docker run -d -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/workspace -p 8080:8080 --name pdf-converter decompany-pdf-converter:latest
 
 docker run -it -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/workspace decompany-pdf-converter /bin/bash
@@ -69,7 +69,13 @@ docker run -it -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/wor
 
 PDF & PNG 변환하기
 
-```
+```bash
 java -jar PolarisConverter8.jar PDF rsa.ppt rsa.pdf 1280 1280 ./temp
 java -jar PolarisConverter8.jar PNG rsa.ppt ./temp 1280 1280 ./rsa_ppt 
 ```
+
+## ECS Task Definition 설정시 주의사항(1vCPU=1024, 1gmb=1024)
+> CPU 256 Memory 256 설정시 이미지 변환시 중단됨
+> CPU 256 Memory 512 정도로 설정시 7 이미지 변환시 70초 정도 소요됨
+> CPU 512 Memory 512 정도로 설정시 7 이미지 변환시 37초 정도 소요됨
+> 현재 CPU 512 Memory 512로 설정해 놓음(2019. 12. 19)
