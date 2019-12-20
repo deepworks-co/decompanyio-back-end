@@ -3,12 +3,12 @@ const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region, co
 const { MongoWapper } = require('decompany-common-utils');
 const sizeOf = require('buffer-image-size');
 const request = require('request');
-
+const sharp = require("sharp");
 var AWS = require("aws-sdk");
-AWS.config.update({
+
+const s3 = new AWS.S3({
   region: region
 });
-const s3 = new AWS.S3();
 
 const TABLE_NAME = tables.DOCUMENT;
 
@@ -19,10 +19,7 @@ exports.handler = async (event, context, callback) => {
   
   let results;
   try{
-  //console.log("convertCompete Event", JSON.stringify(event));
-
-  //THUMBNAIL/aaaaa/300X300/1
-  //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
+    //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
     const promises = event.Records.map((record) =>  {
       console.log("record", record);
       const key = record.s3.object.key;
@@ -31,31 +28,33 @@ exports.handler = async (event, context, callback) => {
       const keys = key.split("/");
       const prefix = keys[0];
       const documentId = keys[1];
-      const filename = keys[2];
+      const surfix = keys[2];
       
       return run({
         key: key,
         bucket: bucket,
         prefix: prefix,
         documentId: documentId,
-        filename: filename
+        surfix: surfix
       });
     });
 
     results = await Promise.all(promises);
+    console.log(results)
   } catch(err){
     console.log(err);
+    results = err;
   }
 
-  console.log(results)
-  return callback(null, results);
+  
+  return JSON.stringify(results)
 };
 
 function run(params){
 
-  const {key, prefix, bucket, filename, documentId} = params;
+  const {key, prefix, bucket, surfix, documentId} = params;
   return new Promise((resolve, reject)=>{
-    if("result.txt" === filename){
+    if("result.json" === surfix){
       getDocument(documentId)
       .then((document)=>{
 
@@ -84,15 +83,25 @@ function run(params){
         return getDocSize(data);
       })
       .then(async (data)=>{
-        //console.log("runConvertComplete", data);
+        //console.log("convertComplete", data);
         const {document, shortUrl, dimensions} = data;
-        const result = await runConvertComplete(bucket, key, document, shortUrl, dimensions);
+        const result = await convertComplete(bucket, key, document, shortUrl, dimensions);
         return resolve(result);
       })
       .catch((err)=>{
         //console.log(document);
         reject(err);
         
+      })
+    } else if("1200X1200" === surfix) {
+      convertThumbnail(bucket, key)
+      .then((data)=>{
+        console.log("convertThumbnail success", data);
+        resolve(data)
+      })
+      .catch((err)=>{
+        console.log("convertThumbnail fail", err);
+        reject(err);
       })
     } else {
       resolve({message: "not support", params});
@@ -160,10 +169,10 @@ function changeImageMetadata(bucket, key){
 
 }
 
-async function runConvertComplete(bucket, key, document, shortUrl, dimensions){
+async function convertComplete(bucket, key, document, shortUrl, dimensions){
   const documentId = document._id;
   //console.log(bucket, key, document);
-  const totalPages = await getTotalPages(bucket, key);
+  const {totalPages} = await getTotalPages(bucket, key);
   console.log("documentId", documentId, "totalPages", totalPages);
 
   return new Promise(async (resolve, reject) => {
@@ -173,7 +182,7 @@ async function runConvertComplete(bucket, key, document, shortUrl, dimensions){
         console.log("Update SUCCESS CONVERT_COMPLETE", result);
         return resolve(result);
       } else {
-        reject(new Error("runConvertComplete error"))
+        reject(new Error("convert complete error"))
       }
 
   });
@@ -194,9 +203,9 @@ function getTotalPages(bucket, key){
       } else {
         let totalPages = -1;
         if(data){
-          totalPages = data.Body.toString('ascii');
+          totalPages = JSON.parse(data.Body.toString('ascii')).totalPages;
           totalPages *= 1;
-          resolve(totalPages);
+          resolve({totalPages});
         }
       }
       
