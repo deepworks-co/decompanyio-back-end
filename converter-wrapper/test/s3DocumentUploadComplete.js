@@ -13,7 +13,7 @@ describe('s3DocumentUploadComplete', () => {
   });
 
   
-
+/*
   it('[ASEM] upload complete', () => {
     const event = {
       "Records": [
@@ -33,4 +33,24 @@ describe('s3DocumentUploadComplete', () => {
       expect(response).to.not.be.empty;
     });
   }).timeout(30000);
+*/
+  it('[DEV] upload complete pdf', () => {
+    const event = {
+      "Records": [
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document"
+            },
+            "object": {
+              "key": "FILE/google-oauth2|108970746394534108508/550cb188c51f458dafe8eb53318e26a2.pdf",
+            }
+          }
+        },
+      ]
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+  });
 });

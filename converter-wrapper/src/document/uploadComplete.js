@@ -1,9 +1,7 @@
 'use strict';
 const AWS = require('aws-sdk');
-const { MongoWapper } = require('decompany-common-utils');
+const { MongoWrapper, sqs } = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig, region } = require('decompany-app-properties');
-const QUEUE_URL = sqsConfig.queueUrls.CONVERT_IMAGE;
-const s3 = new AWS.S3();
 
 
 /**
@@ -11,164 +9,69 @@ const s3 = new AWS.S3();
  * @event s3
  *  - prefix : FILE/
  */
-exports.handler = function(event, context, callback) {
-  
-  /** Immediate response for WarmUp plugin */
-  if (event.source === 'lambda-warmup') {
-    console.log('WarmUp - Lambda is warm!')
-    return callback(null, 'Lambda is warm!')
-  }
+exports.handler = async (event) => {
 
-  run(event.Records).then((success)=>{
-    console.log("success message", success);
-    callback(null, "success")
-  }).catch((err)=>{
-    callback(err);
-  });
-  
-  
+  const result = await Promise.all(event.Records.map(async (record)=>{
+    return await run(record);
+  }))
+
+  return JSON.stringify({success: true, result});
+    
 }
 
-async function run(items){
+function run(record){
 
-  const promises = await items.map(async (record) => {
-    
+  return new Promise(async (resolve, reject)=>{
     const bucket = record.s3.bucket.name;
     const key = decodeURIComponent(record.s3.object.key);
     
     const splits = key.split("/");
-    const fileid = splits[2].split(".")[0];
-    const fileindex = decodeURIComponent(splits[1]);
+    const documentId = splits[2].split(".")[0];
+    const userId = decodeURIComponent(splits[1]);
 
     const ext = splits[2].split(".")[1];
 
     const r = await updateContentType(bucket, key, ext);
     console.log("updateContentType", r);
 
-    const uploadCompleteResult = await uploadComplete(fileid);
-    console.log("uploadComplete", fileid, uploadCompleteResult);
-
-    /*
-    const sqsMessage = {
-      QueueUrl: QUEUE_URL,
-      MessageBody: JSON.stringify({
-        source: {
-          bucket: bucket,
-          key: key
-        },
-        target: {
-          bucket: "asem-ca-upload-document",
-          key: key
-        }
-      })
-    }
-    const r2 = await sendMessage(sqsMessage);
-    console.log("sendMessage", r2);
-    */
-
-    const r2 = await putFileToCABucket({
-      bucket: bucket,
-      key: key
-    }, {
-      bucket: "asem-ca-upload-document",
-      key: key
-    });
-    console.log("putFileToCABucket", r2);
-   
-    /*
-    const data = {
-      bucket: bucket,
-      fileindex: fileindex,
-      fileid: fileid,
-      ext: ext
-    }
+    const uploadCompleteResult = await uploadComplete(documentId);
+    console.log("uploadComplete", documentId, uploadCompleteResult);
     
-    const r2 = await sendMessage(generateMessageBody(data));
-    console.log("sendMessage", r2);
-    
-    const r3 = await sendMessage(generatePDFMessageBody(data));
-    console.log("sendMessage", r3);
-    */
-    return true;
-  });
+    console.log(region, sqsConfig.queueUrls.CONVERT);
+    const sendSQSResult = await sqs.sendMessage(region, sqsConfig.queueUrls.CONVERT, JSON.stringify(makeSQSMessage({
+      bucket: bucket,
+      userId: userId,
+      documentId: documentId,
+      ext: ext,
+      targetBucket: bucket
+    })))
+    console.log("send message sqs", sendSQSResult);
 
-  return await Promise.all(promises).then((results) => {
-    console.log("send sqs success", results);
-  }).catch((errs)=>{
-    console.error("error", errs);
-  });
+    resolve({success: true});
+  })
 
 }
 
-function sendMessage(message) {
-  console.log("sendMessage", sqsConfig.region)
-  console.log("sendMessage", message);
-  const sqs = new AWS.SQS();
 
-  return new Promise((resolve, reject)=>{
-    //console.log("sendMessage", message);
-
-    sqs.sendMessage(message, function(err, res) {
-      if(err){
-        //console.error("error",err);
-        reject(err);
-      } else {
-        //console.error("result", res);
-        resolve(res);
-      }
-    });
-
-  });
-}
-
-const generatePDFMessageBody = function(param){
-
-  //const bucket = s3Config.document;
-  const bucket = param.bucket;
+function makeSQSMessage({bucket, documentId, userId, ext, targetBucket}){
 
   const messageBody = {
     source: {
       bucket: bucket,
-      key: `FILE/${param.fileindex}/${param.fileid}.${param.ext}`
+      key: `FILE/${userId}/${documentId}.${ext}`
     },
     target: {
-      bucket: bucket,
-      key: `PDF/${param.fileid}/${param.fileid}.pdf`
+      bucket: targetBucket,
+      //key: `PDF/${param.fileid}/${param.fileid}.pdf`
     }
   }
   
-  return {
-    QueueUrl: sqsConfig.queueUrls.CONVERT_PDF,
-    MessageBody: JSON.stringify(messageBody)
-  }
+  return messageBody
  
 }
 
-const generateMessageBody = function(param){
-
-  //const bucket = s3Config.document;
-  const bucket = param.bucket;
-
-  var messageBody = new Object();
-  messageBody.command="image";
-  messageBody.filePath = bucket + "/FILE/"+ param.fileindex +"/" + param.fileid + "." + param.ext;
-  messageBody.storagePath = bucket + "/THUMBNAIL/" + param.fileid;
-  messageBody.resolutionX = 1920;
-  messageBody.resolutionY = 1920;
-  messageBody.startPage = 1;
-  messageBody.endPage = 10;
-  messageBody.accesskey = "";
-  messageBody.secretKey = "";
-  messageBody.ext = param.ext;
-  messageBody.owner = param.fileindex;
-  return {
-    QueueUrl: QUEUE_URL,
-    MessageBody: JSON.stringify(messageBody)
-  }
-}
-
 async function uploadComplete(documentId){
-  const wapper = new MongoWapper(mongodb.endpoint);
+  const wapper = new MongoWrapper(mongodb.endpoint);
   try{
     return await wapper.update(tables.DOCUMENT, {_id: documentId}, {$set: {state: "UPLOAD_COMPLETE"}});
   }catch(ex){
@@ -180,7 +83,7 @@ async function uploadComplete(documentId){
 }
 
 function updateContentType(bucket, key, ext){
-  console.log(bucket, key, ext, region);
+  
   const s3 = new AWS.S3();
 
   return new Promise((resolve, reject) => {
