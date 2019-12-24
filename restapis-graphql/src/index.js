@@ -1,8 +1,8 @@
 'use strict';
-const console = require('../common/logger');
+const console = require('./common/logger');
 const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda');
-const {connectToMongoDB, mongoDBStatus, models} = require('../mongoose');
-const {schema} = require('../schema');
+const {connectToMongoDB, mongoDBStatus, models} = require('./mongoose');
+const {schema} = require('./schema');
 const jwt = require('jsonwebtoken');
 // Set in `environment` of serverless.yml
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
@@ -16,16 +16,16 @@ const server = new ApolloServer({
   //
   // If you'd like to have GraphQL Playground and introspection enabled in production,
   // the `playground` and `introspection` options must be set explicitly to `true`.
-  playground: process.env.stage==='dev'?true:false,
-  introspection: process.env.stage==='dev'?true:false,
+  playground: process.env.stage==='dev' || process.env.stage==='local'?true:false,
+  introspection: process.env.stage==='dev' || process.env.stage==='local'?true:false,
   debug: true,
-  formatError: (err, data)=>{
-    if(err) console.error(err);
+  formatError: (err)=>{
+    //if(err) console.error("formatError", JSON.stringify(err));
+    return err;
   },
-  formatResponse: (response, request)=>{
+  formatResponse: (response)=>{
     //console.log("formatResponse", response);
-
-    //console.log("formatResponse", data);
+    return response;
   },
   engine: {
     rewriteError(err) {
@@ -41,7 +41,7 @@ const server = new ApolloServer({
       //console.log("event.authorizationToken", event.headers);
       principalId = await authorize(Authorization)
       //principalId = "google-oauth2|101778494068951192848"
-      console.log("authorized principalId", principalId);
+      //console.log("authorized principalId", principalId);
     }
 
     return {headers: event.headers, principalId}
@@ -50,13 +50,12 @@ const server = new ApolloServer({
 
 module.exports.handler = async (event, context, callback) => {
 
-  context.callbackWaitsForEmptyEventLoop = false;
   if(db===undefined || db.readyState !== 1){
-    console.log("db connecting!!");
+    //console.log("db connecting!!");
     db = await connectToMongoDB();
   } 
-  console.log("db.readyState", dbState[db.readyState]);
-  console.log("stage", process.env.stage)
+  //console.log("db.readyState", dbState[db.readyState]);
+  //console.log("stage", process.env.stage)
   
 /*
   const callbackFilter = function(error, output) {

@@ -16,7 +16,8 @@ describe('curatorDocumentList', () => {
     const event = {
       query: {
         pageNo: 1,
-        ethAccount: "0xCb58C536d3C32C06e1c0Ffa442952841eCDdeeda"
+        //ethAccount: "0xCb58C536d3C32C06e1c0Ffa442952841eCDdeeda",
+        userId: "google-oauth2|101778494068951192848"
       }
     }
     return wrapped.run(event).then((response) => {

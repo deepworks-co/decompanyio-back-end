@@ -1,6 +1,5 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const {DocumentRepository} = require('../repository');
 const {UserDocumentFavorite} = require('../mongoose/model')
 
 const utc = composeWithMongoose(UserDocumentFavorite, {});

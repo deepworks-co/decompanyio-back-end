@@ -108,7 +108,7 @@ module.exports.handler = async (event, context, callback) => {
         signedUrl: signedUrl,
         privateDocumentCount: privateDocumentCount
       };
-      return callback(null, JSON.stringify(payload));
+      return JSON.stringify(payload);
     } else {
       throw new Error("registration document fail");
     }

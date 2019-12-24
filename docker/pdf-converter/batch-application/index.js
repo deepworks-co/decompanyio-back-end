@@ -64,6 +64,7 @@ const shutdown = (signal, value) => {
 Object.keys(signals).forEach((signal) => {
   process.on(signal, () => {
     console.log(`process received a ${signal} signal`);
+    cronjob.stop();
     shutdown(signal, signals[signal]);
   });
 });

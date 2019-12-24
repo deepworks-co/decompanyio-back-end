@@ -12,33 +12,45 @@ docker build -t app .
 
 -----
 
-* pdf-converter
+## pdf-converter 이미지 생성하기
 
-    * pdf converter용 base 이미지 생성하기 decompany/pdf-converter-base
+### pdf converter용 base 이미지 생성하기 decompany/pdf-converter-base
 
-        ```bash
-        docker build --no-cache -f Dockerfile-base -t decompany/pdf-converter-base .
+```bash
+docker build --no-cache -f Dockerfile-base -t decompany/pdf-converter-base .
 
-        docker run -it -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/workspace decompany-pdf-converter /bin/bash 
-        ```
-
-    * 이미지 생성 및 컨테이너 /bin/bash 실행하기
-
-        ```shell
-        docker build -t decompany/pdf-converter .
-
-        docker run --rm -p 8080:8080 --name pdf-converter decompany/pdf-converter
-        ```
-
-## 개발 환경 실행
-
-
-* 개발 debug mount 모드 이미지 생성
-```shell
-    docker build -f Dockerfile-dev -t decompany/pdf-converter-dev .
+docker run -it -v /Users/jay/Downloads/POConvertLibrary_centos_x64_20190521:/workspace decompany-pdf-converter /bin/bash 
 ```
 
-* 개발 debug mount 모드 이미지 실행
+### 이미지 생성 및 컨테이너 /bin/bash 실행하기
+
+```shell
+docker build -t decompany/pdf-converter .
+
+docker run --rm -p 8080:8080 --name pdf-converter decompany/pdf-converter
+```
+
+-----
+
+## 로컬 개발용 이미지 생성
+
+```shell
+docker build -f Dockerfile-dev -t decompany/pdf-converter-dev .
+```
+
+## 로컬 개발용 컨테이너 실행
+
+```shell
+docker run -it --rm \
+    -v /Users/jay/.aws:/root/.aws \
+    -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/batch-application:/batch-application \
+    -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/decompany-modules:/decompany-modules \
+    -v /Users/jay/Documents/infraware/work/workspace-git/decompanyio-back-end/docker/pdf-converter/POConvertLibrary_centos_x64_20191007:/converter \
+    -p 8080:8080 decompany/pdf-converter-base /bin/bash
+```
+
+
+## 개발용 mount 모드 이미지 실행
 
 ```bash
     docker run --rm \

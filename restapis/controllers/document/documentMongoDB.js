@@ -92,7 +92,7 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
           isRegistry: {
             $cond: [
               { $ifNull: [ '$registry', false ]}, true, false
@@ -184,7 +184,7 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
           isRegistry: {
             $cond: [
               { $ifNull: [ '$registry', false ]}, true, false
@@ -317,7 +317,7 @@ async function queryDocumentListByLatest (params) {
       }
     }, {
       $addFields: {
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         isRegistry: {
@@ -414,7 +414,7 @@ async function queryDocumentListByPopular (params) {
       $addFields: {
         documentId: "$_id",
         author: "$author",
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         totalPages: "$document.totalPageview",
         ethAccount: "$document.ethAccount",
         documentName: "$document.documentName",
@@ -525,6 +525,7 @@ async function queryDocumentListByFeatured (params) {
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
         shortUrl: "$document.shortUrl",
+        latestVoteAmount: {$toString: "$latestVoteAmount"},
         cc: "$document.cc",
         isRegistry: {
           $cond: [
@@ -708,14 +709,15 @@ async function updateDocument (newDoc) {
 async function queryVotedDocumentByCurator(args) {
 
   const pageNo = args.pageNo;
-  const applicant = args.applicant;
+  //const applicant = args.applicant;
+  const userId = args.userId;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const pageSize = args.pageSize?args.pageSize: 20
   const skip = ((pageNo - 1) * pageSize);
   const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
   const queryPipeline = [{
     $match: {
-      applicant: applicant,
+      userId: userId,
       created: {$gt: startTimestamp}
     }
   }, {
@@ -754,7 +756,7 @@ async function queryVotedDocumentByCurator(args) {
       },
       depositList: {
         $push: {
-          deposit: '$deposit',
+          deposit: {$toString: '$deposit'},
           created: "$created",
           year: "$_id.year",
           month: "$_id.month",
@@ -830,16 +832,24 @@ async function queryVotedDocumentByCurator(args) {
       created: "$documentInfo.created",
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
-      latestVoteAmount: "$featured.latestVoteAmount",
+      latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
     }
   }, {
     $project: {
-      documentInfo: 0,
-      authorAs: 0,
-      popularAs: 0,
-      popular: 0,
-      featuredAs: 0,
-      featured: 0
+      _id: 1,
+      deposit: {$toString: "$deposit"},
+      documentId: 1,
+      created: 1,
+      accountId: 1,
+      documentName: 1,
+      title: 1,
+      seoTitle: 1,
+      depositList: 1,
+      author: 1,
+      desc: 1,
+      tags: 1,
+      shortUrl: 1,
+      latestVoteAmout: {$toString: "$latestVoteAmount"},
     }
   }]
   
@@ -868,13 +878,14 @@ async function queryVotedDocumentByCurator(args) {
  */
 async function queryRecentlyVoteListForApplicant(args) {
   console.log("queryRecentlyVoteListForApplicant", args);
-  const applicant = args.applicant;
+  //const applicant = args.applicant;
+  const userId = args.userId;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
   const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
-      applicant: applicant,
+      userId: userId,
       created: {$gt: startTimestamp}
     }
   }, {
@@ -884,7 +895,7 @@ async function queryRecentlyVoteListForApplicant(args) {
   }, {
     $group:{
       _id: "$documentId",
-      applicant: {$first: "$applicant"}
+      userId: {$first: "$userId"}
     }
   }, {
     $lookup: {
@@ -917,7 +928,7 @@ async function queryRecentlyVoteListForApplicant(args) {
       latestDepositDailyList: {
         $push: {
           dateMillis: '$_id.dateMillis',
-          deposit: '$totalDeposit'
+          deposit: {$toString: '$totalDeposit'}
         }
       }
     }
@@ -965,40 +976,6 @@ async function getRecentlyPageViewTotalCount () {
   }
   
 
-}
-/**
- * @param  {} item
- */
-async function putVote (item) {
-  const timestamp = Date.now();
-  const today = new Date(timestamp);
-
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-
-    console.log("Put Vote Item", item, "timestamp", timestamp);
-
-    const curatorId = item.curatorId;
-    const voteAmount = item.voteAmount;
-    const documentId = item.documentId;
-    const transactionInfo = item.transactionInfo;
-    const ethAccount = item.ethAccount;
-    if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
-      return Promise.reject({msg:"Parameter is invaild", detail:item});
-    }
-
-    const newItem = {
-      id: curatorId,
-      created: timestamp,
-      blockchainTimestamp: blockchainTimestamp,
-      documentId: documentId,
-      voteAmount: Number(voteAmount),
-      ethAccount: ethAccount,
-      transactionInfo: transactionInfo
-    }
-    console.log("new vote", newItem);
-    const wapper = new MongoWapper(connectionString);
-    return await wapper.insert(TB_VOTE, newItem);
-    //return docClient.put(params).promise();
 }
 
 
@@ -1509,7 +1486,6 @@ async function checkRegistrableDocument(accountId){
       if(err) {
         reject(err);
       } else {
-        console.log("get private doc", data);
         if(data && data.length > 4){
           resolve({check: false, privateDocumentCount: data.length})
         } else {

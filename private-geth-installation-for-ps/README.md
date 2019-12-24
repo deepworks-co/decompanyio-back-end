@@ -175,11 +175,3 @@ alpha-ca-geth-graphql
 aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing:us-west-1:197966029048:targetgroup/alpha-ca-geth-graphql/1e54de1be02d7cd7
 ```
 
-## EBS Volume 늘리기
-> https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html
-EBS 콘솔에서 Modify Volume 하고 난뒤
-```bash
-lsblk
-sudo growpart /dev/nvme0n1 1
-sudo xfs_growfs -d /
-```

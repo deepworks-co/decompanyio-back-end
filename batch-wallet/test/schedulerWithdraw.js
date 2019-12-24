@@ -5,9 +5,9 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('sqsWithdraw', '/src/sqs/withdraw.js', 'handler');
+let wrapped = mochaPlugin.getWrapper('schedulerWithdraw', '/src/scheduler/withdraw.js', 'handler');
 
-describe('sqsWithdraw', () => {
+describe('schedulerWithdraw', () => {
   before((done) => {
     done();
   });

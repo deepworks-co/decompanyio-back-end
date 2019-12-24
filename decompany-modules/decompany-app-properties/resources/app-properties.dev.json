@@ -56,8 +56,7 @@
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls":{
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE",
-            "CONVERT_PDF": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
+            "CONVERT": "https://sqs.us-west-1.amazonaws.com/197966029048/asem-ca-converter"
         }
     },
     "applicationLogAppender": {
@@ -122,10 +121,6 @@
         "psnet": {
             "id": "931",
             "providerUrl" : "https://geth.polarishare.com"
-        },
-        "queueUrls":{
-            "EVENT_DEPOSIT": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-deposit",
-            "EVENT_WITHDRAW": "https://sqs.us-west-1.amazonaws.com/197966029048/dev-ca-withdraw"
         }
     },
     "warmupConfig": [{

@@ -9,12 +9,13 @@ const Transaction = require('ethereumjs-tx');
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 
+/*
 const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
 const NETWORK_ID = walletConfig.psnet.id;
 const CONTRACT_ADDRESS = PSNET_DECK_ABI.networks[NETWORK_ID].address;
 const DECK_CONTRACT = new web3.eth.Contract(PSNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
-
+*/
 module.exports.handler = async (event, context, callback) => {
 
   if (event.source === 'lambda-warmup') {
@@ -44,10 +45,10 @@ module.exports.handler = async (event, context, callback) => {
     }
 
     const user = await getUser(principalId);
-    console.log("user", user);
-    const balance = await getBalance(user.ethAccount);
+
+    const balance = await getBalance(principalId);
     
-    const balanceDeck = web3.utils.fromWei(balance, "ether");
+    const balanceDeck = web3.utils.fromWei(balance + "", "ether");
     console.log("balance", balance, balanceDeck);
     if(amount>balanceDeck){
       return JSON.stringify({
@@ -66,8 +67,10 @@ module.exports.handler = async (event, context, callback) => {
     });
 
     console.log("savedRequest", savedRequest);
-    const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
+
+    /*const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
     await sendWithdrawSQS(region, sqsUrl, savedRequest);
+    */
     
     return JSON.stringify({
       success: true,
@@ -139,9 +142,9 @@ function checkPendingRequestWithdraw(userId){
   })
 }
 
-function getBalance(ethAccount) {
+function getBalance(userId) {
   return new Promise((resolve, reject)=>{
-    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: ethAccount})
+    mongo.findOne(tables.VW_WALLET_BALANCE, {_id: userId})
     .then((data)=>{
       const balance = data&&data.balance?data.balance.toString():0;
       resolve(balance);

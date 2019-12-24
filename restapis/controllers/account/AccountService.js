@@ -186,7 +186,7 @@ module.exports = class AccountService {
 				}
 			}, {
 				$addFields: {
-					latestVoteAmount: "$featured.latestVoteAmount",
+					latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
 					latestPageview: "$popular.latestPageview",
 					latestPageviewList: "$popular.latestPageviewList",
 					isRegistry: {

@@ -13,28 +13,23 @@ const CONTRACT_ADDRESS = MAINNET_DECK_ABI.networks[walletConfig.mainnet.id].addr
 const DECK_CONTRACT = new web3.eth.Contract(MAINNET_DECK_ABI.abi, CONTRACT_ADDRESS);
 const FOUNDATION_ID = walletConfig.foundation;
 
-const ERROR_TOPIC = `arn:aws:sns:us-west-1:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
+const ERROR_TOPIC = `arn:aws:sns:${region}:197966029048:lambda-${stage==="local"?"dev":stage}-alarm`;
  
 module.exports.handler = async (event, context, callback) => {
   
-  event.Records.forEach(async (record)=>{
-    try{
-      if(record.receiptHandle){
-        const sqsUrl = walletConfig.queueUrls.EVENT_WITHDRAW;
-        const deleteMessageResult = await sqs.deleteMessage(region, sqsUrl, record.receiptHandle);
-
-        console.log("deleteMessageResult", deleteMessageResult);
-      }
-    } catch(err){
-      console.log("deleteMessageResult error", err, JSON.stringify(record));
-    }
-  })
+  const pendingList = await getPendingRequestWithdraw(tables.WALLET_REQUEST_WITHDRAW);
+  if(pendingList.length===0){
+    return JSON.stringify({
+      success: true,
+      message: "There are no withdrawal requests."
+    })
+  }
 
   let i;
-  for(i=0;i<event.Records.length;i++) {
+  for(i=0;i<pendingList.length;i++) {
     try{
-      const record = event.Records[i];
-      const r = await run(record);
+      const body = pendingList[i];
+      const r = await run({body: JSON.stringify(body)});
       console.log(r);
     }catch(err){
       console.error("run error",  err);
@@ -252,6 +247,22 @@ function updateTransactionProcess(tableName, query, data){
     .catch((err)=>{
       reject(err);
     })
+  })
+}
+
+function getPendingRequestWithdraw(tableName){
+  return new Promise(async (resolve, reject)=>{
+    try{
+      const pendingList = await mongo.find(tableName, {
+        query: {status: "PENDING"},
+        sort: {_id: 1}
+      });
+      
+      resolve(pendingList);
+    } catch(err){
+      reject(err);
+    }
+    
   })
 }
 

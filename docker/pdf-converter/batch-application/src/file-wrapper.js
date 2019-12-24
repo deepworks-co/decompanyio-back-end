@@ -7,6 +7,7 @@ const s3 = new AWS.S3({region: 'us-west-1'});
 
 module.exports = {
     uploadToS3,
+    uploadJsonToS3,
     dowloadFromS3,
     writeFile,
     readFile,
@@ -14,6 +15,25 @@ module.exports = {
     encodeBase64,
     gzip,
     unzip
+}
+function uploadJsonToS3 (jsonText, bucket, key) {
+    return new Promise(async (resolve, reject)=>{
+        try{
+             const data = await s3.putObject({
+                Bucket: bucket, 
+                Key: key,
+                Body: jsonText,
+                ContentType: "application/json",
+            }).promise();
+    
+            //console.log("upload file", bucket, key);
+            resolve({data, bucket, key});
+        } catch(err){
+            reject(err);
+        }
+        
+        
+    });
 }
 
 function uploadToS3 (filepath, bucket, key, isCompress) {
@@ -26,7 +46,6 @@ function uploadToS3 (filepath, bucket, key, isCompress) {
                 const streamBase64 = encodeBase64(stream);
                 streamBase64Compressed = await gzip(streamBase64);
             }
-            console.log('put');
             const data = await s3.putObject({
                 Bucket: bucket, 
                 Key: key,
@@ -159,6 +178,7 @@ function fileStat (filepath){
 }
 
 function deleteDir(dirPath) {
+
     if( fs.existsSync(dirPath) ) {
       fs.readdirSync(dirPath).forEach(function(file,index){
         var curPath = dirPath + "/" + file;

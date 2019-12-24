@@ -78,7 +78,7 @@ mongodump --gzip --out 덤프지정위치 -u아이디 -p비밀번호 --db decomp
 
 mongodump --gzip -udecompany -pdecompany1234 --db decompany --archive=backup.decompany_20190926.gz
 
-> Restory
+> Restore
 
 ```bash
 mongorestore --gzip --archive={백업된 giz 파일명} --db decompany

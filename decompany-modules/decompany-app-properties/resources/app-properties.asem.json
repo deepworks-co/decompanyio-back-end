@@ -14,8 +14,8 @@
     },
     "s3Config":{
         "document": "asem-ko-document",
-        "thumbnail": "asem-ko-thumbnail",
-        "profile": "asem-ko-profile",
+        "thumbnail": "alpha-ca-thumbnail",
+        "profile": "alpha-ca-profile",
         "upload_profile": "asem-ko-upload-profile"
     },
     "tables":{
@@ -56,9 +56,7 @@
     "sqsConfig": {
         "region": "ap-northeast-2",
         "queueUrls": {
-            "CONVERT_IMAGE": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-convert-image",
-            "CONVERT_PDF": "https://sqs.ap-northeast-2.amazonaws.com/197966029048/asem-ko-pdf-converter"
-
+            "CONVERT": "https://sqs.us-west-1.amazonaws.com/197966029048/asem-ca-converter"
         }
     },
     "applicationLogAppender": {
@@ -123,10 +121,6 @@
         "psnet": {
             "id": "931",
             "providerUrl" : "https://geth-internal.polarishare.com"
-        },
-        "queueUrls":{
-            "EVENT_DEPOSIT": "",
-            "EVENT_WITHDRAW": ""
         }
     },
     "warmupConfig": [{
@@ -144,7 +138,8 @@
             {"name": "documentMeta", "concurrency": 2},
             {"name": "trackingCollect", "concurrency": 2},
             {"name": "trackingList"},
-            {"name": "trackingInfo"}
+            {"name": "trackingInfo"},
+            {"name": "oembedDocument"}
         ]
     }, 
     {

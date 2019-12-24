@@ -17,6 +17,7 @@ module.exports = (event) => {
             .then((result)=>{
                 const response = Object.assign(event, {
                     success: result.stderr?false:true,
+                    outputPath: outputPath
                 });
                 
                 resolve(response);
@@ -56,8 +57,8 @@ function execEngine(payload){
                     
                     reject(err);
                 } else {
-                    if(stdout) console.log("stdout", JSON.stringify(stdout));
-                    if(stderr) console.log("stderr", JSON.stringify(stderr));
+                    //if(stdout) console.log("stdout", JSON.stringify(stdout));
+                    //if(stderr) console.log("stderr", JSON.stringify(stderr));
                     resolve(true)
                 }
             }
@@ -65,9 +66,9 @@ function execEngine(payload){
         //console.log("cp", cp);
         /*cp.stderr.on('data', (data) => console.error("[exec error]", data))
         cp.stdout.on('data', (data) => console.log("[exec]", data))
-        */
+       
         cp.on('close', (code) => console.log("exec close", code));//process.exit(code))
- 
+             */
     })
     
 }
