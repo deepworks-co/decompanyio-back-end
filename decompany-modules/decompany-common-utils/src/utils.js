@@ -129,3 +129,13 @@ exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmo
   reward  = Math.floor(reward * 100000) / 100000;
   return reward;
 }
+
+/**
+ * 
+ * @param {Date} date 
+ * @param {number} days 
+ */
+exports.getDate = (date, days) => {
+  const baseDate = new Date(date);
+  return baseDate.setDate(baseDate.getDate() + days);
+}
