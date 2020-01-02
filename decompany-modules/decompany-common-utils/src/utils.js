@@ -113,3 +113,19 @@ exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
 
   return royalty;
 }
+
+
+/**
+ * 
+ */
+exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward}) => {
+  
+  if(isNaN(pageview) || isNaN(totalPageviewSquare) || isNaN(myVoteAmount) || isNaN(totalVoteAmount) || isNaN(curatorDailyReward)){
+    throw new Error(`args is invalid in calcReward  : ${JSON.stringify(args)}`)
+  }
+
+  let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
+
+  reward  = Math.floor(reward * 100000) / 100000;
+  return reward;
+}
