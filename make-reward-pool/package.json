@@ -1,0 +1,15 @@
+{
+  "name": "make-reward-pool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils"
+  }
+}
