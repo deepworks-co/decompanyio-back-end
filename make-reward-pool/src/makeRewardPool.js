@@ -2,11 +2,11 @@
 const {utils, MongoWrapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig } = require('decompany-app-properties');
 
-const TOTAL_TOKEN = 10000000000;
-const TOTAL_REWARD_RATE = 0.12;
+const TOTAL_TOKEN = 10000000000; //총 100억 Deck 발행
+const TOTAL_REWARD_RATE = 0.12; // 총 발행량의 12%를 Reward로 지정
 const TOTAL_REWARD = TOTAL_TOKEN * TOTAL_REWARD_RATE;
-const N = 10;
-const BASE_DATE = new Date(Date.UTC(2019, 10, 12));//2019. 11. 12
+const N = 10; //10년치
+const BASE_DATE = new Date(Date.UTC(2019, 10, 12));//최초 Reward 시작일 UTC 2019. 11. 12
 console.log("BASE DATE", BASE_DATE);
 module.exports.handler = async (event, context, callback) => {
 
