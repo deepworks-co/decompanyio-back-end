@@ -1,24 +1,20 @@
 'use strict';
-const {stage, mongodb, tables, region, walletConfig} = require("decompany-app-properties");
+const {stage, mongodb, tables, region, walletConfig, applicationConfig} = require("decompany-app-properties");
 const {kms, sns, MongoWrapper, utils} = require("decompany-common-utils");
 const Web3 = require('web3');
-const Transaction = require('ethereumjs-tx');
-const {buildContract} = require('../ContractUtils');
+const BigNumber = require('bignumber.js');
 
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
-/*
-const PSNET_BALLOT_ABI = require(`../../psnet/${stage}/Ballot.json`)
-const PSNET_DECK_ABI = require(`../../psnet/${stage}/ERC20.json`)
-const PSNET_REGISTRY_ABI = require(`../../psnet/${stage}/Registry.json`)
-const NETWORK_ID = walletConfig.psnet.id;
+const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 
-const DECK_CONTRACT = buildContract(web3, PSNET_DECK_ABI, NETWORK_ID);
-const BALLOT_CONTRACT = buildContract(web3, PSNET_BALLOT_ABI, NETWORK_ID);
-const REGISTRY_CONTRACT = buildContract(web3, PSNET_REGISTRY_ABI, NETWORK_ID);
-*/
-module.exports.handler = async (event, context, callback) => {
-  //context.callbackWaitsForEmptyEventLoop = false;
+module.exports.close = () => {
+  mongo.close();
+  return Promise.resolve(true);
+}
+
+module.exports.handler = async (event) => {
+
   if (event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({
@@ -46,92 +42,46 @@ module.exports.handler = async (event, context, callback) => {
       documentId: documentId,
       userId: principalId
     });
-    console.log("lastClaim", lastClaim);
-    const start = lastClaim&&lastClaim.created?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
-    const end = new Date();
-
-    const dailyMyVoteList = await getDailyMyVoteList(documentId, principalId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end));
-    //console.log("dailyMyVoteList", dailyMyVoteList);
-
-    const dailyPageviewMap = await getDailyPageviewMap(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end));
-    //console.log("dailyPageviewMap", dailyPageviewMap)
-
-    const dailyVoteMap = await getDailyVoteMap(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end));
-    //console.log("dailyVoteMap", dailyVoteMap)
     
-       
+    const start = lastClaim&&lastClaim._id&&lastClaim._id.blockchainTimestamp?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
+    const end = new Date();
+    console.log("claim curator reward.. start date", start);
+    const dailyMyVoteMatrix = await getDailyMyVoteMatrix(documentId, principalId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS * -1)));
+    //console.log("dailyMyVoteMatrix", JSON.stringify(dailyMyVoteMatrix));
+    
+    const dailyVoteMap = await getDailyVoteMap(documentId, utils.getBlockchainTimestamp(utils.getDate(start, ACTIVE_VOTE_DAYS * -1)), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS)));
+    //console.log("dailyVoteMap", JSON.stringify(dailyVoteMap))
 
-    const votesWithRewardPromises = dailyMyVoteList.map(async (myVote)=>{
-      
-      const {voteAmount, _id} = myVote;
-      const blockchainDate = new Date(_id);
-      const year = blockchainDate.getUTCFullYear();
-      const month = blockchainDate.getUTCMonth() + 1;
-      const dayOfMonth = blockchainDate.getUTCDate();
-      const rewardPool = await getRewardPool(blockchainDate);
-
-      const returnValue = {
-        _id: {
-          year: year, 
-          month: month, 
-          dayOfMonth: dayOfMonth, 
-          userId: principalId, 
-          documentId: documentId
-        }, 
-        blockchainTimestamp: _id, 
-        voteAmount: voteAmount,
-        value: MongoWrapper.Decimal128.fromString("0"),
-        created: Date.now()
-      }
-
-      if(rewardPool && isNaN(voteAmount) === false && voteAmount>0){
-
-        const {pageview, totalPageviewSquare} = dailyPageviewMap[_id];
-        //decimal -> string of number
-        const totalVoteAmount = web3.utils.fromWei(dailyVoteMap[_id] + "", "ether");
-        const myVoteAmount = web3.utils.fromWei(voteAmount.toString(), "ether");
-        
-        returnValue.value = calcReward({
-          pageview: pageview,
-          totalPageviewSquare: totalPageviewSquare,
-          myVoteAmount: myVoteAmount,
-          totalVoteAmount: totalVoteAmount,
-          curatorDailyReward: rewardPool.curatorDailyReward
-        });
-      } 
-      
-      return returnValue;
+    
+    const dailyPageviewMap = await getDailyPageviewMap(documentId, utils.getBlockchainTimestamp(utils.getDate(start, ACTIVE_VOTE_DAYS * -1)), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS)));
+    //console.log("dailyPageviewMap", JSON.stringify(dailyPageviewMap));
+    
+    const curatorRewards = await calcRewardMatrix({
+      dailyMyVoteMatrix,
+      dailyPageviewMap,
+      dailyVoteMap
     })
-    const votesWithReward = await Promise.all(votesWithRewardPromises);
-    console.log("reward", votesWithReward);
+    //console.log("curatorRewards", JSON.stringify(curatorRewards));  
 
-    //save
-    const savePromises = votesWithReward.filter((it)=>{
-      if(it.value)
-        return true;
-      else
-        return false;
-    }).map(async (it)=>{
-      
-      await saveClaimReward(it);
-      await saveWallet({rewardId: it._id, value: it.value});
-
-      return it;
-    })
-    const savePromisesComplete = await Promise.all(savePromises);
-
-    console.log("save royalty claim", savePromisesComplete);
+    const saveResults = await saveCuratorRewards({
+      documentId, 
+      userId: principalId, 
+      curatorRewards
+    }); 
+    //console.log("saveResults", JSON.stringify(saveResults));
 
     return JSON.stringify({
-      success: true, 
-      rewards: votesWithReward.map((it)=>{
+      success: true,
+      rewards: saveResults.map((it)=>{
         return {
-          _id: it._id,
-          blockchainTimestamp: it.blockchainTimestamp,
-          value: it.value.toString()
+          id: it.claimReward._id,
+          value: web3.utils.fromWei(it.value.toString(), "ether")
+          
         }
       })
     })
+    
+   
   } catch (err){
     console.error(err);
     throw new Error(`[500] ${err.toString()}`);
@@ -149,6 +99,12 @@ function getDocument(documentId){
   })
 }
 
+/**
+ * 
+ * @param {*} documentId 
+ * @param {*} startTimestamp 
+ * @param {*} endTimestamp 
+ */
 async function getDailyVoteMap(documentId, startTimestamp, endTimestamp){
 
   const voteList = await mongo.aggregate(tables.VOTE, [{
@@ -177,18 +133,36 @@ async function getDailyVoteMap(documentId, startTimestamp, endTimestamp){
           as: 'pageview'
       }
   }])
+  
 
   const voteMap = {};
+  voteList.forEach((voteInfo)=>{
+    
+    const startVoteDate = new Date(voteInfo._id);
+    
+    const voteAmount = web3.utils.fromWei(voteInfo.voteAmount.toString(), "ether");
 
-  voteList.forEach((vote)=>{
-    voteMap[vote._id] = vote.voteAmount;
+    Array(ACTIVE_VOTE_DAYS).fill(0).forEach((it, index)=>{
+      const activeDate = utils.getDate(startVoteDate, index);
+      const key = utils.getBlockchainTimestamp(activeDate);
+      if(voteMap[key]){
+        voteMap[key] = voteMap[voteInfo._id] + voteAmount;
+      } else {
+        voteMap[key] = voteAmount
+      }
+      
+    })
+
   })
+
+  
+
 
   return voteMap;
 
 }
 
-function getDailyMyVoteList(documentId, userId, startTimestamp, endTimestamp){
+function getDailyMyVoteMatrix(documentId, userId, startTimestamp, endTimestamp){
   
   return new Promise((resolve, reject)=>{
     mongo.aggregate(tables.VOTE, [
@@ -211,9 +185,54 @@ function getDailyMyVoteList(documentId, userId, startTimestamp, endTimestamp){
             '$last': '$created'
           }
         }
+      }, {
+        $lookup: {
+          from: tables.REWARD_POOL_DAILY,
+          foreignField: '_id', 
+          localField: '_id', 
+          as: 'rewardPoolInfo'
+        }
+      }, {
+        $unwind: {
+          path: "$rewardPoolInfo"
+        }
+      }, {
+        $sort: {
+          _id: 1
+        }
       }
     ]).then((data)=>{
-      resolve(data);
+      
+      const endDate = utils.getBlockchainTimestamp(new Date());
+
+      const matrix = data.filter(it=>{
+        const startVoteDate = new Date(it._id);
+        return startVoteDate < endDate;
+      }).map((voteInfo)=>{
+        
+        const voteDate = new Date(voteInfo._id);
+        
+        return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
+          const activeDate = utils.getDate(voteDate, index);
+
+          if(activeDate < endDate){
+            return {
+              _id: utils.getBlockchainTimestamp(activeDate),
+              activeDate,
+              voteAmount: web3.utils.fromWei(voteInfo.voteAmount.toString(), "ether"),
+              rewardPoolInfo: voteInfo.rewardPoolInfo
+            }
+
+          }
+          return null;
+          
+        }).filter((it)=>{
+          return it?true:false
+        })
+      })
+    
+      resolve(matrix);
+      //resolve(data);
     }).catch((err)=>{
       reject(err);
     })
@@ -240,7 +259,7 @@ async function getDailyPageviewMap(documentId, startTimestamp, endTimestamp){
       }
     }, {
       '$lookup': {
-        'from': 'STAT-PAGEVIEW-TOTALCOUNT-DAILY', 
+        'from': tables.STAT_PAGEVIEW_TOTALCOUNT_DAILY, 
         'localField': 'blockchainTimestamp', 
         'foreignField': 'blockchainTimestamp', 
         'as': 'totalpageview'
@@ -271,64 +290,88 @@ async function getDailyPageviewMap(documentId, startTimestamp, endTimestamp){
 
 }
 
+/**
+ * 
+ * @param {*} param0 
+ */
+async function calcRewardMatrix({dailyMyVoteMatrix, dailyPageviewMap, dailyVoteMap}){
+
+  return await Promise.all(dailyMyVoteMatrix.map((dailyMyVoteList)=>{
+    //console.log("dailyMyVoteList", JSON.stringify(dailyMyVoteList));
+    return calcRewardList({
+      dailyMyVoteList,
+      dailyPageviewMap,
+      dailyVoteMap
+    })
+  }))
+
+  
+}
+
+/**
+ * 
+ * @param {*} param0 
+ */
+async function calcRewardList({dailyMyVoteList, dailyPageviewMap, dailyVoteMap}){
+  const votesWithRewardPromises = dailyMyVoteList.map(async (myVote)=>{
+      
+    const {voteAmount, _id, rewardPoolInfo} = myVote;
+    const blockchainDate = new Date(_id);
+    const pageview = dailyPageviewMap[_id] && dailyPageviewMap[_id].pageview?dailyPageviewMap[_id].pageview:0
+    const totalPageviewSquare = dailyPageviewMap[_id] && dailyPageviewMap[_id].totalPageviewSquare?dailyPageviewMap[_id].totalPageviewSquare:0
+    //decimal -> string of number
+    const totalVoteAmount = dailyVoteMap[_id];
+    const myVoteAmount = voteAmount;
+    const curatorDailyReward = rewardPoolInfo.curatorDailyReward
+    const curatorReward = calcReward({
+      pageview: pageview,
+      totalPageviewSquare: totalPageviewSquare,
+      myVoteAmount: myVoteAmount,
+      totalVoteAmount: totalVoteAmount,
+      curatorDailyReward: curatorDailyReward,
+    });
+
+    
+    return {
+      _id: _id, 
+      voteAmount: voteAmount,
+      value: curatorReward?curatorReward:MongoWrapper.Decimal128.fromString("0"),
+      pageview: pageview,
+      totalPageviewSquare: totalPageviewSquare,
+      myVoteAmount: myVoteAmount,
+      totalVoteAmount: totalVoteAmount,
+      curatorDailyReward: curatorDailyReward
+    }
+
+  })
+  const votesWithReward = await Promise.all(votesWithRewardPromises);
+
+  return votesWithReward;
+}
+
 function calcReward(args){
-  //console.log("calcReward", args);
+  
   const {pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward} = args;
-  if(!pageview || !totalPageviewSquare || !myVoteAmount || !totalVoteAmount || !curatorDailyReward){
-    throw new Error(`args is invalid : ${JSON.stringify(args)}`)
+  if(isNaN(pageview) || isNaN(totalPageviewSquare) || isNaN(myVoteAmount) || isNaN(totalVoteAmount) || isNaN(curatorDailyReward)){
+    throw new Error(`args is invalid in calcReward  : ${JSON.stringify(args)}`)
   }
 
   let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
 
   reward  = Math.floor(reward * 100000) / 100000;
-  const strValue = web3.utils.toWei(reward + "", "ether");
-
+  //const strValue = web3.utils.toWei(reward + "", "ether");
+  const strValue = reward?reward + "": "0";
+  //console.log("calcReward", JSON.stringify(args), strValue);
   return MongoWrapper.Decimal128.fromString(strValue);
 }
-/**
- * 
- * @param {*} params 
- */
-function saveClaimReward(params){
-  return new Promise(async (resolve, reject)=>{
-    mongo.save(tables.CLAIM_REWARD, {
-      _id: params._id,
-      blockchainTimestamp: params.blockchainTimestamp,
-      value: params.value,
-      created: Date.now()
-    }).then((data)=>{
-      resolve(data);
-    }).catch((err)=>{
-      reject(err);
-    });
-  });
-}
 
-function saveWallet({rewardId, value}){
-
-  return new Promise(async (resolve, reject)=>{
-    mongo.save(tables.WALLET, {
-      userId: rewardId.userId,
-      type: "REWARD",
-      factor: 1,
-      value ,
-      royaltyId: rewardId,
-      created: Date.now()
-    }).then((data)=>{
-      resolve(data);
-    }).catch((err)=>{
-      reject(err);
-    });
-  });
-}
 
 
 /**
  * @name getLastClaimReward
  * @param {*} params 
  */
-function getLastClaimReward(params){
-  const {documentId, userId} = params
+function getLastClaimReward({documentId, userId}){
   return new Promise(async (resolve, reject)=>{
 
     try{
@@ -351,22 +394,49 @@ function getLastClaimReward(params){
   });
 }
 
-function getRewardPool(date){
-    
-  return new Promise((resolve, reject)=>{
-    mongo.find(tables.REWARD_POOL, {
-      query: {
-        "_id.start": {$lte: date}, "_id.end": {$gt: date}
-      }
-    }).then((data)=>{
-      if(data && data.length>0){
-        resolve(data[0]);
-      } else {
-        resolve(null);
-      }
-      
-    }).catch((err)=>{
-      reject(err);
-    })
+
+async function saveCuratorRewards({documentId, userId, curatorRewards}){
+
+  //save
+  const savePromises = curatorRewards.map((curatorReward)=>{ 
+
+    return saveCuratorReward({documentId, userId, curatorReward});
   })
+ 
+  return await Promise.all(savePromises);
 }
+
+async function saveCuratorReward({blockchainTimestamp, documentId, userId, curatorReward}){
+  //console.log("curatorReward", JSON.stringify(curatorReward));
+  
+  const saveClaimResult = await mongo.save(tables.CLAIM_REWARD, {
+    _id: {
+      documentId,
+      userId,
+      blockchainTimestamp: curatorReward[0]._id
+    },
+    curatorReward,
+    created: Date.now()
+  })
+  
+  
+  let totalReward = new BigNumber(curatorReward[0].voteAmount);
+  curatorReward.forEach((it)=>{
+    
+    totalReward = totalReward.plus(new BigNumber(it.value));
+  })
+  //console.log("total reward", totalReward.toString());
+  const totalRewardByWei = web3.utils.toWei(totalReward.toString(), "ether");
+  const saveWalletResult = await mongo.save(tables.WALLET, {
+      userId: userId,
+      type: "REWARD",
+      factor: 1,
+      value: MongoWrapper.Decimal128.fromString(totalRewardByWei),
+      claimReward: saveClaimResult,
+      created: Date.now()
+    });
+
+  return saveWalletResult;
+
+}
+
