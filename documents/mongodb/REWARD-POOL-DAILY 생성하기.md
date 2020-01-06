@@ -1,3 +1,4 @@
+# REWARD-POOL을 이용하여 REWAARD-POOL-DAILY 생성하기
 
 ```javascript
 db.getCollection("REWARD-POOL").find({})
