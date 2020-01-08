@@ -52,7 +52,7 @@ module.exports.list = async (event, context, callback) => {
     accountId = user._id;
   }
 
-  const resultList = await documentService.queryDocumentList({
+  const resultMap = await documentService.queryDocumentList({
     pageNo: pageNo,
     accountId: accountId,
     tag: tag,
@@ -63,10 +63,9 @@ module.exports.list = async (event, context, callback) => {
   
   return (null, JSON.stringify({
     success: true,
-    resultList: resultList,
+    resultList: resultMap.resultList?resultMap.resultList:[],
     pageNo: pageNo,
-    count: resultList.length,
-    totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
+    count: resultMap.totalCount?resultMap.totalCount:0
   }));
 
 

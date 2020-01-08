@@ -276,7 +276,9 @@ async function queryDocumentListByLatest (params) {
 
       pipeline.push({ $match: q });
     } 
-  
+    const totalCount = await wapper.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
+
     pipeline = pipeline.concat([{
       $skip: skip
     }, {
@@ -331,8 +333,12 @@ async function queryDocumentListByLatest (params) {
     }]);
 
 
-    console.log("pipeline", JSON.stringify(pipeline));
-    return await wapper.aggregate(tables.DOCUMENT, pipeline);
+    //console.log("pipeline", JSON.stringify(pipeline));
+    const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
+    return {
+      resultList,
+      totalCount
+    }
    
   } catch(err) {
     throw err;
@@ -367,6 +373,10 @@ async function queryDocumentListByPopular (params) {
 
       pipeline.push({ $match: q });
     } 
+
+
+    const totalCount = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
   
     pipeline = pipeline.concat([{
       $skip: skip
@@ -433,8 +443,12 @@ async function queryDocumentListByPopular (params) {
     }, {
       $project: {featured: 0, document: 0, registry: 0}
     }]);
-    console.log(JSON.stringify(pipeline));
-    return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+    //console.log(JSON.stringify(pipeline));
+    const resultList = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+    return {
+      resultList,
+      totalCount
+    }
    
   } catch(err) {
     throw err;
@@ -470,6 +484,9 @@ async function queryDocumentListByFeatured (params) {
       pipeline.push({ $match: q });
     } 
   
+    const totalCount = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
+
     pipeline = pipeline.concat([{
       $skip: skip
     }, {
@@ -543,8 +560,13 @@ async function queryDocumentListByFeatured (params) {
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0, registry: 0}
     }]);
-    console.log(JSON.stringify(pipeline))
-    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+    //console.log(JSON.stringify(pipeline))
+    const resultList = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+
+    return {
+      resultList,
+      totalCount
+    }
    
   } catch(err) {
     throw err;
