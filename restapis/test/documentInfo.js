@@ -21,8 +21,8 @@ describe('documentInfo', () => {
     }
     return wrapped.run(event).then((response) => {
 
-      console.log("response");
-      //console.log(response);
+      console.log("response", JSON.parse(response).featuredList);
+      
       expect(response).to.not.be.empty;
     });
   });

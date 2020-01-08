@@ -1012,8 +1012,8 @@ async function getFeaturedDocuments (args) {
     pageSize: 10,
     tag: tags
   }
-  const resultList = await queryDocumentListByFeatured(params); 
-
+  const resultMap = await queryDocumentListByFeatured(params); 
+  const resultList = resultMap.resultList;
   return resultList.filter((doc)=>{
     return doc.documentId !== documentId;
   });
