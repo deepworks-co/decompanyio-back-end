@@ -337,7 +337,7 @@ async function queryDocumentListByLatest (params) {
     const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
     return {
       resultList,
-      totalCount
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
     }
    
   } catch(err) {
@@ -447,7 +447,7 @@ async function queryDocumentListByPopular (params) {
     const resultList = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
     return {
       resultList,
-      totalCount
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
     }
    
   } catch(err) {
@@ -565,7 +565,7 @@ async function queryDocumentListByFeatured (params) {
 
     return {
       resultList,
-      totalCount
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
     }
    
   } catch(err) {
