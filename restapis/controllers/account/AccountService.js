@@ -146,7 +146,11 @@ module.exports = class AccountService {
 				$match: { isDeleted: false, accountId: accountId}
 			}, {
 				$sort:{ created: -1}
-			}, {
+			}]
+
+			const totalCount = await wapper.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
+
+			pipeline = pipeline.concat([{
 				$skip: skip
 			}, {
 				$limit: pageSize
@@ -205,10 +209,14 @@ module.exports = class AccountService {
 				}
 			}, {
 				$project: {featured: 0, popular: 0, registry: 0}
-			}];
+			}]);
 
 			console.log("pipeline", JSON.stringify(pipeline));
-			return await wapper.aggregate(tables.DOCUMENT, pipeline);
+			const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
+			return {
+				resultList,
+				totalCount: totalCount[0]?totalCount[0].totalCount:0
+			}
 		} catch (e) {
 			throw e
 		} finally {
