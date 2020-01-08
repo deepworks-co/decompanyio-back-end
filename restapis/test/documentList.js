@@ -23,4 +23,27 @@ describe('documentList', () => {
       expect(response).to.not.be.empty;
     });
   });
+
+  it('implement tests here', () => {
+    const event = {
+      query: {
+        path: "popular"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('implement tests here', () => {
+    const event = {
+      query: {
+
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log("latest", response)
+      expect(response).to.not.be.empty;
+    });
+  });
 });
