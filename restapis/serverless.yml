@@ -875,8 +875,7 @@ custom:
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
-      - dev
-      - alpha
+      - asem
   prune:
     automatic: true
     number: 5
