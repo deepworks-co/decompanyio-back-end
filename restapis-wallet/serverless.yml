@@ -298,6 +298,10 @@ resources:
           Ref: 'ApiGatewayRestApi'
 
 custom:
+  deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - asem
   prune:
     automatic: true
     number: 5
@@ -354,3 +358,4 @@ plugins:
   - serverless-plugin-split-stacks
   - serverless-prune-plugin
   - serverless-aws-documentation
+  - serverless-plugin-canary-deployments
