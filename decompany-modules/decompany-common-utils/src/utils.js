@@ -121,7 +121,7 @@ exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
 exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward}) => {
   
   if(isNaN(pageview) || isNaN(totalPageviewSquare) || isNaN(myVoteAmount) || isNaN(totalVoteAmount) || isNaN(curatorDailyReward)){
-    throw new Error(`args is invalid in calcReward  : ${JSON.stringify(args)}`)
+    throw new Error(`parameter is invalid in calcReward  : ${JSON.stringify({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward})}`)
   }
 
   let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
@@ -137,5 +137,5 @@ exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmo
  */
 exports.getDate = (date, days) => {
   const baseDate = new Date(date);
-  return baseDate.setDate(baseDate.getDate() + days);
+  return new Date(baseDate.setDate(baseDate.getDate() + days));
 }
