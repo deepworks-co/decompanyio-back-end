@@ -1,22 +1,35 @@
 'use strict';
-const {VWDailyPageview, RewardPool} = require('../../mongoose/model')
+const {VWDailyPageview, RewardPool} = require('../../../mongoose/model')
 const {utils} = require('decompany-common-utils');
-
+const {applicationConfig} = require('decompany-app-properties');
+const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 module.exports = {
-  getLast7CreatorReward,
+  getLast6CreatorReward,
   getTodayEstimatedCreatorReward
 }
 
-async function getLast7CreatorReward({userId}){
+async function getLast6CreatorReward({userId}){
   const endDate = new Date();
-  const startDate = new Date().setDate(endDate.getDate() - 7); 
+  const startDate = new Date().setDate(endDate.getDate() - (ACTIVE_VOTE_DAYS - 1)); 
 
   const start = utils.getBlockchainTimestamp(startDate);
   const end = utils.getBlockchainTimestamp(endDate);
 
   const list = await VWDailyPageview.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: -1});
+  
   const resultList = await calcRewardList(list);
-  return resultList
+  
+  return resultList.map((it)=>{
+
+    return {
+      documentId: it.documentId,
+      activeDate: new Date(it.blockchainTimestamp),
+      pageview: it.pageview,
+      totalPageview: it.totalPageview,
+      reward: it.reward
+    }
+
+  })
 }
 
 async function getTodayEstimatedCreatorReward({userId}) {
@@ -25,7 +38,17 @@ async function getTodayEstimatedCreatorReward({userId}) {
   const list = await VWDailyPageview.find({blockchainTimestamp: t, userId: userId});
   const resultList = await calcRewardList(list);
 
-  return resultList?resultList[0]:null;
+  return resultList.map((it)=>{
+
+    return {
+      documentId: it.documentId,
+      activeDate: new Date(it.blockchainTimestamp),
+      pageview: it.pageview,
+      totalPageview: it.totalPageview,
+      reward: it.reward
+    }
+
+  })
 }
 
 
@@ -53,20 +76,29 @@ async function calcRewardList(list) {
 
     const rewardPool = getRewardPool(rewardPoolList, date);
     //console.log("Pageview Item", JSON.stringify(it));
+    let reward = -1;
     if(rewardPool){
-      it.reward = calcReward({
+      reward = utils.calcRoyalty({
         pageview: it.pageview,
         totalPageview: it.totalPageview,
         creatorDailyReward: rewardPool.creatorDailyReward
       });
       
-    } else {
-      it.reward = -1
-    }
-    it.blockchainDate = new Date(it.blockchainTimestamp);
-    return it;
+    } 
+
+    return {
+      documentId: it.documentId,
+      pageview: it.pageview,
+      totalPageview: it.totalPageview,
+      reward: reward,
+      blockchainTimestamp: it.blockchainTimestamp,
+      blockchainDate: it.blockchainDate,
+      userId: it.userId
+    };
   })
 }
+
+/*
 function calcReward(args){
   
   const {totalPageview, pageview, creatorDailyReward} = args;
@@ -79,3 +111,4 @@ function calcReward(args){
 
   return royalty;
 }
+*/

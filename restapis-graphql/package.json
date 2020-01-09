@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "apollo-server-lambda": "^2.8.2",
+    "bignumber.js": "^9.0.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "graphql": "^14.5.0",
@@ -25,7 +26,8 @@
     "jsonwebtoken": "^8.5.1",
     "log4js": "^5.1.0",
     "mongoose": "^5.6.10",
-    "ramda": "^0.26.1"
+    "ramda": "^0.26.1",
+    "web3-utils": "^1.2.1"
   },
   "devDependencies": {
     "serverless-mocha-plugin": "^1.11.0",

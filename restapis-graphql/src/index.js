@@ -1,14 +1,15 @@
 'use strict';
 const console = require('./common/logger');
 const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda');
-const {connectToMongoDB, mongoDBStatus, models} = require('./mongoose');
+const {connectToDB, connectToMongoDB, mongoDBStatus, models} = require('./mongoose');
 const {schema} = require('./schema');
 const jwt = require('jsonwebtoken');
 // Set in `environment` of serverless.yml
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
-let db;
-const dbState = ["disconnected", "connected", "connecting", "disconnecting"];
+connectToDB();
+
+const isDebugging = process.env.stage === "local"?true:false
 const server = new ApolloServer({
   schema,
   // By default, the GraphQL Playground interface and GraphQL introspection
@@ -18,9 +19,10 @@ const server = new ApolloServer({
   // the `playground` and `introspection` options must be set explicitly to `true`.
   playground: process.env.stage==='dev' || process.env.stage==='local'?true:false,
   introspection: process.env.stage==='dev' || process.env.stage==='local'?true:false,
-  debug: true,
+  debug: isDebugging,
   formatError: (err)=>{
-    //if(err) console.error("formatError", JSON.stringify(err));
+    if(isDebugging) console.error("Graphql Error", JSON.stringify(err));
+    else return new Error(err.toString());
     return err;
   },
   formatResponse: (response)=>{
@@ -29,7 +31,7 @@ const server = new ApolloServer({
   },
   engine: {
     rewriteError(err) {
-      console.log("engine error", err);
+      console.log("Engine Error", err);
       return err;
     }
   },
@@ -49,11 +51,12 @@ const server = new ApolloServer({
 });
 
 module.exports.handler = async (event, context, callback) => {
-
-  if(db===undefined || db.readyState !== 1){
-    //console.log("db connecting!!");
-    db = await connectToMongoDB();
-  } 
+  
+  const status = mongoDBStatus();
+  if(!status || status.readyState === 0 || status === 3){
+    console.log("mongoDBStatus", status);
+    db = connectToDB();
+  }
   //console.log("db.readyState", dbState[db.readyState]);
   //console.log("stage", process.env.stage)
   

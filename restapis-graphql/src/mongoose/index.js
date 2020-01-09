@@ -4,6 +4,14 @@ const {mongodb} = require('decompany-app-properties');
 const models = require('./model');
 const console = require('../common/logger');
 
+function connectToDB(){
+  mongoose.connect(mongodb.endpoint, {useNewUrlParser: true});
+  mongoose.Promise = global.Promise;
+  if(process.env.local){
+    mongoose.set('debug', true);
+  }
+  return mongoose.connection;
+}
 //console.log("mongoose", mongoose.connection);
 function connectToMongoDB(){
 
@@ -38,8 +46,8 @@ function connectToMongoDB(){
 
 const mongoDBStatus = () => {
   return { 
-     state: 'up', 
-     dbState: mongoose.STATES[mongoose.connection.readyState] 
+     dbState: mongoose.STATES[mongoose.connection.readyState],
+     readyState: mongoose.connection.readyState
   }
 };
 
@@ -47,3 +55,4 @@ const mongoDBStatus = () => {
 module.exports.models = models;
 module.exports.connectToMongoDB = connectToMongoDB;
 module.exports.mongoDBStatus = mongoDBStatus;
+module.exports.connectToDB = connectToDB;
