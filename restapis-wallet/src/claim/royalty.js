@@ -39,7 +39,7 @@ module.exports.handler = async (event) => {
   
     const start = lastClaim&&lastClaim.created?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
     const end = new Date();
-    const pageviews = await getPageviewList(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS * -1)));
+    const pageviews = await getPageviewList(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(utils.getDate(end, -1)));
     //console.log("pageviews", JSON.stringify(pageviews));
 
     const calcRoyaltiesResult = await calcRoyalties({

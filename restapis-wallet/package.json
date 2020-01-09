@@ -8,7 +8,8 @@
     "deploy:asem": "sls deploy -s asem",
     "deploy:dev": "sls deploy -s dev",
     "doc:dev": "sls downloadDocumentation --outputFileName=apidoc-dev.yml -s dev",
-    "doc:asem": "sls downloadDocumentation --outputFileName=apidoc-prod.yml -s asem"
+    "doc:asem": "sls downloadDocumentation --outputFileName=apidoc-prod.yml -s asem",
+    "docker:test": "docker run --rm --name local-mongo -v \"$(pwd)\"/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0"
   },
   "author": "",
   "license": "ISC",

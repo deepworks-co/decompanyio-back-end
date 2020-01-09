@@ -23,7 +23,13 @@ describe('claimReward', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      expect(response).to.not.be.empty;
+      const json = JSON.parse(response)
+      console.log("result : ", json);
+      expect(json.success).equal(true);
+      json.rewards.forEach((it)=>{
+        expect(isNaN(it.value)).to.be.equal(false)
+      })
+      //expect(response).to.not.be.empty;
     });
   });
 
@@ -36,9 +42,11 @@ describe('claimReward', () => {
     }
     return wrapped.run(event).then((response) => {
       const json = JSON.parse(response)
-      console.log("json[0]", json[0]);
-      console.log("json[0]", json[0].value);
-      expect(json[0].value).equal("639348.26229");
+      console.log("result : ", json);
+      expect(json.success).equal(true);
+      json.rewards.forEach((it)=>{
+        expect(isNaN(it.value)).to.be.equal(false)
+      })
       //expect(response).to.not.be.empty;
     });
   });

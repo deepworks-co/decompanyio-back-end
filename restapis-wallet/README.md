@@ -72,12 +72,14 @@ docker run --rm --name local-mongo -v "$(pwd)"/docker-entrypoint-initdb.d:/docke
 ### Export Data
 
 ```bash
-mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=USER --out=/docker-test/json/USER.json
-mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT --out=/docker-test/json/DOCUMENT.json
-mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=REWARD-POOL-DAILY --out=/docker-test/json/REWARD-POOL-DAILY.json
-mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-DAILY --out=/docker-test/json/STAT-PAGEVIEW-DAILY.json
-mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-TOTALCOUNT-DAILY --out=/docker-test/json/STAT-PAGEVIEW-TOTALCOUNT-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=USER --out=/docker-entrypoint-initdb.d/json/USER.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT --out=/docker-entrypoint-initdb.d/json/DOCUMENT.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=REWARD-POOL-DAILY --out=/docker-entrypoint-initdb.d/json/REWARD-POOL-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-DAILY --out=/docker-entrypoint-initdb.d/json/STAT-PAGEVIEW-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-TOTALCOUNT-DAILY --out=/docker-entrypoint-initdb.d/json/STAT-PAGEVIEW-TOTALCOUNT-DAILY.json
 mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=VOTE --out=/docker-test/json/VOTE.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-FEATURED --out=/docker-entrypoint-initdb.d/json/DOCUMENT-FEATURED.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-POPULAR --out=/docker-entrypoint-initdb.d/json/DOCUMENT-POPULAR.json
 ```
 
 ### Import Data
