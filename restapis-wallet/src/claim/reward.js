@@ -70,7 +70,7 @@ module.exports.handler = async (event) => {
       userId: principalId, 
       curatorRewards
     }); 
-    console.log("saveResults", JSON.stringify(saveResults));
+    //console.log("saveResults", JSON.stringify(saveResults));
 
     return JSON.stringify({
       success: true,
