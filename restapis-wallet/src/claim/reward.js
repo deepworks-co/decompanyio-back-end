@@ -410,7 +410,7 @@ async function saveCuratorReward({blockchainTimestamp, documentId, userId, curat
     voteDate: curatorReward[0].voteDate,
     voteAmount: curatorReward[0].voteAmount,
     totalReward: curatorReward.map((it)=>{return it.value}).reduce((sum, it)=>{
-      return sum + it;
+      return Number(sum) + Number(it);
     }),
     created: Date.now()
   })
