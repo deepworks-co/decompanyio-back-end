@@ -19,13 +19,10 @@ schemaComposer.createObjectTC({
 schemaComposer.createObjectTC({
   name: 'DailyCuratorReward',
   fields: {
-    activeDate: 'Date',
     voteDate: 'Date',
     documentId: 'String',
     pageview: 'Int',
     totalPageviewSquare: 'Int',
-    voteAmount: 'String',
-    totalVoteAmount: 'String',
     reward: 'Float'
   },
 });

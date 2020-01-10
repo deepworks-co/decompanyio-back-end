@@ -36,9 +36,6 @@ async function getLast6CuratorReward({userId}) {
       userId: item.userId,
       documentId: item.documentId,
       voteDate: item.voteDate,
-      activeDate: item.blockchainDate,
-      voteAmount: item.myVoteAmount,
-      totalVoteAmount: item.totalVoteAmount,
       pageview: item.pageview,
       totalPageviewSquare: item.totalPageviewSquare,
       reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
