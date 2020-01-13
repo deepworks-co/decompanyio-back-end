@@ -43,7 +43,7 @@ async function getTodayEstimatedCuratorReward({userId}) {
     }
   })
 
-  console.log("result", JSON.stringify(r2));
+  //console.log("result", JSON.stringify(r2));
 
   return r2;
 }

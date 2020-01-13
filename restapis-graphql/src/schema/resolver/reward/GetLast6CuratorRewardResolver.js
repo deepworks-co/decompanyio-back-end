@@ -27,7 +27,7 @@ async function getLast6CuratorReward({userId}) {
   
   const resultList = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
 
-  console.log("result", JSON.stringify(resultList));
+  //console.log("result", JSON.stringify(resultList));
 
   return resultList.map((list)=>{
     const item = list[0];
