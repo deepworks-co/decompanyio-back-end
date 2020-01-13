@@ -19,7 +19,7 @@ service: restapis-graphql # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
@@ -85,20 +85,28 @@ package:
     - test/**
     
 functions:
+  preHook:
+    handler: deploy/handler.pre
+  postHook:
+    handler: deploy/handler.post
+
   graphql:
     handler: src/index.handler
     events:
       - http: 
           method: ANY
           path: /api/graphql
-#          authorizer: auth
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
 custom:
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
-      - dev
-      - alpha
+      - asem
   prune:
     automatic: true
     number: 5
@@ -111,3 +119,4 @@ plugins:
   - serverless-offline
   - serverless-mocha-plugin
   - serverless-prune-plugin
+  - serverless-plugin-canary-deployments

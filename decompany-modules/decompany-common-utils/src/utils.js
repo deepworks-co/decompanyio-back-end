@@ -113,3 +113,29 @@ exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
 
   return royalty;
 }
+
+
+/**
+ * 
+ */
+exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward}) => {
+  
+  if(isNaN(pageview) || isNaN(totalPageviewSquare) || isNaN(myVoteAmount) || isNaN(totalVoteAmount) || isNaN(curatorDailyReward)){
+    throw new Error(`parameter is invalid in calcReward  : ${JSON.stringify({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward})}`)
+  }
+
+  let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
+
+  reward  = Math.floor(reward * 100000) / 100000;
+  return reward;
+}
+
+/**
+ * 
+ * @param {Date} date 
+ * @param {number} days 
+ */
+exports.getDate = (date, days) => {
+  const baseDate = new Date(date);
+  return new Date(baseDate.setDate(baseDate.getDate() + days));
+}

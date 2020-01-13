@@ -22,7 +22,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const document = await documentService.getDocumentBySeoTitle(seoTitle);
-  console.log("get document by seo title", document);
+  //console.log("get document by seo title", document);
   if(!document){
     return JSON.stringify({
       success: false,

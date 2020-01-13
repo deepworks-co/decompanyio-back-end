@@ -24,7 +24,7 @@ module.exports.handler = async (event, context, callback) => {
     }
 
     let document = await documentService.getDocumentBySeoTitle(documentId);
-    console.log("get document by seo title", document);
+    //console.log("get document by seo title", document);
     if(!document || document.isDeleted === true){
       return JSON.stringify({
         success: true,

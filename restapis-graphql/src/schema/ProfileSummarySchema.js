@@ -1,17 +1,17 @@
 const { schemaComposer } = require('graphql-compose');
 
-const {getLast7CreatorReward, getTodayEstimatedCreatorReward} = require("./resolver/CreatorRewardResolver");
-const {getLast7CuratorReward, getTodayEstimatedCuratorReward} = require("./resolver/CuratorRewardResolver");
+const {getLast6CreatorReward, getTodayEstimatedCreatorReward} = require("./resolver/royalty/CreatorRewardResolver");
+
+const getLast6CuratorReward = require("./resolver/reward/GetLast6CuratorRewardResolver");
+const getTodayEstimatedCuratorReward = require("./resolver/reward/GetTodayEstimatedCuratorRewardResolver");
 
 schemaComposer.createObjectTC({
   name: 'DailyCreatorReward',
   fields: {
-    blockchainTimestamp: 'Float',
-    blockchainDate: 'Date',
+    activeDate: 'Date',
     documentId: 'String',
     pageview: 'Int',
     totalPageview: 'Int',
-    totalPageviewSquare: 'Int',
     reward: 'Float'
   },
 });
@@ -19,11 +19,9 @@ schemaComposer.createObjectTC({
 schemaComposer.createObjectTC({
   name: 'DailyCuratorReward',
   fields: {
-    blockchainTimestamp: 'Float',
-    blockchainDate: 'Date',
+    voteDate: 'Date',
     documentId: 'String',
     pageview: 'Int',
-    totalPageview: 'Int',
     totalPageviewSquare: 'Int',
     reward: 'Float'
   },
@@ -31,23 +29,23 @@ schemaComposer.createObjectTC({
 
 
 schemaComposer.Query.addNestedFields({
-  "ProfileSummary.getLast7CreatorReward": {
+  "ProfileSummary.getLast6CreatorReward": {
     type: '[DailyCreatorReward]',
     args: { userId: 'String!'},
-    resolve: async (_, args) => getLast7CreatorReward(args)
+    resolve: async (_, args) => getLast6CreatorReward(args)
   },
   "ProfileSummary.getTodayEstimatedCreatorReward": {
-    type: 'DailyCreatorReward',
+    type: '[DailyCreatorReward]',
     args: { userId: 'String!', timestamp: 'Float' },
     resolve: async (_, args) => getTodayEstimatedCreatorReward(args)
   },
-  "ProfileSummary.getLast7CuratorReward": {
+  "ProfileSummary.getLast6CuratorReward": {
     type: '[DailyCuratorReward]',
     args: { userId: 'String!'},
-    resolve: async (_, args) => getLast7CuratorReward(args)
+    resolve: async (_, args) => getLast6CuratorReward(args)
   },
   "ProfileSummary.getTodayEstimatedCuratorReward": {
-    type: 'DailyCuratorReward',
+    type: '[DailyCuratorReward]',
     args: { userId: 'String!'},
     resolve: async (_, args) => getTodayEstimatedCuratorReward(args)
   }

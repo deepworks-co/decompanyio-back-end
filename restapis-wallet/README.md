@@ -60,3 +60,35 @@ sls create function -f claimRoyalty --handler src/claim/royalty.handler --httpEv
 sls create function -f claimReward --handler src/claim/reward.handler --httpEvent "post /claim/reward"
 
 ```
+
+## Test using Docker
+
+### Run MongoDB
+
+```bash
+docker run --rm --name local-mongo -v "$(pwd)"/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0
+```
+
+### Export Data
+
+```bash
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=USER --out=/docker-entrypoint-initdb.d/json/USER.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT --out=/docker-entrypoint-initdb.d/json/DOCUMENT.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=REWARD-POOL-DAILY --out=/docker-entrypoint-initdb.d/json/REWARD-POOL-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-DAILY --out=/docker-entrypoint-initdb.d/json/STAT-PAGEVIEW-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=STAT-PAGEVIEW-TOTALCOUNT-DAILY --out=/docker-entrypoint-initdb.d/json/STAT-PAGEVIEW-TOTALCOUNT-DAILY.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=VOTE --out=/docker-test/json/VOTE.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-FEATURED --out=/docker-entrypoint-initdb.d/json/DOCUMENT-FEATURED.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-POPULAR --out=/docker-entrypoint-initdb.d/json/DOCUMENT-POPULAR.json
+```
+
+### Import Data
+
+```bash
+mongoimport --db=decompany --collection=USER --type=json --file=/docker-test/json/USER.json
+mongoimport --db=decompany --collection=DOCUMENT --type=json --file=/docker-test/json/DOCUMENT.json
+mongoimport --db=decompany --collection=REWARD-POOL-DAILY --type=json --file=/docker-test/json/REWARD-POOL-DAILY.json
+mongoimport --db=decompany --collection=STAT-PAGEVIEW-DAILY --type=json --file=/docker-test/json/STAT-PAGEVIEW-DAILY.json
+mongoimport --db=decompany --collection=STAT-PAGEVIEW-TOTALCOUNT-DAILY --type=json --file=/docker-test/json/STAT-PAGEVIEW-TOTALCOUNT-DAILY.json
+mongoimport --db=decompany --collection=VOTE --type=json --file=/docker-test/json/VOTE.json
+```

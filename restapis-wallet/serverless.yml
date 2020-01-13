@@ -70,9 +70,15 @@ package:
     - install.sh
     - opt/**
     - test/**
+    - docker-entrypoint-initdb.d/**
 
     
 functions:
+  preHook:
+    handler: deploy/handler.pre
+  postHook:
+    handler: deploy/handler.post
+
   claimReward:
     handler: src/claim/reward.handler
     timeout: 25
@@ -99,6 +105,11 @@ functions:
                 description: "Auth Header description"
             requestModels:
                 "application/json": "RequestDocumentModel"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   claimRoyalty:
     handler: src/claim/royalty.handler
@@ -128,6 +139,11 @@ functions:
                 description: "Auth Header description"
             requestModels:
                 "application/json": "RequestDocumentModel"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   walletVote:
     handler: src/wallet/vote.handler
@@ -158,6 +174,11 @@ functions:
                 description: "Auth Header description"
             requestModels:
                 "application/json": "RequestVoteModel"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 
   walletWithdraw:
     handler: src/wallet/withdraw.handler
@@ -185,6 +206,12 @@ functions:
                 description: "Auth Header JWT"
             requestModels:
                 "application/json": "RequestWithdrawModel"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   getBalance:
     handler: src/account/balance.handler
     timeout: 25
@@ -206,6 +233,12 @@ functions:
             description: "/api/account/balance"
             requestModels:
                 "application/json": "RequestBalanceModel"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   requestGas:
     handler: src/gas/request.handler
     timeout: 25
@@ -241,6 +274,11 @@ functions:
             statusCode:
               500:
                 template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook                
 
   createAccount:
     handler: src/account/create.handler
@@ -266,6 +304,11 @@ functions:
               -
                 name: "Authorization"
                 description: "Auth Header description"
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook                
 
   jwt:
     handler: src/authorizer/jwt.handler
@@ -297,6 +340,10 @@ resources:
           Ref: 'ApiGatewayRestApi'
 
 custom:
+  deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - asem
   prune:
     automatic: true
     number: 5
@@ -353,3 +400,4 @@ plugins:
   - serverless-plugin-split-stacks
   - serverless-prune-plugin
   - serverless-aws-documentation
+  - serverless-plugin-canary-deployments

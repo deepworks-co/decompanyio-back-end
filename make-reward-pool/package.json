@@ -1,5 +1,5 @@
 {
-  "name": "decompany-common-utils",
+  "name": "make-reward-pool",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,10 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.402.0",
-    "friendly-url": "^1.0.3",
-    "mongojs": "^3.1.0",
-    "nanoid": "^2.0.1",
-    "saslprep": "^1.0.3"
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils"
   }
 }
