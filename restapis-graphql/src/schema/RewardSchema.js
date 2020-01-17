@@ -1,5 +1,5 @@
 'use strict';
-const {VWDailyPageview, VWDailyVote, RewardPool, ClaimRoyalty} = require('../mongoose/model')
+const {VWDailyPageview, VWDailyVote, RewardPool, ClaimRoyalty} = require('decompany-mongoose').models
 const {utils} = require('decompany-common-utils');
 const { schemaComposer } = require('graphql-compose');
 

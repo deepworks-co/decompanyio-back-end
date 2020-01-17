@@ -8,6 +8,7 @@ const UserDocumentFavorite = require('./UserDocumentFavorite')
 const UserDocumentHistory = require('./UserDocumentHistory')
 const ProfileSummarySchema = require('./ProfileSummarySchema')
 const RewardSchema = require('./RewardSchema')
+const CuratorSchema = require('./CuratorSchema')
 
 
 const customizationOptions = {}; // left it empty for simplicity, described below

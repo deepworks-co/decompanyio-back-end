@@ -1,5 +1,5 @@
 'use strict';
-const {VWDailyPageview, RewardPool} = require('../../../mongoose/model')
+const {VWDailyPageview, RewardPool} = require('decompany-mongoose').models
 const {utils} = require('decompany-common-utils');
 const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
