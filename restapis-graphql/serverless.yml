@@ -115,6 +115,10 @@ custom:
     perType: true
   serverless-offline:
     port: 4080
+  serverless-mocha-plugin:
+#    preTestCommands: 
+#      - sls offline start -s local
+  
 plugins:
   - serverless-offline
   - serverless-mocha-plugin

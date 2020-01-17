@@ -5,30 +5,93 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('graphql', '/src/graphql/graphql.js', 'src/graphql/graphql');
+let wrapped = mochaPlugin.getWrapper('graphql', '/src/index.js', 'handler');
 
 describe('graphql', () => {
   before((done) => {
     done();
   });
 
-  it('addFavorite', () => {
+  it('GetTodayUserActiveVoteAmount', () => {
+
+    const query = `{
+      getDocument: Document {
+        findById(_id: "feed7f026db54859bec3221dcad47d8f"){
+          _id
+          title
+          seoTitle
+          desc
+          isPublic
+        }	
+      }
+    }`
     
     const event = {
-      body: {
-        "operationName":null, 
-        "variables":{}, 
-        "query": `mutation { 
-          UserDocumentFavorite {addFavorite(documentId: "asdf") {
-            _id
-            }
-          }
-        }
-          `}
+      httpMethod: "POST",
+      body: JSON.stringify({
+        query
+      })
+
     }
+
+
     return wrapped.run(event).then((response) => {
-      console.log(response);
-      expect(res).to.not.be.empty;
+      expect(response.statusCode).to.be.equal(200)
     });
   });
+
+
+  it('addFavorite', () => {
+    
+    const query = `
+      mutation {
+        UserDocumentFavorite {
+          addFavorite(documentId: "feed7f026db54859bec3221dcad47d8f") {
+            _id
+          }
+        }
+      }
+    `
+    
+    const event = {
+      httpMethod: "POST",
+      principalId: "google-oauth2|101778494068951192848",
+      body: JSON.stringify({
+        query
+      })
+
+    }
+
+
+    return wrapped.run(event).then((response) => {
+      expect(response.statusCode).to.be.equal(200)
+    });
+
+  });
+
+  it('getTodayActiveVoteAmount', () => {
+    
+    const event = {
+      httpMethod: "POST",
+      body: JSON.stringify({
+        query: `{
+          Curator {
+            getTodayActiveVoteAmount(
+              documentId:"feed7f026db54859bec3221dcad47d8f"){
+              activeDate
+              documentId
+              voteAmount
+            }
+          }
+        }`
+      })
+    }
+
+    return wrapped.run(event).then((response) => {
+      expect(response.statusCode).to.be.equal(200)
+    });
+
+    
+  });
+
 });
