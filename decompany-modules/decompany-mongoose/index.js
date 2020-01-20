@@ -1,18 +1,15 @@
-const crypto = require('crypto');
 const mongoose = require('mongoose');
-const {mongodb} = require('decompany-app-properties');
-const models = require('./model');
-const console = require('../common/logger');
+const models = require('./src/model');
 
-function connectToDB(){
-  mongoose.connect(mongodb.endpoint, {useNewUrlParser: true});
+function connectToDB(endpoint){
+  mongoose.connect(endpoint, {useNewUrlParser: true});
   mongoose.Promise = global.Promise;
   if(process.env.local){
     mongoose.set('debug', true);
   }
   return mongoose.connection;
 }
-//console.log("mongoose", mongoose.connection);
+/*
 function connectToMongoDB(){
 
   return new Promise((resolve, reject)=>{
@@ -43,7 +40,7 @@ function connectToMongoDB(){
 
   
 }
-
+*/
 const mongoDBStatus = () => {
   return { 
      dbState: mongoose.STATES[mongoose.connection.readyState],
@@ -53,6 +50,6 @@ const mongoDBStatus = () => {
 
 
 module.exports.models = models;
-module.exports.connectToMongoDB = connectToMongoDB;
+//module.exports.connectToMongoDB = connectToMongoDB;
 module.exports.mongoDBStatus = mongoDBStatus;
 module.exports.connectToDB = connectToDB;

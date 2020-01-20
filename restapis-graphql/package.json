@@ -20,6 +20,7 @@
     "bignumber.js": "^9.0.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
+    "decompany-mongoose": "file:../decompany-modules/decompany-mongoose",
     "graphql": "^14.5.8",
     "graphql-compose": "^7.3.0",
     "graphql-compose-mongoose": "^7.1.3",

@@ -1,6 +1,6 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const {DocumentPopular} = require('../mongoose/model')
+const {DocumentPopular} = require('decompany-mongoose').models
 
 const utc = composeWithMongoose(DocumentPopular, {});
 

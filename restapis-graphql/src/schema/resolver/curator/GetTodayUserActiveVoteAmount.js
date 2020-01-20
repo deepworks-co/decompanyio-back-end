@@ -1,49 +1,36 @@
 'use strict';
-const {VWDailyVote, VWDailyPageview, RewardPool} = require('decompany-mongoose').models
+const {VWDailyVote, VWDailyPageview, ClaimReward} = require('decompany-mongoose').models//require('../../../mongoose/model')
 const {utils} = require('decompany-common-utils');
 const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 const Web3Utils = require('web3-utils');
 const BigNumber = require('bignumber.js');
-module.exports = getLast6CuratorReward;
 
-async function getLast6CuratorReward({userId}) {
-
+module.exports = async ({userId, documentId}) => {
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
-  const before6Days = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS - 1));
-  const startDate = utils.getDate(before6Days, -1 * ACTIVE_VOTE_DAYS);
+  const startDate = utils.getDate(nowDate, -1 * ACTIVE_VOTE_DAYS);
 
   const start = utils.getBlockchainTimestamp(startDate);
   const end = utils.getBlockchainTimestamp(nowDate);
 
-  const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
+  const myVoteList = await VWDailyVote.find({documentId: documentId, blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
+  //console.log("myVoteList", JSON.stringify(myVoteList));
 
-  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, baseDate: before6Days, end});
-  //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
-
-  const totalVoteMap = await getDailyTotalVoteMap({start, end, myVoteList});
-
-  const rewardPoolList = await RewardPool.find({});
+  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, startDate: nowDate, endDate: utils.getDate(nowDate, 1)});
   
-  const resultList = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
+  const activeVoteList = [].concat.apply([], myVoteMatrix);
 
-  //console.log("result", JSON.stringify(resultList));
-
-  return resultList.map((list)=>{
-    const item = list[0];
-    
+  //console.log("activeVoteList", JSON.stringify(activeVoteList));
+  return activeVoteList.map((it)=>{
     return {
-      userId: item.userId,
-      documentId: item.documentId,
-      voteDate: item.voteDate,
-      pageview: item.pageview,
-      totalPageviewSquare: item.totalPageviewSquare,
-      reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
-        return sum + cur;
-      })
+      activeDate: it.activeDate,
+      documentId: it.documentId,
+      userId: it.userId,
+      voteAmount: it.totalDeposit?it.totalDeposit.toString(): "0"
     }
-  })
+  });
 }
+
 
 /**
  * 
@@ -131,7 +118,7 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
  * 
  * @param {*} param0 
  */
-async function getDailyMyVoteMatrix({myVoteList, baseDate, end}){
+async function getDailyMyVoteMatrix({myVoteList, startDate, endDate}){
     
   const myVoteMatrix = myVoteList.map((myVote)=>{
     //console.log("myVote", JSON.stringify(myVote));
@@ -140,7 +127,7 @@ async function getDailyMyVoteMatrix({myVoteList, baseDate, end}){
 
     return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
       const activeDate = utils.getDate(voteDate, index);
-      if(activeDate.getTime() >= baseDate.getTime() && activeDate.getTime() < new Date(end).getTime()){
+      if(activeDate.getTime() >= startDate.getTime() && activeDate.getTime() < endDate.getTime()){
         const {userId, documentId, totalDeposit} = myVote;
         
         return {

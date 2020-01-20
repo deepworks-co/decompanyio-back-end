@@ -21,8 +21,6 @@ schemaComposer.createObjectTC({
   fields: {
     voteDate: 'Date',
     documentId: 'String',
-    pageview: 'Int',
-    totalPageviewSquare: 'Int',
     reward: 'Float'
   },
 });

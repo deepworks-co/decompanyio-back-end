@@ -1,15 +1,17 @@
 'use strict';
-const console = require('./common/logger');
 const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda');
-const {connectToDB, connectToMongoDB, mongoDBStatus, models} = require('./mongoose');
+const {mongodb} = require('decompany-app-properties')//require('./mongoose');
+const {connectToDB,  mongoDBStatus} = require('decompany-mongoose')//require('./mongoose');
+
 const {schema} = require('./schema');
 const jwt = require('jsonwebtoken');
 // Set in `environment` of serverless.yml
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
-connectToDB();
+const conn = connectToDB(mongodb.endpoint);
 
 const isDebugging = process.env.stage === "local"?true:false
+const isLocal = process.env.stage === "local"?true:false
 const server = new ApolloServer({
   schema,
   // By default, the GraphQL Playground interface and GraphQL introspection
@@ -26,7 +28,6 @@ const server = new ApolloServer({
     return err;
   },
   formatResponse: (response)=>{
-    //console.log("formatResponse", response);
     return response;
   },
   engine: {
@@ -36,37 +37,38 @@ const server = new ApolloServer({
     }
   },
   context: async ({event} )=>{
-    
-    const {Authorization} = event.headers;
+    //console.log("isLocal", JSON.stringify(event))
+    if(isLocal && !event.isOffline){
+      //console.log("isLocal", JSON.stringify(event))
+      return {principalId: event.principalId, conn}
+    }
+    const {Authorization} = event.headers?event.headers:{};
     let principalId;
     if(Authorization){
-      //console.log("event.authorizationToken", event.headers);
       principalId = await authorize(Authorization)
-      //principalId = "google-oauth2|101778494068951192848"
-      //console.log("authorized principalId", principalId);
     }
 
-    return {headers: event.headers, principalId}
+    return {headers: event.headers, principalId, conn}
   }
 });
 
 module.exports.handler = async (event, context, callback) => {
-  
+
   const status = mongoDBStatus();
   if(!status || status.readyState === 0 || status === 3){
     console.log("mongoDBStatus", status);
-    db = connectToDB();
+    db = connectToDB(mongodb.endpoint);
   }
   //console.log("db.readyState", dbState[db.readyState]);
   //console.log("stage", process.env.stage)
-  
-/*
+  //console.log("event", JSON.stringify(event));
+  /*
   const callbackFilter = function(error, output) {
     if(error) console.error("graphql error!!!", error);
     output.headers['Access-Control-Allow-Origin'] = '*';
     callback(error, output);
   };
-*/
+  */
   const handler = server.createHandler({cors: {
     origin: '*',
     credentials: true

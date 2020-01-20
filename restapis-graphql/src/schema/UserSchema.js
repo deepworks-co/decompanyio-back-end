@@ -1,6 +1,6 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const {User} = require('../mongoose/model')
+const {User} = require('decompany-mongoose').models
 const utc = composeWithMongoose(User, {});
 
 function getResolverField(utc){

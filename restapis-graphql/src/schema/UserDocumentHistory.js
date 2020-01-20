@@ -1,7 +1,7 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { makeExecutableSchema } = require('graphql-tools');
 const { schemaComposer } = require('graphql-compose');
-const {UserDocumentHistory, Document} = require('../mongoose/model')
+const {UserDocumentHistory, Document} = require('decompany-mongoose').models
 const console = require('../common/logger');
 const utc = composeWithMongoose(UserDocumentHistory, {});
 

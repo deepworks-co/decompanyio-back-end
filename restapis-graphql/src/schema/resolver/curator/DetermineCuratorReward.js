@@ -5,44 +5,41 @@ const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 const Web3Utils = require('web3-utils');
 const BigNumber = require('bignumber.js');
-module.exports = getLast6CuratorReward;
+module.exports = async ({userId, documentId}) => {
 
-async function getLast6CuratorReward({userId}) {
+  if(!userId || !documentId){
+    throw new Error("parameter is not vaild")
+  }
 
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
-  const before6Days = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS - 1));
-  const startDate = utils.getDate(before6Days, -1 * ACTIVE_VOTE_DAYS);
-
+  const startDate = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS - 1)); 
+  const endDate = utils.getDate(nowDate, 1);
+  
   const start = utils.getBlockchainTimestamp(startDate);
-  const end = utils.getBlockchainTimestamp(nowDate);
+  const end = utils.getBlockchainTimestamp(endDate);
 
   const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
 
-  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, baseDate: before6Days, end});
+  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, startDate, endDate, nowDate});
   //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
 
   const totalVoteMap = await getDailyTotalVoteMap({start, end, myVoteList});
 
   const rewardPoolList = await RewardPool.find({});
   
-  const resultList = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
+  const calcRewardMatrixResult = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
 
-  //console.log("result", JSON.stringify(resultList));
-
-  return resultList.map((list)=>{
-    const item = list[0];
-    
+  //console.log("calcRewardMatrixResult", JSON.stringify(calcRewardMatrixResult));
+  const resultList = [].concat.apply([], calcRewardMatrixResult);
+  return resultList.map((it)=> {
     return {
-      userId: item.userId,
-      documentId: item.documentId,
-      voteDate: item.voteDate,
-      pageview: item.pageview,
-      totalPageviewSquare: item.totalPageviewSquare,
-      reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
-        return sum + cur;
-      })
+      documentId: it.documentId,
+      userId: it.userId,
+      voteDate: it.voteDate,
+      activeDate: it.blockchainDate,
+      reward: it.reward
     }
-  })
+  });
 }
 
 /**
@@ -131,7 +128,7 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
  * 
  * @param {*} param0 
  */
-async function getDailyMyVoteMatrix({myVoteList, baseDate, end}){
+async function getDailyMyVoteMatrix({myVoteList, startDate, endDate, nowDate}){
     
   const myVoteMatrix = myVoteList.map((myVote)=>{
     //console.log("myVote", JSON.stringify(myVote));
@@ -140,7 +137,7 @@ async function getDailyMyVoteMatrix({myVoteList, baseDate, end}){
 
     return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
       const activeDate = utils.getDate(voteDate, index);
-      if(activeDate.getTime() >= baseDate.getTime() && activeDate.getTime() < new Date(end).getTime()){
+      if(activeDate.getTime() == nowDate.getTime()){
         const {userId, documentId, totalDeposit} = myVote;
         
         return {

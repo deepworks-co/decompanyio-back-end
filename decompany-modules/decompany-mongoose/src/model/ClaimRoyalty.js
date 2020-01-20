@@ -4,14 +4,9 @@ const Schema = mongoose.Schema;
 
 const ClaimRoyalty = new Schema({
   _id: {
-    year: {type: Number},
-    month: {type: Number},
-    dayOfMonth: {type: Number},
-    userId: {type: String},
     documentId: {type: String},
-  },
-  blockchainTimestamp: {
-    type: Number
+    userId: {type: String},
+    blockchainTimestamp: { type: Number }
   },
   value: {
     type: Number
@@ -21,8 +16,8 @@ const ClaimRoyalty = new Schema({
   }
 }, {collection: "CLAIM-REWARD"});
 
-ClaimRoyalty.index({blockchainTimestamp: 1});
-ClaimRoyalty.index({"_id.userId": 1, "_id.documentId": 1});
+ClaimRoyalty.index({"_id.userId": 1, "_id.documentId": 1, "_id.blockchainTimestamp": -1});
+ClaimRoyalty.index({"_id.blockchainTimestamp": -1});
 
 
 module.exports = mongoose.models.ClaimRoyalty || mongoose.model('ClaimRoyalty', ClaimRoyalty);
