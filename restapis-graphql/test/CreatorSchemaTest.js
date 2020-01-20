@@ -7,42 +7,38 @@ const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
 let wrapped = mochaPlugin.getWrapper('graphql', '/src/index.js', 'handler');
 
-describe('graphql', () => {
+describe('CreatorSchemaTest', () => {
   before((done) => {
     done();
   });
 
-
-  it('addFavorite', () => {
-    
-    const query = `
-      mutation {
-        UserDocumentFavorite {
-          addFavorite(documentId: "feed7f026db54859bec3221dcad47d8f") {
-            _id
-          }
-        }
-      }
-    `
+  it('determineCreatorRoyalty', () => {
     
     const event = {
       httpMethod: "POST",
-      principalId: "google-oauth2|101778494068951192848",
       body: JSON.stringify({
-        query
+        query: `{
+          Creator {
+            determineCreatorRoyalty(userId:"google-oauth2|101778494068951192848", documentId:"feed7f026db54859bec3221dcad47d8f"){
+              activeDate
+              userId
+              documentId
+              pageview
+              totalPageview
+              royalty
+            }
+          }
+        }`
       })
-
     }
 
-
     return wrapped.run(event).then((response) => {
-      //expect(response.statusCode).to.be.equal(200).to.be.empty(message)
       const body = JSON.parse(response.body)
       const r = response.statusCode === 200 && !body.errors
       expect(r).to.be.equal(true)
     });
 
+    
   });
-
 
 });
