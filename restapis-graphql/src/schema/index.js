@@ -9,6 +9,7 @@ const UserDocumentHistory = require('./UserDocumentHistory')
 const ProfileSummarySchema = require('./ProfileSummarySchema')
 const RewardSchema = require('./RewardSchema')
 const CuratorSchema = require('./CuratorSchema')
+const CreatorSchema = require('./CreatorSchema')
 
 
 const customizationOptions = {}; // left it empty for simplicity, described below

@@ -64,7 +64,10 @@ describe('graphql', () => {
 
 
     return wrapped.run(event).then((response) => {
-      expect(response.statusCode).to.be.equal(200)
+      //expect(response.statusCode).to.be.equal(200).to.be.empty(message)
+      const body = JSON.parse(response.body)
+      const r = response.statusCode === 200 && !body.errors
+      expect(r).to.be.equal(true)
     });
 
   });
@@ -81,6 +84,33 @@ describe('graphql', () => {
               activeDate
               documentId
               voteAmount
+            }
+          }
+        }`
+      })
+    }
+
+    return wrapped.run(event).then((response) => {
+      expect(response.statusCode).to.be.equal(200)
+    });
+
+    
+  });
+
+  it('determineCreatorRoyalty', () => {
+    
+    const event = {
+      httpMethod: "POST",
+      body: JSON.stringify({
+        query: `{
+          Creator {
+            determineCreatorRoyalty(userId:"google-oauth2|101778494068951192848", documentId:"feed7f026db54859bec3221dcad47d8f"){
+              activeDate
+              userId
+              documentId
+              pageview
+              totalPageview
+              royalty
             }
           }
         }`
