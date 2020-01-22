@@ -10,6 +10,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
+        "endpoint-dev": "mongodb://decompany:decompany1234@13.57.245.55:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000",
         "endpoint": "mongodb://localhost:27017/decompany"
     },
     "s3Config":{
