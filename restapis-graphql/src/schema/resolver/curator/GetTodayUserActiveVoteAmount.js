@@ -9,9 +9,10 @@ const BigNumber = require('bignumber.js');
 module.exports = async ({userId, documentId}) => {
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
   const startDate = utils.getDate(nowDate, -1 * ACTIVE_VOTE_DAYS);
+  const endDate = utils.getDate(nowDate, 1);
 
   const start = utils.getBlockchainTimestamp(startDate);
-  const end = utils.getBlockchainTimestamp(nowDate);
+  const end = utils.getBlockchainTimestamp(endDate);
 
   const myVoteList = await VWDailyVote.find({documentId: documentId, blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
   //console.log("myVoteList", JSON.stringify(myVoteList));

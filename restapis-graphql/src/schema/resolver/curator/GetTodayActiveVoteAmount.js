@@ -12,9 +12,10 @@ module.exports = async ({documentId}) => {
   }
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
   const startDate = utils.getDate(nowDate, -1 * ACTIVE_VOTE_DAYS);
+  const endDate = utils.getDate(nowDate, 1);
 
   const start = utils.getBlockchainTimestamp(startDate);
-  const end = utils.getBlockchainTimestamp(nowDate);
+  const end = utils.getBlockchainTimestamp(endDate);
   //console.log("query", JSON.stringify({documentId: documentId, blockchainTimestamp: {$gte: start, $lt: end}}))
   const myVoteList = await VWDailyVote.find({documentId: documentId, blockchainTimestamp: {$gte: start, $lt: end}}).sort({blockchainTimestamp: 1});
   //console.log("myVoteList", JSON.stringify(myVoteList));
