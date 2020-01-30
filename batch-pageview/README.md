@@ -21,7 +21,7 @@ npm install ethereumjs-tx
 ```
 
 
-## Step Function
+## Step Function 생성
 
 ```javascript
 {
@@ -73,6 +73,7 @@ npm install ethereumjs-tx
 
 ## create api
 
+```bash
 sls create function -f pageviewByHourly --handler functions/pageview/hourly.handler
 sls create function -f pageviewRequestPutOnChainByDaily --handler functions/pageview/requestPutOnChainByDaily.handler
 sls create function -f onchainWritePageview --handler functions/onchain/writePageview.handler
@@ -91,7 +92,13 @@ sls create function -f recentlyPageview --handler functions/cron/recentlyPagevie
 
 sls create function -f pageviewWriteOnChainTrigger --handler functions/onchain/pageviewWriteOnChainTrigger.handler
 
-# Test
+sls create function -f calculateRoyalty --handler functions/cron/calculateRoyalty.handler
+
+
+sls create function -f makeRewardPool --handler functions/mgr/makeRewardPool.handler
+```
+
+## Test
 
 sls invoke test -f {FunctionName}
 sls invoke test -f registYesterdayViewCount

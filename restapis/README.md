@@ -38,6 +38,7 @@ npm install mongojs@2.6.0
 npm install json-2-csv@3.5.4
 npm install buffer-image-size@0.6.4
 npm install request@2.88.0
+npm install jsonwebtoken@8.5.1
 npm --prefix ./opt install sharp@0.22.1
 ```
 
@@ -120,6 +121,9 @@ sls create function -f curatorDocumentList --handler controllers/curator/curator
 sls create function -f curatorTodayDocumentList --handler controllers/curator/curatorTodayDocumentList.handler --httpEvent "post /api/curator/document/today"
 sls create function -f profileGetByNoAuth --handler controllers/profile/userGetByNoAuth.handler --httpEvent "get /api/profile/get"
 sls create function -f documentUpdate --handler controllers/document/documentUpdate.handler --httpEvent "post /api/document/update"
+sls create function -f documentInfo --handler controllers/document/documentInfo.handler --httpEvent "get /api/document/info"
+sls create function -f documentMeta --handler controllers/document/documentMeta.handler --httpEvent "get /api/document/meta"
+sls create function -f documentPDF --handler controllers/document/documentPDF.handler --httpEvent "get /api/document/pdf"
 sls create function -f documentMigration --handler migration/documentMigration.handler
 sls create function -f accountEthereumSync --handler controllers/account/accountEthereumSync.handler --httpEvent "post /api/account/ethereumSync"
 sls create function -f trackingExport --handler controllers/tracking/trackingExport.handler --httpEvent "get /api/tracking/export"
@@ -133,6 +137,14 @@ sls create function -f verifyEmail --handler controllers/email/verifyEmail.handl
 
 sls create function -f bountyRequest --handler controllers/bounty/bountyRequest.handler --httpEvent "get /api/bounty/request"
 sls create function -f bountyState --handler controllers/bounty/bountyState.handler --httpEvent "get /api/bounty/state"
+
+sls create function -f documentFavorite --handler controllers/document/documentFavorite.handler --httpEvent "post /api/document/favorite"
+sls create function -f documentHistory --handler controllers/document/documentHistory.handler --httpEvent "post /api/document/history"
+sls create function -f documentFavoriteList --handler controllers/document/documentFavoriteList.handler --httpEvent "get /api/document/favorite/list"
+sls create function -f documentHistoryList --handler controllers/document/documentHistoryList.handler --httpEvent "get /api/document/history/list"
+
+
+
 ```
 
 

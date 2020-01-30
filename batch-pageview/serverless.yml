@@ -20,14 +20,17 @@ service: batch-pageview # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
-  region: us-west-1
+  region: ${file(./serverlessConfig.js):region}
   stage: ${opt:stage, 'dev'}
   vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
   environment:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
@@ -55,6 +58,11 @@ provider:
     - .env
 
 functions:
+  makeRewardPool:
+    handler: functions/mgr/makeRewardPool
+  calculateRoyalty:
+    handler: functions/cron/calculateRoyalty.handler
+    timeout: 300
 
   pageviewWriteOnchain:
     handler: functions/onchain/pageviewWriteOnchain.handler
@@ -72,49 +80,45 @@ functions:
     handler: functions/cron/recentlyPageview.handler
     timeout: 30
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
       
   generatePopular:
     handler: functions/cron/generatePopular.handler
     timeout: 300
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
   
   generateFeatured:
     handler: functions/cron/generateFeatured.handler
     timeout: 300
     events:
-      - schedule: rate(5 minutes) # hourly
+      - schedule: rate(5 minutes)
 
   generateTopTag:
     handler: functions/cron/generateTopTag.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
+    timeout: 300
     events:
-      - schedule: rate(5 minutes) # 10min, hourly
-
-  voteCollector:
-    handler: functions/cron/voteCollector.handler
-    timeout: 300 # optional, in seconds, default is 6, 5min
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
+      - schedule: rate(5 minutes)
       
-  pageviewCollector:
-    handler: functions/cron/pageviewCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
+stepFunctions:
+  validate: true
+  stateMachines:
+    dailyAggregateRoyalty:
+      events:
+        - schedule: 
+            rate: cron(30 0 * * ? *)
+      definition:
+        StartAt: aggregatePageviewState
+        States:
+          aggregatePageviewState:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyPageview
+                - Arn
+            End: true
 
-  registryCollector:
-    handler: functions/cron/registryCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
-      
-  blockCollector:
-    handler: functions/cron/blockCollector.handler
-    timeout: 300
-    events:
-      - schedule: rate(1 minute) # 10min, hourly
 
 plugins:
   - serverless-mocha-plugin
+  - serverless-step-functions

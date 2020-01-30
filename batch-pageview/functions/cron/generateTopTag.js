@@ -27,10 +27,11 @@ module.exports.handler = async (event, context, callback) => {
 
 
 function map() {
-  this.tags.forEach(function (tag){
-    emit(tag, 1);
-  })
-  
+  if(this.state === "CONVERT_COMPLETE" && this.isBlocked === false && this.isDeleted === false && this.isPublic === true){
+    this.tags.forEach(function (tag){
+      emit(tag, 1);
+    })
+  }
 }
 
 function reduce(key, values) {

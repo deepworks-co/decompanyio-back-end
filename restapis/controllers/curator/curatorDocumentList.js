@@ -25,38 +25,33 @@ module.exports.handler = async (event, context, callback) => {
   const ethAccount = query.ethAccount;
   const tag = query.tag;
   const pageSize = isNaN(query.pageSize)?20:Number(query.pageSize);
-  
-  if(!ethAccount){
+  const userId = query.userId;
+  if(!userId){
     throw new Error(`parameter is invalid!! ${JSON.stringify(query)}`);
   }
 
   console.log("activeRewardVoteDays", applicationConfig.activeRewardVoteDays?applicationConfig.activeRewardVoteDays:7)
 
-  const promise1 = documentService.queryVotedDocumentByCurator({
+  const result = await documentService.queryVotedDocumentByCurator({
     pageNo: pageNo,
     pageSize: pageSize,
-    applicant: ethAccount,
+    //applicant: ethAccount,
+    userId: userId,
     tag: tag
-  })
+  });
+  const resultList = result.resultList?result.resultList:[];
 
-  const date = utils.getBlockchainTimestamp(new Date());    //utc today
+ 
 
-  const promise2 = documentService.getRecentlyPageViewTotalCount();
+  const totalViewCountInfo = await documentService.getRecentlyPageViewTotalCount();
 
   //내가 voting한 문서의 최근 activeRewardVoteDays(7)일 동안의 총 vote amount 가져오기
-  const promises3 = documentService.queryRecentlyVoteListForApplicant({
-    applicant: ethAccount,
+  const latestRewardVoteList = await documentService.queryRecentlyVoteListForApplicant({
+    //applicant: ethAccount,
+    userId: userId,
     activeRewardVoteDays: applicationConfig.activeRewardVoteDays?applicationConfig.activeRewardVoteDays:7
   });
-
-  const results = await Promise.all([promise1, promise2, promises3]);
-
-  console.log("success!!", JSON.stringify(results));
-  const result = results[0];
-  const resultList = result.resultList?result.resultList:[];
-  const totalViewCountInfo = results[1]
-  const latestRewardVoteList = results[2];
-
+  console.log("queryRecentlyVoteListForApplicant", JSON.stringify(latestRewardVoteList));
 
   return JSON.stringify({
     success: true,

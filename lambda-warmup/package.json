@@ -1,0 +1,23 @@
+{
+  "name": "lambda-warmup",
+  "version": "1.0.0",
+  "description": "## Install dependency",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.501.0",
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "serverless-mocha-plugin": "^1.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha",
+    "deploy": "sls deploy",
+    "deploy:alpha": "sls deploy -s alpha",
+    "deploy:asem": "sls deploy -s asem"
+  },
+  "author": "",
+  "license": "ISC"
+}

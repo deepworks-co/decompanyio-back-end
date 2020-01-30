@@ -1,5 +1,5 @@
 'use strict';
-const {utils, MongoWapper} = require('decompany-common-utils');
+const {utils, MongoWrapper} = require('decompany-common-utils');
 const { mongodb, tables } = require('decompany-app-properties');
 
 const TB_STAT_PAGEVIEW_DAILY = tables.STAT_PAGEVIEW_DAILY;
@@ -12,7 +12,7 @@ const period = 7; //days
  * 현재 + 이전 7일  집계
  */
 module.exports.handler = async (event, context, callback) => {
-  const wapper = new MongoWapper(mongodb.endpoint);
+  const wapper = new MongoWrapper(mongodb.endpoint);
   try{
     const now = new Date();
     const beforeDays = new Date(now - 1000 * 60 * 60 * 24 * period);
@@ -59,34 +59,50 @@ function getQueryPipeline(start){
     }
   }, {
     $lookup: {
-      from: "DOCUMENT",
+      from: tables.DOCUMENT,
         foreignField: "_id",
         localField: "_id",
         as: "documentAs"
     }
   }, {
     $addFields: {
-      document: { $arrayElemAt: [ "$documentAs", 0 ] },
+      "documentAs": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentAs",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
     }
   }, {
-    $match: {
-      document: { $exists: true, $ne: null }
+    $unwind: {
+      path:"$documentAs",
+      preserveNullAndEmptyArrays: false
     }
   }, {
     $addFields:{
-      tags: "$document.tags",
-      documentName: "$document.documentName",
-      seoTitle: "$document.seoTitle",
-      accountId: "$document.accountId",
-      title: "$document.title",
-      desc: "$document.desc",
-      created: "$document.created",
-      state: "$document.state",
-      totalPages: "$document.totalPages"
+      tags: "$documentAs.tags",
+      documentName: "$documentAs.documentName",
+      seoTitle: "$documentAs.seoTitle",
+      accountId: "$documentAs.accountId",
+      title: "$documentAs.title",
+      desc: "$documentAs.desc",
+      created: "$documentAs.created",
+      state: "$documentAs.state",
+      totalPages: "$documentAs.totalPages",
     }
   }, {
     $project: {
-      document: 0,
       documentAs: 0
     }
   }, {

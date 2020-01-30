@@ -1,0 +1,112 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: batch-wallet # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: ${file(./serverlessConfig.js):region}
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+  tags:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:*
+       - s3:*
+       - logs:*
+       - sqs:*
+       - kinesis:*
+       - kms:*
+       - ses:*
+       - codedeploy:*
+       - sns:*
+      Resource: "*"
+# you can add statements to the Lambda function's IAM Role here
+  vpc:
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
+
+package:
+  individually: false
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
+    - opt/**
+    - test/**
+    
+functions:
+#  dailySetDateMillis:
+#    handler: src/scheduler/dailySetDateMillis.handler
+#    timeout: 60
+#    reservedConcurrency: 1
+#    events:
+#      - schedule: cron(0 0 * * ? *)
+
+  schedulerTransfer:
+    handler: src/scheduler/transfer.handler
+    timeout: 300
+    reservedConcurrency: 1
+    events:
+      - schedule: rate(1 minute)
+
+  schedulerWithdraw:
+    handler: src/scheduler/withdraw.handler
+    timeout: 300
+    reservedConcurrency: 1
+    events:
+      - schedule: rate(1 minute)
+
+
+# you can add CloudFormation resource templates here
+resources:
+
+
+custom:
+  prune:
+    automatic: true
+    number: 5
+  splitStacks:
+    perFunction: false
+    perType: true
+  serverless-offline:
+    port: 4080
+  
+plugins:
+  - serverless-mocha-plugin
+  - serverless-plugin-split-stacks
+  - serverless-prune-plugin

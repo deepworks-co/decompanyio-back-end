@@ -19,22 +19,20 @@ module.exports.handler = async (event, context, callback) => {
   const pageSize = isNaN(query.pageSize)?10:Number(query.pageSize);
   const skip = ((pageNo - 1) * pageSize);
 
-  
-
   const totalViewCountInfo = await documentService.getRecentlyPageViewTotalCount();
   
   const accountService = new AccountService();
-  const resultList = await accountService.getDocuments({
+  const resultMap = await accountService.getDocuments({
     accountId: principalId,
     pageSize: pageSize,
     skip: skip
   });
   
-  return (null, JSON.stringify({
+  return JSON.stringify({
     success: true,
-    resultList: resultList,
+    resultList: resultMap.resultList,
     pageNo: pageNo,
-    count: resultList.length,
+    count: resultMap.totalCount,
     totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
-  }));
+  });
 };

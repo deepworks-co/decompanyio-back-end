@@ -13,8 +13,13 @@ describe('dailyPageview', () => {
   });
 
   it('implement tests here', () => {
-    let event ={};
-    //evnet = {period: 1}
+    
+    //2019. 10. 29 ~ 2019. 10. 30
+    let event ={
+      start: Date.UTC(2019, 9, 30),
+      end : Date.UTC(2019, 9, 31)
+    };
+    
     return wrapped.run(event).then((response) => {
       console.log(response);
       expect(response).to.not.be.empty;

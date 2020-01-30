@@ -10,77 +10,17 @@ let wrapped = mochaPlugin.getWrapper('s3DocumentConvertComplete', '/s3/document/
 const { mongodb, tables } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
-async function getList(){
-  console.log("stage", process.env.stage);
-  console.log("endpoint", mongodb.endpoint);
-  const wapper = new MongoWapper(mongodb.endpoint);
-  try{
-    
-    const resultList = await wapper.aggregate("DOCUMENT", [
-      {
-        $match: {state:"CONVERT_COMPLETE"}
-      }, {
-        $sort: {created: -1}
-      }, {
-        $skip: 50
-      }, {
-        $limit: 10
-      }
-      
-    ]);
-    
-    return resultList.map((it)=>{
-      //console.log(it);
-      const totalPages = it.totalPages;
-
-      let pages = Array.apply(null, {length: totalPages}).map(Number.call, Number)
-
-      pages = pages.map((n, index)=>{
-        return {
-          "s3": {
-            "bucket": {
-              "name": "dev-ca-document",
-            },
-            "object": {
-              "key": `THUMBNAIL/${it._id}/1200X1200/${index+1}`
-            }
-          }
-        }
-      })
-
-      return pages;
-    });
-  } catch(e){
-    console.log(e)
-  } finally{
-    console.log("close");
-    wapper.close();
-  }
-  
-
-  return null;
-}
 
 describe('s3DocumentConvertComplete', () => {
   before((done) => {
     done();
   });
-  it('implement tests here', async () => {
+
+  it('1fb0012674b442de9bc4e397f6e8dd62 1page convert Test', async () => {
     
     const event = {
       "Records": [
-       
-        {
-          "s3": {
-            "bucket": {
-              "name": "dev-ca-document",
-            },
-            "object": {
-              "key": "THUMBNAIL/fa0d69599a0e418283b8eb20d80a84ed/result.txt"
-            }
-          }
-        },
-        /*
+        
         {
           "s3": {
             "bucket": {
@@ -90,8 +30,7 @@ describe('s3DocumentConvertComplete', () => {
               "key": "THUMBNAIL/1fb0012674b442de9bc4e397f6e8dd62/1200X1200/1"
             }
           }
-        },
-        */
+        }
         
       ]
     }
@@ -100,26 +39,31 @@ describe('s3DocumentConvertComplete', () => {
       expect(response).to.not.be.empty;
     });
 
+  }).timeout(10000);
 
-  /*
-    let resultList = await getList();
-    //console.log(JSON.stringify(resultList.slice(0, 2)));
-    console.log("getList", resultList.length);
-    let i=0;
-    for(i=0;i<resultList.length;i++){
-      const it = resultList[i];
-      console.log(i, it);
-      const event = {
-        Records: it
-      }
-      const result = await wrapped.run(event);
-      console.log("migration results", i+1, result);
-      //console.log(JSON.stringify(result));
-    }
-    */
-    //console.log("migration results", await Promise.all(results));
 
+  it('Test result.txt - 52c130ad55924521a16bb11b044e7f67 ', async () => {
     
-  }).timeout(30000000);
+    const event = {
+      "Records": [
+        
+        {
+          "s3": {
+            "bucket": {
+              "name": "dev-ca-document",
+            },
+            "object": {
+              "key": "THUMBNAIL/52c130ad55924521a16bb11b044e7f67/result.txt"
+            }
+          }
+        }        
+      ]
+    }
 
+    return wrapped.run(event).then((response) => {
+      const result = response[0]
+      const success = result && result.documentId !== undefined && result.shortUrl !== undefined && result.dimensions !== undefined;
+      expect(success).to.be.true
+    });    
+  });
 });

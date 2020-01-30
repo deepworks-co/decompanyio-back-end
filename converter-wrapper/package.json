@@ -1,0 +1,32 @@
+{
+  "name": "converter-wrapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.503.0",
+    "buffer-image-size": "^0.6.4",
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-mocha-plugin": "^1.11.0",
+    "serverless-offline": "^5.6.0",
+    "serverless-plugin-canary-deployments": "^0.4.7",
+    "serverless-plugin-existing-s3": "^2.4.0",
+    "serverless-plugin-split-stacks": "^1.9.1",
+    "serverless-prune-plugin": "^1.4.1"
+  },
+  "scripts": {
+    "preinstall": "sh install.sh",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "sls deploy -s dev && sls s3deploy -s dev",
+    "deploy:alpha": "sls deploy -s alpha  && sls s3deploy -s alpha",
+    "deploy:asem": "sls deploy -s asem && sls s3deploy -s asem",
+    "deploy:jpdev": "sls deploy -s jpdev && sls s3deploy -s jpdev"
+  }
+}

@@ -24,6 +24,27 @@ describe('documentRegist', () => {
         useTracking: true,
         forceTracking: true,
         isDownload: true
+        //isPublic: false
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log("");
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+
+  it('한글 문서명 테스트', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        filename: "머신러닝 이북-수포자를 위한 머신러닝.pdf",
+        size: "0",
+        tags: ["test", "dev", "machine learning"],
+        title: "머신러닝 이북-수포자를 위한 머신러닝",
+        desc: "머신러닝 이북-수포자를 위한 머신러닝",
+        isPublic: false
       }
     }
     return wrapped.run(event).then((response) => {

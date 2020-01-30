@@ -22,21 +22,18 @@ provider:
   runtime: nodejs8.10
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
-  region: us-west-1
-  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
-  #apiName: ${self:service.name}-api      # Api Gateway Name
+  region: ${file(./serverlessConfig.js):region}
   environment:
     stage: ${self:provider.stage}
     region: ${self:provider.region}
     servicename: ${self:service.name}
     AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
-    AUTH0_ZAPIERCONNECTOR_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_ZAPIERCONNECTOR_CLIENT_ID}
     AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
     NODE_PATH: "./:/opt/node_modules"
   tags:
-    stage: ${self:provider.stage}
-    region: ${self:provider.region}
-    servicename: ${self:service.name}
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
     GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
     GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
     DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
@@ -55,27 +52,17 @@ provider:
       Resource: "*"
 # you can add statements to the Lambda function's IAM Role here
   vpc:
-    securityGroupIds:
-      - sg-05a13849fc117801b
-    subnetIds:
-      - subnet-37594850
-      - subnet-38bb9963
-
-# you can define service wide environment variables here
-  #environment:
-  #  CROS: true
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
 
 package:
-  individually: true
+  individually: false
   exclude:
     - .gitignore
     - .env
@@ -83,33 +70,13 @@ package:
     - install.sh
     - opt/**
     - test/**
-
-layers:
-  libNodeModule:
-    path: opt
-    description: "additional node_module"
     
 functions:
-  accountPictureConverter:
-    handler: s3/account/accountPictureConverter.handler
-    layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.upload_profile}
-          events: 
-            - s3:ObjectCreated:Put
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
   preHook:
     handler: deploy/handler.pre
   postHook:
     handler: deploy/handler.post
-
+    
   curatorDocumentList:
     handler: controllers/curator/curatorDocumentList.handler
     events:
@@ -143,80 +110,6 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  curatorSummary:
-    handler: controllers/curator/curatorSummary.handler
-    events:
-      - http:
-          path: /api/curator/summary
-          method: get
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: "/api/curator/summary"
-            description: "/api/curator/summary"
-            queryParams:
-              - name: ethAccount
-                description: ethAccount
-                type: string
-                required: true
-            methodResponses:
-              -
-                statusCode: "200"
-                responseBody:
-                  description: "Response body description"
-                responseModels:
-                  "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  zapierAuth:
-    handler: controllers/zapier/auth.handler
-
-  zapierEmail:
-    handler: controllers/zapier/email.handler
-    events:
-      - http:  
-          path: /api/zapier/email
-          method: get
-          authorizer: zapierAuth
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  zapierDocument:
-    handler: controllers/zapier/document.handler
-    events:
-      - http:
-          path: /api/zapier/document
-          method: get
-          authorizer: zapierAuth
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -332,38 +225,6 @@ functions:
                   description: "Response body description"
                 responseModels:
                   "application/json": "DefaultResponseModel"
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  s3DocumentUploadComplete:
-    handler: s3/document/uploadComplete.handler
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.document}
-          events:
-            - s3:ObjectCreated:Put
-          rules:
-            - prefix: FILE/
-    deploymentSettings:
-      type: ${self:custom.deployType}
-      alias: prod
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  s3DocumentConvertComplete:
-    handler: s3/document/convertComplete.handler
-    layers:   
-      - {Ref: LibNodeModuleLambdaLayer}
-    events:
-      - existingS3: 
-          bucket: ${file(./serverlessConfig.js):s3Config.document}
-          events: 
-            - s3:ObjectCreated:Put
-          rules:
-            - prefix: THUMBNAIL/
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -613,14 +474,40 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentMeta:
+    handler: controllers/document/documentMeta.handler
+    events:
+      - http: 
+          path: /api/document/meta
+          method: get
+          cors: true
+          integration: lambda
+          documentation:
+            summary: "/api/document/download"
+            description: "/api/document/download"
+            queryParams:
+              - name: seoTitle
+                description: seoTitle
+                type: string
+                required: true
+          response: 
+              headers:
+                Content-Type: integration.response.header.Content-Type
+              template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
   documentInfo:
-    handler: controllers/document/documentController.info
+    handler: controllers/document/documentInfo.handler
     events:
       - http:
           path: api/document/info/{documentId}
           method: get
           cors: true
-          integration: lambda
+          integration: lambda          
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -643,13 +530,76 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')            
+            template: $input.path('$')
+          documentation:
+            summary: "/api/document/update"
+            description: "/api/document/update"
+            requestHeaders:
+              -
+                name: "Authorization"
+                description: "JWT Token"
+                required: true
+            queryParams:
+              - name: documentId
+                description: documentId
+                type: string
+                required: true
+              - name: desc
+                description: desc
+                type: string
+              - name: title
+                description: title
+                type: string
+              - name: tags
+                description: tags
+                type: array
+              - name: useTracking
+                type: boolean
+                description: useTracking
+              - name: forceTracking
+                type: boolean
+                description: forceTracking
+              - name: isDownload
+                type: boolean
+                description: isDownload
+              - name: shortUrl
+                type: string
+                description: shortUrl                
+              - name: cc
+                type: string
+                description: "cc"
+              - name: isPublic
+                type: boolean
+                description: isPublic
+              - name: isDeleted
+                type: boolean
+                description: isDeleted                
+            requestBody:
+              application/json: "documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted"            
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  documentPDF:
+    handler: controllers/document/documentPDF.handler
+    events:
+      - http: 
+          path: /api/document/pdf
+          method: get
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      
   documentDownload:
     handler: controllers/document/documentDownload.handler
     events:
@@ -775,7 +725,8 @@ functions:
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
+              Set-Cookie: integration.response.body.Cookie
+            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
@@ -866,18 +817,19 @@ functions:
               - name: sid
                 description: sid
                 type: string
+              
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
       preTrafficHook: preHook
       postTrafficHook: postHook
   
-  embededDocument:
-    handler: controllers/embeded/embededDocument.handler
+  oembedDocument:
+    handler: controllers/oembed/oembedDocument.handler
     events:
       - http: 
           method: get
-          path: /api/embeded/document
+          path: /api/oembed
           cors: true
           integration: lambda
           response:
@@ -901,6 +853,8 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
@@ -911,12 +865,17 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
         ResponseType: DEFAULT_5XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
         RestApiId: 
           Ref: 'ApiGatewayRestApi'
 
 
 custom:
   deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - asem
   prune:
     automatic: true
     number: 5
@@ -953,7 +912,6 @@ plugins:
   - serverless-offline
   - serverless-aws-documentation
   - serverless-mocha-plugin
-  - serverless-plugin-existing-s3
   - serverless-plugin-split-stacks
   - serverless-plugin-canary-deployments
   - serverless-prune-plugin

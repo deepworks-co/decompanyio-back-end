@@ -10,22 +10,22 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   const {principalId, body} = event;
-  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl} = body;
+  const {documentId, desc, title, tags, useTracking, forceTracking, isDownload, cc, shortUrl, isPublic, isDeleted} = body;
 
-  console.log(body);
+  //console.log(body);
 
-  if(!documentId && !desc && !title && !tags && !useTracking && !forceTracking){
-    throw new Error("parameter is invalid!!");
+  if(!documentId){
+    throw new Error("[404] document id is invalid");
   }
 
   const document = await documentService.getDocumentById(documentId);
 
   if(!document){
-    throw new Error(`document does not exists ${documentId}`);
+    throw new Error(`[404] document does not exists ${documentId}`);
   }
 
   if(!principalId || document.accountId !== principalId){
-    throw new Error("no permission");
+    throw new Error("[403] no permission");
   }
 
   const newDoc = {_id: document._id};
@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.desc = desc;
   }
   
-  if(title) {
+  if(title && title !== document.title) {
     newDoc.title = title;
     let newSeoTitle;
     let existsSeoTitle;
@@ -49,23 +49,17 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.tags = tags;
   }
 
-  if(useTracking === true || useTracking === 'true'){
-    newDoc.useTracking = true;
-  } else {
-    newDoc.useTracking = false;
-  }
+  if(useTracking !== undefined){
+    newDoc.useTracking = utils.parseBool(useTracking);
+  } 
 
-  if(forceTracking === true || forceTracking === 'true'){
-    newDoc.forceTracking = true;
-  } else {
-    newDoc.forceTracking = false;
-  }
+  if(forceTracking !== undefined){
+    newDoc.forceTracking = utils.parseBool(forceTracking);
+  } 
 
-  if(isDownload === true || isDownload === 'true'){
-    newDoc.isDownload = true;
-  } else {
-    newDoc.isDownload = false;
-  }
+  if(isDownload !== undefined){
+    newDoc.isDownload = utils.parseBool(isDownload);
+  } 
 
   if(cc){
     newDoc.cc = cc;
@@ -75,14 +69,46 @@ module.exports.handler = async (event, context, callback) => {
     newDoc.shortUrl = shortUrl;
   }
 
-  document.updated = Date.now();
-  const result = await documentService.updateDocument(newDoc);
-  console.log("update document", result);
+  if(isPublic !== undefined){
+    newDoc.isPublic = utils.parseBool(isPublic);
+    if(newDoc.isPublic===false){
+      const {check, privateDocumentCount} = await documentService.checkRegistrableDocument(principalId);
+      if(check===false){
+        //throw new Error('registry error, private document over 5');
+        return callback(null, JSON.stringify({
+          success: true,
+          code: "EXCEEDEDLIMIT",
+          privateDocumentCount: privateDocumentCount,
+          message: 'Error Update , You have at least 5 private documents.'
+        }));
+      }
 
-  const response =  JSON.stringify({
-    success: true,
-    result: result
-  });
+      if(document.isRegistry === true){
+        return callback(null, JSON.stringify({
+          success: true,
+          code: "REGISTRYINBLOCKCHAIN",
+          message: 'Error Update , registry in blockchain'
+        }));
+      }
+    }
+  }
 
-  return callback(null, response);
+  if(isDeleted !== undefined){
+    newDoc.isDeleted = utils.parseBool(isDeleted);
+    newDoc.deleted = Date.now();
+  }
+
+  const response =  {
+    success: true
+  };
+  console.log("newDoc", newDoc, Object.keys(newDoc));
+  if(Object.keys(newDoc).length>1){
+    newDoc.updated = Date.now();
+    const result = await documentService.updateDocument(newDoc);
+    //console.log("update document", result);
+  
+    response.result = result;
+  } 
+
+  return JSON.stringify(response);
 };

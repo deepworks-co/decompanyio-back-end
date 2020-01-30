@@ -1,0 +1,10 @@
+{
+    "DOCUMENT": {
+        "STATE": {
+            "NOT_CONVERT": "NOT_CONVERT",
+            "UPLOAD_COMPLETE": "UPLOAD_COMPLETE",
+            "CONVERT_COMPLETE": "CONVERT_COMPLETE",
+            "CONVERT_FAIL": "CONVERT_FAIL"
+        }
+    }
+}

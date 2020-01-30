@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables } = require('decompany-app-properties');
+const { mongodb, tables, constants } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -39,6 +39,7 @@ module.exports = {
   getAnalyticsListWeekly,
   getAnalyticsListMonthly,
   getDocumentIdsByUserId,
+  checkRegistrableDocument
 }
 
  /**
@@ -47,35 +48,73 @@ module.exports = {
  async function getDocumentById(documentId) {
   const wapper = new MongoWapper(connectionString);
   
-  try{
-    let result = await wapper.findOne(TB_DOCUMENT, {_id: documentId});
+  try{     
 
-    if(result){
-      let featured = await wapper.findOne(tables.DOCUMENT_FEATURED, {_id: documentId});
-      let popular = await wapper.findOne(tables.DOCUMENT_POPULAR, {_id: documentId});
-
-      if(featured){
-        result.latestVoteAmount = featured.latestVoteAmount;
-      } else {
-        result.latestVoteAmount = 0;
+    const queryPipeline = [
+      {
+        $match: {_id: documentId}
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_POPULAR,
+          localField: "_id",
+          foreignField: "_id",
+          as: "popularAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.USER,
+          localField: "accountId",
+          foreignField: "_id",
+          as: "userAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.DOCUMENT_FEATURED,
+          localField: "_id",
+          foreignField: "_id",
+          as: "featuredAs"
+        }
+      }, {
+        $lookup: {
+          from: tables.EVENT_REGISTRY,
+          localField: "_id",
+          foreignField: "documentId",
+          as: "registryAs"
+        }
+      }, {
+        $addFields: {
+          author: { $arrayElemAt: [ "$userAs", 0 ] },
+          featured: { $arrayElemAt: [ "$featuredAs", 0 ] },
+          popular: { $arrayElemAt: [ "$popularAs", 0 ] },
+          registry: { $arrayElemAt: [ "$registryAs", 0 ] }
+        }
+      }, {
+        $addFields: {
+          latestPageview: "$popular.latestPageview",
+          latestPageviewList: "$popular.latestPageviewList",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
+          isRegistry: {
+            $cond: [
+              { $ifNull: [ '$registry', false ]}, true, false
+            ]
+          }
+        }
+      }, {
+        $project: {
+          userAs: 0, featuredAs: 0, popularAs: 0, popular: 0, featured: 0, registryAs: 0, registry: 0
+          
+        }
       }
-
-      if(popular){
-        result.latestPageview = popular.latestPageview;
-      } else {
-        result.latestPageview = 0;
-      }
-    }
+    ]
+    console.log(JSON.stringify(queryPipeline));
+    const documents = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
-    console.log("getDocumentById", result);
-
-    return result;
-  } catch (err){
+    return documents[0];
+  } catch (err) {
     throw err;
-  } finally{
+  } finally {
     wapper.close();
-  }
-  
+  }      
 }
  /**
   * @param  {} seoTitle
@@ -145,7 +184,7 @@ module.exports = {
         $addFields: {
           latestPageview: "$popular.latestPageview",
           latestPageviewList: "$popular.latestPageviewList",
-          latestVoteAmount: "$featured.latestVoteAmount",
+          latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
           isRegistry: {
             $cond: [
               { $ifNull: [ '$registry', false ]}, true, false
@@ -159,7 +198,7 @@ module.exports = {
         }
       }
     ]
-    console.log(JSON.stringify(queryPipeline));
+    //console.log(JSON.stringify(queryPipeline));
     document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
     
     return document[0];
@@ -216,13 +255,11 @@ async function queryDocumentListByLatest (params) {
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
-
-
   const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [{
-      $match: { state: "CONVERT_COMPLETE"}
+      $match: { state: "CONVERT_COMPLETE", isDeleted: false, isPublic: true, isBlocked: false }
     },{
       $sort:{ created: -1}
     }];
@@ -239,7 +276,9 @@ async function queryDocumentListByLatest (params) {
 
       pipeline.push({ $match: q });
     } 
-  
+    const totalCount = await wapper.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
+
     pipeline = pipeline.concat([{
       $skip: skip
     }, {
@@ -274,13 +313,13 @@ async function queryDocumentListByLatest (params) {
       }
     }, {
       $project: {
-        _id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1,
+        _id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1, shortUrl: 1,
         popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
         registry: { $arrayElemAt: [ "$registryAs", 0 ] },
       }
     }, {
       $addFields: {
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         isRegistry: {
@@ -294,8 +333,12 @@ async function queryDocumentListByLatest (params) {
     }]);
 
 
-    console.log("pipeline", JSON.stringify(pipeline));
-    return await wapper.aggregate(tables.DOCUMENT, pipeline);
+    //console.log("pipeline", JSON.stringify(pipeline));
+    const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
+    return {
+      resultList,
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
+    }
    
   } catch(err) {
     throw err;
@@ -330,6 +373,10 @@ async function queryDocumentListByPopular (params) {
 
       pipeline.push({ $match: q });
     } 
+
+
+    const totalCount = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
   
     pipeline = pipeline.concat([{
       $skip: skip
@@ -377,12 +424,15 @@ async function queryDocumentListByPopular (params) {
       $addFields: {
         documentId: "$_id",
         author: "$author",
-        latestVoteAmount: "$featured.latestVoteAmount",
+        latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
         totalPages: "$document.totalPageview",
         ethAccount: "$document.ethAccount",
         documentName: "$document.documentName",
         documentSize: "$document.documentSize",
+        shortUrl: "$document.shortUrl",
         seoTitle: "$document.seoTitle",
+        isDeleted: "$document.isDeleted",
+        isPublic: "$document.isPublic",
         cc: "$document.cc",
         isRegistry: {
                   $cond: [
@@ -393,8 +443,12 @@ async function queryDocumentListByPopular (params) {
     }, {
       $project: {featured: 0, document: 0, registry: 0}
     }]);
-    console.log(JSON.stringify(pipeline));
-    return await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+    //console.log(JSON.stringify(pipeline));
+    const resultList = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+    return {
+      resultList,
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
+    }
    
   } catch(err) {
     throw err;
@@ -430,6 +484,9 @@ async function queryDocumentListByFeatured (params) {
       pipeline.push({ $match: q });
     } 
   
+    const totalCount = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline.concat([{$count: "totalCount"}]));
+    console.log("totalCount", totalCount)
+
     pipeline = pipeline.concat([{
       $skip: skip
     }, {
@@ -456,7 +513,7 @@ async function queryDocumentListByFeatured (params) {
         as: "userAs"
       }
     }, {
-      $match: {
+      $lookup: {
         from: 'EVENT-REGISTRY',
         localField: '_id',
         foreignField: 'documentId',
@@ -484,6 +541,8 @@ async function queryDocumentListByFeatured (params) {
         latestPageview: "$popular.latestPageview",
         latestPageviewList: "$popular.latestPageviewList",
         seoTitle: "$document.seoTitle",
+        shortUrl: "$document.shortUrl",
+        latestVoteAmount: {$toString: "$latestVoteAmount"},
         cc: "$document.cc",
         isRegistry: {
           $cond: [
@@ -501,8 +560,13 @@ async function queryDocumentListByFeatured (params) {
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0, registry: 0}
     }]);
-    console.log(JSON.stringify(pipeline))
-    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+    //console.log(JSON.stringify(pipeline))
+    const resultList = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+
+    return {
+      resultList,
+      totalCount: totalCount[0]?totalCount[0].totalCount:0
+    }
    
   } catch(err) {
     throw err;
@@ -581,7 +645,7 @@ async function getVotedDocumentForAccountId (accountId) {
  */
 async function getFriendlyUrl (seoTitle) {
   const wapper = new MongoWapper(connectionString);
-  return await wapper.findOne(TB_SEO_FRIENDLY, {seoTitle: seoTitle});
+  return await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
 }
 
 /**
@@ -629,13 +693,13 @@ async function updateDocument (newDoc) {
 
   try{
 
-    console.log("new Doc", newDoc);
+    //console.log("new Doc", newDoc);
     const isSeoTitleUpdated = newDoc.seoTitle?true:false;
 
-    console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
+    //console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
  
     const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
-    console.log("update result", updateResult);
+    //console.log("update result", updateResult);
     if(isSeoTitleUpdated){
       const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
         _id: newDoc.seoTitle,
@@ -667,14 +731,15 @@ async function updateDocument (newDoc) {
 async function queryVotedDocumentByCurator(args) {
 
   const pageNo = args.pageNo;
-  const applicant = args.applicant;
+  //const applicant = args.applicant;
+  const userId = args.userId;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const pageSize = args.pageSize?args.pageSize: 20
   const skip = ((pageNo - 1) * pageSize);
   const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
   const queryPipeline = [{
     $match: {
-      applicant: applicant,
+      userId: userId,
       created: {$gt: startTimestamp}
     }
   }, {
@@ -713,7 +778,7 @@ async function queryVotedDocumentByCurator(args) {
       },
       depositList: {
         $push: {
-          deposit: '$deposit',
+          deposit: {$toString: '$deposit'},
           created: "$created",
           year: "$_id.year",
           month: "$_id.month",
@@ -785,26 +850,35 @@ async function queryVotedDocumentByCurator(args) {
       desc: "$documentInfo.desc",
       tags: "$documentInfo.tags",
       seoTitle: "$documentInfo.seoTitle",
+      shortUrl: "$documentInfo.shortUrl",
       created: "$documentInfo.created",
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
-      latestVoteAmount: "$featured.latestVoteAmount",
+      latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
     }
   }, {
     $project: {
-      documentInfo: 0,
-      authorAs: 0,
-      popularAs: 0,
-      popular: 0,
-      featuredAs: 0,
-      featured: 0
+      _id: 1,
+      deposit: {$toString: "$deposit"},
+      documentId: 1,
+      created: 1,
+      accountId: 1,
+      documentName: 1,
+      title: 1,
+      seoTitle: 1,
+      depositList: 1,
+      author: 1,
+      desc: 1,
+      tags: 1,
+      shortUrl: 1,
+      latestVoteAmout: {$toString: "$latestVoteAmount"},
     }
   }]
   
   const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log(TB_VOTE, JSON.stringify(queryPipeline));
+    //console.log(TB_VOTE, JSON.stringify(queryPipeline));
     const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
 
     return {
@@ -826,13 +900,14 @@ async function queryVotedDocumentByCurator(args) {
  */
 async function queryRecentlyVoteListForApplicant(args) {
   console.log("queryRecentlyVoteListForApplicant", args);
-  const applicant = args.applicant;
+  //const applicant = args.applicant;
+  const userId = args.userId;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
   const activeRewardVoteDays = args.activeRewardVoteDays?args.activeRewardVoteDays:7;
   const activeRewardVoteTimestamp = utils.getBlockchainTimestamp(new Date()) - (1000*60*60*24 * activeRewardVoteDays)
   const queryPipeline = [{
     $match: {
-      applicant: applicant,
+      userId: userId,
       created: {$gt: startTimestamp}
     }
   }, {
@@ -842,7 +917,7 @@ async function queryRecentlyVoteListForApplicant(args) {
   }, {
     $group:{
       _id: "$documentId",
-      applicant: {$first: "$applicant"}
+      userId: {$first: "$userId"}
     }
   }, {
     $lookup: {
@@ -875,7 +950,7 @@ async function queryRecentlyVoteListForApplicant(args) {
       latestDepositDailyList: {
         $push: {
           dateMillis: '$_id.dateMillis',
-          deposit: '$totalDeposit'
+          deposit: {$toString: '$totalDeposit'}
         }
       }
     }
@@ -907,7 +982,10 @@ async function getRecentlyPageViewTotalCount () {
   const startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 8);
   try{
     let result = await wapper.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
-      blockchainDate: {$gte: startDate}
+      query: {
+        blockchainDate: {$gte: startDate}
+      },
+      sort: {created : -1 }
     });
     if(!result) {
       result = []
@@ -920,40 +998,6 @@ async function getRecentlyPageViewTotalCount () {
   }
   
 
-}
-/**
- * @param  {} item
- */
-async function putVote (item) {
-  const timestamp = Date.now();
-  const today = new Date(timestamp);
-
-  const blockchainTimestamp = utils.getBlockchainTimestamp(today);
-
-    console.log("Put Vote Item", item, "timestamp", timestamp);
-
-    const curatorId = item.curatorId;
-    const voteAmount = item.voteAmount;
-    const documentId = item.documentId;
-    const transactionInfo = item.transactionInfo;
-    const ethAccount = item.ethAccount;
-    if(!curatorId || !voteAmount || !documentId || isNaN(voteAmount) || !ethAccount){
-      return Promise.reject({msg:"Parameter is invaild", detail:item});
-    }
-
-    const newItem = {
-      id: curatorId,
-      created: timestamp,
-      blockchainTimestamp: blockchainTimestamp,
-      documentId: documentId,
-      voteAmount: Number(voteAmount),
-      ethAccount: ethAccount,
-      transactionInfo: transactionInfo
-    }
-    console.log("new vote", newItem);
-    const wapper = new MongoWapper(connectionString);
-    return await wapper.insert(TB_VOTE, newItem);
-    //return docClient.put(params).promise();
 }
 
 
@@ -968,8 +1012,8 @@ async function getFeaturedDocuments (args) {
     pageSize: 10,
     tag: tags
   }
-  const resultList = await queryDocumentListByFeatured(params); 
-
+  const resultMap = await queryDocumentListByFeatured(params); 
+  const resultList = resultMap.resultList;
   return resultList.filter((doc)=>{
     return doc.documentId !== documentId;
   });
@@ -1450,5 +1494,31 @@ async function putTrackingUser(cid, sid, documentId, email){
     wapper.close();
   }
 
+  
+}
+
+
+async function checkRegistrableDocument(accountId){
+  
+  return new Promise(async (resolve, reject)=>{
+    const wapper = new MongoWapper(connectionString);
+
+    wapper.query(TB_DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
+    .sort({created:-1}).toArray((err, data)=>{
+      if(err) {
+        reject(err);
+      } else {
+        if(data && data.length > 4){
+          resolve({check: false, privateDocumentCount: data.length})
+        } else {
+          resolve({check: true, privateDocumentCount: data.length})
+        }
+        
+      }
+      wapper.close();
+    });
+
+  })
+  
   
 }

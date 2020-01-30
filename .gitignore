@@ -1,1 +1,9 @@
 .DS_Store
+package-lock.json
+_subproject
+registry-event
+node_modules
+opt/
+.serverless
+.terraform
+decompany-modules/decompany-app-properties/resources/app-properties.dev.json

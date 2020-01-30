@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, s3Config, applicationConfig, region } = require('decompany-app-properties');
+const { mongodb, tables, s3Config, applicationConfig, shortUrlConfig, region } = require('decompany-app-properties');
 const { MongoWapper } = require('decompany-common-utils');
 const sharp = require("sharp");
 const sizeOf = require('buffer-image-size');
@@ -22,43 +22,130 @@ exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return callback(null, 'Lambda is warm!')
   }
-  
+  console.log(event);
+  let results;
+  try{
   //console.log("convertCompete Event", JSON.stringify(event));
 
   //THUMBNAIL/aaaaa/300X300/1
   //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1, 2, 3, 4,5 max page number
-  
-  const result = await run(event);
+    const promises = event.Records.map((record) =>  {
 
-  return callback(null, result);
+      const key = record.s3.object.key;
+      const bucket = record.s3.bucket.name;
+      
+      const keys = key.split("/");
+      const prefix = keys[0];
+      const documentId = keys[1];
+      const filename = keys[2];
+      
+      return run({
+        key: key,
+        bucket: bucket,
+        prefix: prefix,
+        documentId: documentId,
+        filename: filename
+      });
+    });
 
+    results = await Promise.all(promises);
+  } catch(err){
+    console.log(err);
+  }
+
+  console.log(results)
+  return callback(null, results);
 };
 
-async function run(event){
+function run(params){
 
-  const promises = await event.Records.map(async (record) =>  {
-    const key = record.s3.object.key;
-    const bucket = record.s3.bucket.name;
-    
-    const keys = key.split("/");
-    const prefix = keys[0];
-    const documentId = keys[1];
-    const filename = keys[2];
-    
-    console.log("convertComplete start", key, prefix, documentId, filename);
-    if("result.txt" == filename){
-      const document = await getDocument(documentId);
-      //console.log(document);
-      if(!document){
-        throw new Error("documet is not exist, " + documentId);
-      }
-      const shortUrl = await getTinyUrl(document);
-      console.log("shortUrl", shortUrl);
-      return runConvertComplete(bucket, key, document, shortUrl);
-    } else if("text.json" == filename) {
+  const {key, prefix, bucket, filename, documentId} = params;
+  return new Promise((resolve, reject)=>{
+    if("result.txt" === filename){
+      getDocument(documentId)
+      .then((document)=>{
+
+        if(!document || !document._id){
+          reject("documet is not exist, " + documentId);
+        }
+
+        return Promise.resolve(document);
+        
+      })
+      .then(async (document)=>{
+        let shortUrl;
+        if(shortUrlConfig){
+          shortUrl = await getShortUrl(document);
+          console.log("shortUrl", shortUrl);
+        } else {
+          console.log("shortUrlConfig is undefined");
+        }
+        return Promise.resolve({
+          document: document,
+          shortUrl: shortUrl
+        })
+      })
+      .then((data)=>{
+        //console.log("getDocSize argument", data);
+        return getDocSize(data);
+      })
+      .then(async (data)=>{
+        //console.log("runConvertComplete", data);
+        const {document, shortUrl, dimensions} = data;
+        const result = await runConvertComplete(bucket, key, document, shortUrl, dimensions);
+        return resolve(result);
+      })
+      .catch((err)=>{
+        //console.log(document);
+        reject(err);
+        
+      })
+    } else if("text.json" === filename) {
         //아무것도 안함
+        resolve("text.json is not working");
     } else if("1200X1200" === filename){
       //프리뷰이미지 metadata content-type : image/png
+      //THUMBNAIL/05593afb-6748-47df-af76-6803e7f86378/1200X1200/1
+      convertThumbnail(bucket, key)
+      .then((data)=>{
+        console.log("convertThumbnail success", data);
+        resolve(data)
+      })
+      .catch((err)=>{
+        console.log("convertThumbnail fail", err);
+        reject(err);
+      })
+      
+    } else {
+      resolve("not support");
+    }
+  });
+}
+
+function getDocSize(documentWithShortUrl){
+  const { document, shortUrl } = documentWithShortUrl;
+  const bucket = s3Config.document;
+  const prefix = `THUMBNAIL/${document._id}/1200X1200/1`;
+  return new Promise((resolve, reject)=>{
+    s3.getObject({Bucket: bucket, Key: prefix}, function (err, data) {
+      if(err){
+        console.log("error get s3object for Document Size", err);
+        return resolve(documentWithShortUrl);
+
+      } else {
+        const dimensions = sizeOf(data.Body);
+        documentWithShortUrl.dimensions = dimensions;
+        //console.log("get dimensions", dimensions, documentWithShortUrl);
+        return resolve(documentWithShortUrl);
+      }
+    });
+  });
+}
+
+function convertThumbnail(bucket, key){
+  const keys = key.split("/");
+
+  return new Promise(async (resolve, reject)=>{
       const r = await changeImageMetadata(bucket, key);
       console.log("changeImageMetadata", r)
       const type = keys[0]; //THUMBNAIL
@@ -69,18 +156,16 @@ async function run(event){
       const promises = sizes.map((size)=>{
         const toProfix = documentId + "/" + size + "/" + imagename;
         return convertJpeg({fromBucket: bucket, fromPrefix: key}, {toBucket: s3Config.thumbnail, toPrefix: toProfix}, size);
-      });   
+      });
 
-      return Promise.all(promises);
-    }
-
-  });
-
-  const result = await Promise.all(promises);
-  console.log("converter result", result);
-  return result;
+      Promise.all(promises).then((data)=>{
+        resolve(data);
+      })
+      .catch((err)=>{
+        reject(err);
+      })
+  })
 }
-
 function changeImageMetadata(bucket, key){
   return new Promise((resolve, reject) => {
     s3.copyObject({
@@ -97,48 +182,51 @@ function changeImageMetadata(bucket, key){
 
 }
 
-function runConvertComplete(bucket, key, document, shortUrl){
+async function runConvertComplete(bucket, key, document, shortUrl, dimensions){
   const documentId = document._id;
-  console.log(bucket, key, document);
-  const totalPagesPromise = getTotalPages(bucket, key);
-  
-  return new Promise((resolve, reject) => {
-    Promise.all([totalPagesPromise]).then((data) => {       
-      //console.log(data);
-      let totalPages = -1;
-      const resultTxtFile = data[0];
+  //console.log(bucket, key, document);
+  const totalPages = await getTotalPages(bucket, key);
+  console.log("documentId", documentId, "totalPages", totalPages);
 
-      if(resultTxtFile){
-        totalPages = resultTxtFile.Body.toString('ascii');
-        totalPages *= 1;
-      }
-
-      console.log("documentId", documentId, "totalPages", totalPages);
+  return new Promise(async (resolve, reject) => {
+         
       if(totalPages>0 && documentId) {
-  
-        updateConvertCompleteDocument(documentId, totalPages, shortUrl).then((data) =>{
-          console.log("Update SUCCESS CONVERT_COMPLETE", documentId);
-          resolve({message: "SUCCESS",
-                  documentId: documentId});
-        }).catch((err)=> {
-          console.error("Unable to update item. Error JSON:", documentId, JSON.stringify(err, null, 2));
-          reject(err);
-        });
+        const result = await updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions);
+        console.log("Update SUCCESS CONVERT_COMPLETE", result);
+        return resolve(result);
+      } else {
+        reject(new Error("runConvertComplete error"))
       }
-  
-    }).catch((errs) => {
-      console.error("Error Promise!!! result.txt process", errs);
-      reject(errs);
-    });
+
   });
 
 }
 
 function getTotalPages(bucket, key){
-  return s3.getObject({
-      Bucket: bucket,
-      Key: key
-  }).promise();
+
+  return new Promise((resolve, reject)=>{
+
+    return s3.getObject({
+        Bucket: bucket,
+        Key: key
+    }, function (err, data){
+      
+      if(err){
+        reject(err);
+      } else {
+        let totalPages = -1;
+        if(data){
+          totalPages = data.Body.toString('ascii');
+          totalPages *= 1;
+          resolve(totalPages);
+        }
+      }
+      
+    })
+
+    
+  });
+  
 }
 
 async function getDocument(documentId){
@@ -170,15 +258,20 @@ async function getDocument(documentId){
 
 }
 
-async function updateConvertCompleteDocument(documentId, totalPages, shortUrl){
+async function updateConvertCompleteDocument(documentId, totalPages, shortUrl, dimensions){
   const wapper = new MongoWapper(mongodb.endpoint);
   try{
+    const endPageNo = Number(totalPages);
     const updateDoc = {};
-    updateDoc.state = "CONVERT_COMPLETE";
+    updateDoc.state = endPageNo===1?"SINGLE_PAGE_DOC":"CONVERT_COMPLETE";
     updateDoc.totalPages = Number(totalPages);
     if(shortUrl) updateDoc.shortUrl = shortUrl;
-      
-    return await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    if(dimensions) updateDoc.dimensions = dimensions;
+    
+    //console.log("updateConvertCompleteDocument updateDoc", updateDoc);
+    const r = await wapper.update(TABLE_NAME, {_id: documentId}, {$set: updateDoc});
+    //console.log("updateResult", r);
+    return {documentId, totalPages, shortUrl, dimensions}
     
   } catch(ex) {
     console.log(ex);
@@ -277,9 +370,7 @@ function putS3Object(bucket, key, body, contentType){
       Body: body, 
       Bucket: bucket, 
       Key: key, 
-      Metadata: {
-        "Cache-Control": "max-age=31536000" 
-      },
+      CacheControl: "max-age=31536000",
       ContentType: contentType
      }, function(err, data) {
        if (err) {
@@ -294,33 +385,49 @@ function putS3Object(bucket, key, body, contentType){
   
 }
 
-async function getTinyUrl(document){
+async function getShortUrl(document){
   
   const author = document.author;
   
   return new Promise((resolve, reject)=>{
-    
-    
-    const prefix = author.username?author.username:author.email;
-    let host = applicationConfig.mainHost;
-    if(!host){
-      throw new Error("applicationConfig.mainHost is undefined");
+
+    if(!shortUrlConfig && !shortUrlConfig.generatorUrl){
+      reject(new Error("shortUrlConfig is undefined!"));
     }
+
+    if(!applicationConfig.embedHost){
+      reject(new Error("applicationConfig.embedHost is undefined!"));
+    } 
+    
+    let host = applicationConfig.embedHost;
+    
     if(host.slice(-1) !== "/"){
       host += "/";
     }
-    const url = `${host}${encodeURIComponent(prefix)}/${document.seoTitle}`;
-    console.log("long url", url);
-    
-    
-    request.post({url : "https://tinyurl.com/create.php", form: {url: url}}, function (error, response, body){
+    const url = `${host}${document.seoTitle}`;
+    console.log("shortUrlConfig.generatorUrl", shortUrlConfig.generatorUrl);
+    request.post({url : shortUrlConfig.generatorUrl, headers: {"Content-Type": "application/json"}, body: JSON.stringify({url: url})}, function (error, response, body){
       if(error){
-        reject(error);
+        console.log("error", error);
+        resolve(null);
       }else {
-        const regex = /(https?:\/\/tinyurl.com\/)([a-z0-9\w]+\.*)+[a-z0-9]{2,4}/gi;
-        const list = body.match(regex).reduce(function(a,b){if(a.indexOf(b)<0)a.push(b);return a;},[]);
+        const parsedBody = typeof(body)==='string'?JSON.parse(body):body;
+        //console.log(response.statusCode, response.statusMessage);
+        if(response.statusCode===200){
+          if(parsedBody.url){
+            resolve(parsedBody.url);
+          } else {
+            //reject("short url create fail", body);
+            console.log("short url create fail", body);
+            resolve(null);
+          }
           
-        resolve(list[0]);
+        } else {
+          //reject(new Error(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`));
+          console.log(`Error ${response.statusCode} ${response.statusMessage} shortUrl create fail`)
+          resolve(null);
+        }
+        
       }
     })
     

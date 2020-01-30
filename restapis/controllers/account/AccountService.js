@@ -94,6 +94,10 @@ module.exports = class AccountService {
 					newUserInfo.picture = user.picture;
 				}
 
+				if(user.croppedArea){
+					newUserInfo.croppedArea = user.croppedArea;
+				}
+
 				if(user.username){
 					newUserInfo.username = user.username;
 					const dupusername = await mongo.findOne(USER_TALBE, {
@@ -139,10 +143,14 @@ module.exports = class AccountService {
 			let {accountId, pageSize, skip} = params;
 
 			let pipeline = [{
-				$match: { accountId: accountId}
+				$match: { isDeleted: false, accountId: accountId}
 			}, {
 				$sort:{ created: -1}
-			}, {
+			}]
+
+			const totalCount = await wapper.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
+
+			pipeline = pipeline.concat([{
 				$skip: skip
 			}, {
 				$limit: pageSize
@@ -175,13 +183,14 @@ module.exports = class AccountService {
 					as: "registryAs"
 				}
 			}, {
-				$project: { _id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, 
+				$project: { _id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,
+					shortUrl: 1, isPublic: 1, isDeleted: 1, isBlocked: 1,
 					popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
 					registry: { $arrayElemAt: [ "$registryAs", 0 ] }
 				}
 			}, {
 				$addFields: {
-					latestVoteAmount: "$featured.latestVoteAmount",
+					latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
 					latestPageview: "$popular.latestPageview",
 					latestPageviewList: "$popular.latestPageviewList",
 					isRegistry: {
@@ -200,10 +209,14 @@ module.exports = class AccountService {
 				}
 			}, {
 				$project: {featured: 0, popular: 0, registry: 0}
-			}];
+			}]);
 
 			console.log("pipeline", JSON.stringify(pipeline));
-			return await wapper.aggregate(tables.DOCUMENT, pipeline);
+			const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
+			return {
+				resultList,
+				totalCount: totalCount[0]?totalCount[0].totalCount:0
+			}
 		} catch (e) {
 			throw e
 		} finally {

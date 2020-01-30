@@ -1,5 +1,13 @@
 {
     "region": "us-west-1",
+    "vpc": {
+        "securityGroupIds": "sg-05a13849fc117801b",
+        "subnetIds": "subnet-37594850, subnet-38bb9963"
+    },
+    "layer": {
+        "sharp": "arn:aws:lambda:us-west-1:197966029048:layer:libSharp:2",
+        "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
+    },
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@172.31.37.166:27017/decompany"
     },
@@ -30,12 +38,16 @@
         "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
         "EVENT_REGISTRY": "EVENT-REGISTRY",
         "EVENT_BLOCK": "EVENT-BLOCK",
-        "SITEMAP": "SITEMAP"
+        "SITEMAP": "SITEMAP",
+        "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE"
     },
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls": {
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image"
+            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-convert-image",
+            "CONVERT_PDF": "https://sqs.us-west-1.amazonaws.com/197966029048/alpha-ca-pdf-converter"
+
         }
     },
     "applicationLogAppender": {
@@ -45,7 +57,8 @@
     },
     "applicationConfig": {
         "mainHost": "https://www.polarishare.com",
-        "activeVoteDays": 3,
+        "embedHost": "https://embed.polarishare.com",
+        "activeVoteDays": 7,
         "activeRewardVoteDays": 7
     },
     "sesConfig": {
@@ -83,16 +96,13 @@
         },
         "index": "4"
     },
-    "warmupConfig": {
+    "warmupConfig": [{
         "enable": true,
         "prefix": "backend-restapis-alpha-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "curatorSummary", "aliase": "prod"},
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
-            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
@@ -102,5 +112,20 @@
             {"name": "trackingList", "aliase": "prod"},
             {"name": "trackingInfo", "aliase": "prod"}
         ]
+    }],
+    "oembedConfig": {
+        "host": "https://embed.polarishare.com/",
+        "thumbHost": "https://res.polarishare.com/"
+    },
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://www.polarishare.com",
+        "bucket": "www.polarishare.com",
+        "documentBucket": "alpha-ca-document",
+        "image": "https://res.polarishare.com",
+        "distributionId": "E1UYELY2K59G6Q"
+    },
+    "shortUrlConfig": {
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
     }
 }

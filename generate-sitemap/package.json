@@ -1,0 +1,25 @@
+{
+  "name": "generate-sitemap",
+  "version": "1.0.0",
+  "description": "## Install dependency",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.501.0",
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
+    "serverless-mocha-plugin": "^1.11.0",
+    "sitemap": "^3.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "preinstall": "sh install.sh",
+    "deploy": "sls deploy",
+    "deploy:alpha": "sls deploy -s alpha",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC"
+}

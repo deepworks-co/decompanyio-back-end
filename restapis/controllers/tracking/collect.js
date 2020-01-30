@@ -6,16 +6,16 @@ const {kinesis, utils} = require('decompany-common-utils');
 
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
-  if (event.source === 'lambda-warmup') {
+  if (event.source && event.source === 'lambda-warmup') {
     console.log('WarmUp - Lambda is warm!')
-    return callback(null, 'Lambda is warm!')
+    return JSON.stringify({success: true, message: 'Lambda is warm!'});
   }
   
   console.log(JSON.stringify(event));
-  const {headers, query} = event;
+  let {headers, query} = event;
   const body = query
 
-  if(!body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
+  if(!headers || !body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
     console.error("tracking error", "parameter is invalid", body);
     return JSON.stringify({
       message: "no collecting"
@@ -25,7 +25,7 @@ module.exports.handler = async (event, context, callback) => {
   if(!body.created){
     body.created = Date.now();
   }
-  const xforwardedfor = headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
+  const xforwardedfor = headers && headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
   //const xforwardedfor = "211.45.65.70, 54.239.154.128";
   const ips = xforwardedfor.split(",").map((ip)=>{
     return ip.replace(/^\s+|\s+$/g,"");
@@ -37,9 +37,15 @@ module.exports.handler = async (event, context, callback) => {
     delete body.e;
   }
   
+  headers = utils.convertKeysToLowerCase(headers)
 
-  body.referer = headers.Referer;
-  body.useragent = headers["User-Agent"];
+  body.referer = headers.Referer?headers.Referer:headers.referer;
+  if(headers["user-agent"]){
+    body.useragent = headers["user-agent"];
+  } else if(headers["useragent"]){
+    body.useragent = headers["useragent"];
+  }
+
   body.xforwardedfor = ips;
   /*
   if(ips && ips.length>0){
@@ -48,7 +54,7 @@ module.exports.handler = async (event, context, callback) => {
   */
   body.headers = headers;
   console.log("tracking body", JSON.stringify(body));
-  if(applicationLogAppender && applicationLogAppender.enable){
+  if(applicationLogAppender && applicationLogAppender.enable === true){
     try{
       const partitionKey = "tracking-" + Date.now();
       console.log("put kinesis", applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
@@ -60,21 +66,36 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const result = await documentService.putTrackingInfo(body);
-
+  console.log("tracking save", result);
   const user = await documentService.getTrackingUser(body.cid);
+  
   if(user){
     delete user._id;
+    console.log("tracking user", user, body.cid);
+  } else {
+    console.log("tracking user is not exists", body.cid);
   }
-  console.log("tracking save", result);
-  const response = JSON.stringify({
-    success: true,
-    message: "ok",
-    user: user
-  });
-  //console.log("success", body);
+  
+  
+  const response = {
+    statusCode: 200,
+    Cookie: getCookie(process.env.stage),
+    body: JSON.stringify({
+      success: true,
+      message: "ok",
+      user: user
+    })
+  }
   return response;
 };
 
+function getCookie(stage, cookie){
+  const timestamp = Date.now()
+  const maxAge = 60 * 30;// 30 mins
+  const sid = cookie && cookie._sid?cookie._sid:utils.randomId();
+  const domain = stage === ('alpha'||'asem')?"polarishare.com":"decompany.io";
+  return `_sid=${sid}.${timestamp}; domain=${domain}; Max-Age=${maxAge}; path=/; Secure; HttpOnly;`
+}
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...

@@ -1,13 +1,13 @@
 'use strict';
-const {utils, MongoWapper, sqs} = require('decompany-common-utils');
+const {utils, MongoWrapper, sqs} = require('decompany-common-utils');
 const { mongodb, tables, sqsConfig, applicationConfig} = require('decompany-app-properties');
 
 const TB_DOCUMENT = tables.DOCUMENT;
 const period = applicationConfig.activeVoteDays;
 /**
  * @description 
- * 1시간마다 전체 문서의 VoteAmount를 가져오기 위한 SQS생성함
- * 
+ * 5분 주기로 DOCUMENT-FEATURED 갱신
+ * 현재 + 이전 activeVoteDays일  집계
  */
 module.exports.handler = async (event, context, callback) => {
   const now = new Date();
@@ -15,7 +15,7 @@ module.exports.handler = async (event, context, callback) => {
 
   console.log("Query period", beforeDays, "(include) between (exclude)", now);
 
-  const wapper = new MongoWapper(mongodb.endpoint);
+  const wapper = new MongoWrapper(mongodb.endpoint);
 
   try{
     const queryPipeline = getQueryPipeline(beforeDays.getTime(), tables.DOCUMENT_FEATURED);
@@ -50,19 +50,35 @@ function getQueryPipeline(startTimestamp, targetCollection){
   },
   {
       $lookup: {
-          from: "DOCUMENT",
+          from: tables.DOCUMENT,
           localField: "documentId",
           foreignField:"documentId",
           as: "documentInfo"
       }
   }, {
+    $addFields: {
+      "documentInfo": {
+        "$arrayElemAt": [
+            {
+                "$filter": {
+                    "input": "$documentInfo",
+                    "as": "doc",
+                    "cond": {
+                        $and: [
+                          {"$eq": [ "$$doc.isPublic", true]},
+                          {"$eq": [ "$$doc.isDeleted", false]},
+                          {"$eq": [ "$$doc.isBlocked", false]},
+                        ]
+                    }
+                }
+            }, 0
+        ]
+      }
+    }
+  }, {
       $unwind: {
           path:"$documentInfo",
-          preserveNullAndEmptyArrays: true
-      }
-  }, {
-      $match: {
-          "documentInfo": {"$exists":true,"$ne":null}
+          preserveNullAndEmptyArrays: false
       }
   }, {
       $addFields: {
@@ -74,7 +90,7 @@ function getQueryPipeline(startTimestamp, targetCollection){
           created: "$documentInfo.created",
           latestVoteAmountDate: {$add: [new Date(0), "$latestVoteAmountUpdated"]}
       }
-  },{
+  }, {
     $project: {
       documentInfo:0
     }

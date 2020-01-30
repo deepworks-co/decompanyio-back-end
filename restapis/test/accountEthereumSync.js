@@ -13,7 +13,14 @@ describe('accountEthereumSync', () => {
   });
 
   it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+    const event = {
+      principalId: "google-oauth2|116434154009969203346",
+      body: {
+        ethAccount: "0x4add6551af429c71eB64e0494BC5E88334E94948"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log(response)
       expect(response).to.not.be.empty;
     });
   });

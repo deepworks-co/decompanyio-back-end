@@ -1,0 +1,159 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: zapier # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: ${file(./serverlessConfig.js):region}
+  #stackName: ${self:service.name}-${self:provider.stage}-stack  # CloudFormation Stack Name
+  #apiName: ${self:service.name}-api      # Api Gateway Name
+  environment:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+    AUTH0_CLIENT_ID: ${file(./auth0/secrets.json):AUTH0_CLIENT_ID}
+    AUTH0_CLIENT_PUBLIC_KEY: ${file(./auth0/decompany.pem)}
+    NODE_PATH: "./:/opt/node_modules"
+  tags:
+    stage: ${self:provider.stage}
+    region: ${self:provider.region}
+    servicename: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
+  logRetentionInDays: 3
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - s3:*
+       - logs:*
+       - kinesis:*
+       - kms:*
+       - ses:*
+       - codedeploy:*
+      Resource: "*"
+# you can add statements to the Lambda function's IAM Role here
+  vpc:
+    securityGroupIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.securityGroupIds}
+    subnetIds: 
+      "Fn::Split":
+        - ","
+        - ${file(./serverlessConfig.js):vpc.subnetIds}
+
+# you can define service wide environment variables here
+  #environment:
+  #  CROS: true
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+package:
+  individually: false
+  exclude:
+    - .gitignore
+    - .env
+    - package.json
+    - install.sh
+    - opt/**
+    - test/**
+    
+functions:
+
+  zapierAuth:
+    handler: src/auth.handler
+
+  zapierEmail:
+    handler: src/email.handler
+    events:
+      - http:  
+          path: /api/zapier/email
+          method: get
+          authorizer: zapierAuth
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
+  zapierDocument:
+    handler: src/document.handler
+    events:
+      - http:
+          path: /api/zapier/document
+          method: get
+          authorizer: zapierAuth
+          cors: true
+          integration: lambda
+          response:
+            headers:
+              Content-Type: integration.response.header.Content-Type
+            template: $input.path('$')
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+  
+    GatewayResponse4xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponse5xx:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        ResponseTemplates:
+          application/json: $input.path("$.errorMessage")
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+
+
+custom:
+  prune:
+    automatic: true
+    number: 5
+  splitStacks:
+    perFunction: false
+    perType: true
+plugins:
+  - serverless-mocha-plugin
+  - serverless-plugin-split-stacks
+  - serverless-prune-plugin

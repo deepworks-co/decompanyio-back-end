@@ -16,6 +16,8 @@ exports.getBlockchainTimestamp = (date) => {
   } else if(typeof(date) === 'object'){
     //Date type
     convertedDate = date;
+  } else if(typeof(date) === 'number') {
+    convertedDate = new Date(date);
   } else {
     throw new Error('Unsupported datatype.' + typeof(date));
   }
@@ -32,6 +34,12 @@ function toUTCDate(dateStr) {
 
 exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
+}
+
+exports.randomId = () => {
+  
+  return generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
+
 }
 
 exports.toSeoFriendly = (str, defaultTitle) => {
@@ -54,4 +62,80 @@ exports.validateEmail = (email) => {
   //General Email Regex (RFC 5322 Official Standard)
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return re.test(String(email).toLowerCase());
+}
+
+
+exports.parseBool = (v, defaultValue) =>{
+  
+  if(v === undefined){
+    if(defaultValue === true || defaultValue === 'true'){
+      return true;
+    } 
+  } else if(typeof(v) === 'boolean'){
+    return v;
+  } else if(typeof(v) === 'string'){
+    if(v===true || v==='true'){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+exports.convertKeysToLowerCase = (obj) => {
+  const output = {};
+  for (i in obj) {
+      if (Object.prototype.toString.apply(obj[i]) === '[object Object]') {
+         output[i.toLowerCase()] = ConvertKeysToLowerCase(obj[i]);
+      }else if(Object.prototype.toString.apply(obj[i]) === '[object Array]'){
+          output[i.toLowerCase()]=[];
+           output[i.toLowerCase()].push(ConvertKeysToLowerCase(obj[i][0]));
+      } else {
+          output[i.toLowerCase()] = obj[i];
+      }
+  }
+  return output;
+};
+
+/**
+ * @param totalPageview
+ * @param pageview
+ * @param creatorDailyReward
+ */
+exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
+  
+  if(isNaN(totalPageview) || isNaN(pageview) || isNaN(creatorDailyReward)){
+    
+    return -1;
+  }
+  let royalty = (pageview / totalPageview)  * creatorDailyReward;
+  royalty  = Math.floor(royalty * 100000) / 100000;     
+
+  return royalty;
+}
+
+
+/**
+ * 
+ */
+exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward}) => {
+  
+  if(isNaN(pageview) || isNaN(totalPageviewSquare) || isNaN(myVoteAmount) || isNaN(totalVoteAmount) || isNaN(curatorDailyReward)){
+    throw new Error(`parameter is invalid in calcReward  : ${JSON.stringify({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward})}`)
+  }
+
+  let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
+
+  reward  = Math.floor(reward * 100000) / 100000;
+  return reward;
+}
+
+/**
+ * 
+ * @param {Date} date 
+ * @param {number} days 
+ */
+exports.getDate = (date, days) => {
+  const baseDate = new Date(date);
+  return new Date(baseDate.setDate(baseDate.getDate() + days));
 }

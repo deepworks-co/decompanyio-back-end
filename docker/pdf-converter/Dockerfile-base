@@ -1,0 +1,18 @@
+FROM centos:6
+
+# Install yum.
+RUN yum update -y
+RUN yum install -y yum install sudo gcc-c++ make openssl-devel wget && yum clean all
+
+# Install JDK
+# RUN yum install -y java-1.8.0-openjdk java-1.8.0-openjdk-devel
+RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" 
+
+curl -L -b "oraclelicense=a" http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz -O
+
+
+
+
+# install nodejs 8.x
+RUN curl -sL https://rpm.nodesource.com/setup_8.x | sudo -E bash - 
+RUN yum install -y nodejs

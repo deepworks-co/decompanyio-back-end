@@ -1,8 +1,17 @@
 {
-    "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@52.53.208.45:27017/decompany"
-    },
     "region": "us-west-1",
+    "stage": "local",
+    "vpc": {
+        "securityGroupIds": "sg-05a13849fc117801b",
+        "subnetIds": "subnet-37594850, subnet-38bb9963"
+    },
+    "layer": {
+        "sharp": "arn:aws:lambda:us-west-1:197966029048:layer:libSharp:2",
+        "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
+    },
+    "mongodb": {
+        "endpoint": "mongodb://localhost:27017/decompany"
+    },
     "s3Config":{
         "document": "dev-ca-document",
         "thumbnail": "dev-ca-thumbnail.decompany.io",
@@ -13,9 +22,9 @@
         "DOCUMENT": "DOCUMENT",
         "DOCUMENT_POPULAR": "DOCUMENT-POPULAR",
         "DOCUMENT_FEATURED": "DOCUMENT-FEATURED",
-        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
         "TRACKING": "TRACKING",
         "TRACKING_USER": "TRACKING-USER",
+        "TRACKING_CONFIRM": "TRACKING-CONFIRM",
         "VOTE": "VOTE",
         "USER": "USER",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
@@ -30,20 +39,34 @@
         "EVENT_WRITEPAGEVIEW": "EVENT-WRITEPAGEVIEW",
         "EVENT_REGISTRY": "EVENT-REGISTRY",
         "EVENT_BLOCK": "EVENT-BLOCK",
-        "SITEMAP": "SITEMAP"        
+        "SITEMAP": "SITEMAP",
+        "USER_DOCUMENT_HISTORY": "USER-DOCUMENT-HISTORY",
+        "USER_DOCUMENT_FAVORITE": "USER-DOCUMENT-FAVORITE",
+        "CLAIM_ROYALTY": "CLAIM-ROYALTY",
+        "CLAIM_REWARD": "CLAIM-REWARD",
+        "REWARD_POOL": "REWARD-POOL",
+        "REWARD_POOL_DAILY": "REWARD-POOL-DAILY",
+        "WALLET": "WALLET",
+        "WALLET_USER": "WALLET-USER",
+        "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
+        "DECK_TRANSFER": "DECK-TRANSFER",
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
     },
     "sqsConfig": {
         "region": "us-west-1",
         "queueUrls":{
-            "CONVERT_IMAGE": "https://sqs.us-west-1.amazonaws.com/197966029048/DEV-CA-CONVERT-IMAGE"
+            "CONVERT": "https://sqs.us-west-1.amazonaws.com/197966029048/asem-ca-converter"
         }
     },
     "applicationLogAppender": {
-        "enable": false
+        "enable": true,
+        "region": "us-west-1",
+        "streamName": "TrackingDataStream"
     },
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
-        "activeVoteDays": 3,
+        "embedHost": "https://embed.share.decompany.io",
+        "activeVoteDays": 7,
         "activeRewardVoteDays": 7
     },
     "sesConfig": {
@@ -53,16 +76,16 @@
         "templates": {
             "trackingConfirm": {
                 "title": "Join Polaris Share",
-                "templatePath": "../../template/tracking/confirm_email.dev.html"
+                "templatePath": "./template/tracking/confirm_email.dev.html"
             },
             "verifyEmail": {
-                "title": "Please verify your email address",
-                "templatePath": "../../template/verifyemail/verify_email.html",
+                "title": "Please verify your email address(share.decompany.io)",
+                "templatePath": "./template/verifyemail/verify_email.html",
                 "verifyUrl": "https://share.decompany.io/emailverify?code="
             },
             "welcomeEmail": {
-                "title": "Welcome to Polaris Share",
-                "templatePath": "../../template/welcome/welcome_email.html"
+                "title": "Welcome to Polaris Share(share.decompany.io)",
+                "templatePath": "./template/welcome/welcome_email.html"
             }
         }
     },
@@ -71,26 +94,42 @@
             {"name": "DocumentRegistry", "path": "./contracts-rinkeby-dev/DocumentRegistry.json"},
             {"name": "Ballot", "path": "./contracts-rinkeby-dev/Ballot.json"}
         ],
-        "network": "rinkeby", 
-        "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c",
+        "network": "mygeth", 
+        "providerUrl" : "https://geth.polarishare.com",
         "account": "0x07Ab267B6F70940f66EAf519b4a7c050496480D3",
         "privateKey": {
             "region": "us-west-1",
             "bucket": "dev-ca-env",
             "key": "alpha_enc_prikey"
         },
-        "index": "4"
+        "index": "931",
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2"
     },
-    "warmupConfig": {
-        "enable": true,
+    "walletConfig": {
+        "abis": [
+            {"name": "Deck", "path": "../../psnet/dev/ERC20.json"},
+            {"name": "Ballot", "path": "../../psnet/dev/Ballot.json"},
+            {"name": "Registry", "path": "../../psnet/dev/Registry.json"},
+            {"name": "RewardPool", "path": "../../psnet/dev/RewardPool.json"}
+        ],
+        "kmsId": "b72d941d-2256-4331-9055-8436b23f49e2",
+        "foundation": "miner",
+        "mainnet": {
+            "id": "4",
+            "providerUrl" : "https://rinkeby.infura.io/v3/43132d938aaa4d96a453fd1c708b7f6c"
+        },
+        "psnet": {
+            "id": "931",
+            "providerUrl" : "https://geth.polarishare.com"
+        }
+    },
+    "warmupConfig": [{
+        "enable": false,
         "prefix": "backend-restapis-dev-",
         "functions": [
             {"name": "curatorDocumentList", "concurrency": 1, "aliase": "prod"}, 
-            {"name": "curatorSummary", "aliase": "prod"},
             {"name": "analyticsList", "aliase": "prod"},
             {"name": "tagList", "aliase": "prod"},
-            {"name": "s3DocumentUploadComplete", "aliase": "prod"},
-            {"name": "s3DocumentConvertComplete", "aliase": "prod"},
             {"name": "accountEthereumSync", "aliase": "prod"},
             {"name": "profileGet", "aliase": "prod"},
             {"name": "accountGet", "aliase": "prod"},
@@ -100,5 +139,26 @@
             {"name": "trackingList", "aliase": "prod"},
             {"name": "trackingInfo", "aliase": "prod"}
         ]
+    },
+    {
+        "enable": true,
+        "functions": [
+            {"name": "alpha-ssr-pdf", "concurrency": 5}
+        ]
+    }],
+    "oembedConfig": {
+        "host": "https://embed.share.decompany.io/",
+        "thumbHost": "https://thumb.share.decompany.io/"
+    },
+    "sitemapConfig": {
+        "limit": 50000,
+        "domain": "https://share.decompany.io",
+        "bucket": "share.decompany.io",
+        "documentBucket": "dev-ca-document",
+        "image": "https://thumb.share.decompany.io",
+        "distributionId": "EDFUPNJU9XKGX"
+    },
+    "shortUrlConfig": {
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
     }
 }

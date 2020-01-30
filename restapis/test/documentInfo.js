@@ -5,21 +5,39 @@
 
 const mochaPlugin = require('serverless-mocha-plugin');
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('documentInfo', '/controllers/document/documentController.js', 'info');
+let wrapped = mochaPlugin.getWrapper('documentInfo', '/controllers/document/documentInfo.js', 'handler');
 
 describe('documentInfo', () => {
   before((done) => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('Get Document Doc', () => {
     const event = {
       path: {
         //documentId: "dev-test-ovobik"
-        documentId: "free-ppt-template-3rsjwy"
+        documentId: "test-xaxg51"
       }
     }
     return wrapped.run(event).then((response) => {
+
+      console.log("response", JSON.parse(response).featuredList);
+      
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('FAIL_CONVERT Doc', () => {
+    const event = {
+      path: {
+        //documentId: "dev-test-c3nkml"
+        documentId: "dev-test-kdhkfe"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+
+      console.log("response");
+      console.log(response);
       expect(response).to.not.be.empty;
     });
   });

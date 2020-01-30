@@ -52,7 +52,7 @@ module.exports.list = async (event, context, callback) => {
     accountId = user._id;
   }
 
-  const resultList = await documentService.queryDocumentList({
+  const resultMap = await documentService.queryDocumentList({
     pageNo: pageNo,
     accountId: accountId,
     tag: tag,
@@ -63,74 +63,10 @@ module.exports.list = async (event, context, callback) => {
   
   return (null, JSON.stringify({
     success: true,
-    resultList: resultList,
+    resultList: resultMap.resultList?resultMap.resultList:[],
     pageNo: pageNo,
-    count: resultList.length,
-    totalViewCountInfo: totalViewCountInfo?totalViewCountInfo:null
+    count: resultMap.totalCount?resultMap.totalCount:0
   }));
 
 
 };
-
-
-module.exports.info = async (event, context, callback) => {
-
-  /** Immediate response for WarmUp plugin */
-  if (event.source === 'lambda-warmup') {
-    console.log('WarmUp - Lambda is warm!')
-    return callback(null, 'Lambda is warm!')
-  }
-
-  console.log("event : ", event.path);
-  try{
-    //console.log("context : ", context);
-    let documentId = event.path.documentId;
-
-    if(!documentId){
-      throw new Error("parameter is invaild!!");
-    }
-
-    let document = await documentService.getDocumentBySeoTitle(documentId);
-    console.log("get document by seo title", document);
-    if(!document){
-      return JSON.stringify({
-        success: true,
-        message: "document does not exist!",
-      });
-    }
-    const promises = []
-      
-    //const textList = await s3.getDocumentTextById(document._id);
-    console.log("documentId", document._id);
-    promises.push(documentS3.getDocumentTextById(document._id));
-
-    //console.log(textList);
-
-    promises.push(documentService.getRecentlyPageViewTotalCount());
-    
-    //const featuredList = await documentService.getFeaturedDocuments({documentId: document.documentId});
-    promises.push(documentService.getFeaturedDocuments({documentId: document.documentId}));
-
-    const results = await Promise.all(promises);
-
-    const textList = results[0];
-    const totalViewCountInfo = results[1];
-    const featuredList = results[2];
-    
-
-    const response = JSON.stringify({
-        success: true,
-        document: document,
-        text: textList,
-        featuredList: featuredList,
-        totalViewCountInfo: totalViewCountInfo
-      }
-    );
-
-    return (null, response);
-  } catch(e) {
-    console.error(e);
-    throw e
-  }
-  
-}
