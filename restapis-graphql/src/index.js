@@ -10,8 +10,8 @@ const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_PUBLIC_KEY = process.env.AUTH0_CLIENT_PUBLIC_KEY;
 const conn = connectToDB(mongodb.endpoint);
 
-const isDebugging = process.env.stage === "local"?true:false
-const isLocal = process.env.stage === "local"?true:false
+const isDebugging = process.env.stage === "local" || process.env.stage === "localdev"?true:false
+const isLocal = process.env.stage === "local" || process.env.stage === "localdev"?true:false
 const server = new ApolloServer({
   schema,
   // By default, the GraphQL Playground interface and GraphQL introspection
@@ -19,8 +19,8 @@ const server = new ApolloServer({
   //
   // If you'd like to have GraphQL Playground and introspection enabled in production,
   // the `playground` and `introspection` options must be set explicitly to `true`.
-  playground: process.env.stage==='dev' || process.env.stage==='local'?true:false,
-  introspection: process.env.stage==='dev' || process.env.stage==='local'?true:false,
+  playground: isLocal,
+  introspection: isLocal,
   debug: isDebugging,
   formatError: (err)=>{
     if(isDebugging) console.error("Graphql Error", JSON.stringify(err));

@@ -1,5 +1,4 @@
 .DS_Store
-package-lock.json
 _subproject
 registry-event
 node_modules
