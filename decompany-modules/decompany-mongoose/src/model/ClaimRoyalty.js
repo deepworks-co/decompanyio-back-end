@@ -14,7 +14,7 @@ const ClaimRoyalty = new Schema({
   created: {
     type: Number
   }
-}, {collection: "CLAIM-REWARD"});
+}, {collection: "CLAIM-ROYALTY"});
 
 ClaimRoyalty.index({"_id.userId": 1, "_id.documentId": 1, "_id.blockchainTimestamp": -1});
 ClaimRoyalty.index({"_id.blockchainTimestamp": -1});
