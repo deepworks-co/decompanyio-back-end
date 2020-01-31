@@ -4,7 +4,7 @@
   "description": "graphQL",
   "main": "",
   "scripts": {
-    "preinstall": "echo starting && sh install.sh",
+    "preinstall": "echo starting",
     "test": "sls invoke test -s local",
     "package": "sls package",
     "tagging": "node createGitTag.js",
