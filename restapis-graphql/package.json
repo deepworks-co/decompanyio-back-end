@@ -4,7 +4,6 @@
   "description": "graphQL",
   "main": "",
   "scripts": {
-    "preinstall": "echo starting",
     "test": "sls invoke test -s local",
     "package": "sls package",
     "tagging": "node createGitTag.js",
@@ -23,7 +22,7 @@
     "decompany-mongoose": "file:../decompany-modules/decompany-mongoose",
     "graphql": "^14.5.8",
     "graphql-compose": "^7.3.0",
-    "graphql-compose-mongoose": "^7.1.3",
+    "graphql-compose-mongoose": "7.1.3",
     "jsonwebtoken": "^8.5.1",
     "log4js": "^5.1.0",
     "mongoose": "^5.6.10",
