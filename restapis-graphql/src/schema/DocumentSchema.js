@@ -2,6 +2,10 @@ const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
 const {Document} = require('decompany-mongoose').models
 
+if(schemaComposer.has(Document.modelName)){
+  return;
+}
+
 const utc = composeWithMongoose(Document, {});
 //utc.removeField(["isPublic", "isDeleted", "isBlocked"]);
 

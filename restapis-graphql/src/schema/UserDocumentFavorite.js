@@ -1,7 +1,9 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
 const {UserDocumentFavorite} = require('decompany-mongoose').models
-
+if(schemaComposer.has(UserDocumentFavorite.modelName)){
+  return;
+}
 const utc = composeWithMongoose(UserDocumentFavorite, {});
 
 function getResolverField(utc){
