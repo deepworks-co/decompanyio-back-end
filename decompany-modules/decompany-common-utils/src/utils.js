@@ -112,8 +112,8 @@ exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
   let royalty = new BigNumber(pageview).div(new BigNumber(totalPageview)).multipliedBy(new BigNumber(creatorDailyReward));
   //let royalty = (pageview / totalPageview)  * creatorDailyReward;
   //royalty  = Math.floor(royalty * 100000) / 100000;
- 
-  return royalty.toFixed(18, 1)
+
+  return royalty.toFixed(5, 1)
   
 }
 
@@ -135,7 +135,7 @@ exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmo
 
   const reward = pageViewPoint.multipliedBy(votePoint).multipliedBy(new BigNumber(curatorDailyReward))
   
-  return reward.toFixed(18, 1);
+  return reward.toFixed(5, 1);
 }
 
 /**
