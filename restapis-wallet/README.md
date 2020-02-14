@@ -63,7 +63,7 @@ sls create function -f claimReward --handler src/claim/reward.handler --httpEven
 
 ## Test using Docker
 
-### Run MongoDB
+### Run Test MongoDB in Docker
 
 ```bash
 docker run --rm --name local-mongo -v "$(pwd)"/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0
