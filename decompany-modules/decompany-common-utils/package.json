@@ -10,9 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.402.0",
+    "bignumber.js": "^9.0.0",
     "friendly-url": "^1.0.3",
     "mongojs": "^3.1.0",
     "nanoid": "^2.0.1",
     "saslprep": "^1.0.3"
+  },
+  "devDependencies": {
+    "jest": "^25.1.0"
   }
 }

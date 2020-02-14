@@ -397,7 +397,7 @@ async function saveCuratorRewards({documentId, userId, curatorRewards}){
   return await Promise.all(savePromises);
 }
 
-async function saveCuratorReward({blockchainTimestamp, documentId, userId, curatorReward}){
+async function saveCuratorReward({documentId, userId, curatorReward}){
   //console.log("curatorReward", JSON.stringify(curatorReward));
   
   const saveClaimResult = await mongo.save(tables.CLAIM_REWARD, {

@@ -1,5 +1,6 @@
 const friendlyUrl = require('friendly-url')
 const generate = require('nanoid/generate')
+const BigNumber = require('bignumber.js');
 /**
  * @description Date object를 Blockchain에 넣을 YYYY-MM-DD 00:00:00의 timestamp값으로 변경한다. 
  */
@@ -106,12 +107,14 @@ exports.calcRoyalty = ({totalPageview, pageview, creatorDailyReward}) => {
   
   if(isNaN(totalPageview) || isNaN(pageview) || isNaN(creatorDailyReward)){
     
-    return -1;
+    throw new Error(`parameter is invalid in calcRoyalty  : ${JSON.stringify({totalPageview, pageview, creatorDailyReward})}`)
   }
-  let royalty = (pageview / totalPageview)  * creatorDailyReward;
-  royalty  = Math.floor(royalty * 100000) / 100000;     
+  let royalty = new BigNumber(pageview).div(new BigNumber(totalPageview)).multipliedBy(new BigNumber(creatorDailyReward));
+  //let royalty = (pageview / totalPageview)  * creatorDailyReward;
+  //royalty  = Math.floor(royalty * 100000) / 100000;
 
-  return royalty;
+  return royalty.toFixed(5, 1)
+  
 }
 
 
@@ -124,10 +127,15 @@ exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmo
     throw new Error(`parameter is invalid in calcReward  : ${JSON.stringify({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmount, curatorDailyReward})}`)
   }
 
-  let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
+  // let reward = ((Math.pow(pageview, 2) / totalPageviewSquare)) * ( myVoteAmount / totalVoteAmount ) * curatorDailyReward;
+  // reward  = Math.floor(reward * 100000) / 100000;
+  const pageViewPoint = new BigNumber(pageview).exponentiatedBy(2).div(new BigNumber(totalPageviewSquare))  
 
-  reward  = Math.floor(reward * 100000) / 100000;
-  return reward;
+  const votePoint = BigNumber(myVoteAmount).div(new BigNumber(totalVoteAmount))
+
+  const reward = pageViewPoint.multipliedBy(votePoint).multipliedBy(new BigNumber(curatorDailyReward))
+  
+  return reward.toFixed(5, 1);
 }
 
 /**
