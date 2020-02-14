@@ -12,7 +12,7 @@ describe('accountUpdate', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('username : <<<<>>>>>', () => {
     const event = {
       principalId: "google-oauth2|101778494068951192848",
       body: {
@@ -23,4 +23,17 @@ describe('accountUpdate', () => {
       expect(response).to.not.be.empty;
     });
   });
+
+  it('다른사람의 username 중복 : ddddd', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        username: "ddddd"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+  });
+
 });
