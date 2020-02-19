@@ -13,7 +13,7 @@ describe('s3DocumentConvertComplete', () => {
     done();
   });
 
-  it('550cb188c51f458dafe8eb53318e26a2', async () => {
+  it('550cb188c51f458dafe8eb53318e26a2 result.json', async () => {
     
     const event = {
       "Records": [
@@ -60,7 +60,7 @@ describe('s3DocumentConvertComplete', () => {
     });    
   });
 
-  it('550cb188c51f458dafe8eb53318e26a2 1 page image', async () => {
+  it('022f3acc6b05484cb787032c81fc304d 1 page image', async () => {
     
     const event = {
       "Records": [

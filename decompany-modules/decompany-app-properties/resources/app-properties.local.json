@@ -66,6 +66,7 @@
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
         "embedHost": "https://embed.share.decompany.io",
+        "shortUrlHost": "https://viewer.share.decompany.io",
         "activeVoteDays": 7,
         "activeRewardVoteDays": 7
     },
