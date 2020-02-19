@@ -389,7 +389,7 @@ async function getShortUrl(document){
       reject(new Error("applicationConfig.embedHost is undefined!"));
     } 
     
-    let host = applicationConfig.embedHost;
+    let host = applicationConfig.shortUrlHost;
     
     if(host.slice(-1) !== "/"){
       host += "/";
