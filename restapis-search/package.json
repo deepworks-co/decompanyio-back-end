@@ -1,0 +1,26 @@
+{
+  "name": "restapis-search",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "sls deploy",
+    "deploy:asem": "sls deploy -s asem",
+    "deploy:dev": "sls deploy -s dev",
+    "run:redis": "docker run --rm -p 6379:6379 redis"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "ioredis": "^4.16.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "serverless-mocha-plugin": "^1.11.0",
+    "serverless-offline": "^5.12.1",
+    "serverless-plugin-canary-deployments": "^0.4.8",
+    "serverless-plugin-split-stacks": "^1.9.3",
+    "serverless-prune-plugin": "^1.4.2"
+  }
+}
