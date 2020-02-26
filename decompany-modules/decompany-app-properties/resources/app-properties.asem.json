@@ -68,7 +68,8 @@
         "embedHost": "https://embed.polarishare.com",
         "shortUrlHost": "https://viewer.polarishare.com",
         "activeVoteDays": 7,
-        "activeRewardVoteDays": 7
+        "activeRewardVoteDays": 7,
+        "privateDocumentCountLimit": 10
     },
     "sesConfig": {
         "region": "us-east-1",

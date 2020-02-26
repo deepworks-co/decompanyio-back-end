@@ -1,5 +1,5 @@
 'use strict';
-const { mongodb, tables, constants } = require('decompany-app-properties');
+const { mongodb, tables, constants, applicationConfig } = require('decompany-app-properties');
 const { MongoWapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
@@ -1499,7 +1499,7 @@ async function putTrackingUser(cid, sid, documentId, email){
 
 
 async function checkRegistrableDocument(accountId){
-  
+  const limit = applicationConfig || applicationConfig.privateDocumentCountLimit?applicationConfig.privateDocumentCountLimit:5
   return new Promise(async (resolve, reject)=>{
     const wapper = new MongoWapper(connectionString);
 
@@ -1508,7 +1508,7 @@ async function checkRegistrableDocument(accountId){
       if(err) {
         reject(err);
       } else {
-        if(data && data.length > 4){
+        if(data && data.length > (limit-1)){
           resolve({check: false, privateDocumentCount: data.length})
         } else {
           resolve({check: true, privateDocumentCount: data.length})

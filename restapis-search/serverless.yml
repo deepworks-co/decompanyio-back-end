@@ -1,0 +1,195 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: restapis-search
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+  region: ${file(./serverlessConfig.js):region}
+
+# you can define service wide environment variables here
+  environment: ${file(./env.yml):${opt:stage, self:provider.stage}}
+  tags:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    SERVICENAME: ${self:service.name}
+    GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
+    GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
+    DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
+
+functions:
+  customSearch:
+    handler: src/google/customSearch.handler
+    events:
+      - http: 
+          method: get
+          path: /api/custom/search
+          cors: true
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    ServerlessVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.2.0.0/16"
+    ElasticIpLambda:
+      Type: AWS::EC2::EIP
+      Properties:
+        Domain: vpc
+    InternetGatewayLambda:
+      Type: AWS::EC2::InternetGateway
+    VPCGatewayAttachmentLambda:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        InternetGatewayId:
+          Ref: InternetGatewayLambda
+    NatGatewayLambda:
+      Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId:
+          Fn::GetAtt:
+            - ElasticIpLambda
+            - AllocationId
+        SubnetId:
+          Ref: ServerlessPublicSubnetA
+    ServerlessPrivateSubnetA:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}b
+        CidrBlock: "10.2.1.0/24"
+    ServerlessPublicSubnetA:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}b
+        CidrBlock: "10.2.2.0/24"
+    DefaultPrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+    DefaultPrivateRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: DefaultPrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+          Ref: NatGatewayLambda
+    DefaultPublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+    DefaultPublicRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: DefaultPublicRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: InternetGatewayLambda
+    SubnetRouteTableAssociationLambdaPrivateA:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: ServerlessPrivateSubnetA
+        RouteTableId:
+          Ref: DefaultPrivateRouteTable
+    SubnetRouteTableAssociationLambdaPublicA:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: ServerlessPublicSubnetA
+        RouteTableId:
+          Ref: DefaultPublicRouteTable
+    ServerlessSecurityGroup:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Serverless Functions
+        VpcId:
+          Ref: ServerlessVPC
+    ServerlessStorageSecurityGroup:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Ingress for Redis Cluster
+        VpcId:
+          Ref: ServerlessVPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '6379'
+          ToPort: '6379'
+          SourceSecurityGroupId:
+            Ref: ServerlessSecurityGroup
+    ServerlessCacheSubnetGroup:
+      Type: AWS::ElastiCache::SubnetGroup
+      Properties:
+        Description: "Cache Subnet Group"
+        SubnetIds:
+        - Ref: ServerlessPrivateSubnetA
+    ServerlessElasticacheCluster:
+      DependsOn: ServerlessStorageSecurityGroup
+      Type: AWS::ElastiCache::CacheCluster
+      Properties:
+        AutoMinorVersionUpgrade: true
+        Engine: redis
+        CacheNodeType: ${self:provider.environment.CacheNodeType, "cache.t2.micro"}
+        NumCacheNodes: ${self:provider.environment.NumCacheNodes, 1}
+        VpcSecurityGroupIds:
+        - "Fn::GetAtt": ServerlessStorageSecurityGroup.GroupId
+        CacheSubnetGroupName:
+          Ref: ServerlessCacheSubnetGroup
+custom:
+  deployType: Canary10Percent5Minutes
+  deploymentSettings:
+    stages:
+      - asem
+  prune:
+    automatic: true
+    number: 5
+  splitStacks:
+    perFunction: false
+    perType: true
+  serverless-offline:
+    port: 4080
+
+plugins:
+  - serverless-offline
+  - serverless-mocha-plugin
+  - serverless-plugin-split-stacks
+  - serverless-plugin-canary-deployments
+  - serverless-prune-plugin
