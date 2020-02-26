@@ -34,7 +34,7 @@ module.exports.handler = async event => {
     delete req.cx
     return req;
   })
-  console.log("result", JSON.stringify(result, 10, null))
+  //console.log("result", JSON.stringify(result, 10, null))
   
   return {
     statusCode: 200,
