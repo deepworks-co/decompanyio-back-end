@@ -11,7 +11,7 @@ describe('documentDownload', () => {
   before((done) => {
     done();
   });
-
+/*
   it('get download c64bfec0add949e280de9db670f43331 url ', () => {
     const event = {
       query: {documentId : "c64bfec0add949e280de9db670f43331"}
@@ -22,4 +22,38 @@ describe('documentDownload', () => {
       expect(res.success === true && res.downloadUrl!== undefined).to.be.true;
     });
   });
+*/
+  it('get download c64bfec0add949e280de9db670f43331 with event info ', () => {
+    const event = {
+      path: "/localtest/api/document/download",
+      httpMethod: 'GET',
+      query: {documentId : "c64bfec0add949e280de9db670f43331"},
+      headers: {
+        cookie: '_ga=GA1.3.1060212880.1546915423; hubspotutk=4a0e809bd7a4ea92bed3f2b638bc2283; _ga=GA1.2.1889317210.1549865085; __hstc=183962553.4a0e809bd7a4ea92bed3f2b638bc2283.1551171129769.1552642157669.1553732765159.28; _gid=GA1.2.1581221865.1582591917'
+      },
+      requestContext: {
+        identity: { 
+          cognitoIdentityPoolId: null,
+          accountId: null,
+          cognitoIdentityId: null,
+          caller: null,
+          sourceIp: '118.37.116.13',
+          principalOrgId: null,
+          accessKey: null,
+          cognitoAuthenticationType: null,
+          cognitoAuthenticationProvider: null,
+          userArn: null,
+          userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+          user: null 
+        }
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      const res = JSON.parse(response);
+      console.log(res.downloadUrl);
+      expect(res.success === true && res.downloadUrl!== undefined).to.be.true;
+    });
+  });
+
 });

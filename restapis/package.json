@@ -26,7 +26,8 @@
   },
   "scripts": {
     "preinstall": "echo starting && sh install.sh",
-    "test": "mocha",
+    "install:sharp": "npm --prefix ./opt install sharp@0.22.1",
+    "test": "export NODE_PATH=.:./opt/node_modules && sls invoke test --exit -s local",
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy",
