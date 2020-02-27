@@ -57,7 +57,9 @@ module.exports.handler = async (event, context, callback) => {
     success: true,
     downloadUrl: signedUrl,
     document: document
-  }));
+  }), {
+    "Set-Cookie": "_dk=Ax7eDf01;"
+  });
 };
 
 function makeDownloadEventParamsLambdaProxy(lambdaEvent){
