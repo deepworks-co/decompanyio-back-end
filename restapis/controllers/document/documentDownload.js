@@ -53,12 +53,16 @@ module.exports.handler = async (event, context, callback) => {
 
   await helpers.saveEvent(makeDownloadEventParamsLambdaProxy(event), documentService.WRAPPER)
 
+  const expiredAt = new Date();
+  const days = 5;
+  expiredAt.setTime(expiredAt.getTime() + (days * 24 * 60 * 60 * 1000));
+
   return utils.makeResponse(JSON.stringify({
     success: true,
     downloadUrl: signedUrl,
     document: document
   }), {
-    "Set-Cookie": "_dk=Ax7eDf01;"
+    "Set-Cookie": `_dk=Ax7eDf01;Secure;HttpOnly;expires=${expiredAt.toGMTString()};path=/`
   });
 };
 
