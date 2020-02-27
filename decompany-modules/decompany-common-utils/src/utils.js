@@ -148,24 +148,24 @@ exports.getDate = (date, days) => {
   return new Date(baseDate.setDate(baseDate.getDate() + days));
 }
 
-exports.makeResponse = (body) => {
+exports.makeResponse = (body, addheader) => {
   return {
     statusCode: 200,
-    headers: {
+    headers: Object.assign({
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-    },
+    }, addheader),
     body: typeof body === 'string'?body:JSON.stringify(body)
   }
 }
 
-exports.makeErrorResponse = (err) => {
+exports.makeErrorResponse = (err, addheader) => {
   return {
     statusCode: 500,
-    headers: {
+    headers: Object.assign({
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-    },
+    }, addheader),
     body: typeof err === 'string'?err:JSON.stringify(err)
   }
 }
