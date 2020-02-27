@@ -16,8 +16,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
   
-  const {query} = event;
-  const {documentId} = query;
+  const {documentId} = event.queryStringParameters?event.queryStringParameters:{};
 
   if(!documentId ) {
     return callback(new Error("parameter is invalid!!!"));
