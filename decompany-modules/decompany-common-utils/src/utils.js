@@ -147,3 +147,25 @@ exports.getDate = (date, days) => {
   const baseDate = new Date(date);
   return new Date(baseDate.setDate(baseDate.getDate() + days));
 }
+
+exports.makeResponse = (body) => {
+  return {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+      'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+    },
+    body: typeof body === 'string'?body:JSON.stringify(body)
+  }
+}
+
+exports.makeErrorResponse = (err) => {
+  return {
+    statusCode: 500,
+    headers: {
+      'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+      'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+    },
+    body: typeof err === 'string'?err:JSON.stringify(err)
+  }
+}
