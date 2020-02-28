@@ -1,10 +1,14 @@
 'use strict';
 const request = require('request');
-const redisCache = require('../utils/redisCache');
-
+const {utils, CacheWrapper} = require('decompany-common-utils')
+const REDIS_HOST = process.env.REDIS_HOST;
+const REDIS_PORT = process.env.REDIS_PORT;
+const EXPIRE_TIME = 10;//60 * 5
 const CSE_SEARCH_URL = process.env.CSE_SEARCH_URL;
 const CSE_APIKEY = process.env.CSE_APIKEY;
 const CSE_ENGINE_ID = process.env.CSE_ENGINE_ID;
+
+const redisCache = new CacheWrapper(REDIS_HOST, REDIS_PORT, 0);
 
 module.exports.handler = async event => {
 
@@ -27,7 +31,7 @@ module.exports.handler = async event => {
     result = JSON.parse(result);
   } else {
     result = await search(query);
-    await redisCache.set(key, JSON.stringify(result));
+    await redisCache.set(key, JSON.stringify(result), EXPIRE_TIME);
   }
 
   result.queries.request = result.queries.request.map((req)=>{

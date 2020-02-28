@@ -4,15 +4,18 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
+    "test": "sls invoke test -f customSearch -s local --exit",
     "deploy": "sls deploy",
     "deploy:asem": "sls deploy -s asem",
     "deploy:dev": "sls deploy -s dev",
-    "run:redis": "docker run --rm -p 6379:6379 redis"
+    "redis:run": "docker run --rm --name test_redis -p 6379:6379 redis",
+    "redis:stop": "docker stop test_redis"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "ioredis": "^4.16.0",
     "request": "^2.88.2"
   },
