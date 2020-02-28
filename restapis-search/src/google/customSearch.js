@@ -27,7 +27,7 @@ module.exports.handler = async event => {
   let result = await redisCache.get(key)
 
   if(result) {
-    console.log("caching");
+    console.log("caching", key);
     result = JSON.parse(result);
   } else {
     result = await search(query);
