@@ -91,10 +91,13 @@ module.exports.handler = async (event, context, callback) => {
 
 function getCookie(stage, cookie){
   const timestamp = Date.now()
-  const maxAge = 60 * 30;// 30 mins
-  const sid = cookie && cookie._sid?cookie._sid:utils.randomId();
-  const domain = stage === ('alpha'||'asem')?"polarishare.com":"decompany.io";
-  return `_sid=${sid}.${timestamp}; domain=${domain}; Max-Age=${maxAge}; path=/; Secure; HttpOnly;`
+  const expiredAt = new Date();
+  const secend = 30 * 60; //30 mins
+  expiredAt.setTime(expiredAt.getTime() +secend );
+
+  const _sid = cookie && cookie._sid?cookie._sid:utils.randomId();
+  const domain = stage === ('alpha'||'asem')?"polarishare.com":"share.decompany.io";
+  return `_sid=${_sid}.${timestamp}; domain=${domain};expires=${expiredAt.toGMTString()};max-age=${secend}; path=/; Secure; HttpOnly;`
 }
 
 /* 

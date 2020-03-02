@@ -609,10 +609,10 @@ functions:
           method: get
           cors: true
           #integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#            template: $input.path('$')
           documentation:
             summary: "/api/document/download"
             description: "/api/document/download"
@@ -721,8 +721,20 @@ functions:
       - http: 
           path: api/tracking/collect
           method: get
-          cors: true
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
           integration: lambda
+          request:
+            template:
+              application/json: ${file(./serverless-request-template.vtl)}
           response:
             headers:
               Content-Type: integration.response.header.Content-Type

@@ -9,6 +9,7 @@
   "dependencies": {
     "aws-sdk": "^2.432.0",
     "buffer-image-size": "^0.6.4",
+    "cookie": "^0.4.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "json-2-csv": "^3.5.4",
