@@ -5,6 +5,7 @@ const {region, s3Config} = require('decompany-app-properties');
 const helpers = require('../eventHelpers');
 //const s3 = require('./documentS3');
 const cookieUtil = require('cookie');
+const camelcaseKeys = require('camelcase-keys');
 const DOWNLOAD_SIZE_LIMIT = 30 * Math.pow(2, 20);
 
 
@@ -98,25 +99,18 @@ function makeHeader(eventParams){
 }
 function makeDownloadEventParamsLambdaProxy(event){
 
-  const {path, httpMethod, requestContext, queryStringParameters, body} = event;
-  
-  const userAgent = requestContext && requestContext.identity?requestContext.identity.userAgent:undefined
-  const sourceIp = requestContext && requestContext.identity?requestContext.identity.sourceIp:undefined
- 
-  const cookie = cookieUtil.parse(event.headers.cookie);
+  const {path, httpMethod, queryStringParameters, body, headers} = event;
   const payload = httpMethod==="GET"?queryStringParameters:body;
 
+  const camelcaseKeyHeaders = camelcaseKeys(headers);
+
   return {
-    type: "download",
+    type: "DOWNLOAD",
     path: path,
     method: httpMethod,
-    header: {
-      userAgent: userAgent,
-      sourceIp: sourceIp,
-      cookie: cookie
-    },
+    headers: Object.assign(camelcaseKeyHeaders, {cookie: cookieUtil.parse(headers.cookie)}),
     payload: payload,
-    event: event
+    eventSrc: event
   }
 }
 
