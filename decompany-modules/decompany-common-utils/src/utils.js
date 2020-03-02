@@ -37,7 +37,14 @@ exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
 }
 
-exports.randomId = () => {
+/**
+ * @params : {alphabet: 'abcdefg...1234ABCD...', size: 10}
+ */
+exports.randomId = (params) => {
+
+  if(params){
+    return generate(params.alphabet, params.size)
+  }
   
   return generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
 
@@ -152,8 +159,9 @@ exports.makeResponse = (body, addheader) => {
   return {
     statusCode: 200,
     headers: Object.assign({
-      'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+      'Access-Control-Allow-Origin': 'https://share.decompany.io', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+      'Content-Type': 'application/json'
     }, addheader),
     body: typeof body === 'string'?body:JSON.stringify(body)
   }
@@ -167,6 +175,25 @@ exports.makeErrorResponse = (err, addheader) => {
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
       'Content-Type': 'application/json'
     }, addheader),
-    body: typeof err === 'string'?err:JSON.stringify(err)
+    body: err && typeof err === 'string'?err:err.toString()
+  }
+}
+
+exports.parseLambdaEvent = (eventParams) => {
+  
+  if(eventParams.httpMethod){
+    // lambda-proxy integration
+    return {
+      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: eventParams.body,
+      headers: eventParams.headers,
+      principalId: eventParams.principalId
+    }
+  } else {
+    // lambda event.method
+    return {
+      params: eventParams.method === 'GET'? eventParams.query: eventParams.body,
+      headers: eventParams.headers,
+      principalId: eventParams.principalId
+    }
   }
 }
