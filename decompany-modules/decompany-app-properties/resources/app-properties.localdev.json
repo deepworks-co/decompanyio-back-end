@@ -67,7 +67,6 @@
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
         "embedHost": "https://embed.share.decompany.io",
-        "shortUrlHost": "https://viewer.share.decompany.io",
         "activeVoteDays": 7,
         "activeRewardVoteDays": 7,
         "privateDocumentCountLimit": 10
@@ -162,6 +161,7 @@
         "distributionId": "EDFUPNJU9XKGX"
     },
     "shortUrlConfig": {
-        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha",
+        "shortUrlHost": "https://share.decompany.io"
     }
 }

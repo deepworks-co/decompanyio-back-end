@@ -67,7 +67,6 @@
     "applicationConfig": {
         "mainHost": "https://www.polarishare.com",
         "embedHost": "https://embed.polarishare.com",
-        "shortUrlHost": "https://viewer.polarishare.com",
         "activeVoteDays": 7,
         "activeRewardVoteDays": 7,
         "privateDocumentCountLimit": 10
@@ -170,6 +169,7 @@
         "distributionId": "E1UYELY2K59G6Q"
     },
     "shortUrlConfig": {
-        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha",
+        "shortUrlHost": "https://wwww.polarishare.com"
     }
 }

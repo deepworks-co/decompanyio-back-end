@@ -376,25 +376,24 @@ function putS3Object(bucket, key, body, contentType){
 }
 
 async function getShortUrl(document){
-  
-  const author = document.author;
-  
+
   return new Promise((resolve, reject)=>{
 
     if(!shortUrlConfig && !shortUrlConfig.generatorUrl){
       reject(new Error("shortUrlConfig is undefined!"));
     }
 
-    if(!applicationConfig.embedHost){
-      reject(new Error("applicationConfig.embedHost is undefined!"));
+    if(!shortUrlConfig.shortUrlHost){
+      reject(new Error("shortUrlConfig.shortUrlHost is undefined!"));
     } 
     
-    let host = applicationConfig.shortUrlHost;
+    let host = shortUrlConfig.shortUrlHost;
     
     if(host.slice(-1) !== "/"){
       host += "/";
     }
-    const url = `${host}${document.seoTitle}`;
+    const username = document.author.username?document.author.username:document.author.email;
+    const url = `${host}@${username}/${document.seoTitle}`;
     console.log("shortUrlConfig.generatorUrl", shortUrlConfig.generatorUrl);
     request.post({url : shortUrlConfig.generatorUrl, headers: {"Content-Type": "application/json"}, body: JSON.stringify({url: url})}, function (error, response, body){
       if(error){
