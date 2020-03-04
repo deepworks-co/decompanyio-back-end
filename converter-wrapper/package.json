@@ -22,7 +22,7 @@
     "serverless-prune-plugin": "^1.4.1"
   },
   "scripts": {
-    "preinstall": "sh install.sh",
+    "install:sharp": "sh install.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "sls deploy -s dev && sls s3deploy -s dev",
     "deploy:alpha": "sls deploy -s alpha  && sls s3deploy -s alpha",
