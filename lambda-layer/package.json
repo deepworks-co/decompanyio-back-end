@@ -7,7 +7,7 @@
     "preinstall": "sh install.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy:dev": "sls deploy -s dev",
-    "deploy:asem": "sls deploy -s asem"
+    "deploy:asem": "sls deploy -s asem -r ap-northeast-2"
   },
   "author": "",
   "license": "ISC",
