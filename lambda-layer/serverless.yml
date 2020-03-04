@@ -25,6 +25,10 @@ provider:
   environment:
     NODE_PATH: "./:/sharp/node_modules:/geoip/node_modules"
   logRetentionInDays: 3
+package:
+  exclude:
+    - "build/**"
+
 layers:
   libSharp:
     path: sharp
