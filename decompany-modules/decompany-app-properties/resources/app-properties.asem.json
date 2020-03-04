@@ -6,8 +6,8 @@
         "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
     },
     "layer": {
-        "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:7",
-        "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:7"
+        "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:6",
+        "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:6"
     },
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany?connectTimeoutMS=1800000&socketTimeoutMS=1800000"
