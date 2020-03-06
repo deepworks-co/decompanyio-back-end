@@ -51,7 +51,8 @@
         "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
         "DECK_TRANSFER": "DECK-TRANSFER",
         "VW_WALLET_BALANCE": "VW-WALLET-BALANCE",
-        "EVENT": "EVENT"
+        "EVENT": "EVENT",
+        "EVENT_AGGREGATE": "EVENT-AGGREGATE"
     },
     "sqsConfig": {
         "region": "us-west-1",
