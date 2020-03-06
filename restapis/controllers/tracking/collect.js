@@ -3,6 +3,7 @@ const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('decompany-app-properties');;
 const {kinesis, utils} = require('decompany-common-utils');
 //const geoip = require('geoip-lite');
+const helpers = require('../eventHelpers');
 
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
@@ -78,13 +79,15 @@ module.exports.handler = async (event, context, callback) => {
       //console.log("tracking user is not exists", body.cid);
     }
 
-    const trackingIds = utils.generateTrackingIds(cookies);
+    const trackingIds = utils.generateTrackingIds(cookies);   
 
     const response = utils.makeResponse(JSON.stringify({
       success: true,
       message: "ok",
       user: user
     }), utils.makeTrackingCookie(trackingIds, origin));
+
+    await helpers.saveEvent(Object.assign(makeDownloadEventParamsLambdaProxy(eventParams, event), {trackingIds}), documentService.WRAPPER)
 
     return response
   } catch(err){
@@ -94,6 +97,19 @@ module.exports.handler = async (event, context, callback) => {
   
 };
 
+function makeDownloadEventParamsLambdaProxy(eventParams, event){
+
+  const {path, method, cookies, headers} = eventParams;
+  
+  return {
+    type: "VIEW",
+    path: path,
+    method: method,
+    headers: headers,
+    payload: eventParams.params,
+    eventSrc: event
+  }
+}
 
 /* 
 geoip-lite 는 용량문제로 lambda에 업로드 되지 않음.... 줸장...

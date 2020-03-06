@@ -16,6 +16,7 @@ describe('trackingCollect', () => {
 
     const event = {
       method: "GET",
+      requestPath: "/local/api/tracking/collect",
       query: {
         id: "968de024dd1647f1a7544d9c4b46de48",
         n: 2,
@@ -36,6 +37,7 @@ describe('trackingCollect', () => {
 
     const event = {
       method: "GET",
+      requestPath: "/local/api/tracking/collect",
       headers: {
         Referer: "Asfdasf"
       },
