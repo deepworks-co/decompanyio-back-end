@@ -19,7 +19,7 @@ service: batch-pageview # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   region: ${file(./serverlessConfig.js):region}
   stage: ${opt:stage, 'dev'}
   vpc:
@@ -58,8 +58,14 @@ provider:
     - .env
 
 functions:
+  dailyPageviewAggregate:
+    handler: functions/sf/dailyPageviewAggregate.handler
+  dailyDownloadAggregate:
+    handler: functions/sf/dailyDownloadAggregate.handler
+    
   makeRewardPool:
     handler: functions/mgr/makeRewardPool
+    
   calculateRoyalty:
     handler: functions/cron/calculateRoyalty.handler
     timeout: 300
@@ -117,7 +123,27 @@ stepFunctions:
                 - dailyPageview
                 - Arn
             End: true
-
+    dailyAggregateEvent:
+      events:
+        - schedule: 
+            rate: cron(20 0 * * ? *)
+      definition:
+        StartAt: dailyDownloadAggregate
+        States:
+          dailyDownloadAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyDownloadAggregate
+                - Arn
+            Next: dailyPageviewAggregate
+          dailyPageviewAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyPageviewAggregate
+                - Arn          
+            End: true
 
 plugins:
   - serverless-mocha-plugin

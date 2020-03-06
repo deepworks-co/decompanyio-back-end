@@ -96,6 +96,8 @@ sls create function -f calculateRoyalty --handler functions/cron/calculateRoyalt
 
 
 sls create function -f makeRewardPool --handler functions/mgr/makeRewardPool.handler
+
+sls create function -f dailyDownloadAggregate --handler functions/sf/dailyDownloadAggregate
 ```
 
 ## Test
