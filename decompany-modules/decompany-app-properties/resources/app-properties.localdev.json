@@ -60,9 +60,9 @@
         }
     },
     "applicationLogAppender": {
-        "enable": true,
-        "region": "us-west-1",
-        "streamName": "TrackingDataStream"
+        "enable": false,
+        "region": "",
+        "streamName": ""
     },
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
