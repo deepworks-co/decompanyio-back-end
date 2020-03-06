@@ -721,25 +721,16 @@ functions:
       - http: 
           path: api/tracking/collect
           method: get
-          cors:
-            origin: '*' # <-- Specify allowed origin
-            headers: # <-- Specify allowed headers
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Amz-User-Agent
-            allowCredentials: true
-          integration: lambda
-          request:
-            template:
-              application/json: ${file(./serverless-request-template.vtl)}
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-              Set-Cookie: integration.response.body.Cookie
-            template: $input.path('$.body')
+          cors: true
+#          integration: lambda
+#          request:
+#            template:
+#              application/json: ${file(./serverless-request-template.vtl)}
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#              Set-Cookie: integration.response.body.Cookie
+#            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"

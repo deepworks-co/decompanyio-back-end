@@ -26,9 +26,10 @@ function saveEvent(eventParams, wrapper) {
         if(!eventParams.type || !eventParams.path || !eventParams.headers){
             throw new Error("event paramter is invaild : " + JSON.stringify(eventParams));
         }
-        
+        const createdAt = new Date();
         wrapper.save(tables.EVENT, Object.assign(eventParams, {
-            created: new Date().getTime()
+            created: createdAt.getTime(),
+            createdAt: createdAt
         }))
         .then((data)=>{
             resolve(data);

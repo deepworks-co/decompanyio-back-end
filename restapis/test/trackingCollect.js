@@ -15,6 +15,7 @@ describe('trackingCollect', () => {
   it('no headers', () => {
 
     const event = {
+      method: "GET",
       query: {
         id: "968de024dd1647f1a7544d9c4b46de48",
         n: 2,
@@ -25,14 +26,16 @@ describe('trackingCollect', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(JSON.parse(response));
-      expect(JSON.parse(response).message).to.equal("no collecting");
+      //console.log(JSON.parse(response));
+      console.log(response);
+      expect(JSON.parse(response.body).message).to.equal("no collecting");
     });
   });
 
   it('headers', () => {
 
     const event = {
+      method: "GET",
       headers: {
         Referer: "Asfdasf"
       },
@@ -46,7 +49,7 @@ describe('trackingCollect', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      //console.log(response);
       expect(JSON.parse(response.body).success).to.equal(true);
     });
   });

@@ -4,10 +4,8 @@ const {s3, utils} = require('decompany-common-utils');
 const {region, s3Config} = require('decompany-app-properties');
 const helpers = require('../eventHelpers');
 //const s3 = require('./documentS3');
-const cookieUtil = require('cookie');
-const camelcaseKeys = require('camelcase-keys');
 const DOWNLOAD_SIZE_LIMIT = 30 * Math.pow(2, 20);
-
+const cookieUtil = require('cookie');
 
 module.exports.handler = async (event, context, callback) => {
   console.log(JSON.stringify(event));
@@ -18,9 +16,11 @@ module.exports.handler = async (event, context, callback) => {
   }
   
   try{
-    //const {documentId} = event.queryStringParameters?event.queryStringParameters:{};
+ 
     const eventParams = utils.parseLambdaEvent(event)
     const { documentId } = eventParams.params;
+    const cookies = eventParams.cookies    
+    const origin = eventParams.headers?eventParams.headers.origin:null
 
     if(!documentId ) {
       return callback(new Error("parameter is invalid!!!"));
@@ -30,7 +30,7 @@ module.exports.handler = async (event, context, callback) => {
     //console.log("document", document);
 
     if(!document){
-      return callback(new Error("document does not exist!!!"));
+      return callback(new Error("document does not exists!!!"));
     }
     console.log("document.isDownload", document.isDownload);
     if(document.isDownload === undefined || document.isDocument === false){
@@ -41,29 +41,22 @@ module.exports.handler = async (event, context, callback) => {
       }));
     }
 
-    if(document.documentSize > DOWNLOAD_SIZE_LIMIT){
-      console.log("file size exceed : 30M", document.documentSize/Math.pow(2, 20));
-      return utils.makeResponse(JSON.stringify({
-        success: false,
-        message: "file size exceed"
-      }));
-    }
-
     const documentName = document.documentName;
     const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
     //const signedUrl = s3.generateSignedUrl(document.accountId, document.documentId, ext);
     const documentKey = `FILE/${document.accountId}/${document.documentId}.${ext}`;
     const signedUrl = await s3.signedDownloadUrl2({region: region, bucket: s3Config.document, key: documentKey, signedUrlExpireSeconds: 60});
 
-    await helpers.saveEvent(makeDownloadEventParamsLambdaProxy(event), documentService.WRAPPER)
+    const trackingIds = utils.generateTrackingIds(cookies);
 
-    const newHeader = makeHeader(event);
+    await helpers.saveEvent(Object.assign(makeDownloadEventParamsLambdaProxy(eventParams, event), {trackingIds}), documentService.WRAPPER)
 
     return utils.makeResponse(JSON.stringify({
       success: true,
       downloadUrl: signedUrl,
       document: document
-    }), newHeader);
+    }), utils.makeTrackingCookie(trackingIds, origin));
+
   } catch (err) {
     console.error(err);
     return utils.makeErrorResponse(err);
@@ -71,45 +64,17 @@ module.exports.handler = async (event, context, callback) => {
   
 };
 
-function makeHeader(eventParams){
-  const expiredAt = new Date();
-  const timestamp = expiredAt.getTime();
-  const secend = 1 * 24 * 60 * 60; // cookie 만료 시간 1일 sec단위
-  expiredAt.setTime(timestamp + (secend * 1000));
 
-  const parsedCookie = cookieUtil.parse(eventParams.headers.cookie);
-  console.log("parsedCookie", parsedCookie);
-  let _dk = parsedCookie._dk;
-  if(!_dk){
-    const id = utils.randomId({
-      alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-',
-      size: 21
-    });
-    _dk = `${id}.${timestamp}`;//utils.stringToBase64(`${id}.${timestamp}`);
-  }
+function makeDownloadEventParamsLambdaProxy(eventParams, event){
+
+  const {path, method, cookies, headers} = eventParams;
   
-
-  const origin = eventParams.headers.origin;
-  const domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
-    
-  return {
-    'Access-Control-Allow-Origin': origin,
-    "Set-Cookie": `_dk=${_dk};expires=${expiredAt.toGMTString()};max-age=${secend};path=/;domain=${domain};Secure;HttpOnly;`,
-  }
-}
-function makeDownloadEventParamsLambdaProxy(event){
-
-  const {path, httpMethod, queryStringParameters, body, headers} = event;
-  const payload = httpMethod==="GET"?queryStringParameters:body;
-
-  const camelcaseKeyHeaders = camelcaseKeys(headers);
-
   return {
     type: "DOWNLOAD",
     path: path,
-    method: httpMethod,
-    headers: Object.assign(camelcaseKeyHeaders, {cookie: cookieUtil.parse(headers.cookie)}),
-    payload: payload,
+    method: method,
+    headers: headers,
+    payload: eventParams.params,
     eventSrc: event
   }
 }
