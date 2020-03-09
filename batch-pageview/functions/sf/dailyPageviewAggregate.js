@@ -15,7 +15,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const list = await aggregateDailyEvent(new Date(startTimestamp), new Date(endTimestamp))
   console.log("aggregate event", new Date(startTimestamp), new Date(endTimestamp), list.length)
-  await saveDailyEvent(list);
+  //await saveDailyEvent(list);
   
   return JSON.stringify({
     success: true, 
@@ -33,7 +33,8 @@ function aggregateDailyEvent(start, end) {
         $match: {
           $and: [
             { type: "VIEW"},
-            { createdAt: {$gte: start, $lt: end} }
+            { createdAt: {$gte: start, $lt: end} },
+            { "payload.n": {$gt: 1}}
           ]
         }
       }, {
