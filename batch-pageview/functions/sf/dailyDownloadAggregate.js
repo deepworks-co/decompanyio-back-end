@@ -27,9 +27,10 @@ function aggregateDailyDownloadEvent(start, end) {
     wrapper.aggregate(tables.EVENT, [
       {
         $match: {
-          type: "DOWNLOAD",
-          createdAt: {$gte: start},
-          createdAt: {$lt: end},
+          $and: [
+            { type: "DOWNLOAD" },
+            { createdAt: {$gte: start, $lt: end} },
+          ]
         }
       }, {
         $group: {

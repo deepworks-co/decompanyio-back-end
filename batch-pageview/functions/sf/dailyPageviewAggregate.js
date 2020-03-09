@@ -5,31 +5,36 @@ const { mongodb, tables} = require('decompany-app-properties');
 const wrapper = new MongoWrapper(mongodb.endpoint);
 
 module.exports.handler = async (event, context, callback) => {
+  
   const {start, end} = event;
-
-  const now = Date.now();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * 1);
+  // yesterday
+  const startDate = utils.getDate(new Date(), -1);// new Date(now - 1000 * 60 * 60 * 24 * 10);
   
   const startTimestamp = utils.getBlockchainTimestamp(startDate);
-  const endTimestamp = utils.getBlockchainTimestamp(new Date(now));
+  const endTimestamp = utils.getBlockchainTimestamp(new Date());
 
-  const list = await aggregateDailyDownloadEvent(new Date(startTimestamp), new Date(endTimestamp))
-
-  await saveDailyDownloadEvent(list);
+  const list = await aggregateDailyEvent(new Date(startTimestamp), new Date(endTimestamp))
+  console.log("aggregate event", new Date(startTimestamp), new Date(endTimestamp), list.length)
+  await saveDailyEvent(list);
   
   return JSON.stringify({
-    success: true
+    success: true, 
+    startTimestamp,
+    endTimestamp
   })
 };
 
-function aggregateDailyDownloadEvent(start, end) {
+function aggregateDailyEvent(start, end) {
+  
   return new Promise((resolve, reject)=>{
+        
     wrapper.aggregate(tables.EVENT, [
       {
         $match: {
-          type: "VIEW",
-          createdAt: {$gte: start},
-          createdAt: {$lt: end},
+          $and: [
+            { type: "VIEW"},
+            { createdAt: {$gte: start, $lt: end} }
+          ]
         }
       }, {
         $group: {
@@ -38,8 +43,11 @@ function aggregateDailyDownloadEvent(start, end) {
             year: {$year: '$createdAt'},
             month: {$month: '$createdAt'},
             dayOfMonth: {$dayOfMonth: '$createdAt'},
-            documentId: '$payload.documentId',
-            trackingId: {_tid: '$trackingIds._tid'}
+            documentId: '$payload.id',
+            trackingId: {
+              _cid: '$trackingIds._cid',
+              _sid: "$trackingIds._sid"
+            }
           },
           count: {
             '$sum': 1
@@ -55,7 +63,7 @@ function aggregateDailyDownloadEvent(start, end) {
 }
 
 
-function saveDailyDownloadEvent(list){
+function saveDailyEvent(list){
   return new Promise((resolve, reject)=>{
 
     const bulk = wrapper.getUnorderedBulkOp(tables.EVENT_AGGREGATE);
