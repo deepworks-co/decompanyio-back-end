@@ -40,6 +40,7 @@ module.exports.handler = async event => {
   })
   //console.log("result", JSON.stringify(result, 10, null))
   
+
   return {
     statusCode: 200,
     headers: {
@@ -47,7 +48,7 @@ module.exports.handler = async event => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true
     },
-    body: JSON.stringify(result)
+    body: JSON.stringify(Object.assign(result, {success: true}))
   }
 };
 
