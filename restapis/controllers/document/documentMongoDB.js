@@ -645,6 +645,7 @@ async function putDocument (item) {
     /* default value */
     const mergedItem = {
       "created": Number(timestamp),
+      "createdAt": new Date(timestamp),
       "state": "NOT_CONVERT"
     };
     const params = Object.assign(mergedItem, item);
@@ -657,7 +658,8 @@ async function putDocument (item) {
       _id: item.seoTitle,
       type: "DOCUMENT",
       id: item.documentId,
-      created: Number(timestamp)
+      created: Number(timestamp),
+      createdAt: new Date(timestamp)
     });
     return newDoc;
 

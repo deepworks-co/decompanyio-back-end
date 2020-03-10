@@ -69,7 +69,8 @@ module.exports.handler = async (event, context, callback) => {
       factor: -1,
       value: MongoWrapper.Decimal128.fromString(voteAmount + ""),
       voteId: savedVote._id,
-      created: created
+      created: created,
+      createdAt: new Date(created)
     });
     console.log("saveWallet", savedWallet);
 
