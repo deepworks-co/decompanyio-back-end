@@ -3,6 +3,7 @@ const documentService = require('../document/documentMongoDB');
 const { applicationLogAppender } = require('decompany-app-properties');;
 const {kinesis, utils} = require('decompany-common-utils');
 //const geoip = require('geoip-lite');
+const helpers = require('../eventHelpers');
 
 module.exports.handler = async (event, context, callback) => {
   /** Immediate response for WarmUp plugin */
@@ -10,91 +11,104 @@ module.exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({success: true, message: 'Lambda is warm!'});
   }
-  
-  console.log(JSON.stringify(event));
-  let {headers, query} = event;
-  const body = query
 
-  if(!headers || !body.id || !body.cid || !body.sid || !body.t || isNaN(body.n)){
-    console.error("tracking error", "parameter is invalid", body);
-    return JSON.stringify({
-      message: "no collecting"
-    })
-  }
-
-  if(!body.created){
-    body.created = Date.now();
-  }
-  const xforwardedfor = headers && headers["X-Forwarded-For"]?headers["X-Forwarded-For"]:"";
-  //const xforwardedfor = "211.45.65.70, 54.239.154.128";
-  const ips = xforwardedfor.split(",").map((ip)=>{
-    return ip.replace(/^\s+|\s+$/g,"");
-  });
-  
-  body.t = Number(body.t);
-  body.n = Number(body.n);
-  if(!utils.validateEmail(body.e)){
-    delete body.e;
-  }
-  
-  headers = utils.convertKeysToLowerCase(headers)
-
-  body.referer = headers.Referer?headers.Referer:headers.referer;
-  if(headers["user-agent"]){
-    body.useragent = headers["user-agent"];
-  } else if(headers["useragent"]){
-    body.useragent = headers["useragent"];
-  }
-
-  body.xforwardedfor = ips;
-  /*
-  if(ips && ips.length>0){
-    body.geo = getCountryByIp(ips);
-  }
-  */
-  body.headers = headers;
-  console.log("tracking body", JSON.stringify(body));
-  if(applicationLogAppender && applicationLogAppender.enable === true){
-    try{
-      const partitionKey = "tracking-" + Date.now();
-      console.log("put kinesis", applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
-      await kinesis.putRecord(applicationLogAppender.region, applicationLogAppender.streamName, partitionKey, body);
-    } catch(e){
-      console.error("applicationLogAppender error", e);
-    }
+  try{
+    console.log(JSON.stringify(event));
+    const eventParams = utils.parseLambdaEvent(event)
+    const headers = eventParams.headers;
+    const body = eventParams.params;
+    const cookies = eventParams.cookies;
+    const origin = headers.origin;
     
-  }
+    if(Object.keys(headers).length === 0 || !body.id || isNaN(body.n)){
+      console.error("tracking error", "parameter is invalid", body);
+      throw new Error("no collecting")
+    }
 
-  const result = await documentService.putTrackingInfo(body);
-  console.log("tracking save", result);
-  const user = await documentService.getTrackingUser(body.cid);
-  
-  if(user){
-    delete user._id;
-    console.log("tracking user", user, body.cid);
-  } else {
-    console.log("tracking user is not exists", body.cid);
-  }
-  
-  
-  const response = {
-    statusCode: 200,
-    Cookie: getCookie(process.env.stage),
-    body: JSON.stringify({
+    if(!body.created){
+      body.created = Date.now();
+    }
+    const xforwardedfor = headers && headers["x-forwarded-for"]?headers["x-forwarded-for"]:"";
+    //const xforwardedfor = "211.45.65.70, 54.239.154.128";
+    const ips = xforwardedfor.split(",").map((ip)=>{
+      return ip.replace(/^\s+|\s+$/g,"");
+    });
+    
+    body.t = Date.now();
+    body.n = Number(body.n);
+    if(!utils.validateEmail(body.e)){
+      delete body.e;
+    }
+
+    body.referer = headers.Referer?headers.Referer:headers.referer;
+    if(headers["user-agent"]){
+      body.useragent = headers["user-agent"];
+    } else if(headers["useragent"]){
+      body.useragent = headers["useragent"];
+    }
+
+    body.xforwardedfor = ips;
+    /*
+    if(ips && ips.length>0){
+      body.geo = getCountryByIp(ips);
+    }
+    */
+    body.headers = headers;
+    //console.log("tracking body", JSON.stringify(body));
+    /*
+    if(applicationLogAppender && applicationLogAppender.enable === true){
+      try{
+        const partitionKey = "tracking-" + Date.now();
+        console.log("put kinesis", applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
+        await kinesis.putRecord(applicationLogAppender.region, applicationLogAppender.streamName, partitionKey, body);
+      } catch(e){
+        console.error("applicationLogAppender error", e);
+      }
+      
+    }
+    */
+
+    const result = await documentService.putTrackingInfo(body);
+    //console.log("tracking save", JSON.stringify(result));
+    const user = await documentService.getTrackingUser(body.cid);
+    
+    if(user){
+      delete user._id;
+      //console.log("tracking user", user, body.cid);
+    } else {
+      //console.log("tracking user is not exists", body.cid);
+    }
+
+    const trackingIds = utils.generateTrackingIds(cookies);   
+
+    const response = utils.makeResponse(JSON.stringify({
       success: true,
       message: "ok",
       user: user
-    })
+    }), utils.makeTrackingCookie(trackingIds, origin));
+
+    await helpers.saveEvent(Object.assign(makeDownloadEventParamsLambdaProxy(eventParams, event), {trackingIds}), documentService.WRAPPER)
+
+    return response
+  } catch(err){
+    console.error(err);
+    throw err
   }
-  return response;
+  
 };
 
-function getCookie(stage, cookie){
-  const timestamp = Date.now()
-  const maxAge = 60 * 30;// 30 mins
-  const sid = cookie && cookie._sid?cookie._sid:utils.randomId();
-  const domain = stage === ('alpha'||'asem')?"polarishare.com":"decompany.io";
-  return `_sid=${sid}.${timestamp}; domain=${domain}; Max-Age=${maxAge}; path=/; Secure; HttpOnly;`
+function makeDownloadEventParamsLambdaProxy(eventParams, event){
+
+  const {path, method, cookies, headers} = eventParams;
+  
+  return {
+    type: "VIEW",
+    path: path,
+    method: method,
+    headers: headers,
+    payload: eventParams.params,
+    eventSrc: event
+  }
 }
 
 /* 

@@ -1,6 +1,8 @@
 const friendlyUrl = require('friendly-url')
 const generate = require('nanoid/generate')
 const BigNumber = require('bignumber.js');
+const cookieUtil = require('cookie');
+const camelcaseKeys = require('camelcase-keys');
 /**
  * @description Date object를 Blockchain에 넣을 YYYY-MM-DD 00:00:00의 timestamp값으로 변경한다. 
  */
@@ -37,7 +39,14 @@ exports.getNumber = (number, defaultNumber) => {
     return isNaN(parseInt(number, 10)) ? defaultNumber : parseInt(number, 10);
 }
 
-exports.randomId = () => {
+/**
+ * @params : {alphabet: 'abcdefg...1234ABCD...', size: 10}
+ */
+exports.randomId = (params) => {
+
+  if(params){
+    return generate(params.alphabet, params.size)
+  }
   
   return generate('0123456789abcdefghijklmnopqrstuvwxyz', 6);
 
@@ -83,7 +92,8 @@ exports.parseBool = (v, defaultValue) =>{
   return false;
 }
 
-exports.convertKeysToLowerCase = (obj) => {
+exports.convertKeysToLowerCase = convertKeysToLowerCase = (obj) => {
+
   const output = {};
   for (i in obj) {
       if (Object.prototype.toString.apply(obj[i]) === '[object Object]') {
@@ -146,4 +156,115 @@ exports.calcReward = ({pageview, totalPageviewSquare, myVoteAmount, totalVoteAmo
 exports.getDate = (date, days) => {
   const baseDate = new Date(date);
   return new Date(baseDate.setDate(baseDate.getDate() + days));
+}
+
+exports.makeResponse = (body, addheader) => {
+  return {
+    statusCode: 200,
+    headers: Object.assign({
+      'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+      'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+      'Content-Type': 'application/json'
+    }, addheader),
+    body: typeof body === 'string'?body:JSON.stringify(body)
+  }
+}
+
+exports.makeErrorResponse = (err, addheader) => {
+  return {
+    statusCode: 500,
+    headers: Object.assign({
+      'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+      'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+      'Content-Type': 'application/json'
+    }, addheader),
+    body: err && typeof err === 'string'?err:err.toString()
+  }
+}
+
+exports.parseLambdaEvent = (eventParams) => {
+  
+  if(eventParams.httpMethod){
+    // lambda-proxy integration
+    // https://serverless.com/framework/docs/providers/aws/events/apigateway#example-lambda-proxy-event-default
+    let cookies = eventParams.headers?eventParams.headers.cookies:null;
+    cookies = cookies?cookieUtil.parse(cookies):null
+
+    const headers = eventParams.headers?convertKeysToLowerCase(eventParams.headers):null
+    const authorizer = eventParams.authorizer;
+    return {
+      method: eventParams.httpMethod,
+      path: eventParams.path,
+      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: eventParams.body,
+      headers: headers,
+      principalId: authorizer?authorizer.principalId: null,
+      cookies: cookies
+    }
+  } else {
+    // lambda event.method
+    // https://serverless.com/framework/docs/providers/aws/events/apigateway#lambda-integration
+    const headers = eventParams.headers?convertKeysToLowerCase(eventParams.headers):null
+    return {
+      method: eventParams.method,
+      path: eventParams.requestPath,
+      params: eventParams.method === 'GET'? eventParams.query: eventParams.body,
+      headers: headers?headers:null,
+      principalId: eventParams.principalId
+    }
+  }
+}
+
+
+/**
+ * _cid, _sid, _tid를 생성한다.
+ */
+exports.generateTrackingIds = (cookies) =>{
+  const getRandomId = ()=>{
+      const id = generate('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-', 21) //=> "4f90d13a42"
+      return `${id}.${Date.now()}`
+  }
+
+  let _cid = cookies?cookies['_cid']:null;
+  let _sid = cookies?cookies['_sid']:null;
+  let _tid = cookies?cookies['_tid']:null;
+
+  if(!_cid) _cid = getRandomId()
+  if(!_sid) _sid = getRandomId()
+  if(!_tid) _tid = getRandomId()
+
+  return {
+    _cid,
+    _sid,
+    _tid,
+  }
+}
+exports.makeTrackingCookie = (trackingIds, origin) => {
+  const domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
+
+  const secure = process.env.stage === 'local' || process.env.stage === 'localdev' ?false:true;
+  
+  const getExpiredAt = (millisecond)=>{
+    const expiredAt = new Date();
+    expiredAt.setTime(expiredAt.getTime() + millisecond)
+    return expiredAt;
+  }
+  const hours24 = 1 * 24 * 60 * 60 * 1000;
+  const min30 = 30 * 60 * 1000
+  /**
+   * API Gateway의 버그....
+   * 다수의 Set-Cookies를 통하여 Expire가 다양한 키를 전달하려고 함
+   * Set-Cookies라는 키를 3개를 보내지 못함(API Gateway가 지원안함, 중복된 키를 header에 못넣음... 아니면 좀 배열이라도...)
+   * 다만 동일한 문자열을 대소문자를 잘 조절해주면 3개가(아래와 같이...) response에을 통하여 전달됨...(이게 말이됨???....)
+   * express + eks기반으로 가야 할듯....
+   */
+  return {
+    'Access-Control-Allow-Origin': origin,
+    "set-Cookie": `_tid=${trackingIds._tid};expires=${getExpiredAt(hours24).toGMTString()};max-age=${hours24};path=/;domain=${domain};Secure;HttpOnly;`,
+    "Set-cookie": `_cid=${trackingIds._cid};expires=${getExpiredAt(min30).toGMTString()};max-age=${min30};path=/;domain=${domain};Secure;HttpOnly;`,
+    "set-cookie": `_sid=${trackingIds._sid};path=/;domain=${domain};Secure;HttpOnly;`
+  }
+}
+
+exports.camelcaseKeys = (obj) =>{
+  return camelcaseKeys(obj);
 }

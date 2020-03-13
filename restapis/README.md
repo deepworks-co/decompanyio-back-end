@@ -153,3 +153,13 @@ sls create function -f documentHistoryList --handler controllers/document/docume
 ```shell
 aws cloudformation describe-stack-resources --stack-name backend-restapis-dev --query "StackResources[].ResourceType" --output text | tr "\t" "\n" | sort | uniq -c | sort -r
 ```
+
+
+## Test using Docker
+
+### Run Test MongoDB in Docker
+
+```bash
+cd restapis-wallet
+docker run --rm --name local-mongo -v "$(pwd)"/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0
+```

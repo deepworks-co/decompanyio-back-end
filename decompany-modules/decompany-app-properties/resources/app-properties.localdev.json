@@ -10,7 +10,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@13.57.245.55:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
+        "endpoint": "mongodb://decompany:decompany1234@13.52.186.38:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
     },
     "s3Config":{
         "document": "dev-ca-document",
@@ -27,6 +27,7 @@
         "TRACKING_CONFIRM": "TRACKING-CONFIRM",
         "VOTE": "VOTE",
         "USER": "USER",
+        "USER_PROFILE": "USER-PROFILE",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
         "TOP_TAG": "TOP-TAG",
         "TOP_TAG_POPULAR": "TOP-TAG-POPULAR",
@@ -50,7 +51,9 @@
         "WALLET_USER": "WALLET-USER",
         "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
         "DECK_TRANSFER": "DECK-TRANSFER",
-        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE",
+        "EVENT": "EVENT",
+        "EVENT_AGGREGATE": "EVENT-AGGREGATE"
     },
     "sqsConfig": {
         "region": "us-west-1",
@@ -59,14 +62,13 @@
         }
     },
     "applicationLogAppender": {
-        "enable": true,
-        "region": "us-west-1",
-        "streamName": "TrackingDataStream"
+        "enable": false,
+        "region": "",
+        "streamName": ""
     },
     "applicationConfig": {
         "mainHost": "https://share.decompany.io",
         "embedHost": "https://embed.share.decompany.io",
-        "shortUrlHost": "https://viewer.share.decompany.io",
         "activeVoteDays": 7,
         "activeRewardVoteDays": 7,
         "privateDocumentCountLimit": 10
@@ -161,6 +163,7 @@
         "distributionId": "EDFUPNJU9XKGX"
     },
     "shortUrlConfig": {
-        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha",
+        "shortUrlHost": "https://share.decompany.io"
     }
 }

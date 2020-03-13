@@ -19,7 +19,7 @@ describe('oembedDocument', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      //console.log(response);
       expect(response).to.not.be.empty;
     });
   });
@@ -32,7 +32,7 @@ describe('oembedDocument', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      //console.log(response);
       expect(response).to.not.be.empty;
     });
   });
@@ -44,7 +44,7 @@ describe('oembedDocument', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      // console.log(response);
       expect(response).to.not.be.empty;
     });
   });
@@ -56,7 +56,7 @@ describe('oembedDocument', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      console.log(response);
+      // console.log(response);
       expect(response).to.not.be.empty;
     });
   });

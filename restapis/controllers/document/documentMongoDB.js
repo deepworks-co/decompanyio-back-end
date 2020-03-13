@@ -1,6 +1,6 @@
 'use strict';
 const { mongodb, tables, constants, applicationConfig } = require('decompany-app-properties');
-const { MongoWapper, utils } = require('decompany-common-utils');
+const { MongoWrapper, utils } = require('decompany-common-utils');
 
 const TB_DOCUMENT = tables.DOCUMENT;
 const TB_DOCUMENT_POPULAR = tables.DOCUMENT_POPULAR;
@@ -13,8 +13,9 @@ const TB_TRACKING_USER = tables.TRACKING_USER;
 const TB_USER = tables.USER;
 
 const connectionString = mongodb.endpoint;
-
+const WRAPPER = new MongoWrapper(connectionString);
 module.exports = {
+  WRAPPER,
   getDocumentById,
   getDocumentBySeoTitle,
   getUser,
@@ -46,7 +47,6 @@ module.exports = {
   * @param  {} documentId
   */
  async function getDocumentById(documentId) {
-  const wapper = new MongoWapper(connectionString);
   
   try{     
 
@@ -106,28 +106,26 @@ module.exports = {
         }
       }
     ]
-    console.log(JSON.stringify(queryPipeline));
-    const documents = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
+    //console.log(JSON.stringify(queryPipeline));
+    const documents = await WRAPPER.aggregate(tables.DOCUMENT, queryPipeline);
     
     return documents[0];
   } catch (err) {
     throw err;
-  } finally {
-    wapper.close();
   }      
 }
  /**
   * @param  {} seoTitle
   */
  async function getDocumentBySeoTitle(seoTitle) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   
   try{
     
-    let document = await wapper.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
+    let document = await WRAPPER.findOne(TB_DOCUMENT, {seoTitle: seoTitle});
     let documentId;
     if(!document){
-      const seoFriendly = await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
+      const seoFriendly = await WRAPPER.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
       if(seoFriendly){
         documentId = seoFriendly.id
       } else {
@@ -199,30 +197,26 @@ module.exports = {
       }
     ]
     //console.log(JSON.stringify(queryPipeline));
-    document = await wapper.aggregate(tables.DOCUMENT, queryPipeline);
+    document = await WRAPPER.aggregate(tables.DOCUMENT, queryPipeline);
     
     return document[0];
   } catch (err) {
     throw err;
-  } finally {
-    wapper.close();
-  }      
+  }     
 }
 
 async function getUser(params) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
     if(typeof params === 'string') {
-      return await wapper.findOne(TB_USER, {_id: params});
+      return await WRAPPER.findOne(TB_USER, {_id: params});
     } else {
-      return await wapper.findOne(TB_USER, params);
+      return await WRAPPER.findOne(TB_USER, params);
     }
     
   } catch (e) {
     throw e
-  } finally {
-    wapper.close();
-  }
+  } 
 }
 
 
@@ -250,12 +244,12 @@ async function queryDocumentList (params) {
 }
 
 async function queryDocumentListByLatest (params) {
-  console.log("queryDocumentListByLatest", params);
+  //console.log("queryDocumentListByLatest", params);
   let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [{
@@ -276,7 +270,7 @@ async function queryDocumentListByLatest (params) {
 
       pipeline.push({ $match: q });
     } 
-    const totalCount = await wapper.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
+    const totalCount = await WRAPPER.aggregate(tables.DOCUMENT, pipeline.concat([{$count: "totalCount"}]));
     console.log("totalCount", totalCount)
 
     pipeline = pipeline.concat([{
@@ -334,7 +328,7 @@ async function queryDocumentListByLatest (params) {
 
 
     //console.log("pipeline", JSON.stringify(pipeline));
-    const resultList = await wapper.aggregate(tables.DOCUMENT, pipeline);
+    const resultList = await WRAPPER.aggregate(tables.DOCUMENT, pipeline);
     return {
       resultList,
       totalCount: totalCount[0]?totalCount[0].totalCount:0
@@ -342,19 +336,17 @@ async function queryDocumentListByLatest (params) {
    
   } catch(err) {
     throw err;
-  } finally {
-    wapper.close();
   }
   
 }
 
 async function queryDocumentListByPopular (params) {
-  console.log("queryDocumentListByPopular", params);
+  //console.log("queryDocumentListByPopular", params);
   let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
 
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [];
@@ -375,7 +367,7 @@ async function queryDocumentListByPopular (params) {
     } 
 
 
-    const totalCount = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline.concat([{$count: "totalCount"}]));
+    const totalCount = await WRAPPER.aggregate(tables.DOCUMENT_POPULAR, pipeline.concat([{$count: "totalCount"}]));
     console.log("totalCount", totalCount)
   
     pipeline = pipeline.concat([{
@@ -444,7 +436,7 @@ async function queryDocumentListByPopular (params) {
       $project: {featured: 0, document: 0, registry: 0}
     }]);
     //console.log(JSON.stringify(pipeline));
-    const resultList = await wapper.aggregate(tables.DOCUMENT_POPULAR, pipeline);
+    const resultList = await WRAPPER.aggregate(tables.DOCUMENT_POPULAR, pipeline);
     return {
       resultList,
       totalCount: totalCount[0]?totalCount[0].totalCount:0
@@ -452,19 +444,17 @@ async function queryDocumentListByPopular (params) {
    
   } catch(err) {
     throw err;
-  } finally {
-    wapper.close();
   }
   
 }
 
 async function queryDocumentListByFeatured (params) {
-  console.log("queryDocumentListByFeatured", params);
+  //console.log("queryDocumentListByFeatured", params);
   let {tag, accountId, path, pageSize, pageNo, skip} = params;
   pageSize = isNaN(pageSize)?10:Number(pageSize); 
   pageNo = isNaN(pageNo)?1:Number(pageNo);
   skip = isNaN(skip)?0:Number(skip);
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     let pipeline = [];
@@ -484,7 +474,7 @@ async function queryDocumentListByFeatured (params) {
       pipeline.push({ $match: q });
     } 
   
-    const totalCount = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline.concat([{$count: "totalCount"}]));
+    const totalCount = await WRAPPER.aggregate(tables.DOCUMENT_FEATURED, pipeline.concat([{$count: "totalCount"}]));
     console.log("totalCount", totalCount)
 
     pipeline = pipeline.concat([{
@@ -561,7 +551,7 @@ async function queryDocumentListByFeatured (params) {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0, registry: 0}
     }]);
     //console.log(JSON.stringify(pipeline))
-    const resultList = await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+    const resultList = await WRAPPER.aggregate(tables.DOCUMENT_FEATURED, pipeline);
 
     return {
       resultList,
@@ -570,16 +560,14 @@ async function queryDocumentListByFeatured (params) {
    
   } catch(err) {
     throw err;
-  } finally {
-    wapper.close();
-  }
+  } 
   
 }
 
 
 async function getVotedDocumentForAccountId (accountId) {
   
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     const pipeline = [{
@@ -628,12 +616,10 @@ async function getVotedDocumentForAccountId (accountId) {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0}
     }];
 
-    return await wapper.aggregate(tables.DOCUMENT_FEATURED, pipeline);
+    return await WRAPPER.aggregate(tables.DOCUMENT_FEATURED, pipeline);
    
   } catch(err) {
     throw err;
-  } finally {
-    wapper.close();
   }
   
 }
@@ -644,43 +630,43 @@ async function getVotedDocumentForAccountId (accountId) {
  * @param  {} seoTitle
  */
 async function getFriendlyUrl (seoTitle) {
-  const wapper = new MongoWapper(connectionString);
-  return await wapper.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
+  //const wapper = new MongoWapper(connectionString);
+  return await WRAPPER.findOne(TB_SEO_FRIENDLY, {_id: seoTitle});
 }
 
 /**
  * @param  {} item
  */
 async function putDocument (item) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     const timestamp = Date.now();
     /* default value */
     const mergedItem = {
       "created": Number(timestamp),
+      "createdAt": new Date(timestamp),
       "state": "NOT_CONVERT"
     };
     const params = Object.assign(mergedItem, item);
     console.log("Save New Item", params);
 
     
-    const newDoc = await wapper.insert(TB_DOCUMENT, params);
+    const newDoc = await WRAPPER.insert(TB_DOCUMENT, params);
 
-    await wapper.insert(TB_SEO_FRIENDLY, {
+    await WRAPPER.insert(TB_SEO_FRIENDLY, {
       _id: item.seoTitle,
       type: "DOCUMENT",
       id: item.documentId,
-      created: Number(timestamp)
+      created: Number(timestamp),
+      createdAt: new Date(timestamp)
     });
     return newDoc;
 
   } catch(err){
-    console.log(err);
+    console.error(err);
     throw err;
-  } finally{
-    wapper.close();
-  }
+  } 
     
 }
 
@@ -689,7 +675,7 @@ async function putDocument (item) {
  * @param  {} item
  */
 async function updateDocument (newDoc) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
 
@@ -698,10 +684,10 @@ async function updateDocument (newDoc) {
 
     //console.log("isSeoTitleUpdated", isSeoTitleUpdated, newDoc);
  
-    const updateResult = await wapper.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
+    const updateResult = await WRAPPER.update(TB_DOCUMENT, {_id: newDoc._id}, {$set: newDoc});
     //console.log("update result", updateResult);
     if(isSeoTitleUpdated){
-      const seoTitleResult = await wapper.save(TB_SEO_FRIENDLY, {
+      const seoTitleResult = await WRAPPER.save(TB_SEO_FRIENDLY, {
         _id: newDoc.seoTitle,
         type: "DOCUMENT",
         id: newDoc._id,
@@ -712,13 +698,11 @@ async function updateDocument (newDoc) {
     } else {
       console.log("seo title does not updated");
     }
-    const result = await wapper.findOne(TB_DOCUMENT, {_id: newDoc._id});
+    const result = await WRAPPER.findOne(TB_DOCUMENT, {_id: newDoc._id});
     return result;
 
   } catch(err){
     throw err;
-  } finally{
-    wapper.close();
   }
     
 }
@@ -875,11 +859,11 @@ async function queryVotedDocumentByCurator(args) {
     }
   }]
   
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
     //console.log(TB_VOTE, JSON.stringify(queryPipeline));
-    const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
+    const resultList = await WRAPPER.aggregate(TB_VOTE, queryPipeline);
 
     return {
       resultList: resultList,
@@ -887,8 +871,6 @@ async function queryVotedDocumentByCurator(args) {
     };
   }catch(err){
     throw err;
-  }finally{
-    wapper.close();
   }
   
 }
@@ -899,7 +881,7 @@ async function queryVotedDocumentByCurator(args) {
  * @param  {} args
  */
 async function queryRecentlyVoteListForApplicant(args) {
-  console.log("queryRecentlyVoteListForApplicant", args);
+  //console.log("queryRecentlyVoteListForApplicant", args);
   //const applicant = args.applicant;
   const userId = args.userId;
   const startTimestamp = args.startTimestamp?args.startTimestamp:1;
@@ -956,17 +938,15 @@ async function queryRecentlyVoteListForApplicant(args) {
     }
   }]
   
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
-    console.log("queryRecentlyVoteListForApplicant querypipeline", TB_VOTE, JSON.stringify(queryPipeline));
-    const resultList = await wapper.aggregate(TB_VOTE, queryPipeline);
+    //console.log("queryRecentlyVoteListForApplicant querypipeline", TB_VOTE, JSON.stringify(queryPipeline));
+    const resultList = await WRAPPER.aggregate(TB_VOTE, queryPipeline);
 
     return resultList;
   }catch(err){
     throw err;
-  }finally{
-    wapper.close();
   }
   
 }
@@ -977,11 +957,11 @@ async function queryRecentlyVoteListForApplicant(args) {
  * @param  {} date
  */
 async function getRecentlyPageViewTotalCount () {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   const now = new Date();
   const startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 8);
   try{
-    let result = await wapper.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
+    let result = await WRAPPER.find(TB_STAT_PAGEVIEW_TOTALCOUNT_DAILY, {
       query: {
         blockchainDate: {$gte: startDate}
       },
@@ -993,8 +973,6 @@ async function getRecentlyPageViewTotalCount () {
     return result;
   }catch(e){
     throw e;
-  } finally{
-    wapper.close();
   }
   
 
@@ -1022,14 +1000,12 @@ async function getFeaturedDocuments (args) {
  * @param  {} body
  */
 async function putTrackingInfo (body) {
-  let wapper = new MongoWapper(connectionString);
+  //let wapper = new MongoWapper(connectionString);
   try{
 
-    return await wapper.save(TB_TRACKING, body);
+    return await WRAPPER.save(TB_TRACKING, body);
   } catch(err){
     throw err;
-  } finally{
-    wapper.close();
   }
   
 }
@@ -1153,15 +1129,13 @@ async function getTrackingList(documentId, anonymous, include) {
     
   ])
 
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
     console.log(JSON.stringify(queryPipeline));
-    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+    return await WRAPPER.aggregate(TB_TRACKING, queryPipeline);
   }catch(err){
     throw err;
-  } finally {
-    wapper.close();
-  }
+  } 
 }
 /**
  * @param  {} documentId
@@ -1210,29 +1184,25 @@ async function getTrackingInfo(documentId, cid, include) {
     })
   }
 
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
-    console.log(JSON.stringify(queryPipeline));
-    return await wapper.aggregate(TB_TRACKING, queryPipeline);
+    //console.log(JSON.stringify(queryPipeline));
+    return await WRAPPER.aggregate(TB_TRACKING, queryPipeline);
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 
 }
 
 
 async function getTrackingUser(cid) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
-    const users = await wapper.findAll(tables.TRACKING_USER, {cid: cid}, {created: -1}, 1);
+    const users = await WRAPPER.findAll(tables.TRACKING_USER, {cid: cid}, {created: -1}, 1);
     return users[0];
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
-  }
+  } 
 }
 
 
@@ -1240,7 +1210,7 @@ async function getTrackingUser(cid) {
  * @description Get Top-Tag
  */
 async function getTopTag(t) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
     let tableName = tables.TOP_TAG;
     if(t==="featured"){
@@ -1250,11 +1220,9 @@ async function getTopTag(t) {
     } else {
       tableName = tables.TOP_TAG;
     }
-    return await wapper.findAll(tableName, {}, {value: -1}, 1000);
+    return await WRAPPER.findAll(tableName, {}, {value: -1}, 1000);
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 
@@ -1265,7 +1233,7 @@ async function getTopTag(t) {
  */
 async function getAnalyticsListDaily(documentIds, start, end) {
   console.log("getAnalyticsListDaily", documentIds, start, end);
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
       $match: {
@@ -1289,12 +1257,10 @@ async function getAnalyticsListDaily(documentIds, start, end) {
 
       }
     }]
-    console.log("queryPipeline", JSON.stringify(queryPipeline));
-    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+    //console.log("queryPipeline", JSON.stringify(queryPipeline));
+    return await WRAPPER.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 /**
@@ -1304,8 +1270,8 @@ async function getAnalyticsListDaily(documentIds, start, end) {
  * @param  {} end
  */
 async function getAnalyticsListWeekly(documentIds, start, end) {
-  console.log("getAnalyticsListWeekly", documentIds, start, end);
-  const wapper = new MongoWapper(connectionString);
+  //console.log("getAnalyticsListWeekly", documentIds, start, end);
+  //const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
       $match: {
@@ -1332,11 +1298,9 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
       }
     }]
     
-    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+    return await WRAPPER.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 
@@ -1348,7 +1312,7 @@ async function getAnalyticsListWeekly(documentIds, start, end) {
  */
 async function getAnalyticsListMonthly(documentIds, start, end) {
   console.log("getAnalyticsListMonthly", documentIds, start, end);
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   try{
     const queryPipeline = [{
       $match: {
@@ -1372,36 +1336,32 @@ async function getAnalyticsListMonthly(documentIds, start, end) {
       }
     }]
     console.log("queryPipeline", JSON.stringify(queryPipeline));
-    return await wapper.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
+    return await WRAPPER.aggregate(tables.STAT_PAGEVIEW_DAILY, queryPipeline);
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
-  }
+  } 
 }
 
 
 async function getDocumentIdsByUserId(userid, start, end, isWeekly) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
 
   try{
-    const doclist = await wapper.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
+    const doclist = await WRAPPER.findAll(tables.DOCUMENT, {accountId: userid, state:"CONVERT_COMPLETE"});
     return doclist.map((doc)=>{return doc.documentId});
    
     
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 
 async function putTrackingConfirmSendMail(documentId, email) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   const now = new Date();
   try{
 
-    await wapper.insert(tables.TRACKING_CONFIRM, {
+    await WRAPPER.insert(tables.TRACKING_CONFIRM, {
       email: email,
       documentId: documentId,
       created: now.getTime(),
@@ -1410,13 +1370,11 @@ async function putTrackingConfirmSendMail(documentId, email) {
     
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 
 async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   
   try{
     const user = await getUser({email: email});
@@ -1429,7 +1387,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     const now = new Date();
     //1. 24시간 안에 대상에게 메일을 보냈는가? 
     const latestSent = now.getTime() - (1000 * 60 * 60 * 24); 
-    const sentInfo = await wapper.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
+    const sentInfo = await WRAPPER.find(tables.TRACKING_CONFIRM, {documentId: documentId, email: email, sent:{$gt: latestSent}});
 
     if(sentInfo && sentInfo.length>0){
       console.log("check false : Emails sent within the last 24 hours", email);
@@ -1437,7 +1395,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     }
 
     //2. 이미 발송 대상에 있는가??
-    const emailstosend = await wapper.findAll(tables.TRACKING_CONFIRM, {documentId: documentId, email: email}, {created: -1}, 1);
+    const emailstosend = await WRAPPER.findAll(tables.TRACKING_CONFIRM, {documentId: documentId, email: email}, {created: -1}, 1);
 
     if(emailstosend && emailstosend.length>0){
       if(!emailstosend[0].sent){
@@ -1451,8 +1409,6 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
     
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
   }
 }
 
@@ -1464,7 +1420,7 @@ async function checkTrackingConfirmSendMail(documentId, email, cid, sid) {
  */
 async function putTrackingUser(cid, sid, documentId, email){
 
-  const wapper = new MongoWapper(connectionString);
+  //const wapper = new MongoWapper(connectionString);
   
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -1480,9 +1436,9 @@ async function putTrackingUser(cid, sid, documentId, email){
         sid: sid,
         created: Date.now()
       }
-      const trackingUser = await wapper.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
+      const trackingUser = await WRAPPER.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
       if(!trackingUser){
-        const r = await wapper.save(TB_TRACKING_USER, item);
+        const r = await WRAPPER.save(TB_TRACKING_USER, item);
         console.log("tracking target user save", r);
       }
       
@@ -1490,9 +1446,7 @@ async function putTrackingUser(cid, sid, documentId, email){
     
   } catch(err){
     throw err;
-  } finally {
-    wapper.close();
-  }
+  } 
 
   
 }
@@ -1501,9 +1455,9 @@ async function putTrackingUser(cid, sid, documentId, email){
 async function checkRegistrableDocument(accountId){
   const limit = applicationConfig || applicationConfig.privateDocumentCountLimit?applicationConfig.privateDocumentCountLimit:5
   return new Promise(async (resolve, reject)=>{
-    const wapper = new MongoWapper(connectionString);
+    //const wapper = new MongoWapper(connectionString);
 
-    wapper.query(TB_DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
+    WRAPPER.query(TB_DOCUMENT, { state: {$ne: constants.DOCUMENT.STATE.CONVERT_FAIL}, isBlocked: false, isDeleted: false , isPublic: false, accountId: accountId})
     .sort({created:-1}).toArray((err, data)=>{
       if(err) {
         reject(err);
@@ -1515,7 +1469,7 @@ async function checkRegistrableDocument(accountId){
         }
         
       }
-      wapper.close();
+
     });
 
   })

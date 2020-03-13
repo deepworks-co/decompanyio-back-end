@@ -11,9 +11,14 @@
   "dependencies": {
     "aws-sdk": "^2.402.0",
     "bignumber.js": "^9.0.0",
+    "camelcase-keys": "^6.1.2",
+    "cookie": "^0.4.0",
     "friendly-url": "^1.0.3",
+    "ioredis": "^4.16.0",
+    "lodash": "^4.17.15",
     "mongojs": "^3.1.0",
     "nanoid": "^2.0.1",
+    "rambda": "^4.5.0",
     "saslprep": "^1.0.3"
   },
   "devDependencies": {

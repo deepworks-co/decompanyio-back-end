@@ -9,6 +9,8 @@
   "dependencies": {
     "aws-sdk": "^2.432.0",
     "buffer-image-size": "^0.6.4",
+    "camelcase-keys": "^6.1.2",
+    "cookie": "^0.4.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
     "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "json-2-csv": "^3.5.4",
@@ -26,7 +28,8 @@
   },
   "scripts": {
     "preinstall": "echo starting && sh install.sh",
-    "test": "mocha",
+    "install:sharp": "npm --prefix ./opt install sharp@0.22.1",
+    "test": "export NODE_PATH=.:./opt/node_modules && sls invoke test --exit -s local",
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy",

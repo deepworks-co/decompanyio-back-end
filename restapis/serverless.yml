@@ -19,7 +19,8 @@ service: backend-restapis # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
+  endpointType: REGIONAL
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
@@ -483,8 +484,8 @@ functions:
           cors: true
           integration: lambda
           documentation:
-            summary: "/api/document/download"
-            description: "/api/document/download"
+            summary: "/api/document/meta"
+            description: "/api/document/meta"
             queryParams:
               - name: seoTitle
                 description: seoTitle
@@ -607,11 +608,11 @@ functions:
           path: /api/document/download
           method: get
           cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
+          #integration: lambda
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#            template: $input.path('$')
           documentation:
             summary: "/api/document/download"
             description: "/api/document/download"
@@ -721,12 +722,15 @@ functions:
           path: api/tracking/collect
           method: get
           cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-              Set-Cookie: integration.response.body.Cookie
-            template: $input.path('$.body')
+#          integration: lambda
+#          request:
+#            template:
+#              application/json: ${file(./serverless-request-template.vtl)}
+#          response:
+#            headers:
+#              Content-Type: integration.response.header.Content-Type
+#              Set-Cookie: integration.response.body.Cookie
+#            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
@@ -845,7 +849,6 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-  
     GatewayResponse4xx:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:

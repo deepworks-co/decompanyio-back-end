@@ -11,7 +11,7 @@ describe('documentDownload', () => {
   before((done) => {
     done();
   });
-
+/*
   it('get download c64bfec0add949e280de9db670f43331 url ', () => {
     const event = {
       query: {documentId : "c64bfec0add949e280de9db670f43331"}
@@ -22,4 +22,51 @@ describe('documentDownload', () => {
       expect(res.success === true && res.downloadUrl!== undefined).to.be.true;
     });
   });
+*/
+  it('get download c64bfec0add949e280de9db670f43331 with event info ', () => {
+    const event = {
+      path: "/localtest/api/document/download",
+      httpMethod: 'GET',
+      queryStringParameters: {documentId : "c64bfec0add949e280de9db670f43331"},
+      headers: {
+        "accept": "application/json, text/plain, */*",
+        "accept-encoding": "gzip, deflate, br",
+        "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "cookie": "_ga=GA1.3.1060212880.1546915423; hubspotutk=4a0e809bd7a4ea92bed3f2b638bc2283; _ga=GA1.2.1889317210.1549865085; __hstc=183962553.4a0e809bd7a4ea92bed3f2b638bc2283.1551171129769.1552642157669.1553732765159.28; _gid=GA1.2.219418043.1583109190; _dk=LdTM0l4YhwtDWgFNNWoRC.1583116054332",
+        "Host": "api.share.decompany.io",
+        "origin": "https://share.decompany.io",
+        "referer": "https://share.decompany.io/@jay123aaa",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
+        "X-Amzn-Trace-Id": "Root=1-5e5c5c3e-113177a2aaac5cc55dfc0e2e",
+        "X-Forwarded-For": "118.37.116.13",
+        "X-Forwarded-Port": "443",
+        "X-Forwarded-Proto": "https"
+      },
+      requestContext: {
+        identity: { 
+          cognitoIdentityPoolId: null,
+          accountId: null,
+          cognitoIdentityId: null,
+          caller: null,
+          sourceIp: '118.37.116.13',
+          principalOrgId: null,
+          accessKey: null,
+          cognitoAuthenticationType: null,
+          cognitoAuthenticationProvider: null,
+          userArn: null,
+          userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+          user: null 
+        }
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      const res = JSON.parse(response.body);
+      //console.log(response);
+      expect(res.success === true && res.downloadUrl != undefined).to.be.true;
+    });
+  });
+
 });

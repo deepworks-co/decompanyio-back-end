@@ -60,7 +60,7 @@ exports.signedUploadUrl2 = (params) => {
 }
 
 exports.signedDownloadUrl2 = (params) => {
-    console.log(params);
+    //console.log(params);
     const {region, bucket, key, signedUrlExpireSeconds, customEndpoint} = params;
     
     var s3 = new AWS.S3({

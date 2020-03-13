@@ -6,8 +6,8 @@
         "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
     },
     "layer": {
-        "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:5",
-        "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:5"
+        "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:6",
+        "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:6"
     },
     "mongodb": {
         "endpoint": "mongodb://decompany:decompany1234@10.1.11.245:27017/decompany?connectTimeoutMS=1800000&socketTimeoutMS=1800000"
@@ -27,6 +27,7 @@
         "TRACKING_CONFIRM": "TRACKING-CONFIRM",
         "VOTE": "VOTE",
         "USER": "USER",
+        "USER_PROFILE": "USER-PROFILE",
         "SEO_FRIENDLY": "SEO-FRIENDLY",
         "TOP_TAG": "TOP-TAG",
         "TOP_TAG_POPULAR": "TOP-TAG-POPULAR",
@@ -50,7 +51,9 @@
         "WALLET_USER": "WALLET-USER",
         "WALLET_REQUEST_WITHDRAW": "WALLET-REQUEST-WITHDRAW",
         "DECK_TRANSFER": "DECK-TRANSFER",
-        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE"
+        "VW_WALLET_BALANCE": "VW-WALLET-BALANCE",
+        "EVENT": "EVENT",
+        "EVENT_AGGREGATE": "EVENT-AGGREGATE"
     },
     "sqsConfig": {
         "region": "ap-northeast-2",
@@ -66,7 +69,6 @@
     "applicationConfig": {
         "mainHost": "https://www.polarishare.com",
         "embedHost": "https://embed.polarishare.com",
-        "shortUrlHost": "https://viewer.polarishare.com",
         "activeVoteDays": 7,
         "activeRewardVoteDays": 7,
         "privateDocumentCountLimit": 10
@@ -169,6 +171,7 @@
         "distributionId": "E1UYELY2K59G6Q"
     },
     "shortUrlConfig": {
-        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha"
+        "generatorUrl": "https://3sgbeg9g96.execute-api.us-east-1.amazonaws.com/alpha",
+        "shortUrlHost": "https://www.polarishare.com"
     }
 }

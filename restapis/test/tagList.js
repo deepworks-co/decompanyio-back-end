@@ -12,8 +12,13 @@ describe('tagList', () => {
     done();
   });
 
-  it('implement tests here', () => {
-    return wrapped.run({}).then((response) => {
+  it('latest', () => {
+
+    return wrapped.run({
+      query: {
+        t: 'latest'
+      }
+    }).then((response) => {
       expect(response).to.not.be.empty;
     });
   });

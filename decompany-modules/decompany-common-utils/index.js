@@ -20,3 +20,4 @@ module.exports.kms = kms;
 module.exports.ses = ses;
 module.exports.cloudfront = cloudfront;
 module.exports.sns = sns;
+module.exports.CacheWrapper = require('./src/CacheWrapper')

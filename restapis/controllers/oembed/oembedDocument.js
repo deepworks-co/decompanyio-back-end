@@ -46,7 +46,7 @@ module.exports.handler = async (event, context, callback) => {
 
     
     const dimensions = document.dimensions?document.dimensions:await getDocSize(document);
-    console.log("dimensions", dimensions);
+    //console.log("dimensions", dimensions);
     
     const username = author.username;
     let width = dimensions.width;  //default landscape
@@ -112,7 +112,7 @@ function getDocSize(document){
 
   return new Promise((resolve, reject)=>{
     const bucket = s3Config.thumbnail;
-    const prefix = `${document.documentId}/320/1`;
+    const prefix = `thumb/${document.documentId}/320/1`;
 
     s3.getObject(bucket, prefix, region)
     .then((data)=>{
