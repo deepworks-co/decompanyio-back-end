@@ -74,7 +74,12 @@ async function syncUserInfo(principalId, claims){
       });
       */
     }
-    await updateProfile(claims)
+    const {success, profileId} = await updateProfile(claims)
+
+    if(!queriedUser.profileId){
+      await mongo.update(USER_TALBE, {_id: claims.sub}, {$set: {profileId: profileId}})
+    }
+    
 
     return Promise.resolve(result);
   }catch(err){
@@ -103,7 +108,7 @@ async function updateProfile(claims){
     $push: { userIds: claims.sub }
   }, {upsert: true})
 
-  return Promise.resolve({success: true})
+  return Promise.resolve({success: true, profileId: id})
 }
 
 async function getProfileIdFromUserId(userId){

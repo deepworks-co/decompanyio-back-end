@@ -75,7 +75,7 @@ module.exports = class AccountService {
 				const result = await mongo.update(USER_TALBE, {_id: user.id}, {$set: newUserInfo});
 				return result;
 			} else {
-				console.info("user is not exist", user.id);
+				console.info("user is not exists", user.id);
 			}
 
 		} catch(e) {
