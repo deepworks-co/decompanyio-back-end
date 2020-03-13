@@ -1,52 +1,14 @@
 'use strict';
 const { mongodb, tables } = require('decompany-app-properties');
-const {MongoWapper} = require('decompany-common-utils');
+const {MongoWrapper, utils} = require('decompany-common-utils');
+const uuidv4 = require('uuid/v4');
 const USER_TALBE = tables.USER;
 const connectionString = mongodb.endpoint;
 
 module.exports = class AccountService {
 
-	async syncUserInfo(userInfo){
-		const mongo = new MongoWapper(connectionString);
-		try{
-			const queriedUser = await mongo.findOne(USER_TALBE, {
-				_id: userInfo.sub
-			});
-			let result;
-			if(queriedUser){
-				//existing user
-				console.log("user exists", queriedUser);
-				console.log("update connected time", queriedUser);
-				result = await mongo.update(USER_TALBE, {_id: queriedUser._id}, {
-					$set: {
-						connected: Date.now()
-					}
-				});
-			} else {
-				//new user
-				const user = Object.assign({
-					_id: userInfo.sub, 
-					connected: Date.now()
-				}, userInfo);
-				result = await mongo.insert(USER_TALBE, user);
-				console.log("new user", user, result);
-				await mongo.save(tables.SEND_EMAIL, {
-					email: user.email,
-					emailType: "WELCOME",
-					created: Date.now()
-				});
-			}
-			return result;
-		}catch(err){
-			throw err;
-		} finally {
-			mongo.close();
-		}
-
-	}
-
 	async getUserInfo(user, projection){
-		const mongo = new MongoWapper(connectionString);
+		const mongo = new MongoWrapper(connectionString);
 		try{
 			let query = {};
 			if(user.id){
@@ -72,7 +34,7 @@ module.exports = class AccountService {
 	}
 
 	async updateUserInfo(user){
-		const mongo = new MongoWapper(connectionString);
+		const mongo = new MongoWrapper(connectionString);
 		try{	
 			if(!user || !user.id){
 				throw new Error("user id is invalid!!");
@@ -125,7 +87,7 @@ module.exports = class AccountService {
 
 
 	async updateUserEthAccount(userid, ethAccount) {
-		const wapper = new MongoWapper(connectionString);
+		const wapper = new MongoWrapper(connectionString);
 		try{
 			return await wapper.update(USER_TALBE, {_id: userid}, {$set:{ethAccount: ethAccount}});
 		} catch (e) {
@@ -137,7 +99,7 @@ module.exports = class AccountService {
 
 
 	async getDocuments(params) {
-		const wapper = new MongoWapper(connectionString);
+		const wapper = new MongoWrapper(connectionString);
 
 		try{
 			let {accountId, pageSize, skip} = params;
