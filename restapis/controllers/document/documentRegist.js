@@ -20,7 +20,7 @@ module.exports.handler = async (event, context, callback) => {
     return callback(null, 'Lambda is warm!')
   }
 
-  console.log("event", JSON.stringify(event));
+  //console.log("event", JSON.stringify(event));
   const {principalId, body} = event;
 
      
@@ -45,6 +45,9 @@ module.exports.handler = async (event, context, callback) => {
   const isDownload = utils.parseBool(body.isDownload);
   const cc = body.cc;
   const isPublic = utils.parseBool(body.isPublic, true);
+  
+  const headers = event.headers?convertKeysToLowerCase(event.headers):{}
+  const lang = body.lang?body.lang:headers['accept-language']
   
   const user = await documentService.getUser(accountId);
   if(!user){
@@ -79,6 +82,8 @@ module.exports.handler = async (event, context, callback) => {
       documentSize: documentSize,
       ethAccount: ethAccount,
       title: title,
+      ext: ext,
+      lang: lang?lang:'en',
       desc: desc,
       tags: tags,
       seoTitle: seoTitle,

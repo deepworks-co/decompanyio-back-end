@@ -664,7 +664,7 @@ async function putDocument (item) {
     return newDoc;
 
   } catch(err){
-    console.log(err);
+    console.error(err);
     throw err;
   } 
     
