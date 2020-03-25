@@ -59,12 +59,11 @@ function aggregateDailyEvent(start, end) {
             $push: {n: '$payload.n', created: '$createdAt'}
           }
         }
-    }/*, {
+    }, {
       $match: {
         count: {$gt: 1}
       }
-    }*/, 
-    {
+    }, {
       $addFields: {
           blockchainDate: {
             $dateFromParts: {
