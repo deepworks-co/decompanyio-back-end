@@ -187,8 +187,8 @@ exports.parseLambdaEvent = (eventParams) => {
   if(eventParams.httpMethod){
     // lambda-proxy integration
     // https://serverless.com/framework/docs/providers/aws/events/apigateway#example-lambda-proxy-event-default
-    let cookies = eventParams.headers?eventParams.headers.cookies:null;
-    cookies = cookies?cookieUtil.parse(cookies):null
+    let cookie = eventParams.headers?eventParams.headers.cookie:null;
+    cookie = cookie?cookieUtil.parse(cookie):null
 
     const headers = eventParams.headers?convertKeysToLowerCase(eventParams.headers):null
     const authorizer = eventParams.authorizer;
@@ -198,7 +198,7 @@ exports.parseLambdaEvent = (eventParams) => {
       params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: eventParams.body,
       headers: headers,
       principalId: authorizer?authorizer.principalId: null,
-      cookies: cookies
+      cookie: cookie
     }
   } else {
     // lambda event.method
@@ -243,13 +243,13 @@ exports.makeTrackingCookie = (trackingIds, origin) => {
 
   const secure = process.env.stage === 'local' || process.env.stage === 'localdev' ?false:true;
   
-  const getExpiredAt = (millisecond)=>{
+  const getExpiredAt = (second)=>{
     const expiredAt = new Date();
-    expiredAt.setTime(expiredAt.getTime() + millisecond)
+    expiredAt.setTime(expiredAt.getTime() + second * 1000)
     return expiredAt;
   }
-  const hours24 = 1 * 24 * 60 * 60 * 1000;
-  const min30 = 30 * 60 * 1000
+  const hours24 = 1 * 24 * 60 * 60;// * 1000;
+  const min30 = 30 * 60;// * 1000
   /**
    * API Gateway의 버그....
    * 다수의 Set-Cookies를 통하여 Expire가 다양한 키를 전달하려고 함

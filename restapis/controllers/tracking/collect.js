@@ -17,7 +17,7 @@ module.exports.handler = async (event, context, callback) => {
     const eventParams = utils.parseLambdaEvent(event)
     const headers = eventParams.headers;
     const body = eventParams.params;
-    const cookies = eventParams.cookies;
+    const cookie = eventParams.cookie;
     const origin = headers.origin;
     
     if(Object.keys(headers).length === 0 || !body.id || isNaN(body.n)){
@@ -79,7 +79,7 @@ module.exports.handler = async (event, context, callback) => {
       //console.log("tracking user is not exists", body.cid);
     }
 
-    const trackingIds = utils.generateTrackingIds(cookies);   
+    const trackingIds = utils.generateTrackingIds(cookie);   
 
     const response = utils.makeResponse(JSON.stringify({
       success: true,
@@ -99,7 +99,7 @@ module.exports.handler = async (event, context, callback) => {
 
 function makeDownloadEventParamsLambdaProxy(eventParams, event){
 
-  const {path, method, cookies, headers} = eventParams;
+  const {path, method, cookie, headers} = eventParams;
   
   return {
     type: "VIEW",
