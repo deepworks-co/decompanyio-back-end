@@ -15,13 +15,14 @@ module.exports.handler = async event => {
   console.log("event", event);
 
   const params = event.queryStringParameters;
-  const {q, start, num, hq, searchType} = params;
+  const {q, start, num, hq, searchType, sort} = params;
   const query = {
     q,
     start,
     num,
     hq,
-    searchType
+    searchType,
+    sort
   }
   const key = JSON.stringify(query);
   let result = await redisCache.get(key)
