@@ -1,0 +1,15 @@
+{
+  "name": "serverless-config",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.645.0",
+    "decompany-app-properties": "file:../decompany-app-properties"
+  }
+}
