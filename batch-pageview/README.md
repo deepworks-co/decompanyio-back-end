@@ -100,7 +100,15 @@ sls create function -f makeRewardPool --handler functions/mgr/makeRewardPool.han
 sls create function -f dailyDownloadAggregate --handler functions/sf/dailyDownloadAggregate
 ```
 
-## Test
+## docker run for test
 
+> run docker
+```
+cd restapis-wallet && docker run --rm --name local-mongo -v $(pwd)/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0
+```
+
+> run test
+```
 sls invoke test -f {FunctionName}
 sls invoke test -f registYesterdayViewCount
+```

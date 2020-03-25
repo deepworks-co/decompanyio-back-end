@@ -7,19 +7,22 @@ const wrapper = new MongoWrapper(mongodb.endpoint);
 module.exports.handler = async (event, context, callback) => {
   const {start, end} = event;
 
-  const now = Date.now();
-  const startDate = new Date(now - 1000 * 60 * 60 * 24 * 1);
-  
-  const startTimestamp = utils.getBlockchainTimestamp(startDate);
-  const endTimestamp = utils.getBlockchainTimestamp(new Date(now));
+  //const startDate = utils.getDate(new Date(), -1);// new Date(now - 1000 * 60 * 60 * 24 * 10);  
+  //const startTimestamp = !isNaN(start)? util.getBlockchainTimestamp(new Date(start)): utils.getBlockchainTimestamp(startDate);
+  //const endTimestamp = !isNaN(end)? util.getBlockchainTimestamp(new Date(end)): utils.getBlockchainTimestamp(new Date());
+
+  const startTimestamp = utils.getBlockchainTimestamp(new Date(start))
+  const endTimestamp = utils.getBlockchainTimestamp(new Date(end))
 
   const list = await aggregateDailyDownloadEvent(new Date(startTimestamp), new Date(endTimestamp))
-
+  console.log("dailyDownloadAggregate", new Date(startTimestamp), new Date(endTimestamp), list.length)
   await saveDailyDownloadEvent(list);
   
-  return JSON.stringify({
-    success: true
-  })
+  return {
+    success: true,
+    start,
+    end
+  }
 };
 
 function aggregateDailyDownloadEvent(start, end) {
@@ -46,6 +49,26 @@ function aggregateDailyDownloadEvent(start, end) {
             '$sum': 1
           }
         }
+    }, {
+      $addFields: {
+          blockchainDate: {
+            $dateFromParts: {
+              year: '$_id.year',
+              month: '$_id.month',
+              day: '$_id.dayOfMonth'
+            }
+          },
+          blockchainTimestamp: {
+            $toLong: {
+              $dateFromParts: {
+                  year: '$_id.year',
+                  month: '$_id.month',
+                  day: '$_id.dayOfMonth'
+              }
+            }
+          }
+  
+      }
     }]).then((data)=>{
       resolve(data)
     }).catch((err)=>{
@@ -59,7 +82,7 @@ function aggregateDailyDownloadEvent(start, end) {
 function saveDailyDownloadEvent(list){
   return new Promise((resolve, reject)=>{
 
-    const bulk = wrapper.getUnorderedBulkOp(tables.EVENT_AGGREGATE);
+    const bulk = wrapper.getUnorderedBulkOp(tables.AGGREGATE_PAGEVIEW);
 
     Promise.all(list.map((it)=>{
       return bulk.find({_id: it._id}).upsert().updateOne({$set: Object.assign(it, {createdAt: new Date()})});
