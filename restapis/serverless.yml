@@ -124,7 +124,7 @@ functions:
           path: /api/analytics/list
           method: get
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -167,7 +167,7 @@ functions:
           method: get
           path: /api/analytics/export
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -239,7 +239,7 @@ functions:
           method: get
           path: /api/account/documents
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -261,7 +261,7 @@ functions:
           path: /api/account/picture
           method: post
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -293,7 +293,7 @@ functions:
           method: post
           path: /api/account/ethereumSync
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -366,7 +366,7 @@ functions:
           path: /api/account/get
           method: get
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -385,7 +385,7 @@ functions:
           path: /api/account/update
           method: post
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -424,7 +424,7 @@ functions:
           path: /api/account/sync
           method: post
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -443,7 +443,7 @@ functions:
           path: api/document/regist
           method: post
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -526,7 +526,7 @@ functions:
           path: /api/document/update
           method: post
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -641,7 +641,7 @@ functions:
           path: /api/tracking/list
           method: get
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -681,7 +681,7 @@ functions:
           path: /api/tracking/info
           method: get
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -772,7 +772,7 @@ functions:
           method: get
           path: /api/tracking/export
           cors: true
-          authorizer: accountAuth
+          authorizer: ${self:custom.authorizer}
           integration: lambda
           response:
             headers:
@@ -875,6 +875,7 @@ resources:
 
 
 custom:
+  authorizer: arn:aws:lambda:${self:provider.region}:${file(./serverlessConfig.js):getAccountId}:function:auth-provider-${self:provider.stage}-authorize
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
