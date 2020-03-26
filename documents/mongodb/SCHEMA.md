@@ -180,4 +180,15 @@ db["SEND-EMAIL"].createIndex( { email: 1, emailType: 1 }, {unique: true});
 db.createCollection("BOUNTY");
 db["BOUNTY"].createIndex( { accountId: 1, ethAccount: 1, bountyType: 1, created: -1});
 ```
+## EVENT
+```javascript
+db.createCollection("EVENT");
+db["EVENT"].createIndex( { type: 1, createdAt: 1, 'pageload.n': 1});
+```
 
+## AGGREGATE-PAGEVIEW
+
+```javascript
+db.createCollection("AGGREGATE-PAGEVIEW");
+db["AGGREGATE-PAGEVIEW"].createIndex( { blockchainDate: 1, '_id.type': 1 });
+```
