@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "serverless-aws-documentation": "^1.1.0",
+    "serverless-config": "file:../decompany-modules/serverless-config",
     "serverless-mocha-plugin": "^1.11.0",
     "serverless-offline": "^5.12.0",
     "serverless-plugin-canary-deployments": "^0.4.8",
@@ -29,7 +30,8 @@
   "scripts": {
     "preinstall": "echo starting && sh install.sh",
     "install:sharp": "npm --prefix ./opt install sharp@0.22.1",
-    "test": "export NODE_PATH=.:./opt/node_modules && sls invoke test --exit -s local",
+    "mongo:docker": "cd ../restapis-wallet && docker run --rm --name local-mongo -d -v $(pwd)/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 27017:27017 mongo:4.0",
+    "test": "npm run mongo:docker && export NODE_PATH=.:./opt/node_modules && sls invoke test --exit -s local",
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy",

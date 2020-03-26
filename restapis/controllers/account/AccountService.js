@@ -148,7 +148,8 @@ module.exports = class AccountService {
 				$project: { _id: 1, title: 1, state: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1,
 					shortUrl: 1, isPublic: 1, isDeleted: 1, isBlocked: 1,
 					popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
-					registry: { $arrayElemAt: [ "$registryAs", 0 ] }
+					registry: { $arrayElemAt: [ "$registryAs", 0 ] },
+					dimensions: 1
 				}
 			}, {
 				$addFields: {
@@ -167,7 +168,6 @@ module.exports = class AccountService {
 						false
 					  ]
 					}
-
 				}
 			}, {
 				$project: {featured: 0, popular: 0, registry: 0}

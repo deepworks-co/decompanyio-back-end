@@ -12,7 +12,7 @@ describe('documentList', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('featured', () => {
     const event = {
       query: {
         path: "featured"
@@ -20,22 +20,25 @@ describe('documentList', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log("latest", response)
       expect(response).to.not.be.empty;
     });
   });
 
-  it('implement tests here', () => {
+  it('populars', () => {
     const event = {
       query: {
         path: "popular"
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log("latest", response)
       expect(response).to.not.be.empty;
+      
     });
   });
 
-  it('implement tests here', () => {
+  it('latest', () => {
     const event = {
       query: {
 

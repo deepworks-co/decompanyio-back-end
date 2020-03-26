@@ -53,7 +53,7 @@
         "DECK_TRANSFER": "DECK-TRANSFER",
         "VW_WALLET_BALANCE": "VW-WALLET-BALANCE",
         "EVENT": "EVENT",
-        "EVENT_AGGREGATE": "EVENT-AGGREGATE"
+        "AGGREGATE_PAGEVIEW": "AGGREGATE-PAGEVIEW"
     },
     "sqsConfig": {
         "region": "ap-northeast-2",

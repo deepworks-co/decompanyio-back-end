@@ -310,6 +310,7 @@ async function queryDocumentListByLatest (params) {
         _id: 1, title: 1, created: 1, documentId: 1, documentName: 1, seoTitle: 1, tags: 1, accountId: 1, desc: 1, latestPageview: 1, seoTitle: 1, cc: 1, shortUrl: 1,
         popular: { $arrayElemAt: [ "$popularAs", 0 ] }, featured: { $arrayElemAt: [ "$featuredAs", 0 ] }, author: { $arrayElemAt: [ "$userAs", 0 ] },
         registry: { $arrayElemAt: [ "$registryAs", 0 ] },
+        dimensions: 1
       }
     }, {
       $addFields: {
@@ -430,7 +431,8 @@ async function queryDocumentListByPopular (params) {
                   $cond: [
                     { $ifNull: [ '$registry', false ]}, true, false
                   ]
-                }
+                },
+        dimensions: "$document.dimensions"
       }
     }, {
       $project: {featured: 0, document: 0, registry: 0}
@@ -545,7 +547,8 @@ async function queryDocumentListByFeatured (params) {
             true,
             false
           ]
-        }
+        },
+        dimensions: "$document.dimensions"
       }
     }, {
       $project: {documentAs: 0, popularAs: 0, userAs: 0, document: 0, popular: 0, registry: 0}
@@ -836,6 +839,7 @@ async function queryVotedDocumentByCurator(args) {
       seoTitle: "$documentInfo.seoTitle",
       shortUrl: "$documentInfo.shortUrl",
       created: "$documentInfo.created",
+      dimensions: "$documentInfo.dimensions",
       latestPageview: "$popular.latestPageview",
       latestPageviewList: "$popular.latestPageviewList",
       latestVoteAmount: {$toString: "$featured.latestVoteAmount"},
@@ -855,6 +859,7 @@ async function queryVotedDocumentByCurator(args) {
       desc: 1,
       tags: 1,
       shortUrl: 1,
+      dimensions: 1,
       latestVoteAmout: {$toString: "$latestVoteAmount"},
     }
   }]

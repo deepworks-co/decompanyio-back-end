@@ -81,6 +81,9 @@ mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompan
 mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=VOTE --out=/docker-test/json/VOTE.json
 mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-FEATURED --out=/docker-entrypoint-initdb.d/json/DOCUMENT-FEATURED.json
 mongoexport --uri="mongodb://decompany:decompany1234@13.57.245.55:27017/decompany" --collection=DOCUMENT-POPULAR --out=/docker-entrypoint-initdb.d/json/DOCUMENT-POPULAR.json
+
+mongoexport --uri="mongodb://decompany:decompany1234@13.52.186.38:27017/decompany" --collection=EVENT --out=./docker-entrypoint-initdb.d/json/EVENT.json
+mongoexport --uri="mongodb://decompany:decompany1234@13.52.186.38:27017/decompany" --collection=EVENT-BLOCK --out=./docker-entrypoint-initdb.d/json/EVENT-BLOCK.json
 ```
 
 ### Import Data
@@ -93,3 +96,7 @@ mongoimport --db=decompany --collection=STAT-PAGEVIEW-DAILY --type=json --file=/
 mongoimport --db=decompany --collection=STAT-PAGEVIEW-TOTALCOUNT-DAILY --type=json --file=/docker-test/json/STAT-PAGEVIEW-TOTALCOUNT-DAILY.json
 mongoimport --db=decompany --collection=VOTE --type=json --file=/docker-test/json/VOTE.json
 ```
+
+mongoimport --db=decompany --collection=EVENT --type=json --file=./docker-entrypoint-initdb.d/json/EVENT.json
+
+mongoimport --db=decompany --collection=EVENT-BLOCK --type=json --file=./docker-entrypoint-initdb.d/json/EVENT-BLOCK.json

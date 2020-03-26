@@ -58,35 +58,24 @@ provider:
     - .env
 
 functions:
+  recentlyStartFunc:
+    handler: functions/sf/recentlyStartFunc.handler
+    timeout: 300
+  dailyStartFunc:
+    handler: functions/sf/dailyStartFunc.handler
+    timeout: 300
   dailyPageviewAggregate:
     handler: functions/sf/dailyPageviewAggregate.handler
+    timeout: 300
   dailyDownloadAggregate:
     handler: functions/sf/dailyDownloadAggregate.handler
+    timeout: 300
+  dailyTotalPageviewAggregate:
+    handler: functions/sf/dailyTotalPageviewAggregate.handler
+    timeout: 300
     
   makeRewardPool:
     handler: functions/mgr/makeRewardPool
-    
-  calculateRoyalty:
-    handler: functions/cron/calculateRoyalty.handler
-    timeout: 300
-
-  pageviewWriteOnchain:
-    handler: functions/onchain/pageviewWriteOnchain.handler
-    timeout: 300
-    #events:
-    #  - schedule: rate(5 minutes)
-
-  dailyPageview:
-    handler: functions/cron/dailyPageview.handler
-    timeout: 300
-    #events:
-    #  - schedule: cron(10 0 * * ? *) # daily 00:10:00
-
-  recentlyPageview:
-    handler: functions/cron/recentlyPageview.handler
-    timeout: 30
-    events:
-      - schedule: rate(5 minutes)
       
   generatePopular:
     handler: functions/cron/generatePopular.handler
@@ -109,27 +98,34 @@ functions:
 stepFunctions:
   validate: true
   stateMachines:
-    dailyAggregateRoyalty:
-      events:
-        - schedule: 
-            rate: cron(30 0 * * ? *)
-      definition:
-        StartAt: aggregatePageviewState
-        States:
-          aggregatePageviewState:
-            Type: Task
-            Resource:
-              Fn::GetAtt:
-                - dailyPageview
-                - Arn
-            End: true
+  #  dailyAggregateRoyalty:
+  #    events:
+  #      - schedule: 
+  #          rate: cron(30 0 * * ? *)
+  #    definition:
+  #      StartAt: aggregatePageviewState
+  #      States:
+  #        aggregatePageviewState:
+  #          Type: Task
+  #          Resource:
+  #            Fn::GetAtt:
+  #              - dailyPageview
+  #              - Arn
+  #          End: true
     dailyAggregateEvent:
       events:
         - schedule: 
             rate: cron(20 0 * * ? *)
       definition:
-        StartAt: dailyDownloadAggregate
+        StartAt: dailyStartFunc
         States:
+          dailyStartFunc:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyStartFunc
+                - Arn
+            Next: dailyDownloadAggregate
           dailyDownloadAggregate:
             Type: Task
             Resource:
@@ -143,8 +139,50 @@ stepFunctions:
               Fn::GetAtt:
                 - dailyPageviewAggregate
                 - Arn          
+            Next: dailyTotalPageviewAggregate
+          dailyTotalPageviewAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyTotalPageviewAggregate
+                - Arn          
             End: true
 
+    recentlyAggregateEvent:
+      events:
+        - schedule: 
+            rate: rate(5 minutes)
+      definition:
+        StartAt: recentlyStartFunc
+        States:
+          recentlyStartFunc:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - recentlyStartFunc
+                - Arn
+            Next: dailyDownloadAggregate
+          dailyDownloadAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyDownloadAggregate
+                - Arn
+            Next: dailyPageviewAggregate
+          dailyPageviewAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyPageviewAggregate
+                - Arn          
+            Next: dailyTotalPageviewAggregate
+          dailyTotalPageviewAggregate:
+            Type: Task
+            Resource:
+              Fn::GetAtt:
+                - dailyTotalPageviewAggregate
+                - Arn          
+            End: true
 plugins:
   - serverless-mocha-plugin
   - serverless-step-functions

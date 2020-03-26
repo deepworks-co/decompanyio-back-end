@@ -23,6 +23,7 @@ service: restapis-search
 provider:
   name: aws
   runtime: nodejs10.x
+  endpointType: REGIONAL
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
 
@@ -35,7 +36,7 @@ provider:
     GIT_DEPLOY_REVISION: ${file(./serverlessConfig.js):git_revision}
     GIT_DEPLOY_BRANCH: ${file(./serverlessConfig.js):git_branch}
     DEPLOY_DATE: ${file(./serverlessConfig.js):toDateString}
-
+  logRetentionInDays: 3
 functions:
   customSearch:
     handler: src/google/customSearch.handler
