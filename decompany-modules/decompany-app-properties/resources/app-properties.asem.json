@@ -5,6 +5,7 @@
         "securityGroupIds": "sg-06891dc67ef6e8e47",
         "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
     },
+    "authorizer": "arn:aws:lambda:ap-northeast-2:197966029048:function:auth-provider-asem-authorize",
     "layer": {
         "sharp": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libSharp:6",
         "geoip": "arn:aws:lambda:ap-northeast-2:197966029048:layer:libGeoip:6"
