@@ -1,9 +1,9 @@
 const { schemaComposer } = require('graphql-compose');
 
-const {getLast6CreatorReward, getTodayEstimatedCreatorReward} = require("./resolver/royalty/CreatorRewardResolver");
+const {getLast6CreatorReward, getTodayEstimatedCreatorReward} = require("../resolver/royalty/CreatorRewardResolver");
 
-const getLast6CuratorReward = require("./resolver/reward/GetLast6CuratorRewardResolver");
-const getTodayEstimatedCuratorReward = require("./resolver/reward/GetTodayEstimatedCuratorRewardResolver");
+const getLast6CuratorReward = require("../resolver/reward/GetLast6CuratorRewardResolver");
+const getTodayEstimatedCuratorReward = require("../resolver/reward/GetTodayEstimatedCuratorRewardResolver");
 
 schemaComposer.createObjectTC({
   name: 'DailyCreatorReward',

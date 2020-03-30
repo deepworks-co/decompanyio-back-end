@@ -1,7 +1,7 @@
 const { schemaComposer } = require('graphql-compose');
 
-const determineCreatorRoyalty = require("./resolver/creator/DetermineCreatorRoyalty");
-const getClaimableRoyalty = require("./resolver/creator/GetClaimableRoyaltyResolver");
+const determineCreatorRoyalty = require("../resolver/creator/DetermineCreatorRoyalty");
+const getClaimableRoyalty = require("../resolver/creator/GetClaimableRoyaltyResolver");
 
 
 schemaComposer.createObjectTC({

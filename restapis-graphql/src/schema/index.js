@@ -1,15 +1,15 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const DocumentSchema = require('./DocumentSchema')
-const DocumentFeaturedSchema = require('./DocumentFeaturedSchema')
-const DocumentPopularSchema = require('./DocumentPopularSchema')
-const UserSchema = require('./UserSchema')
-const UserDocumentFavorite = require('./UserDocumentFavorite')
-const UserDocumentHistory = require('./UserDocumentHistory')
-const ProfileSummarySchema = require('./ProfileSummarySchema')
-const RewardSchema = require('./RewardSchema')
-const CuratorSchema = require('./CuratorSchema')
-const CreatorSchema = require('./CreatorSchema')
+const DocumentSchema = require('./public/DocumentSchema')
+const DocumentFeaturedSchema = require('./public/DocumentFeaturedSchema')
+const DocumentPopularSchema = require('./public/DocumentPopularSchema')
+const UserSchema = require('./public/UserSchema')
+const UserDocumentFavorite = require('./public/UserDocumentFavorite')
+const UserDocumentHistory = require('./public/UserDocumentHistory')
+const ProfileSummarySchema = require('./public/ProfileSummarySchema')
+const RewardSchema = require('./public/RewardSchema')
+const CuratorSchema = require('./public/CuratorSchema')
+const CreatorSchema = require('./public/CreatorSchema')
 
 
 const customizationOptions = {}; // left it empty for simplicity, described below
