@@ -21,7 +21,7 @@ service:
 provider:
   name: aws
   runtime: nodejs10.x
-  # you can overwrite defaults here
+  endpointType: REGIONAL
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
   environment:
