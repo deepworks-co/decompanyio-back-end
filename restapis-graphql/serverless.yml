@@ -20,6 +20,7 @@ service: restapis-graphql # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs10.x
+  endpointType: REGIONAL
   # you can overwrite defaults here
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
@@ -102,6 +103,22 @@ functions:
       preTrafficHook: preHook
       postTrafficHook: postHook
 
+  graphqlPrivate:
+    handler: src/private.handler
+    events:
+      - http: 
+          method: ANY
+          path: /api/private
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
+    deploymentSettings:
+      type: ${self:custom.deployType}
+      alias: prod
+      preTrafficHook: preHook
+      postTrafficHook: postHook
 custom:
   deployType: Canary10Percent5Minutes
   deploymentSettings:

@@ -21,7 +21,7 @@ service:
 provider:
   name: aws
   runtime: nodejs10.x
-  # you can overwrite defaults here
+  endpointType: REGIONAL
   stage: ${opt:stage, 'dev'}
   region: ${file(./serverlessConfig.js):region}
   environment:
@@ -88,7 +88,11 @@ functions:
           path: /api/claim/reward
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -120,7 +124,11 @@ functions:
           path: /api/claim/royalty
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -154,7 +162,11 @@ functions:
           path: /api/document/vote
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           async: true
           response:
             headers:
@@ -189,7 +201,11 @@ functions:
           path: /api/account/withdraw
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -248,7 +264,11 @@ functions:
           path: /api/gas/request
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -266,7 +286,11 @@ functions:
           path: /api/deck/transfer
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -289,7 +313,11 @@ functions:
           path: /api/account/create
           cors: true
           integration: lambda
-          authorizer: jwt
+          authorizer: 
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: .*
           response:
             headers:
               Content-Type: integration.response.header.Content-Type

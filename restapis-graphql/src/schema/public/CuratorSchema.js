@@ -1,9 +1,9 @@
 const { schemaComposer } = require('graphql-compose');
 
-const getTodayUserActiveVoteAmount = require("./resolver/curator/GetTodayUserActiveVoteAmount");
-const getTodayActiveVoteAmount = require("./resolver/curator/GetTodayActiveVoteAmount");
-const determineCuratorReward = require("./resolver/curator/DetermineCuratorReward");
-const getClaimableReward = require("./resolver/curator/GetClaimableRewardResolver");
+const getTodayUserActiveVoteAmount = require("../resolver/curator/GetTodayUserActiveVoteAmount");
+const getTodayActiveVoteAmount = require("../resolver/curator/GetTodayActiveVoteAmount");
+const determineCuratorReward = require("../resolver/curator/DetermineCuratorReward");
+const getClaimableReward = require("../resolver/curator/GetClaimableRewardResolver");
 
 
 schemaComposer.createObjectTC({

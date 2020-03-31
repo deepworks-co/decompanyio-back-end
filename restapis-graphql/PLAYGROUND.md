@@ -35,7 +35,20 @@ mutation {
   }
 }
 
+mutation {
+  UserDocumentFavorite {
+   addFavorite(documentId: "sadfsadfasdfasd") {
+    	_id
+    	userId
+			documentId
+    	created
+  	}
+  }
+}
+
 ```
+
+
 
 ## Query
 

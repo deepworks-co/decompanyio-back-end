@@ -119,3 +119,14 @@ module.exports.getSharpLayer = (serverless)=>{
   console.log("load layer", layer.sharp);
   return layer.sharp;
 }
+
+
+
+module.exports.getAuthorizer = (serverless)=>{
+  const stage = serverless.processedInput.options.stage;
+  if(stage){
+      process.env.stage = stage;
+  }    
+  const { authorizer } = require('decompany-app-properties');    
+  return authorizer;
+}

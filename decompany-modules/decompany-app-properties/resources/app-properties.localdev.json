@@ -5,6 +5,7 @@
         "securityGroupIds": "sg-05a13849fc117801b",
         "subnetIds": "subnet-37594850, subnet-38bb9963"
     },
+    "authorizer": "",
     "layer": {
         "sharp": "arn:aws:lambda:us-west-1:197966029048:layer:libSharp:2",
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
