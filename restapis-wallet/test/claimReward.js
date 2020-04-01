@@ -9,7 +9,8 @@ const {MongoWrapper} = require('decompany-common-utils');
 const mongo = new MongoWrapper(mongodb.endpoint);
 const expect = mochaPlugin.chai.expect;
 let wrapped = mochaPlugin.getWrapper('claimReward', '/src/claim/reward.js', 'handler');
-let close = mochaPlugin.getWrapper('claimReward', '/src/claim/reward.js', 'close');
+let wrappedMongoose = mochaPlugin.getWrapper('claimRewardMongoose', '/src/claim/GetClaimableRewardResolver.js', 'handler');
+
 
 describe('claimReward', () => {
   before((done) => {
@@ -32,6 +33,13 @@ describe('claimReward', () => {
       //expect(response).to.not.be.empty;
     });
   });
+});
+
+/*
+describe('claimReward', () => {
+  before((done) => {
+    done();
+  });
 
   it('e6cf11472a174eb9ba6897136ac1b2b8 implement tests here', () => {
     const event = {
@@ -52,3 +60,28 @@ describe('claimReward', () => {
   });
 
 });
+*/
+
+/*
+describe('mongoose ver', () => {
+  before((done) => {
+    done();
+  });
+  it('feed7f026db54859bec3221dcad47d8f implement tests here', async () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        documentId: "feed7f026db54859bec3221dcad47d8f"
+      }
+    }
+    return wrappedMongoose.run(event).then((response) => {
+      const json = JSON.parse(response)
+      //console.log("result : ", json);
+      expect(json.success).equal(true);
+
+      //expect(response).to.not.be.empty;
+    });
+  }).timeout(60000);
+
+});
+*/
