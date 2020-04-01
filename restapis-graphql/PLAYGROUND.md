@@ -110,3 +110,32 @@ query {
   }
 }
 ```
+
+
+## Curator
+```javascript
+query {
+  Curator {
+    determineCuratorReward(userId: "google-oauth2|101778494068951192848", documentId: "feed7f026db54859bec3221dcad47d8f") {
+      voteDate
+      activeDate
+      reward
+    }
+     getClaimableReward(userId: "google-oauth2|101778494068951192848", documentId: "feed7f026db54859bec3221dcad47d8f") {
+      voteDate
+      activeDate
+      reward
+    }
+  } 
+}
+query {
+  Creator {
+    determineCreatorRoyalty(userId: "google-oauth2|101778494068951192848", documentId: "feed7f026db54859bec3221dcad47d8f") {
+      voteDate
+      activeDate
+      reward
+    }
+
+  } 
+}
+```

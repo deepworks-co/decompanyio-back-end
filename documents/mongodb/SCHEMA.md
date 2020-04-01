@@ -183,7 +183,7 @@ db["BOUNTY"].createIndex( { accountId: 1, ethAccount: 1, bountyType: 1, created:
 ## EVENT
 ```javascript
 db.createCollection("EVENT");
-db["EVENT"].createIndex( { type: 1, createdAt: 1, 'pageload.n': 1});
+db["EVENT"].createIndex( { type: 1, createdAt: 1, 'payload.n': 1});
 ```
 
 ## AGGREGATE-PAGEVIEW
