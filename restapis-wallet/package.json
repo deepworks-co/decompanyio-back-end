@@ -16,13 +16,13 @@
   "dependencies": {
     "bignumber.js": "^9.0.0",
     "decompany-app-properties": "file:../decompany-modules/decompany-app-properties",
-    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "decompany-mongoose": "file:../decompany-modules/decompany-mongoose",
     "ethereumjs-tx": "^1.3.7",
     "jsonwebtoken": "^8.5.1",
     "web3": "^1.2.1"
   },
   "devDependencies": {
+    "decompany-common-utils": "file:../decompany-modules/decompany-common-utils",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-config": "file:../decompany-modules/serverless-config",
     "serverless-mocha-plugin": "^1.11.0",
