@@ -16,21 +16,27 @@ module.exports = async ({userId, documentId}) => {
     "_id.documentId": documentId,
   }).sort({_id: -1}).limit(1);
 
-  const LAST_CLAIM_DAYS = lastClaim[0] ? dateAgo(lastClaim[0].created) : 0;
+  const LAST_CLAIM = lastClaim[0] ? utils.getDate(lastClaim[0].voteDate, 1) : 0;
+  console.log("LAST_CLAIM", LAST_CLAIM)
 
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
-  const startDate = utils.getDate(nowDate, -1 * (LAST_CLAIM_DAYS - 1));
-  const endDate = utils.getDate(nowDate, 1);
+  const startDate = new Date(utils.getBlockchainTimestamp(new Date(LAST_CLAIM)))
+  const endDate = utils.getDate(new Date(), -1 * (ACTIVE_VOTE_DAYS - 1));
   
   const start = utils.getBlockchainTimestamp(startDate);
   const end = utils.getBlockchainTimestamp(endDate);
+  console.log('start, end', ACTIVE_VOTE_DAYS, new Date(start), new Date(end))
 
   const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
 
   const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, startDate, endDate, nowDate});
   //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
 
-  const totalVoteMap = await getDailyTotalVoteMap({start, end, myVoteList});
+  const totalVoteMap = await getDailyTotalVoteMap({
+    start: utils.getBlockchainTimestamp(utils.getDate(startDate, -1 * ACTIVE_VOTE_DAYS)), 
+    end: utils.getBlockchainTimestamp(utils.getDate(endDate, ACTIVE_VOTE_DAYS)), 
+    myVoteList
+  });
 
   const rewardPoolList = await RewardPool.find({});
   
@@ -144,26 +150,20 @@ async function getDailyMyVoteMatrix({myVoteList, startDate, endDate, nowDate}){
 
     return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
       const activeDate = utils.getDate(voteDate, index);
-      if(activeDate.getTime() == nowDate.getTime()){
-        const {userId, documentId, totalDeposit} = myVote;
-        
-        return {
-          userId,
-          documentId,
-          voteDate,
-          activeTimestamp: utils.getBlockchainTimestamp(activeDate),
-          activeDate,
-          totalDeposit
-        }
-      } else {
-        return null;
+
+      const {userId, documentId, totalDeposit} = myVote;
+      
+      return {
+        userId,
+        documentId,
+        voteDate,
+        activeTimestamp: utils.getBlockchainTimestamp(activeDate),
+        activeDate,
+        totalDeposit
       }
-    }).filter((it)=>{
-      return it?true:false
+
     })
     
-  }).filter((it)=>{
-    return it.length>0?true:false
   })
 
   return myVoteMatrix;
