@@ -2,8 +2,9 @@
     "region": "ap-northeast-2",
     "stage": "asem",
     "vpc": {
+        "vpcId": "vpc-024db7bd246adab1c",
         "securityGroupIds": "sg-06891dc67ef6e8e47",
-        "subnetIds": "subnet-0ed091701f869ba14, subnet-066bd85927ff206b2"
+        "subnetIds": "subnet-0ed091701f869ba14,subnet-066bd85927ff206b2"
     },
     "authorizer": "arn:aws:lambda:ap-northeast-2:197966029048:function:auth-provider-asem-authorize",
     "layer": {

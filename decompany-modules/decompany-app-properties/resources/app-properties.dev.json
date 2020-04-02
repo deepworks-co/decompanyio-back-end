@@ -2,8 +2,9 @@
     "region": "us-west-1",
     "stage": "dev",
     "vpc": {
+        "vpcId": "vpc-67745200",
         "securityGroupIds": "sg-05a13849fc117801b",
-        "subnetIds": "subnet-37594850, subnet-38bb9963"
+        "subnetIds": "subnet-37594850,subnet-38bb9963"
     },
     "authorizer": "arn:aws:lambda:us-west-1:197966029048:function:auth-provider-dev-authorize",
     "layer": {
