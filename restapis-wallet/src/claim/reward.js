@@ -8,11 +8,6 @@ const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 
-module.exports.close = () => {
-  mongo.close();
-  return Promise.resolve(true);
-}
-
 module.exports.handler = async (event) => {
 
   if (event.source === 'lambda-warmup') {
@@ -43,13 +38,13 @@ module.exports.handler = async (event) => {
       userId: principalId
     });
     
-    const start = lastClaim&&lastClaim._id&&lastClaim._id.blockchainTimestamp?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
-    const end = new Date();
-    console.log("vote reward start, end", start, utils.getDate(end, (ACTIVE_VOTE_DAYS-1) * -1));
+    const start = lastClaim&&lastClaim._id&&lastClaim._id.blockchainTimestamp?utils.getDate(new Date(lastClaim._id.blockchainTimestamp), 1):new Date(0); //마지막 claim에서 다음날부터 claim요청함
+    const end = new Date(utils.getBlockchainTimestamp(utils.getDate(new Date(), -1 * (ACTIVE_VOTE_DAYS - 1))));
+    console.log("vote reward start, end", start, end);
 
     const rewardPool = await getRewardPool();
     
-    const dailyMyVoteMatrix = await getDailyMyVoteMatrix(documentId, principalId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(utils.getDate(end, (ACTIVE_VOTE_DAYS -1) * -1)), rewardPool);
+    const dailyMyVoteMatrix = await getDailyMyVoteMatrix(documentId, principalId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end), rewardPool);
     //console.log("dailyMyVoteMatrix", JSON.stringify(dailyMyVoteMatrix));
     
     const dailyVoteMap = await getDailyVoteMap(documentId, utils.getBlockchainTimestamp(utils.getDate(start, ACTIVE_VOTE_DAYS * -1)), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS)));
@@ -70,7 +65,7 @@ module.exports.handler = async (event) => {
       userId: principalId, 
       curatorRewards
     }); 
-    //console.log("saveResults", JSON.stringify(saveResults));
+    
 
     return JSON.stringify({
       success: true,

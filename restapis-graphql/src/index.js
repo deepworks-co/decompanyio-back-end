@@ -32,12 +32,12 @@ const server = new ApolloServer({
   },
   engine: {
     rewriteError(err) {
-      console.log("Engine Error", err);
+      //console.log("Engine Error", err);
       return err;
     }
   },
   context: async ({event} )=>{
-    console.log("isLocal", JSON.stringify(event))
+    
     if(isLocal && !event.isOffline){
       //console.log("isLocal", JSON.stringify(event))
       return {principalId: event.principalId, conn}

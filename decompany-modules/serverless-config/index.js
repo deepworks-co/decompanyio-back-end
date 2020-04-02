@@ -127,6 +127,7 @@ module.exports.getAuthorizer = (serverless)=>{
   if(stage){
       process.env.stage = stage;
   }    
-  const { authorizer } = require('decompany-app-properties');    
-  return authorizer;
+  const { authorizer } = require('decompany-app-properties');
+  
+  return authorizer?authorizer:"";
 }

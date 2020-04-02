@@ -12,7 +12,7 @@ const ClaimReward = new Schema({
     type: Array
   },
   voteDate: {
-    type: Number
+    type: Date
   },
   voteAmount: {
     type: Number
