@@ -4,6 +4,7 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
+    "preinstall": "npm i ../decompany-modules/serverless-config",
     "deploy": "sls deploy",
     "deploy:asem": "sls deploy -s asem",
     "deploy:dev": "sls deploy -s dev",
