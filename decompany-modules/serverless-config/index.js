@@ -36,11 +36,12 @@ module.exports.vpc = async (serverless) => {
       process.env.stage = stage;
   }    
   let { vpc } = require('decompany-app-properties');
-  vpc = vpc?vpc:{
-    securityGroupIds: "sg-05a13849fc117801b",
-    subnetIds: "subnet-37594850, subnet-38bb9963"
+  
+  if(vpc){
+    console.log("deploy vpc is " + JSON.stringify(vpc));
+  } else {
+    console.log('no vpc')
   }
-  console.log("deploy vpc is " + JSON.stringify(vpc));
 
   return vpc;
 }
