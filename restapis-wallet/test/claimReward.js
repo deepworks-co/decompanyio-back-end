@@ -24,13 +24,9 @@ describe('claimReward', () => {
       }
     }
     return wrapped.run(event).then((response) => {
+      console.log("result : ", response);
       const json = JSON.parse(response)
-      console.log("result : ", json);
       expect(json.success).equal(true);
-      json.rewards.forEach((it)=>{
-        expect(isNaN(it.value)).to.be.equal(false)
-      })
-      //expect(response).to.not.be.empty;
     });
   });
 });

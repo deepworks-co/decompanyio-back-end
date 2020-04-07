@@ -96,8 +96,7 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
   
   const totalVoteList = await VWDailyVote.aggregate([{
     $match: {
-      blockchainTimestamp: {$gte: start, $lt: end},
-      documentId: {$in: myDocList}
+      blockchainTimestamp: {$gte: start, $lt: end}
     }
   }, {
     $group: {

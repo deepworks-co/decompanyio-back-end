@@ -20,8 +20,9 @@ describe('claimRoyalty', () => {
       }
     }
     return wrapped.run(event).then((response) => {
-      //console.log(response);
-      expect(response).to.not.be.empty;
+      console.log(response);
+      const json = JSON.parse(response)
+      expect(json.success).equal(true);
     });
   });
 });
