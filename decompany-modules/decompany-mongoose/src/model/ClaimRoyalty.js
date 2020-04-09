@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 
 const ClaimRoyalty = new Schema({
   _id: {
-    documentId: {type: String},
     userId: {type: String},
+    documentId: {type: String},
     blockchainTimestamp: { type: Number }
   },
   value: {
