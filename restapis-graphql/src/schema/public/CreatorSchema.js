@@ -1,50 +1,33 @@
 const { schemaComposer } = require('graphql-compose');
 
-const determineCreatorRoyalty = require("../resolver/creator/DetermineCreatorRoyalty");
+const determineCreatorRoyalty = require("../resolver/creator/DetermineCreatorRoyaltyResolver");
 const getClaimableRoyalty = require("../resolver/creator/GetClaimableRoyaltyResolver");
-
-
-schemaComposer.createObjectTC({
-  name: 'DetermineCreatorRoyalty',
-  fields: {
-    activeDate: 'Date',
-    documentId: 'String',
-    userId: 'String',
-    pageview: 'Int',
-    totalPageview: 'Int',
-    royalty: 'Float'
-  },
-});
-
-schemaComposer.createObjectTC({
-  name: 'GetClaimableRoyalty',
-  fields: {
-    activeDate: 'Date',
-    documentId: 'String',
-    userId: 'String',
-    pageview: 'Int',
-    totalPageview: 'Int',
-    royalty: 'Float'
-  },
-});
+const getNDaysRoyalty = require("../resolver/creator/GetNDaysRoyaltyResolver");
 
 
 
 schemaComposer.Query.addNestedFields({
   "Creator.determineCreatorRoyalty": {
-    type: '[DetermineCreatorRoyalty]',
-    args: { userId: 'String!', documentId: 'String!'},
+    type: '[CreatorRoyalty]',
+    args: { documentId: 'String!'},
     resolve: (_, args) => determineCreatorRoyalty(args)
   }
 });
 
 schemaComposer.Query.addNestedFields({
   "Creator.getClaimableRoyalty": {
-    type: '[GetClaimableRoyalty]',
-    args: { userId: 'String!', documentId: 'String!'},
+    type: '[CreatorRoyalty]',
+    args: { documentId: 'String!'},
     resolve: (_, args) => getClaimableRoyalty(args)
   }
 });
 
+schemaComposer.Query.addNestedFields({
+  "Creator.getNDaysRoyalty": {
+    type: '[CreatorRoyalty]',
+    args: { days: 'Int!', documentId: 'String!'},
+    resolve: (_, args) => getNDaysRoyalty(args)
+  }
+});
 
 module.exports = schemaComposer.buildSchema();

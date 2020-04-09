@@ -6,40 +6,6 @@ const determineCuratorReward = require("../resolver/curator/DetermineCuratorRewa
 const getClaimableReward = require("../resolver/curator/GetClaimableRewardResolver");
 
 
-schemaComposer.createObjectTC({
-  name: 'UserActiveVoteAmount',
-  fields: {
-    activeDate: 'Date',
-    voteDate: 'Date',
-    documentId: 'String',
-    userId: 'String',
-    voteAmount: 'String'
-  },
-});
-
-schemaComposer.createObjectTC({
-  name: 'DetermineCuratorReward',
-  fields: {
-    voteDate: 'Date',
-    activeDate: 'Date',
-    documentId: 'String',
-    userId: 'String',
-    voteAmount: 'String',
-    reward: 'Float'
-  },
-});
-
-schemaComposer.createObjectTC({
-  name: 'GetClaimableReward',
-  fields: {
-    voteDate: 'Date',
-    activeDate: 'Date',
-    documentId: 'String',
-    userId: 'String',
-    voteAmount: 'String',
-    reward: 'Float'
-  },
-});
 
 schemaComposer.Query.addNestedFields({
   "Curator.getTodayUserActiveVoteAmount": {
@@ -59,7 +25,7 @@ schemaComposer.Query.addNestedFields({
 
 schemaComposer.Query.addNestedFields({
   "Curator.determineCuratorReward": {
-    type: '[DetermineCuratorReward]',
+    type: '[CuratorReward]',
     args: { userId: 'String!', documentId: 'String!'},
     resolve: (_, args) => determineCuratorReward(args)
   }
@@ -67,11 +33,11 @@ schemaComposer.Query.addNestedFields({
 
 schemaComposer.Query.addNestedFields({
   "Curator.getClaimableReward": {
-    type: '[GetClaimableReward]',
+    type: '[CuratorReward]',
     args: { userId: 'String!', documentId: 'String!'},
     resolve: (_, args) => getClaimableReward(args)
   }
 });
 
 
-module.exports = schemaComposer.buildSchema();
+module.exports = {}

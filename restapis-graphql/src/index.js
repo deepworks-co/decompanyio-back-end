@@ -2,8 +2,8 @@
 const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda');
 const {mongodb} = require('decompany-app-properties')//require('./mongoose');
 const {connectToDB,  mongoDBStatus} = require('decompany-mongoose')//require('./mongoose');
+const {schema} = require('./schema/public');
 
-const {schema} = require('./schema');
 const jwt = require('jsonwebtoken');
 // Set in `environment` of serverless.yml
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;

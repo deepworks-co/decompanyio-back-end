@@ -7,8 +7,6 @@ if(schemaComposer.has(Document.modelName)){
 }
 
 const utc = composeWithMongoose(Document, {});
-//utc.removeField(["isPublic", "isDeleted", "isBlocked"]);
-
 
 function getResolverField(utc){
   const type = utc.getType();
@@ -40,7 +38,4 @@ function getResolverField(utc){
   schemaComposer.Query.addNestedFields(fieldsByUtc.query);
   //schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);  
 })();
-
-
-
-module.exports = schemaComposer.buildSchema();
+module.exports = {}

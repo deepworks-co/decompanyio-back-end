@@ -39,6 +39,4 @@ function getResolverField(utc){
   //schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);  
 })();
 
-
-
-module.exports = schemaComposer.buildSchema();
+module.exports = {}
