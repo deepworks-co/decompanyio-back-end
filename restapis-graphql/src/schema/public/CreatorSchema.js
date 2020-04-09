@@ -29,5 +29,4 @@ schemaComposer.Query.addNestedFields({
     resolve: (_, args) => getNDaysRoyalty(args)
   }
 });
-
-module.exports = schemaComposer.buildSchema();
+module.exports = {}
