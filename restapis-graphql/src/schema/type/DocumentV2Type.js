@@ -8,6 +8,6 @@ schemaComposer.createObjectTC({
         accountId: 'String',
         created: 'Date',
         documentName: 'String',
-        author: 'UserV2'
+        author: 'User'
     }
 });
