@@ -927,7 +927,7 @@ resources:
 
 
 custom:
-  authorizer: arn:aws:lambda:${self:provider.region}:${file(./serverlessConfig.js):getAccountId}:function:auth-provider-${self:provider.stage}-authorize
+  authorizer: ${file(./serverlessConfig.js):getAuthorizer}
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
