@@ -13,8 +13,9 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   try{
-    console.log(JSON.stringify(event));
     const eventParams = utils.parseLambdaEvent(event)
+    console.log('Lambda Event', JSON.stringify(eventParams))
+
     const headers = eventParams.headers;
     const body = eventParams.params;
     const cookie = eventParams.cookie;
@@ -24,62 +25,27 @@ module.exports.handler = async (event, context, callback) => {
       console.error("tracking error", "parameter is invalid", body);
       throw new Error("no collecting")
     }
+    const trackingIds = utils.generateTrackingIds(cookie);
 
-    if(!body.created){
-      body.created = Date.now();
-    }
-    const xforwardedfor = headers && headers["x-forwarded-for"]?headers["x-forwarded-for"]:"";
-    //const xforwardedfor = "211.45.65.70, 54.239.154.128";
-    const ips = xforwardedfor.split(",").map((ip)=>{
-      return ip.replace(/^\s+|\s+$/g,"");
-    });
-    
-    body.t = Date.now();
-    body.n = Number(body.n);
-    if(!utils.validateEmail(body.e)){
-      delete body.e;
+    const trackingData = Object.assign(body, {
+      cid: trackingIds._cid,
+      sid: trackingIds._sid,
+      n: Number(body.n), // string->number
+      headers,
+      created: Date.now()
+    })
+
+    if(trackingData.e && !utils.validateEmail(trackingData.e)){
+      delete trackingData.e;
     }
 
-    body.referer = headers.Referer?headers.Referer:headers.referer;
-    if(headers["user-agent"]){
-      body.useragent = headers["user-agent"];
-    } else if(headers["useragent"]){
-      body.useragent = headers["useragent"];
-    }
-
-    body.xforwardedfor = ips;
-    /*
-    if(ips && ips.length>0){
-      body.geo = getCountryByIp(ips);
-    }
-    */
-    body.headers = headers;
-    //console.log("tracking body", JSON.stringify(body));
-    /*
-    if(applicationLogAppender && applicationLogAppender.enable === true){
-      try{
-        const partitionKey = "tracking-" + Date.now();
-        console.log("put kinesis", applicationLogAppender.region, applicationLogAppender.streamName, partitionKey);
-        await kinesis.putRecord(applicationLogAppender.region, applicationLogAppender.streamName, partitionKey, body);
-      } catch(e){
-        console.error("applicationLogAppender error", e);
-      }
-      
-    }
-    */
-
-    const result = await documentService.putTrackingInfo(body);
+    const result = await documentService.putTrackingInfo(trackingData);
     //console.log("tracking save", JSON.stringify(result));
-    const user = await documentService.getTrackingUser(body.cid);
+    const user = await documentService.getTrackingUser(trackingData.cid);
     
-    if(user){
+    if(user && user._id){
       delete user._id;
-      //console.log("tracking user", user, body.cid);
-    } else {
-      //console.log("tracking user is not exists", body.cid);
     }
-
-    const trackingIds = utils.generateTrackingIds(cookie);   
 
     const response = utils.makeResponse(JSON.stringify({
       success: true,

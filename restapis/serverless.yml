@@ -851,8 +851,31 @@ functions:
       - http:
           method: post
           path: /api/tracking/confirm
-          cors: true
+          cors: 
+            origin: ${file(./serverlessConfig.js):getProperties.applicationConfig.mainHost}
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
           integration: lambda
+          request:
+            template:
+              application/json: >
+                {
+                  "method": "$context.httpMethod",
+                  "body" : $input.json('$'),
+                  "cookie" : "$util.escapeJavaScript($input.params().header.Cookie)",
+                  "headers": {
+                      #foreach($param in $input.params().header.keySet())
+                      "$param": "$util.escapeJavaScript($input.params().header.get($param))"
+                      #if($foreach.hasNext),#end
+                      #end
+                  }
+                }
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
@@ -866,12 +889,6 @@ functions:
                 type: string
               - name: email
                 description: email
-                type: string
-              - name: cid
-                description: cid
-                type: string
-              - name: sid
-                description: sid
                 type: string
               
     deploymentSettings:
