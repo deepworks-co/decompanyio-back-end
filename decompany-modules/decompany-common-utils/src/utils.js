@@ -189,7 +189,7 @@ exports.makeErrorResponse = (err, addheader) => {
 /**
  * key=value;key2=value2 string to json
  */
-exports.parseCookie(cookie) = (cookieStr) =>{
+exports.parseCookie = (cookieStr) =>{
   return cookieUtil.parse(cookieStr)
 }
 
