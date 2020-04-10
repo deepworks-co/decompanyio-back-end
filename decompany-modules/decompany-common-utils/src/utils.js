@@ -243,8 +243,8 @@ exports.generateTrackingIds = (cookies) =>{
   }
 }
 exports.makeTrackingCookie = (trackingIds, origin) => {
-  const domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
-
+  let domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
+  domain = domain.replace("www.", "");
   const secure = process.env.stage === 'local' || process.env.stage === 'localdev' ?false:true;
   
   const getExpiredAt = (second)=>{
@@ -262,7 +262,7 @@ exports.makeTrackingCookie = (trackingIds, origin) => {
    * express + eks기반으로 가야 할듯....
    */
   return {
-    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Origin': domain,
     "set-Cookie": `_tid=${trackingIds._tid};expires=${getExpiredAt(hours24).toGMTString()};max-age=${hours24};path=/;domain=${domain};Secure;HttpOnly;`,
     "Set-cookie": `_cid=${trackingIds._cid};expires=${getExpiredAt(min30).toGMTString()};max-age=${min30};path=/;domain=${domain};Secure;HttpOnly;`,
     "set-cookie": `_sid=${trackingIds._sid};path=/;domain=${domain};Secure;HttpOnly;`
