@@ -132,3 +132,13 @@ module.exports.getAuthorizer = (serverless)=>{
   console.log('authorizer', stage, authorizer)
   return authorizer?authorizer:"";
 }
+
+module.exports.getProperties = (serverless)=>{
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
+  if(stage){
+      process.env.stage = stage;
+  }    
+  const properties = require('decompany-app-properties');
+  
+  return properties?properties:{}
+}
