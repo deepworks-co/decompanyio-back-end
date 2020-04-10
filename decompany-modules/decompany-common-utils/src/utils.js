@@ -186,6 +186,13 @@ exports.makeErrorResponse = (err, addheader) => {
   }
 }
 
+/**
+ * key=value;key2=value2 string to json
+ */
+exports.parseCookie(cookie) = (cookieStr) =>{
+  return cookieUtil.parse(cookieStr)
+}
+
 exports.parseLambdaEvent = (eventParams) => {
   
   if(eventParams.httpMethod){
