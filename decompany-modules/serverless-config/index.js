@@ -19,7 +19,7 @@ module.exports.toDateString = async (serverless) => {
   return s;
 }
 module.exports.region = async (serverless) => {
-  const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
   if(stage){
       process.env.stage = stage;
   }    
@@ -31,7 +31,7 @@ module.exports.region = async (serverless) => {
 }
 module.exports.vpc = async (serverless) => {
   
-  const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
   if(stage){
       process.env.stage = stage;
   }    
@@ -46,7 +46,7 @@ module.exports.vpc = async (serverless) => {
   return vpc;
 }
 module.exports.s3Config = async (serverless) => {
-    const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
     if(stage){
         process.env.stage = stage;
     }    
@@ -101,7 +101,7 @@ const promiseExec = cmd => (
   );
 
 module.exports.getGeoipLayer = (serverless)=>{
-  const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
   if(stage){
       process.env.stage = stage;
   }    
@@ -112,7 +112,7 @@ module.exports.getGeoipLayer = (serverless)=>{
 
 
 module.exports.getSharpLayer = (serverless)=>{
-  const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
   if(stage){
       process.env.stage = stage;
   }    
@@ -124,11 +124,11 @@ module.exports.getSharpLayer = (serverless)=>{
 
 
 module.exports.getAuthorizer = (serverless)=>{
-  const stage = serverless.processedInput.options.stage;
+  const stage = serverless.processedInput.options.stage?serverless.processedInput.options.stage:'dev';
   if(stage){
       process.env.stage = stage;
   }    
   const { authorizer } = require('decompany-app-properties');
-  
+  console.log('authorizer', stage, authorizer)
   return authorizer?authorizer:"";
 }
