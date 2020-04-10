@@ -262,7 +262,7 @@ exports.makeTrackingCookie = (trackingIds, origin) => {
    * express + eks기반으로 가야 할듯....
    */
   return {
-    'Access-Control-Allow-Origin': domain,
+    'Access-Control-Allow-Origin': origin,
     "set-Cookie": `_tid=${trackingIds._tid};expires=${getExpiredAt(hours24).toGMTString()};max-age=${hours24};path=/;domain=${domain};Secure;HttpOnly;`,
     "Set-cookie": `_cid=${trackingIds._cid};expires=${getExpiredAt(min30).toGMTString()};max-age=${min30};path=/;domain=${domain};Secure;HttpOnly;`,
     "set-cookie": `_sid=${trackingIds._sid};path=/;domain=${domain};Secure;HttpOnly;`
