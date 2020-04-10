@@ -125,7 +125,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -172,7 +172,7 @@ functions:
           path: /api/analytics/export
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -248,7 +248,7 @@ functions:
           path: /api/account/documents
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -274,7 +274,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -310,7 +310,7 @@ functions:
           path: /api/account/ethereumSync
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -387,7 +387,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -410,7 +410,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -453,7 +453,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -476,7 +476,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -563,7 +563,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -682,7 +682,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -726,7 +726,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -821,7 +821,7 @@ functions:
           path: /api/tracking/export
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -927,7 +927,6 @@ resources:
 
 
 custom:
-  authorizer: ${file(./serverlessConfig.js):getAuthorizer}
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
