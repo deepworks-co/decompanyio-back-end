@@ -167,7 +167,6 @@ functions:
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
-          async: true
           response:
             headers:
               Content-Type: integration.response.header.Content-Type
