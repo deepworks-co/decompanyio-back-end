@@ -5,6 +5,7 @@ const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 const Web3Utils = require('web3-utils');
 const BigNumber = require('bignumber.js');
+
 module.exports = getLast6CuratorReward;
 
 async function getLast6CuratorReward({userId}) {
