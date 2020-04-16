@@ -18,9 +18,11 @@ describe('trackingInfo', () => {
         documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
         cid: "1906096669.1559648098"
       }*/
+      principalId: "google-oauth2|101778494068951192848",
       query: {
-        documentId: '3a328b4a0c8e4638b7c110ecb791bbce',
-        cid: '2069428568.1560131978'
+        documentId: 'feed7f026db54859bec3221dcad47d8f',
+        cid: '9YfqnBPDL9elJZJzTrCox.1587021258606',
+        include: true
       }
     }
 
