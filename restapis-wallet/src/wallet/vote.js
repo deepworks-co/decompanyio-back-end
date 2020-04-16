@@ -72,10 +72,13 @@ module.exports.handler = async (event, context, callback) => {
       created: created,
       createdAt: new Date(created)
     });
+    
     console.log("saveWallet", savedWallet);
 
+    const balance = await getBalance(principalId)
     return JSON.stringify({
-      success: true
+      success: true,
+      balance: balance
     })
 
   } catch (err){
