@@ -206,7 +206,7 @@ exports.parseLambdaEvent = (eventParams) => {
     return {
       method: eventParams.httpMethod,
       path: eventParams.path,
-      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: eventParams.body,
+      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: JSON.parse(eventParams.body),
       headers: headers,
       principalId: authorizer?authorizer.principalId: null,
       cookie: cookie
