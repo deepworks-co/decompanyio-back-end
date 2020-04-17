@@ -62,7 +62,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const handler = server.createHandler({cors: {
     origin: '*',
-    credentials: true
+    credentials: false
   }});
   
   const response = await runApolloHandler(event, context, handler);
