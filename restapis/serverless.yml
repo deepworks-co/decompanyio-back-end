@@ -826,7 +826,10 @@ functions:
           method: post
           path: /api/tracking/confirm
           cors: 
-            origin: ${file(./serverlessConfig.js):getProperties.applicationConfig.mainHost}
+            origins: 
+              - ${file(./serverlessConfig.js):getProperties.applicationConfig.mainHost}
+              - http://127.0.0.1:3000
+              - http://localhost:3000
             headers: # <-- Specify allowed headers
               - Content-Type
               - X-Amz-Date

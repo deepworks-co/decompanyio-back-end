@@ -10,11 +10,10 @@ module.exports.handler = async (event, context, callback) => {
     console.log('WarmUp - Lambda is warm!')
     return JSON.stringify({success: true, message: 'Lambda is warm!'});
   }
-
-  console.log('event', JSON.stringify(event))
-
+  //console.log('event', JSON.stringify(event);
   const eventParams = utils.parseLambdaEvent(event)
-  console.log('eventParams', eventParams)
+  //console.log('eventParams', eventParams)
+
   const headers = eventParams.headers?eventParams.headers:{};
   const body = eventParams.params?eventParams.params:{};
   const cookie = eventParams.cookie?eventParams.cookie:{};
@@ -33,7 +32,6 @@ module.exports.handler = async (event, context, callback) => {
   if(!utils.validateEmail(email)){
     throw new Error('Invalid email address.')
   }
-
   await documentService.putTrackingUser(cid, sid, documentId, email);
   /*
   const check = await documentService.checkTrackingConfirmSendMail(documentId, email);
