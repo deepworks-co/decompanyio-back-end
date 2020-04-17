@@ -1083,7 +1083,7 @@ async function getTrackingList(documentId, anonymous, include) {
     }
   }, {
     $addFields: {
-      userAs: {
+      user: {
         $arrayElemAt: [ "$userAs", 0 ]
       }
     }
