@@ -38,7 +38,7 @@ async function getTodayEstimatedCuratorReward({userId}) {
       pageview: item.pageview,
       totalPageviewSquare: item.totalPageviewSquare,
       reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
-        return sum + cur;
+        return Number(sum) + Number(cur);
       })
     }
   })
