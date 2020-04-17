@@ -13,6 +13,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   try{
+    console.log('event', JSON.stringify(event))
     const eventParams = utils.parseLambdaEvent(event)
     console.log('Lambda Event', JSON.stringify(eventParams))
 

@@ -1425,12 +1425,16 @@ async function putTrackingUser(cid, sid, documentId, email){
         sid: sid,
         created: Date.now()
       }
-      const trackingUser = await WRAPPER.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
+      let trackingUser = await WRAPPER.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
       if(!trackingUser){
-        const r = await WRAPPER.save(TB_TRACKING_USER, item);
-        console.log("tracking target user save", r);
+        trackingUser = await WRAPPER.save(TB_TRACKING_USER, item);
+        console.log("tracking target user save", trackingUser);
       }
+
+      return Promise.resolve({trackingUser: trackingUser})
       
+    } else {
+      return Promise.reject(new Error('cid or email is invalid'))
     }
     
   } catch(err){

@@ -15,7 +15,7 @@ describe('trackingList', () => {
   it('exclude anonymous user, 1page ', () => {
     const event = {
       query: {
-        documentId: "feed7f026db54859bec3221dcad47d8f",
+        documentId: "1fb0012674b442de9bc4e397f6e8dd62",
         include: false,
         anonymous: false
       }

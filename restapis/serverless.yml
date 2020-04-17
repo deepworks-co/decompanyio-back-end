@@ -648,11 +648,6 @@ functions:
           path: /api/document/download
           method: get
           cors: true
-          #integration: lambda
-#          response:
-#            headers:
-#              Content-Type: integration.response.header.Content-Type
-#            template: $input.path('$')
           documentation:
             summary: "/api/document/download"
             description: "/api/document/download"
@@ -770,31 +765,10 @@ functions:
           path: api/tracking/collect
           method: get
           cors: true
-#          integration: lambda
-#          request:
-#            template:
-#              application/json: ${file(./serverless-request-template.vtl)}
-#          response:
-#            headers:
-#              Content-Type: integration.response.header.Content-Type
-#              Set-Cookie: integration.response.body.Cookie
-#            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
             queryParams:
-              - name: cid
-                description: client id
-                type: string
-                required: true
-              - name: sid
-                description: session id
-                type: string
-                required: true
-              - name: t
-                description: event timestamp
-                type: number
-                required: true
               - name: e
                 description: email
                 type: string
@@ -861,36 +835,6 @@ functions:
               - X-Amz-Security-Token
               - X-Amz-User-Agent
             allowCredentials: true
-          integration: lambda
-          request:
-            template:
-              application/json: >
-                {
-                  "method": "$context.httpMethod",
-                  "body" : $input.json('$'),
-                  "cookie" : "$util.escapeJavaScript($input.params().header.Cookie)",
-                  "headers": {
-                      #foreach($param in $input.params().header.keySet())
-                      "$param": "$util.escapeJavaScript($input.params().header.get($param))"
-                      #if($foreach.hasNext),#end
-                      #end
-                  }
-                }
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: "/api/tracking/confirm"
-            description: "/api/tracking/confirm"
-            queryParams:
-              - name: documentId
-                description: documentId
-                type: string
-              - name: email
-                description: email
-                type: string
-              
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
