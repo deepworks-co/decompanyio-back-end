@@ -1,7 +1,12 @@
 
 const { schemaComposer } = require('graphql-compose');
-const UserDocumentFavorite = require('./private/UserDocumentFavorite')
-const UserDocumentHistory = require('./private/UserDocumentHistory')
+
+// Load Type Composer
+require('../type')
+
+// Load Private Schema
+const UserDocumentFavorite = require('./UserDocumentFavorite')
+const UserDocumentHistory = require('./UserDocumentHistory')
 
 const customizationOptions = {}; // left it empty for simplicity, described below
 

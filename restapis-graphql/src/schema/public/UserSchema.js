@@ -1,6 +1,6 @@
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const {User} = require('decompany-mongoose').models
+const { User } = require('decompany-mongoose').models
 
 if(schemaComposer.has(User.modelName)){
   return;
@@ -39,7 +39,4 @@ function getResolverField(utc){
   schemaComposer.Query.addNestedFields(fieldsByUtc.query);
   //schemaComposer.Mutation.addNestedFields(fieldsByUtc.mutation);  
 })();
-
-
-
-module.exports = schemaComposer.buildSchema();
+module.exports = {}

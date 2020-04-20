@@ -1030,14 +1030,21 @@ async function getTrackingList(documentId, anonymous, include) {
         ev: {$in: ["view", "leave"]}
     }
   }, {
-    $sort: {t: -1}
+    $project: {
+      ev: 1,
+      id: 1,
+      n: 1,
+      created: 1,
+      cid: 1,
+      sid: 1
+    }
   }, {
     $group: {
       _id: {cid: "$cid", sid: "$sid" },
       cid: {$first: "$cid"},
       sid: {$first: "$sid"},
-      viewTimestamp: {$min: "$t"},
-      viewTimestampMax: {$max: '$t'},
+      viewTimestamp: {$min: "$created"},
+      viewTimestampMax: {$max: '$created'},
       maxPageNo: {$max: "$n"},
       pages: { $addToSet: '$n' }
     }
@@ -1049,6 +1056,7 @@ async function getTrackingList(documentId, anonymous, include) {
     }
   }]
   
+  // 1page 문서의 tracking정보 포함
   if(!include){
     queryPipeline.push({
       $match: {
@@ -1057,7 +1065,7 @@ async function getTrackingList(documentId, anonymous, include) {
     })
   }
   
-  queryPipeline.push({
+  queryPipeline = queryPipeline.concat([{
     $group: {
       _id: {cid: "$_id.cid"},
       cid: {$first: "$_id.cid"},
@@ -1066,48 +1074,20 @@ async function getTrackingList(documentId, anonymous, include) {
       pages: { $addToSet: '$pages' },
       totalReadTimestamp: { $sum: "$readTimestamp" }
     }
-  });
-
-
-  queryPipeline.push({
+  }, {
     $lookup: {
       from: TB_TRACKING_USER,
       localField: "cid",
       foreignField: "cid",
       as: "userAs"
     }
-  });
-
-  queryPipeline.push({
-    $unwind:  {
-      path: "$userAs",
-      preserveNullAndEmptyArrays: true
+  }, {
+    $addFields: {
+      user: {
+        $arrayElemAt: [ "$userAs", 0 ]
+      }
     }
-  });
-
-  queryPipeline.push({
-    $sort: {
-      "userAs.created": -1
-    }
-  });
-
-  queryPipeline.push({
-    $group: {
-      _id: "$_id",
-      user: {$first: "$userAs"},
-      cid: {$first: "$cid"},
-      viewTimestamp: {$first: "$viewTimestamp"},
-      count: {$first: "$count"},
-      pages: {$first: '$pages' },
-      totalReadTimestamp: {$first: '$totalReadTimestamp' }
-    }
-  });
-
-  queryPipeline.push({
-    $sort: {
-      viewTimestamp: -1
-    }
-  });
+  }]);
   
   if(!anonymous){
     queryPipeline.push({
@@ -1129,6 +1109,10 @@ async function getTrackingList(documentId, anonymous, include) {
     }, {
       $addFields: {
         readPageCount: {$size: "$pages"}
+      }
+    }, {
+      $sort: {
+        viewTimestamp: -1
       }
     }
     
@@ -1162,11 +1146,11 @@ async function getTrackingInfo(documentId, cid, include) {
     $sort: {"t": 1}
   }, {
     $group: {
-      _id: {year: {$year: {$add: [new Date(0), "$t"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
+      _id: {year: {$year: {$add: [new Date(0), "$created"]}}, month: {$month: {$add: [new Date(0), "$t"]}}, dayOfMonth: {$dayOfMonth: {$add: [new Date(0), "$t"]}}, cid: "$cid",  sid: "$sid" },
       sid : { $first: '$sid' },
-      viewTimestamp: {$max: "$t"},
-      viewTimestampMin: {$min: '$t'},
-      viewTracking: { $push: {t: "$t", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
+      viewTimestamp: {$max: "$created"},
+      viewTimestampMin: {$min: '$created'},
+      viewTracking: { $push: {t: "$created", n: "$n", e: "$e", ev:"$ev", cid: "$cid", sid: "$sid"} },
       viewTrackingCount: {$sum: 1},
       maxPageNo: {$max: "$n"},
       pages: {$addToSet: "$n"}
@@ -1441,12 +1425,16 @@ async function putTrackingUser(cid, sid, documentId, email){
         sid: sid,
         created: Date.now()
       }
-      const trackingUser = await WRAPPER.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
+      let trackingUser = await WRAPPER.findOne(TB_TRACKING_USER, {cid: cid, sid: sid, e: email});
       if(!trackingUser){
-        const r = await WRAPPER.save(TB_TRACKING_USER, item);
-        console.log("tracking target user save", r);
+        trackingUser = await WRAPPER.save(TB_TRACKING_USER, item);
+        console.log("tracking target user save", trackingUser);
       }
+
+      return Promise.resolve({trackingUser: trackingUser})
       
+    } else {
+      return Promise.reject(new Error('cid or email is invalid'))
     }
     
   } catch(err){

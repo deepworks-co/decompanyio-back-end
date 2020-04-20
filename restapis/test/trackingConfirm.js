@@ -24,3 +24,43 @@ describe('trackingConfirm', () => {
     });
   });
 });
+
+
+describe('test 2', () => {
+  before((done) => {
+    done();
+  });
+
+  it('case 2', () => {
+    const event = {
+      "resource": "/api/tracking/confirm",
+      "path": "/rest/api/tracking/confirm",
+      "httpMethod": "POST",
+      "headers": {
+          "accept": "application/json, text/plain, */*",
+          "accept-encoding": "gzip, deflate, br",
+          "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+          "Content-Type": "text/plain",
+          "cookie": "_cid=12312312312; _sid=9-RRFhii1V8ZH9m1mrdvz.1586393502106; _gid=GA1.2.660950384.1586997455; _tid=P9JNDH3lrwRpHcrEu2L1D.1587086323676",
+          "Host": "api.share.decompany.io",
+          "origin": "http://127.0.0.1:3000",
+          "Postman-Token": "c6774e13-2cc6-4e78-ae3a-b074b093e820",
+          "referer": "http://127.0.0.1:3000/@ddddd/test-31j0gc",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36",
+          "X-Amzn-Trace-Id": "Self=1-5e99306c-87a05e40bdce5918bbcdd9f0;Root=1-5e99199f-8f1292b4ff5d27541b3d9b8b",
+          "X-Forwarded-For": "118.37.116.13, 118.37.116.13",
+          "X-Forwarded-Port": "443",
+          "X-Forwarded-Proto": "https"
+      },
+      "body": "{\n\t\"email\":\"test@test.com\",\n\t\"documentId\":\"67b98d2cd81e4a7c8a88ff25e01f7c69\"\n}\n",
+      "isBase64Encoded": false
+  }
+  
+    return wrapped.run(event).then((response) => {
+      expect(response).to.not.be.empty;
+    });
+  });
+});

@@ -1,20 +1,10 @@
 const { schemaComposer } = require('graphql-compose');
 
-const {getLast6CreatorReward, getTodayEstimatedCreatorReward} = require("../resolver/royalty/CreatorRewardResolver");
+const getLast6CreatorReward = require("../resolver/creator/GetLast6CreatorRewardResolver");
+const getTodayEstimatedCreatorReward = require("../resolver/creator/GetTodayEstimatedCreatorRewardResolver");
 
-const getLast6CuratorReward = require("../resolver/reward/GetLast6CuratorRewardResolver");
-const getTodayEstimatedCuratorReward = require("../resolver/reward/GetTodayEstimatedCuratorRewardResolver");
-
-schemaComposer.createObjectTC({
-  name: 'DailyCreatorReward',
-  fields: {
-    activeDate: 'Date',
-    documentId: 'String',
-    pageview: 'Int',
-    totalPageview: 'Int',
-    reward: 'Float'
-  },
-});
+const getLast6CuratorReward = require("../resolver/curator/GetLast6CuratorRewardResolver");
+const getTodayEstimatedCuratorReward = require("../resolver/curator/GetTodayEstimatedCuratorRewardResolver");
 
 schemaComposer.createObjectTC({
   name: 'DailyCuratorReward',
@@ -28,12 +18,12 @@ schemaComposer.createObjectTC({
 
 schemaComposer.Query.addNestedFields({
   "ProfileSummary.getLast6CreatorReward": {
-    type: '[DailyCreatorReward]',
+    type: '[CreatorRoyalty]',
     args: { userId: 'String!'},
     resolve: async (_, args) => getLast6CreatorReward(args)
   },
   "ProfileSummary.getTodayEstimatedCreatorReward": {
-    type: '[DailyCreatorReward]',
+    type: '[CreatorRoyalty]',
     args: { userId: 'String!', timestamp: 'Float' },
     resolve: async (_, args) => getTodayEstimatedCreatorReward(args)
   },
@@ -50,4 +40,4 @@ schemaComposer.Query.addNestedFields({
 });
 
 
-module.exports = schemaComposer.buildSchema();
+module.exports = {}

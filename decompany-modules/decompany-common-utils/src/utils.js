@@ -186,6 +186,13 @@ exports.makeErrorResponse = (err, addheader) => {
   }
 }
 
+/**
+ * key=value;key2=value2 string to json
+ */
+exports.parseCookie = (cookieStr) =>{
+  return cookieUtil.parse(cookieStr)
+}
+
 exports.parseLambdaEvent = (eventParams) => {
   
   if(eventParams.httpMethod){
@@ -199,7 +206,7 @@ exports.parseLambdaEvent = (eventParams) => {
     return {
       method: eventParams.httpMethod,
       path: eventParams.path,
-      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: eventParams.body,
+      params: eventParams.httpMethod === 'GET'? eventParams.queryStringParameters: JSON.parse(eventParams.body),
       headers: headers,
       principalId: authorizer?authorizer.principalId: null,
       cookie: cookie
@@ -243,8 +250,8 @@ exports.generateTrackingIds = (cookies) =>{
   }
 }
 exports.makeTrackingCookie = (trackingIds, origin) => {
-  const domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
-
+  let domain = origin?origin.replace(/(^\w+:|^)\/\//, ''):null;
+  domain = domain.replace("www.", "");
   const secure = process.env.stage === 'local' || process.env.stage === 'localdev' ?false:true;
   
   const getExpiredAt = (second)=>{

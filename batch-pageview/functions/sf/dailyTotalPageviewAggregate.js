@@ -67,7 +67,7 @@ function aggregatePageview(start, end) {
               day: '$_id.dayOfMonth'
             }
           },
-          documentId: '$_id.documentId',
+          documentId: '$_id.id',
           blockchainTimestamp: {
             $toLong: {
               $dateFromParts: {

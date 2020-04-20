@@ -9,6 +9,7 @@ const VWDailyVote = require('./VWDailyVote');
 const RewardPool = require('./RewardPool');
 const ClaimReward = require('./ClaimReward');
 const ClaimRoyalty = require('./ClaimRoyalty');
+const Vote = require('./Vote');
 
 module.exports = {
     Document,
@@ -21,5 +22,6 @@ module.exports = {
     VWDailyVote,
     RewardPool,
     ClaimReward,
-    ClaimRoyalty
+    ClaimRoyalty,
+    Vote
 }

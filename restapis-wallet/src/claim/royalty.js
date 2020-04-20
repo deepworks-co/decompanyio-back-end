@@ -5,7 +5,7 @@ const Web3 = require('web3');
 
 const web3 = new Web3(walletConfig.psnet.providerUrl);
 const mongo = new MongoWrapper(mongodb.endpoint);
-const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
+
 
 module.exports.handler = async (event) => {
   //context.callbackWaitsForEmptyEventLoop = false;
@@ -37,7 +37,7 @@ module.exports.handler = async (event) => {
       userId: principalId
     });
   
-    const start = lastClaim&&lastClaim.created?new Date(lastClaim.created + (1000 * 60 * 60 * 24)):new Date(0); //마지막 claim에서 다음날부터 claim요청함
+    const start = lastClaim&&lastClaim._id&&lastClaim._id.blockchainTimestamp?utils.getDate(new Date(lastClaim._id.blockchainTimestamp), 1):new Date(0); //마지막 claim에서 다음날부터 claim요청함
     const end = new Date();
     const pageviews = await getPageviewList(documentId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(utils.getDate(end, -1)));
     //console.log("pageviews", JSON.stringify(pageviews));

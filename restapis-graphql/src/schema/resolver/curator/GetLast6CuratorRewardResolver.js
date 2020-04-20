@@ -5,20 +5,21 @@ const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 const Web3Utils = require('web3-utils');
 const BigNumber = require('bignumber.js');
-module.exports = getTodayEstimatedCuratorReward;
 
-async function getTodayEstimatedCuratorReward({userId}) {
+module.exports = getLast6CuratorReward;
 
-  const nowDate =  new Date(utils.getBlockchainTimestamp(new Date()));
-  const tomorrow = utils.getDate(nowDate, 1);
-  const startDate = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS-1));
-  
+async function getLast6CuratorReward({userId}) {
+
+  const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
+  const before6Days = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS - 1));
+  const startDate = utils.getDate(before6Days, -1 * ACTIVE_VOTE_DAYS);
+
   const start = utils.getBlockchainTimestamp(startDate);
-  const end = utils.getBlockchainTimestamp(tomorrow);
+  const end = utils.getBlockchainTimestamp(nowDate);
 
   const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
 
-  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, nowDate});
+  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, baseDate: before6Days, end});
   //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
 
   const totalVoteMap = await getDailyTotalVoteMap({start, end, myVoteList});
@@ -27,8 +28,9 @@ async function getTodayEstimatedCuratorReward({userId}) {
   
   const resultList = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
 
-  //console.log("resultList", JSON.stringify(resultList))
-  const r2= resultList.map((list)=>{
+  //console.log("result", JSON.stringify(resultList));
+
+  return resultList.map((list)=>{
     const item = list[0];
     
     return {
@@ -38,14 +40,10 @@ async function getTodayEstimatedCuratorReward({userId}) {
       pageview: item.pageview,
       totalPageviewSquare: item.totalPageviewSquare,
       reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
-        return sum + cur;
+        return Number(sum) + Number(cur);
       })
     }
   })
-
-  //console.log("result", JSON.stringify(r2));
-
-  return r2;
 }
 
 /**
@@ -134,7 +132,7 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
  * 
  * @param {*} param0 
  */
-async function getDailyMyVoteMatrix({myVoteList, nowDate}){
+async function getDailyMyVoteMatrix({myVoteList, baseDate, end}){
     
   const myVoteMatrix = myVoteList.map((myVote)=>{
     //console.log("myVote", JSON.stringify(myVote));
@@ -143,9 +141,7 @@ async function getDailyMyVoteMatrix({myVoteList, nowDate}){
 
     return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
       const activeDate = utils.getDate(voteDate, index);
-      
-      if(activeDate.getTime() === nowDate.getTime()){
-        
+      if(activeDate.getTime() >= baseDate.getTime() && activeDate.getTime() < new Date(end).getTime()){
         const {userId, documentId, totalDeposit} = myVote;
         
         return {
@@ -163,6 +159,8 @@ async function getDailyMyVoteMatrix({myVoteList, nowDate}){
       return it?true:false
     })
     
+  }).filter((it)=>{
+    return it.length>0?true:false
   })
 
   return myVoteMatrix;
@@ -199,7 +197,6 @@ async function calcRewardList({myVoteList, totalVoteMap, rewardPoolList}) {
     const totalVote = totalVoteMap[documentId][activeTimestamp];
     let reward = -1;
     if(rewardPool){
-      
       reward = utils.calcReward({
         pageview: pageviewInfo && pageviewInfo.pageview?pageviewInfo.pageview:0, 
         totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0, 
@@ -218,7 +215,7 @@ async function calcRewardList({myVoteList, totalVoteMap, rewardPoolList}) {
       blockchainDate: new Date(activeTimestamp),
       blockchainTimestamp: activeTimestamp,
       pageview: pageviewInfo && pageviewInfo.pageview?pageviewInfo.pageview:0, 
-      totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0, 
+      totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0,
       myVoteAmount: Web3Utils.fromWei(myVote.totalDeposit.toString(), 'ether'),
       totalVoteAmount: Web3Utils.fromWei(totalVote.toString(), 'ether'), 
       reward: reward

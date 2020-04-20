@@ -37,9 +37,6 @@ const DocumentSchema = new Schema({
         type: String,
         required: Number
     },
-    ethAccount: {
-        type: String
-    },
     title: {
         type: String,
         required: true
@@ -47,6 +44,12 @@ const DocumentSchema = new Schema({
     desc: {
         type: String,
         required: true
+    },
+    ext: {
+        type: String
+    },
+    lang: {
+        type: String
     },
     seoTitle: {
         type: String,

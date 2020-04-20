@@ -97,6 +97,7 @@ functions:
       - http: 
           method: ANY
           path: /api/graphql
+          cors: true
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -109,6 +110,7 @@ functions:
       - http: 
           method: ANY
           path: /api/private
+          cors: true
           authorizer: 
             arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0

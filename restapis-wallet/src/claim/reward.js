@@ -46,10 +46,11 @@ module.exports.handler = async (event) => {
     
     const dailyMyVoteMatrix = await getDailyMyVoteMatrix(documentId, principalId, utils.getBlockchainTimestamp(start), utils.getBlockchainTimestamp(end), rewardPool);
     //console.log("dailyMyVoteMatrix", JSON.stringify(dailyMyVoteMatrix));
-    
+    console.log("totalVoteAmount query period", utils.getDate(start, ACTIVE_VOTE_DAYS * -1), utils.getDate(end, ACTIVE_VOTE_DAYS))
     const dailyVoteMap = await getDailyVoteMap(documentId, utils.getBlockchainTimestamp(utils.getDate(start, ACTIVE_VOTE_DAYS * -1)), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS)));
     //console.log("dailyVoteMap", JSON.stringify(dailyVoteMap))
 
+    console.log("pageview query period", utils.getDate(start, ACTIVE_VOTE_DAYS * -1), utils.getDate(end, ACTIVE_VOTE_DAYS))
     const dailyPageviewMap = await getDailyPageviewMap(documentId, utils.getBlockchainTimestamp(utils.getDate(start, ACTIVE_VOTE_DAYS * -1)), utils.getBlockchainTimestamp(utils.getDate(end, ACTIVE_VOTE_DAYS)));
     //console.log("dailyPageviewMap", JSON.stringify(dailyPageviewMap));
     
@@ -58,6 +59,7 @@ module.exports.handler = async (event) => {
       dailyPageviewMap,
       dailyVoteMap
     })
+    
     //console.log("curatorRewards", JSON.stringify(curatorRewards));  
 
     const saveResults = await saveCuratorRewards({
@@ -66,12 +68,14 @@ module.exports.handler = async (event) => {
       curatorRewards
     }); 
     
+    //console.log('saveResults', JSON.stringify(saveResults))
 
     return JSON.stringify({
       success: true,
       rewards: saveResults.map((it)=>{
         return {
           id: it.claimReward._id,
+          voteDate: it.claimReward.voteDate,
           value: web3.utils.fromWei(it.value.toString(), "ether")
           
         }
@@ -106,20 +110,16 @@ async function getDailyVoteMap(documentId, startTimestamp, endTimestamp){
   
   const voteList = await mongo.aggregate(tables.VOTE, [{
       $match: {
-          documentId: documentId,
-          $and: [
-            {blockchainTimestamp: {$gte: startTimestamp}}, 
-            {blockchainTimestamp: {$lt: endTimestamp}}
-          ]
+        blockchainTimestamp: {$gte: startTimestamp, $lt: endTimestamp}
       }
-  }, {
-      $group: {
-          _id: "$blockchainTimestamp",
-          voteAmount: {
-              $sum: "$deposit"
-          }
-      }
-  }])
+    }, {
+        $group: {
+            _id: "$blockchainTimestamp",
+            voteAmount: {
+                $sum: "$deposit"
+            }
+        }
+    }])
   
   
   const totalVoteMatrix = voteList.map((voteInfo)=>{
@@ -404,8 +404,8 @@ async function saveCuratorReward({documentId, userId, curatorReward}){
     curatorReward,
     voteDate: curatorReward[0].voteDate,
     voteAmount: curatorReward[0].voteAmount,
-    totalReward: curatorReward.map((it)=>{return it.value}).reduce((sum, it)=>{
-      return Number(sum) + Number(it);
+    totalReward: curatorReward.map((it)=>{return it.value}).reduce((sum, it)=>{  
+      return new BigNumber(sum).plus(new BigNumber(it))
     }),
     created: Date.now()
   })

@@ -16,14 +16,26 @@ const VWDailyPageviewSchema = new Schema({
     blockchainTimestamp: {
       type: Number
     },
+    blockchainDate: {
+      type: Date
+    },
     pageview: {
       type: Number
+    },
+    userId: {
+      type: String
     },
     totalPageview: {
       type: Number
     },
     totalPageviewSquare: {
       type: Number
+    },
+    created: {
+      type: Number
+    },
+    createdAt: {
+      type: Date
     }
 }, { collection: "VW-DAILY-PAGEVIEW" });
 

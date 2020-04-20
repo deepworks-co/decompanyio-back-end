@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "preinstall": "npm i ../decompany-modules/serverless-config",
-    "test": "sls invoke test -s local",
+    "test": "sls invoke test -s local --exit",
     "package": "sls package",
     "tagging": "node createGitTag.js",
     "deploy": "sls deploy",

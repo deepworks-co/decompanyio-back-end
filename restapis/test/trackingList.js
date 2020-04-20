@@ -12,18 +12,50 @@ describe('trackingList', () => {
     done();
   });
 
-  it('implement tests here', () => {
+  it('exclude anonymous user, 1page ', () => {
     const event = {
       query: {
-        documentId: "3a328b4a0c8e4638b7c110ecb791bbce",
+        documentId: "1fb0012674b442de9bc4e397f6e8dd62",
         include: false,
         anonymous: false
       }
     }
 
     return wrapped.run(event).then((response) => {
-      console.log("response!!");
-      console.log(response);
+      //console.log("response!!");
+      //console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('include anonymous user, exclude 1 page doc', () => {
+    const event = {
+      query: {
+        documentId: "feed7f026db54859bec3221dcad47d8f",
+        include: false,
+        anonymous: true
+      }
+    }
+
+    return wrapped.run(event).then((response) => {
+      //console.log("response!!");
+      //console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
+
+  it('include anonymous user, 1 page doc', () => {
+    const event = {
+      query: {
+        documentId: "feed7f026db54859bec3221dcad47d8f",
+        include: true,
+        anonymous: true
+      }
+    }
+
+    return wrapped.run(event).then((response) => {
+      //console.log("response!!");
+      //console.log(response);
       expect(response).to.not.be.empty;
     });
   });

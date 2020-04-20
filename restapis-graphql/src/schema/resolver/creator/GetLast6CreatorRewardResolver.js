@@ -3,10 +3,8 @@ const {VWDailyPageview, RewardPool} = require('decompany-mongoose').models
 const {utils} = require('decompany-common-utils');
 const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
-module.exports = {
-  getLast6CreatorReward,
-  getTodayEstimatedCreatorReward
-}
+
+module.exports = getLast6CreatorReward
 
 async function getLast6CreatorReward({userId}){
   const endDate = new Date();
@@ -27,25 +25,6 @@ async function getLast6CreatorReward({userId}){
       pageview: it.pageview,
       totalPageview: it.totalPageview,
       royalty: it.reward
-    }
-
-  })
-}
-
-async function getTodayEstimatedCreatorReward({userId}) {
-  const t = utils.getBlockchainTimestamp(new Date());
-  
-  const list = await VWDailyPageview.find({blockchainTimestamp: t, userId: userId});
-  const resultList = await calcRewardList(list);
-
-  return resultList.map((it)=>{
-
-    return {
-      documentId: it.documentId,
-      activeDate: new Date(it.blockchainTimestamp),
-      pageview: it.pageview,
-      totalPageview: it.totalPageview,
-      reward: it.reward
     }
 
   })

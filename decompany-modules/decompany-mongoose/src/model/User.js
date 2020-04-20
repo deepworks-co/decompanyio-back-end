@@ -37,6 +37,6 @@ const UserSchema = new Schema({
 }, {collection: "USER"});
 
 UserSchema.index({username: 1}, {unique: true});
-UserSchema.index({email: 1}, {unique: true});
+UserSchema.index({email: 1});
 
 module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

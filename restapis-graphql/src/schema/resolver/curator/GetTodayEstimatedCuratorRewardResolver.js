@@ -1,68 +1,51 @@
 'use strict';
-const {connectToDB, models} = require('decompany-mongoose')
-const {VWDailyVote, VWDailyPageview, RewardPool, ClaimReward } = models;//require('decompany-mongoose').models
+const {VWDailyVote, VWDailyPageview, RewardPool} = require('decompany-mongoose').models
 const {utils} = require('decompany-common-utils');
-const {mongodb, applicationConfig} = require('decompany-app-properties');
+const {applicationConfig} = require('decompany-app-properties');
 const ACTIVE_VOTE_DAYS = applicationConfig.activeRewardVoteDays;
 const Web3Utils = require('web3-utils');
 const BigNumber = require('bignumber.js');
-const conn = connectToDB(mongodb.endpoint);
+module.exports = getTodayEstimatedCuratorReward;
 
-module.exports.handler = async (event) => {
+async function getTodayEstimatedCuratorReward({userId}) {
 
-  const userId = event.principalId;
-  const documentId = event.body.documentId;
-
-  if(!userId || !documentId){
-    throw new Error("parameter is not vaild")
-  }
-
-  const lastClaim = await ClaimReward.find({
-    "_id.userId": userId,
-    "_id.documentId": documentId,
-  }).sort({_id: -1}).limit(1);
-
-  const LAST_CLAIM = lastClaim[0] ? utils.getDate(lastClaim[0].voteDate, 1) : 0;
-  console.log("LAST_CLAIM", LAST_CLAIM)
-
-  const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
-  const startDate = new Date(utils.getBlockchainTimestamp(new Date(LAST_CLAIM)))
-  const endDate = utils.getDate(new Date(), -1 * (ACTIVE_VOTE_DAYS - 1));
+  const nowDate =  new Date(utils.getBlockchainTimestamp(new Date()));
+  const tomorrow = utils.getDate(nowDate, 1);
+  const startDate = utils.getDate(nowDate, -1 * (ACTIVE_VOTE_DAYS-1));
   
   const start = utils.getBlockchainTimestamp(startDate);
-  const end = utils.getBlockchainTimestamp(endDate);
-  console.log('start, end', ACTIVE_VOTE_DAYS, new Date(start), new Date(end))
+  const end = utils.getBlockchainTimestamp(tomorrow);
 
   const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
-  
-  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, startDate, endDate, nowDate});
+
+  const myVoteMatrix = await getDailyMyVoteMatrix({myVoteList, nowDate});
   //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
 
-  const totalVoteMap = await getDailyTotalVoteMap({
-    start: utils.getBlockchainTimestamp(utils.getDate(startDate, -1 * ACTIVE_VOTE_DAYS)), 
-    end: utils.getBlockchainTimestamp(utils.getDate(new Date(), ACTIVE_VOTE_DAYS)), 
-    myVoteList
-  });
-  //console.log('totalVoteMap', JSON.stringify(totalVoteMap))
+  const totalVoteMap = await getDailyTotalVoteMap({start, end, myVoteList});
 
   const rewardPoolList = await RewardPool.find({});
   
-  const calcRewardMatrixResult = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
+  const resultList = await calcRewardMatrix({myVoteMatrix, totalVoteMap, rewardPoolList})
 
-  //console.log("calcRewardMatrixResult", JSON.stringify(calcRewardMatrixResult));
-  const resultList = [].concat.apply([], calcRewardMatrixResult);
-  return JSON.stringify({
-      success: true,
-      resultList: resultList.map((it)=> {
-      return {
-        documentId: it.documentId,
-        userId: it.userId,
-        voteDate: it.voteDate,
-        activeDate: it.activeDate,
-        reward: it.reward
-      }
-    })
+  //console.log("resultList", JSON.stringify(resultList))
+  const r2= resultList.map((list)=>{
+    const item = list[0];
+    
+    return {
+      userId: item.userId,
+      documentId: item.documentId,
+      voteDate: item.voteDate,
+      pageview: item.pageview,
+      totalPageviewSquare: item.totalPageviewSquare,
+      reward: list.map((it)=>{return it.reward}).reduce((sum, cur)=>{
+        return Number(sum) + Number(cur);
+      })
+    }
   })
+
+  //console.log("result", JSON.stringify(r2));
+
+  return r2;
 }
 
 /**
@@ -96,7 +79,8 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
   
   const totalVoteList = await VWDailyVote.aggregate([{
     $match: {
-      blockchainTimestamp: {$gte: start, $lt: end}
+      blockchainTimestamp: {$gte: start, $lt: end},
+      documentId: {$in: myDocList}
     }
   }, {
     $group: {
@@ -107,8 +91,8 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
     }
   }]);
 
-  const totalVoteMatrix = totalVoteList.map((totalVote)=>{
-
+  const myVoteMatrix = totalVoteList.map((totalVote)=>{
+    //console.log("myVote", JSON.stringify(myVote));
     const {blockchainTimestamp, documentId} = totalVote._id;
     const voteDate = new Date(blockchainTimestamp);
     const {totalVoteAmount} = totalVote;
@@ -117,7 +101,6 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
       const activeDate = utils.getDate(voteDate, index);
       return {
         documentId,
-        voteDate: voteDate,
         activeTimestamp: utils.getBlockchainTimestamp(activeDate),
         activeDate,
         totalVoteAmount
@@ -125,9 +108,9 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
     })
     
   })
+  //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix))
   
-  
-  let mergedList = [].concat.apply([], totalVoteMatrix);
+  let mergedList = [].concat.apply([], myVoteMatrix);
   const totalVoteMap = {}
   mergedList.forEach((vote)=>{
     const { documentId, activeTimestamp, totalVoteAmount} = vote;
@@ -151,7 +134,7 @@ async function getDailyTotalVoteMap({start, end, myVoteList}){
  * 
  * @param {*} param0 
  */
-async function getDailyMyVoteMatrix({ myVoteList, startDate, endDate, nowDate }){
+async function getDailyMyVoteMatrix({myVoteList, nowDate}){
     
   const myVoteMatrix = myVoteList.map((myVote)=>{
     //console.log("myVote", JSON.stringify(myVote));
@@ -160,17 +143,26 @@ async function getDailyMyVoteMatrix({ myVoteList, startDate, endDate, nowDate })
 
     return Array(ACTIVE_VOTE_DAYS).fill(0).map((it, index)=>{
       const activeDate = utils.getDate(voteDate, index);
-      const {userId, documentId, totalDeposit} = myVote;
       
-      return {
-        userId,
-        documentId,
-        voteDate,
-        activeTimestamp: utils.getBlockchainTimestamp(activeDate),
-        activeDate,
-        totalDeposit
+      if(activeDate.getTime() === nowDate.getTime()){
+        
+        const {userId, documentId, totalDeposit} = myVote;
+        
+        return {
+          userId,
+          documentId,
+          voteDate,
+          activeTimestamp: utils.getBlockchainTimestamp(activeDate),
+          activeDate,
+          totalDeposit
+        }
+      } else {
+        return null;
       }
+    }).filter((it)=>{
+      return it?true:false
     })
+    
   })
 
   return myVoteMatrix;
@@ -197,7 +189,7 @@ async function calcRewardList({myVoteList, totalVoteMap, rewardPoolList}) {
 
   //console.log("calcRewardList.myVoteList", JSON.stringify(myVoteList));
   const resultList = await Promise.all(myVoteList.map(async (myVote)=>{
-   
+ 
     const {voteDate, activeTimestamp, userId, documentId} = myVote;
   
     const rewardPool = getRewardPool(rewardPoolList, activeTimestamp);
@@ -207,6 +199,7 @@ async function calcRewardList({myVoteList, totalVoteMap, rewardPoolList}) {
     const totalVote = totalVoteMap[documentId][activeTimestamp];
     let reward = -1;
     if(rewardPool){
+      
       reward = utils.calcReward({
         pageview: pageviewInfo && pageviewInfo.pageview?pageviewInfo.pageview:0, 
         totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0, 
@@ -222,10 +215,10 @@ async function calcRewardList({myVoteList, totalVoteMap, rewardPoolList}) {
       userId: userId,
       documentId: documentId,
       voteDate: voteDate,
-      activeDate: new Date(activeTimestamp),
-      activeTimestamp: activeTimestamp,
+      blockchainDate: new Date(activeTimestamp),
+      blockchainTimestamp: activeTimestamp,
       pageview: pageviewInfo && pageviewInfo.pageview?pageviewInfo.pageview:0, 
-      totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0,
+      totalPageviewSquare: pageviewInfo&& pageviewInfo.totalPageviewSquare?pageviewInfo.totalPageviewSquare:0, 
       myVoteAmount: Web3Utils.fromWei(myVote.totalDeposit.toString(), 'ether'),
       totalVoteAmount: Web3Utils.fromWei(totalVote.toString(), 'ether'), 
       reward: reward
@@ -241,9 +234,3 @@ async function getPageview({documentId, blockchainTimestamp}) {
   return resultList[0];
   
 }
-
-const dateAgo = timestamp => {
-  let currentDate = Number(new Date());
-  let lastDate = Number(new Date(timestamp));
-  return Math.floor((currentDate - lastDate) / (60 * 60 * 24 * 1000));
-};

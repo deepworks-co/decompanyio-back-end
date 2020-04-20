@@ -3,10 +3,10 @@ const { ApolloServer, gql, AuthenticationError } = require('apollo-server-lambda
 const {mongodb} = require('decompany-app-properties')//require('./mongoose');
 const {connectToDB,  mongoDBStatus} = require('decompany-mongoose')//require('./mongoose');
 
-const {schema} = require('./schema/privateSchema');
+const {schema} = require('./schema/private');
 
 const conn = connectToDB(mongodb.endpoint);
-
+const CONN_STATES = ['disconnected', 'connected', 'connecting', 'disconnection']
 const isDebugging = process.env.stage === "local" || process.env.stage === "localdev"?true:false
 const isLocal = process.env.stage === "local" || process.env.stage === "localdev"?true:false
 const server = new ApolloServer({
@@ -35,6 +35,8 @@ const server = new ApolloServer({
   },
   context: async ({event} )=>{
     //console.log("isLocal", JSON.stringify(event))
+
+    console.log(conn.readyState);
     if(isLocal && !event.isOffline){
       //console.log("isLocal", JSON.stringify(event))
       return { principalId: event.requestContext.authorizer.principalId, conn }
@@ -60,7 +62,7 @@ module.exports.handler = async (event, context, callback) => {
 
   const handler = server.createHandler({cors: {
     origin: '*',
-    credentials: true
+    credentials: false
   }});
   
   const response = await runApolloHandler(event, context, handler);

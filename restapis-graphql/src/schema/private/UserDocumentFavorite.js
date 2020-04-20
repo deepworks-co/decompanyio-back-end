@@ -57,5 +57,4 @@ schemaComposer.Mutation.addNestedFields({
   },
 });
 
-
-module.exports = schemaComposer.buildSchema();
+module.exports = {}

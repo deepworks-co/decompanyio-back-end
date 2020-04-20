@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const models = require('./src/model');
 
 function connectToDB(endpoint){
-  mongoose.connect(endpoint, {useNewUrlParser: true});
+  mongoose.connect(endpoint, {useNewUrlParser: true, useUnifiedTopology: true});
   mongoose.Promise = global.Promise;
   if(process.env.local){
     mongoose.set('debug', true);

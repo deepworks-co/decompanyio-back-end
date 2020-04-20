@@ -125,7 +125,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -172,7 +172,7 @@ functions:
           path: /api/analytics/export
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -248,7 +248,7 @@ functions:
           path: /api/account/documents
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -274,7 +274,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -310,7 +310,7 @@ functions:
           path: /api/account/ethereumSync
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -387,7 +387,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -410,7 +410,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -453,7 +453,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -476,7 +476,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -563,7 +563,7 @@ functions:
           method: post
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -648,11 +648,6 @@ functions:
           path: /api/document/download
           method: get
           cors: true
-          #integration: lambda
-#          response:
-#            headers:
-#              Content-Type: integration.response.header.Content-Type
-#            template: $input.path('$')
           documentation:
             summary: "/api/document/download"
             description: "/api/document/download"
@@ -682,7 +677,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -726,7 +721,7 @@ functions:
           method: get
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -770,31 +765,10 @@ functions:
           path: api/tracking/collect
           method: get
           cors: true
-#          integration: lambda
-#          request:
-#            template:
-#              application/json: ${file(./serverless-request-template.vtl)}
-#          response:
-#            headers:
-#              Content-Type: integration.response.header.Content-Type
-#              Set-Cookie: integration.response.body.Cookie
-#            template: $input.path('$.body')
           documentation:
             summary: "tracking collector"
             description: "api/tracking/collect"
             queryParams:
-              - name: cid
-                description: client id
-                type: string
-                required: true
-              - name: sid
-                description: session id
-                type: string
-                required: true
-              - name: t
-                description: event timestamp
-                type: number
-                required: true
               - name: e
                 description: email
                 type: string
@@ -821,7 +795,7 @@ functions:
           path: /api/tracking/export
           cors: true
           authorizer: 
-            arn: ${self:custom.authorizer}
+            arn: ${file(./serverlessConfig.js):getAuthorizer}
             resultTtlInSeconds: 0
             identitySource: method.request.header.Authorization
             identityValidationExpression: .*
@@ -851,29 +825,19 @@ functions:
       - http:
           method: post
           path: /api/tracking/confirm
-          cors: true
-          integration: lambda
-          response:
-            headers:
-              Content-Type: integration.response.header.Content-Type
-            template: $input.path('$')
-          documentation:
-            summary: "/api/tracking/confirm"
-            description: "/api/tracking/confirm"
-            queryParams:
-              - name: documentId
-                description: documentId
-                type: string
-              - name: email
-                description: email
-                type: string
-              - name: cid
-                description: cid
-                type: string
-              - name: sid
-                description: sid
-                type: string
-              
+          cors: 
+            origins: 
+              - ${file(./serverlessConfig.js):getProperties.applicationConfig.mainHost}
+              - http://127.0.0.1:3000
+              - http://localhost:3000
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
     deploymentSettings:
       type: ${self:custom.deployType}
       alias: prod
@@ -927,7 +891,6 @@ resources:
 
 
 custom:
-  authorizer: arn:aws:lambda:${self:provider.region}:${file(./serverlessConfig.js):getAccountId}:function:auth-provider-${self:provider.stage}-authorize
   deployType: Canary10Percent5Minutes
   deploymentSettings:
     stages:
