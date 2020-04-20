@@ -17,8 +17,8 @@ module.exports = {
  */
 async function calcCuratorReward ({startDate, endDate, userId, documentId}) {
 
-  if(!userId || !documentId){
-    throw new Error("parameter is not vaild")
+  if(!userId || !documentId || !startDate || !endDate){
+    throw new Error(`parameter is not vaild ${JSON.stringify({startDate, endDate, userId, documentId})}`)
   }
 
   const start = utils.getBlockchainTimestamp(startDate);
@@ -26,7 +26,7 @@ async function calcCuratorReward ({startDate, endDate, userId, documentId}) {
 
   console.log('start, end', new Date(start), new Date(end))
 
-  const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId}).sort({blockchainTimestamp: 1});
+  const myVoteList = await VWDailyVote.find({blockchainTimestamp: {$gte: start, $lt: end}, userId: userId, documentId: documentId}).sort({blockchainTimestamp: 1});
 
   const myVoteMatrix = await getDailyMyVoteMatrix({ myVoteList });
   //console.log("myVoteMatrix", JSON.stringify(myVoteMatrix));
@@ -42,7 +42,7 @@ async function calcCuratorReward ({startDate, endDate, userId, documentId}) {
 
   //console.log("calcRewardMatrixResult", JSON.stringify(calcRewardMatrixResult));
   const resultList = [].concat.apply([], calcRewardMatrixResult);
-  console.log("resultList", resultList)
+  //console.log("resultList", resultList)
   return resultList.map((it)=> {
     return {
       documentId: it.documentId,
