@@ -42,14 +42,16 @@ async function calcCuratorReward ({startDate, endDate, userId, documentId}) {
 
   //console.log("calcRewardMatrixResult", JSON.stringify(calcRewardMatrixResult));
   const resultList = [].concat.apply([], calcRewardMatrixResult);
-  //console.log("resultList", resultList)
+  console.log("resultList", resultList)
   return resultList.map((it)=> {
     return {
       documentId: it.documentId,
       userId: it.userId,
       voteDate: it.voteDate,
       activeDate: it.blockchainDate,
-      reward: it.reward
+      reward: it.reward,
+      voteAmount: it.myVoteAmount,
+      userId: it.userId
     }
   });
 }
