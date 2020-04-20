@@ -17,12 +17,12 @@ module.exports = async ({userId, documentId}) => {
   }).sort({_id: -1}).limit(1);
 
   const LAST_CLAIM = lastClaim[0] ? utils.getDate(lastClaim[0].voteDate, 1) : 0;
-  console.log("LAST_CLAIM", LAST_CLAIM)
+  console.log("last claim date", new Date(LAST_CLAIM))
 
   const nowDate = new Date(utils.getBlockchainTimestamp(new Date()));
   const startDate = new Date(utils.getBlockchainTimestamp(new Date(LAST_CLAIM)))
   const endDate = utils.getDate(new Date(), -1 * (ACTIVE_VOTE_DAYS - 1));
   
-  console.log('start, end', startDate, endDate)
+
   return calcCuratorReward({ startDate, endDate, userId, documentId })
 }
