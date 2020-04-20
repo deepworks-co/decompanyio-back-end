@@ -26,7 +26,6 @@ const getLastClaimDate = async (userId, documentId) => {
         "_id.userId": userId,
         "_id.documentId": documentId,
     }).sort({_id: -1}).limit(1);
-    lastClaim[0] ? dateAgo(lastClaim[0].created) : 0;
 
     if(!lastClaim[0])
         return new Date(0)
