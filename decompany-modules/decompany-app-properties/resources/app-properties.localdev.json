@@ -11,7 +11,7 @@
         "geoip": "arn:aws:lambda:us-west-1:197966029048:layer:libGeoip:2"
     },
     "mongodb": {
-        "endpoint": "mongodb://decompany:decompany1234@13.52.186.38:27017/decompany?connectTimeoutMS=1000&socketTimeoutMS=1000"
+        "endpoint": "mongodb+srv://decompany:decompany1234@dev-cluster-brqwy.mongodb.net/decompany?retryWrites=true&w=majority"
     },
     "s3Config":{
         "document": "dev-ca-document",
