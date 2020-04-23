@@ -28,13 +28,13 @@ module.exports.handler = async (event, context, callback) => {
 
   const provider = body.sub?body.sub.split("|")[0]:null;
   const claims = {
+    sub: principalId,
     email: body.email,
     name: body.name,
     picture: body.picture,
     nickname: body.nickname,
     family_name: body.family_name,
     locale: body.locale,
-    sub: body.sub,
     provider: provider
   }
   const result = await syncUserInfo(principalId, claims);
