@@ -24,7 +24,7 @@ module.exports.handler = async (event, context, callback) => {
   const {principalId, body} = event;
 
      
-  if(!body || !body.title || !body.tags) {
+  if(!body || !body.title) {
     throw new Error("parameter is invalid");
   } 
 
@@ -33,7 +33,7 @@ module.exports.handler = async (event, context, callback) => {
   }
 
   const accountId = principalId;    
-  const documentName = body.filename;
+  const documentName = body.filename?body.filename:""
   const documentSize = body.size;
   const tags = body.tags?body.tags.map((tag)=>tag.toLowerCase()):[];//document tags
   const ethAccount = body.ethAccount?body.ethAccount:null;//ethereum user account
@@ -41,15 +41,23 @@ module.exports.handler = async (event, context, callback) => {
   const desc = body.desc;
   const useTracking = utils.parseBool(body.useTracking);
   const forceTracking = utils.parseBool(body.forceTracking);
-  const ext  = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  let ext = body.ext?body.ext.toLowerCase():null
+  if(!ext && documentName){
+    ext = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
+  }
+  if(!ext) {
+    throw new Error(`doc's extention is null`)
+  }
+
   const isDownload = utils.parseBool(body.isDownload);
   const cc = body.cc;
   const isPublic = utils.parseBool(body.isPublic, true);
   
   const headers = event.headers?convertKeysToLowerCase(event.headers):{}
-  const lang = body.lang?body.lang:headers['accept-language']
   
   const user = await documentService.getUser(accountId);
+  const locale = body.locale?body.locale:getLocale(headers['accept-language'], user.locale)
+
   if(!user){
     throw new Error(`user(${accountId}) does not exist`);
   }
@@ -83,7 +91,7 @@ module.exports.handler = async (event, context, callback) => {
       ethAccount: ethAccount,
       title: title,
       ext: ext,
-      lang: lang?lang:'en',
+      locale: locale,
       desc: desc,
       tags: tags,
       seoTitle: seoTitle,
@@ -148,4 +156,19 @@ function generateSeoTitle(title){
       resolve(seoTitle);
     }
   })
+}
+
+function getLocale(languages, defaultLocale){
+  if(!languages) {
+    return defaultLocale?defaultLocale:'en'
+  }
+  const locales = languages.split(',')
+
+  if(!locales[0] && !defaultLocale){
+    return "en"
+  } else if(!locales[0] && defaultLocale) {
+    return defaultLocale
+  }
+
+  return locales[0].toLowerCase()
 }
