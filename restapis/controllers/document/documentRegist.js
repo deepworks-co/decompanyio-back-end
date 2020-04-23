@@ -42,7 +42,7 @@ module.exports.handler = async (event, context, callback) => {
   const useTracking = utils.parseBool(body.useTracking);
   const forceTracking = utils.parseBool(body.forceTracking);
   let ext = body.ext?body.ext.toLowerCase():null
-  if(!ext && documentName){
+  if(!ext && documentName && documentName.lastIndexOf(".") > 0){
     ext = documentName.substring(documentName.lastIndexOf(".") + 1, documentName.length).toLowerCase();
   }
   if(!ext) {
