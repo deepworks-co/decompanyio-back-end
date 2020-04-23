@@ -24,7 +24,7 @@ describe('accountSync', () => {
         "picture":"https://lh5.googleusercontent.com/-XFDbx4F4BCE/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3reBKkzgLiQu2RzziAptt5cYePEgSg/mo/photo.jpg",
         "locale":"ko",
         "updated_at":"2019-06-10T05:24:05.175Z",
-        "email":"jay@decompany.io",
+        "email":"jay@polarishare.com",
         "email_verified":true
       }
     }
@@ -37,7 +37,7 @@ describe('accountSync', () => {
 
   it('sync - worn29@gmail.com', () => {
     const event = {
-      principalId: "google-oauth2|101778494068951192848",
+      principalId: "google-oauth2|112098078580108061874",
       body: {
         "sub":"google-oauth2|112098078580108061874",
         "given_name":"재구",

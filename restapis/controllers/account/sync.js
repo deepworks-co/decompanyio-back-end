@@ -22,6 +22,10 @@ module.exports.handler = async (event, context, callback) => {
     }));
   }
 
+  if(principalId !== body.sub) {
+    throw new Error(`Wrong user claims`)
+  }
+
   const provider = body.sub?body.sub.split("|")[0]:null;
   const claims = {
     email: body.email,
@@ -41,10 +45,29 @@ module.exports.handler = async (event, context, callback) => {
   });
   
 }
+async function extractEmailId(email) {
+  return Promise.resolve(email.substring(0, email.indexOf('@')))
+}
+async function generateUsername(prefix) {
+  
+  return new Promise(async (resolve, reject)=>{
+
+    const randomString = utils.randomId()
+    const username = `${prefix}-${randomString}`
+    const user = await mongo.findOne(USER_TALBE, {username: username})
+    if(user){
+      return await generateUsername(prefix)
+    } else {
+      return resolve(username)
+    }
+    
+  })
+
+}
 
 async function syncUserInfo(principalId, claims){
   try{
-    const queriedUser = await mongo.findOne(USER_TALBE, {
+    let queriedUser = await mongo.findOne(USER_TALBE, {
       _id: claims.sub
     });
     let result;
@@ -57,14 +80,16 @@ async function syncUserInfo(principalId, claims){
       });
     } else {
       //new user
+      const username = await generateUsername(await extractEmailId(claims.email))
       const user = Object.assign({
         _id: claims.sub, 
+        username: username,
         connected: Date.now()
       }, claims);
-      result = await mongo.insert(USER_TALBE, user);
-      console.log("new user", JSON.stringify({user, result}));
 
-      
+      queriedUser = await mongo.insert(USER_TALBE, user);
+      console.log("new user", JSON.stringify({user, queriedUser}));
+     
       /*
        * 초기 가입시 welcome 이메일 보내기
       await mongo.save(tables.SEND_EMAIL, {
@@ -74,14 +99,14 @@ async function syncUserInfo(principalId, claims){
       });
       */
     }
-    const {success, profileId} = await updateProfile(claims)
+
+    const {profileId} = await updateProfile(claims)
 
     if(!queriedUser.profileId){
       await mongo.update(USER_TALBE, {_id: claims.sub}, {$set: {profileId: profileId}})
     }
-    
 
-    return Promise.resolve(result);
+    return Promise.resolve(queriedUser);
   }catch(err){
     throw err;
   } 
