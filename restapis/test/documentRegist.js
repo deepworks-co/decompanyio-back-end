@@ -71,4 +71,20 @@ describe('documentRegist', () => {
       expect(response).to.not.be.empty;
     });
   });
+
+  it('sdk test', () => {
+    const event = {
+      principalId: "google-oauth2|101778494068951192848",
+      body: {
+        title: "머신러닝 이북-수포자를 위한 머신러닝",
+        desc: "머신러닝 이북-수포자를 위한 머신러닝",
+        filename: "머신러닝 이북-수포자를 위한 머신러닝"
+      }
+    }
+    return wrapped.run(event).then((response) => {
+      console.log("");
+      console.log(response);
+      expect(response).to.not.be.empty;
+    });
+  });
 });
